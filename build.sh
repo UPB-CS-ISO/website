@@ -3,12 +3,14 @@
 set -e
 
 cd slides
-npm install
 rm -rf ../website/static/slides
 echo Building Slides
-SLIDES_OUTPUT_FOLDER=../website/static/slides ./build.sh
+make
+mkdir -p ../website/static/slides
+cp build/*.pdf ../website/static/slides/
 
 cd ..
+echo Building Website
 cd website
 npm install
 npm run clear
