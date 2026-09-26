@@ -2,8 +2,7 @@ workflow:
   - .github/**/*
 
 website:
-  - src/**/*
-  - static/**/*
-  - "*.js"
-  - "*.json"
-  - "*.ts"
+  - website/**/*
+
+slides:
+  - slides/**/*
