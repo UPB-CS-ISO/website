@@ -13,7 +13,7 @@
     - Eva Cosma (CD)
     - Alexandru Iova (CD)
     - Victor Lisman (CD)
-    - Genan Omber (CD)
+    - Genan Omer (CD)
     - Alexandru Răduță (CD)
     - Alexandru Radovici (CD)
     - Alexandra Văduva (CD)
