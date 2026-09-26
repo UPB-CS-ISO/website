@@ -31,12 +31,11 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
-    title: "NixOS",
-    Svg: require("@site/static/img/nixos.svg").default,
+    title: "Shell Scripting",
+    Svg: require("@site/static/img/sway.svg").default,
     description: (
       <>
-        Build your own custon Linux system using one of the most configurable
-        Linux distribution.
+        Learn how to use efficiently a tiling window manager like Sway.
       </>
     ),
   },
