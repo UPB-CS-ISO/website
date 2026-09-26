@@ -31,7 +31,7 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
-    title: "Shell Scripting",
+    title: "Tiling Window Manager",
     Svg: require("@site/static/img/sway.svg").default,
     description: (
       <>
