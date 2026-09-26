@@ -25,7 +25,7 @@
     toc: false,
     count: "dot-section",
     theme: "normal",
-    footer-subtitle: "Copyright (C) 2026 Wyliodrin & Politehnica Bucharest, CC-BY-40",
+    footer-subtitle: "Copyright (C) 2026 Wyliodrin & Politehnica Bucharest, CC-BY-SA 4.0",
   )
 
   // use numbering only up to section level 2, required for dot-section
