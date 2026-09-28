@@ -16,7 +16,7 @@
     title: "Introduction to Operating Systems", // Required
     subtitle: title,
     date: date,
-    authors: ("Alexandru Radovici, PhD", "Ioana Culic, PhD"),
+    authors: "USO Team",
 
     // Optional Styling (for more and explanation of options take a look at the typst universe)
     ratio: 16 / 9,
