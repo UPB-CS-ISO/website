@@ -38,7 +38,7 @@
 
 
   // fix diatypst due to typst new rendering
-  show raw.where(block: false): it => box(baseline: 0pt, it)
+  show raw.where(block: false): it => box(baseline: -1pt, it)
   show regex("\p{Extended_Pictographic}[\u{FE0F}\u{200D}\p{Extended_Pictographic}\p{Emoji_Modifier}]*"): set text(
     size: 0.68em,
     baseline: 0em,
