@@ -5,7 +5,7 @@
 ]
 
 #slide[
-  == The Main Role of an Operating System
+  == The _Core Role_ of an Operating System
 
   #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.5em)[
     #only("2,3")[
@@ -91,16 +91,19 @@
     [Commands], [`cmd.exe` or `powershell.exe`], [`bash` or `zsh`], [`bash` or `zsh`],
     [Documents], [`powerpoint.exe`], [#link("https://www.libreoffice.org")[`libreoffice`]], [Pages],
     [Edit Code], [`code.exe`], [`code`], [`code`],
-    [Terminal#footnote[Third party recommendations for Linux and macOS are #link("https://sw.kovidgoyal.net/kitty/")[Kitty], #link("https://alacritty.org")[Alacritty] and #link("https://ghostty.org")[Ghostty]]], [_handled by the OS_], [#link("https://gitlab.gnome.org/chergert/ptyxis")[`ptyxis`]], [Terminal],
+    [Terminal#footnote[Third party recommendations for Linux and macOS are #link("https://sw.kovidgoyal.net/kitty/")[Kitty], #link("https://alacritty.org")[Alacritty] and #link("https://ghostty.org")[Ghostty]]],
+    [_handled by the OS_],
+    [#link("https://gitlab.gnome.org/chergert/ptyxis")[`ptyxis`]],
+    [Terminal],
   )
 ]
 
 #slide[
-  = Where can we see the OS
+  = Where can we see the core of the OS
 ]
 
 #slide[
-  == Where can we see the OS
+  == Where can we see the core of the OS
 
   #only(1)[
     #align(center)[
@@ -140,7 +143,7 @@
 ]
 
 #slide[
-  == Where can we see the OS
+  == Where can we see the core of the OS
 
   #table(
     columns: 3,
@@ -157,7 +160,7 @@
 #slide[
   == The Kernel
 
-  - is a collection of applications that run in privileged mode
+  - is a collection of applications that _usually_ run in privileged mode
   - one _main application_ and several _utilities apps_
 
   #only(2)[

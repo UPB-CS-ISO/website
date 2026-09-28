@@ -45,9 +45,9 @@
     ]
 
   ][
-    === Hypervisors
+#only("4,5")[
 
-    #item-by-item(start: 4)[
+    === Hypervisors
       - #box[#image("img/vm/vmware.png", height: 6%)] VMWare
       - #box[#image("img/vm/virtualbox.svg", height: 6%)] VirtualBox
       - #box[#image("img/vm/qemu.png", height: 6%)] QEMU using `hyper-v`, `KVM` or _Hypervisor.framework_
@@ -55,7 +55,7 @@
 
   ]
 
-  #only(7)[
+  #only(5)[
     #quote(block: true)[Make sure you download a Linux version for `amd64` or `aarch64`]
   ]
 ]
