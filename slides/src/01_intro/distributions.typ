@@ -1,7 +1,7 @@
 #import "/src/slides.typ": *
 
 #slide[
-  = Distribution #text(size: 10pt, weight: "regular")[\ _what people think an OS is_]
+  = Distribution #text(size: 10pt, weight: "regular")[\ _what an OS is from the user's point of view_]
 ]
 
 #slide[
