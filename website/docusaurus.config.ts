@@ -33,7 +33,17 @@ const config: Config = {
   // may want to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en', 'ro'],
+    localeConfigs: {
+      en: {
+        label: 'English',
+        htmlLang: 'en-US',
+      },
+      ro: {
+        label: 'Română',
+        htmlLang: 'ro-RO',
+      },
+    },
   },
 
   presets: [
@@ -75,6 +85,10 @@ const config: Config = {
           position: 'left',
           label: 'Labs',
           docId: '/category/labs'
+        },
+        {
+          type: 'localeDropdown',
+          position: 'right',
         },
         {
           href: 'https://github.com/upb-cs-iso/upb-cs-iso.github.io',
