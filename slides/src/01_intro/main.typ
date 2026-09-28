@@ -32,7 +32,7 @@
   #reveal-terminal(before: none, lines: (1, 2, 6))[```terminal
   $ command arguments
   this is what the command wrote
-  $ command2 arguments placed \ # mind the backslash that splits the command over multiple lines
+  $ command2 arguments placed \ # mind the \ that splits the command over multiple lines
              using multiple \
              lines
   ```]
