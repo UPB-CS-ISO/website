@@ -57,7 +57,7 @@
     #image("img/distributions/mainframe_terminals.pdf", height: 50%)
 
     #only(4)[
-      Is open source up to version _UNIX System III_
+      🔒 Is open source up to version _UNIX System III_
     ]
   ][
     Ken Thompson & Dennis Ritchie (Bell Labs, AT&T)
@@ -73,6 +73,9 @@
 
 #slide[
   == The POSIX Standard
+
+  #counter(footnote).update(0)
+
   _Portable Operating System Interface_ (ISO 9945)
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
@@ -81,51 +84,64 @@
     - how the C API looks like (ex `stdio.h`, `unistd.h`)
     - what commands (basic software) should be available
 
-    Allows:
-    - applications to be portable
-      - _in C/C++ source code format only_
+    #only("2-")[
+      Allows:
+      - applications to be portable
+        - _in C/C++ source code format only_
+    ]
 
-    When UNIX became closed source ->
+    #only(3)[
+      === When UNIX became closed source ->
+    ]
   ][
-    UC *Berkeley Software Distribution (BSD)*
 
-    #table(
-      columns: 4,
-      table.header([FreeBSD], [Darwin], [OpenBSD], [NetBSD]),
-      [#image("img/distributions/freebsd.png", height: 1.1cm)],
-      [#image("img/distributions/macos.png", height: 1.1cm)],
-      [#image("img/distributions/openbsd.png", height: 1.1cm)],
-      [#image("img/distributions/netbsd.png", height: 1.1cm)],
-    )
+    #only(3)[
+      UC *Berkeley Software Distribution (BSD)*
 
-    New kernels
+      #table(
+        columns: 4,
+        table.header([FreeBSD], [Darwin], [OpenBSD], [NetBSD]),
+        [#image("img/distributions/freebsd.png", height: 1.1cm)],
+        [#image("img/distributions/macos.png", height: 1.1cm)],
+        [#image("img/distributions/openbsd.png", height: 1.1cm)],
+        [#image("img/distributions/netbsd.png", height: 1.1cm)],
+      )
 
-    #table(
-      columns: 3,
-      table.header([*Minix*], [*Linux*], [*RedoxOS*]),
-      [#image("img/distributions/minix.png", height: 1.1cm)],
-      [#image("img/distributions/linux.png", height: 1.1cm)],
-      [#align(center)[#image("img/distributions/redoxos.png", height: 1.1cm)]],
-    )
+      New kernels
+
+      #table(
+        columns: 3,
+        table.header([*Minix*], [*Linux*], [*RedoxOS*#footnote[Partially POSIX compliant]]),
+        [#image("img/distributions/minix.png", height: 1.1cm)],
+        [#image("img/distributions/linux.png", height: 1.1cm)],
+        [#align(center)[#image("img/distributions/redoxos.png", height: 1.1cm)]],
+      )
+    ]
   ]
 ]
 
 #slide[
   == GNU Software
 
+  #counter(footnote).update(0)
+
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
     Basic _UNIX_ commands and software *rewritten*
-    - startup software (`init`)
-    - most of what we call today _coreutils_
-    - C Compiler -> GNU Compiler Collection (#link("https://gcc.gnu.org")[`gcc`])
-      - C and C++ standard libraries
-      - `flex` / `yacc`
-    - X Windows System (#link("https://www.x.org/wiki/")[`x11`])
+    #item-by-item(start: 2)[
+      - startup software (`init`)
+      - most of what we call today _coreutils_
+      - C Compiler -> GNU Compiler Collection (#link("https://gcc.gnu.org")[`gcc`])
+        - C and C++ standard libraries
+        - `flex` / `yacc`
+      - X Windows System (#link("https://www.x.org/wiki/")[`x11`])
+    ]
 
-    *Modern Software*
-    - _coreutils_ are being rewritten in Rust (#link("https://uutils.github.io")[_uutils_])
-    - `gcc` is being slowly replaced by #link("https://llvm.org")[LLVM]
-    - `x11` is being replaced by #link("https://wayland.freedesktop.org")[Wayland]
+    #only(6)[
+      *Modern Software*
+      - _coreutils_ are being rewritten in Rust (#link("https://uutils.github.io")[_uutils_])#footnote[Used by Ubuntu starting with 26.04]
+      - `gcc` is being slowly replaced by #link("https://llvm.org")[LLVM]
+      - `x11` is being replaced by #link("https://wayland.freedesktop.org")[Wayland]
+    ]
   ][
     _Richard Stallman_ (MIT)
 
@@ -153,25 +169,29 @@
 #slide[
   == The Linux Kernel
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    - is the actual operating system
-    - invisible to the user
-      - except when it boots 🏁 and panics 😱
-    - 25 mil line of code (LOC)
-    - manages all the system resources
+  #toolbox.side-by-side(columns: (2fr, 1fr), gutter: 1.5em)[
 
-    #align(center)[
-      #image("img/distributions/linux.png", width: 40%)
+    #align(center)[#image("img/distributions/linus_torvalds.jpeg", height: 70%)]
+    === _Linus Torvalds_ (University of Helsinki)
 
-      Meet _Tux_
+    #item-by-item()[
+      - did not agree with A. Tannenbaum about how Minix should work
+      - wrote his own 👨‍💻 _POSIX compliant_ OS, called it Linu#strong[x]
     ]
   ][
-    _Linus Torvalds_ (University of Helsinki)
+    #only(3)[
+      - is the actual operating system
+      - invisible to the user
+        - except when it boots 🏁 and panics 😱
+      - 25 mil line of code (LOC)
+      - manages all the system resources
 
-    #align(center)[#image("img/distributions/linus_torvalds.jpeg", width: 50%)]
+      #align(center)[
+        #image("img/distributions/linux.png", height: 40%)
 
-    - did not agree with A. Tannenbaum about how Minix should work
-    - wrote his own 👨‍💻 _POSIX compliant_ OS, called it Linu#strong[x]
+        Meet _Tux_
+      ]
+    ]
   ]
 ]
 
@@ -194,23 +214,23 @@
   _Took the Linux kernel, added the GNU libraries and tools and wrote a package manager to install software_
 
   #table(
-    columns: (auto, auto, 1fr, auto, auto, auto),
+    columns: (auto, auto, auto, auto, auto, auto),
     table.header([], [Name], [Tagline], [Package Format], [Package Manager], [Release Year]),
-    [#image("img/distributions/slackware.png", height: 1cm)],
+    [#image("img/distributions/slackware.png", height: 0.6cm)],
     [#link("http://www.slackware.com")[Slackware]],
     [_Oldest distribution_],
     [`tgz`],
     [`pkgtool`],
     [1993],
 
-    [#image("img/distributions/debian.png", height: 1cm)],
+    [#image("img/distributions/debian.png", height: 0.6cm)],
     [#link("https://www.debian.org")[Debian]],
     [_Free Software_],
     [`deb`],
     [`apt` / `dpkg`],
     [1993],
 
-    [#image("img/distributions/red-hat.svg", height: 1cm)],
+    [#image("img/distributions/red-hat.svg", height: 0.6cm)],
     [#link("https://www.redhat.com")[Red Hat Linux]],
     [_Enterprise_],
     [`rpm`],
@@ -225,9 +245,9 @@
   == Modern Distributions
 
   #table(
-    columns: (auto, auto, 1fr, 1fr, auto, auto, auto),
-    table.header([], [Name], [Tagline], [Parent], [Package Format], [Package Manager], [Release Year]),
-    [#image("img/distributions/opensuse.png", height: 1cm)],
+    columns: (auto, auto, auto, auto, auto, auto, auto),
+    table.header([], [Name], [Tagline], [Parent], [Package\ Format], [Package\ Manager], [Release]),
+    [#image("img/distributions/opensuse.png", height: 0.6cm)],
     [#link("https://www.suse.com")[SUSE Linux]],
     [_Enterprise-grade Linux_],
     [_Originally Slackware, later RPM-based_],
@@ -235,7 +255,7 @@
     [`zypper`, `yast`],
     [1994],
 
-    [#image("img/distributions/arch.png", height: 1cm)],
+    [#image("img/distributions/arch.png", height: 0.6cm)],
     [#link("https://archlinux.org")[ArchLinux]],
     [_Minimal Linux_],
     [N/A],
@@ -243,7 +263,7 @@
     [`pacman`],
     [2002],
 
-    [#image("img/distributions/fedora.png", height: 1cm)],
+    [#image("img/distributions/fedora.png", height: 0.6cm)],
     [#link("https://www.redhat.com")[Fedora]],
     [_Desktop Linux_],
     [_Red Hat Linux renamed_],
@@ -251,7 +271,7 @@
     [`dnf` / `rpm`],
     [2003],
 
-    [#image("img/distributions/ubuntu.png", height: 1cm)],
+    [#image("img/distributions/ubuntu.png", height: 0.6cm)],
     [#link("https://www.ubuntu.org")[Ubuntu]],
     [_Linux for Humans_],
     [Debian],
@@ -259,7 +279,7 @@
     [`apt` / `dpkg` and `snap`],
     [2004],
 
-    [#image("img/distributions/opensuse.png", height: 1cm)],
+    [#image("img/distributions/opensuse.png", height: 0.6cm)],
     [#link("https://www.opensuse.org")[openSUSE]],
     [_Stable, usable Linux for everyone_],
     [SUSE Linux],
@@ -270,7 +290,7 @@
 ]
 
 #slide[
-  == Which is the Most Used Linux Distribution?
+  == Most Used Linux Distribution?
 
   #uncover(2)[
     #align(center)[#image("img/distributions/android.png", height: 100%)]
@@ -282,9 +302,9 @@
   They use Linux, but most of the software is not from GNU
 
   #table(
-    columns: (auto, auto, 1fr, 1fr, auto, 1fr, auto),
+    columns: (auto, auto, auto, auto, auto, auto, auto),
     table.header([], [Distribution], [Tagline], [Parent], [Package Format], [Package Manager], [Release Year]),
-    [#image("img/distributions/android.png", height: 1cm)],
+    [#image("img/distributions/android.png", height: 0.6cm)],
     [#link("https://source.android.com")[Android]],
     [_Mobile Linux platform_],
     [Linux kernel (AOSP)],
@@ -292,7 +312,7 @@
     [AOSP tools (not typical package manager)],
     [2008],
 
-    [#image("img/distributions/chromeos.png", height: 1cm)],
+    [#image("img/distributions/chromeos.svg", height: 0.6cm)],
     [#link("https://chromeos.google")[ChromeOS]],
     [_The cloud-first OS_],
     [Gentoo Linux],

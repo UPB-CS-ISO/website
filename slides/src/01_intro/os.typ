@@ -91,7 +91,10 @@
     [Commands], [`cmd.exe` or `powershell.exe`], [`bash` or `zsh`], [`bash` or `zsh`],
     [Documents], [`powerpoint.exe`], [#link("https://www.libreoffice.org")[`libreoffice`]], [Pages],
     [Edit Code], [`code.exe`], [`code`], [`code`],
-    [Terminal#footnote[Third party recommendations for Linux and macOS are #link("https://sw.kovidgoyal.net/kitty/")[Kitty], #link("https://alacritty.org")[Alacritty] and #link("https://ghostty.org")[Ghostty]]], [_handled by the OS_], [#link("https://gitlab.gnome.org/chergert/ptyxis")[`ptyxis`]], [Terminal],
+    [Terminal#footnote[Third party recommendations for Linux and macOS are #link("https://sw.kovidgoyal.net/kitty/")[Kitty], #link("https://alacritty.org")[Alacritty] and #link("https://ghostty.org")[Ghostty]]],
+    [_handled by the OS_],
+    [#link("https://gitlab.gnome.org/chergert/ptyxis")[`ptyxis`]],
+    [Terminal],
   )
 ]
 

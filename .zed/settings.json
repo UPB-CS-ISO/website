@@ -1,0 +1,21 @@
+{
+	"lsp": {
+		"tinymist": {
+			"initialization_options": {
+
+			},
+
+			"settings": {
+				// Enable formatter
+				"formatterMode": "typstyle",
+			}
+		}
+	},
+
+	"languages": {
+		"Typst": {
+			// Disable soft wrap
+			"soft_wrap": "none",
+		},
+	},
+}
