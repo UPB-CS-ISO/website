@@ -1,0 +1,22 @@
+{
+  "version.label": {
+    "message": "Următoarea",
+    "description": "The label for version current"
+  },
+  "sidebar.tutorialSidebar.category.Lectures": {
+    "message": "Cursuri",
+    "description": "The label for category 'Lectures' in sidebar 'tutorialSidebar'"
+  },
+  "sidebar.tutorialSidebar.category.Lectures.link.generated-index.description": {
+    "message": "Materialele de curs",
+    "description": "The generated-index page description for category 'Lectures' in sidebar 'tutorialSidebar'"
+  },
+  "sidebar.tutorialSidebar.category.Labs": {
+    "message": "Laboratoare",
+    "description": "The label for category 'Labs' in sidebar 'tutorialSidebar'"
+  },
+  "sidebar.tutorialSidebar.category.Labs.link.generated-index.description": {
+    "message": "Materialele de laborator",
+    "description": "The generated-index page description for category 'Labs' in sidebar 'tutorialSidebar'"
+  }
+}

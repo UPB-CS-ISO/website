@@ -1,0 +1,22 @@
+{
+  "title": {
+    "message": "Introducere în sisteme de operare (Linux)",
+    "description": "The title in the navbar"
+  },
+  "logo.alt": {
+    "message": "Logo Tux",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.Lectures": {
+    "message": "Cursuri",
+    "description": "Navbar item with label Lectures"
+  },
+  "item.label.Labs": {
+    "message": "Laboratoare",
+    "description": "Navbar item with label Labs"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  }
+}
