@@ -13,7 +13,7 @@ Fiind un laborator introductiv, obiectivele sunt:
 - Să vă cunoașteți colegii de laborator și asistentul; să creăm o atmosferă informală
 - Să aflați ce resurse sunt disponibile pentru cursul USO
 - Să înțelegeți modul de lucru de la laboratorul de USO
-- Să învățați să folosiți Sway de la tastatură: ferestre, spații de lucru și aranjări
+- Să învățați să folosiți Sway cu ajutorul tastaturii: ferestre, spații de lucru și aranjări
 - Să faceți primii pași în terminal: rulați comenzi, copiați, lipiți și curățați ecranul
 - Să aflați pe scurt care sunt familiile de distribuții Linux
 - Să înțelegeți ce este o mașină virtuală și să instalați o distribuție Linux într-una
