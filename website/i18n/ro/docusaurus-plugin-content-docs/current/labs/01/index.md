@@ -14,10 +14,10 @@ Fiind un laborator introductiv, obiectivele sunt:
 - Să aflați ce resurse sunt disponibile pentru cursul USO
 - Să înțelegeți modul de lucru de la laboratorul de USO
 - Să învățați să folosiți Sway cu ajutorul tastaturii: ferestre, spații de lucru și aranjări
-- Să faceți primii pași în terminal: rulați comenzi, copiați, lipiți și curățați ecranul
+- Să faceți primii pași în terminal: rulați comenzi, copiați, lipiți și șterge conținutul ecranului
 - Să aflați pe scurt care sunt familiile de distribuții Linux
-- Să înțelegeți ce este o mașină virtuală și să instalați o distribuție Linux într-una
-- Să vă conectați la un alt calculator Linux folosind SSH
+- Să înțelegeți ce este o mașină virtuală și să instalați o distribuție Linux pe aceasta
+- Să vă conectați la un alt calculator ce rulează Linux folosind SSH
 
 ## Să ne cunoaștem {/* #lets-get-to-know-each-other */}
 
@@ -28,12 +28,11 @@ Pentru început, să ne cunoaștem mai bine. Împreună cu asistentul, spuneți:
 * **de ce** ați ales această specializare
 * care este **prima impresie** despre facultate
 
-Asistentul vă va mai pune câteva întrebări. Nu ezitați să îl întrebați și dumneavoastră orice vă interesează sau
-orice vă face curioși.
+Asistentul vă mai pune întrebări. Puneți și voi întrebări asistentului de laborator și ce curiozități aveți.
 
 :::info
 
-Nu vrem să fim prea formali. Suntem prieteni și învățăm împreună; ne ajutăm unii pe alții și ne place să stăm de vorbă.
+Nu vrem să fim formali. Evitați expresii precum dumneavoastră sau persoana a doua plural. Suntem prieteni și învățăm împreună, ne ajutăm și discutăm cu plăcere.
 
 :::
 
@@ -53,24 +52,24 @@ Anunțurile și majoritatea discuțiilor (cu excepția suportului pentru teme) a
 
 Link: https://curs.upb.ro/
 
-Aceasta este platforma online de cursuri a Facultății de Automatică și Calculatoare. La USO, ea este componenta dinamică a cursului, unde are loc comunicarea cu echipa. Atât pentru USO, cât și pentru celelalte materii care folosesc platforma Moodle, găsiți:
+Aceasta este platforma online de cursuri a Facultății de Automatică și Calculatoare. La USO, ea este componenta dinamică a cursului, unde are loc comunicarea cu echipa. Atât pentru USO, cât și pentru celelalte materii care folosesc platforma Moodle, unde veți găsi::
 
-* Linkuri către cursuri și activitățile practice
-* Anunțuri utile pentru dumneavoastră
-* Un forum de discuții unde puteți pune întrebări despre curs sau despre facultate
-* Posibilitatea de a da feedback asistenților
-* Linkuri către teme și termenele lor de predare
+* Linkuri către cursuri și laboratoare
+* Anunțuri utile pentru voi
+* Forum de discuții, unde puteți pune întrebări legate de curs sau de facultate
+* Posibilitatea de a oferi feedback asistenților
+* Link-uri către temele de casă și termenele limită pentru acestea
 
-Informații despre conturi găsiți pe pagina principală a site-ului.
+Informațiile despre conturi le găsiți pe pagina principală a site-ului.
 
 :::info
 
-Dacă aveți nelămuriri legate de cursul sau laboratorul de USO, de materie în general, sau orice întrebare legată de USO sau de facultate, scrieți-le pe forumul dedicat cursului USO pe Moodle.
-Pe forumul de pe Moodle primiți răspunsuri rapide și documentate la întrebările despre cursul USO și activitățile lui. Folosiți forumurile oricând nu sunteți la curs sau la laborator și nu puteți vorbi direct cu titularul de curs sau cu asistentul.
+Orice nelămurire cu privire la cursul sau laboratorul de USO, sau la materie în general, orice întrebare care are legătură cu USO sau cu facultatea, adresați-o pe forumul dedicat în cadrul materiei USO pe Moodle.
+Pe forumul de discuții de pe platforma Moodle veți primiți răspunsuri rapide, prompte și avizate la probleme legate de cursul de USO și activitățile acestuia. Folosiți cu încredere forumurile aferente atunci când nu sunteți la curs sau laborator și nu puteți discuta direct cu titularul de curs sau asistentul de laborator.
 
-Înainte să puneți o întrebare, verificați dacă nu a pus-o deja altcineva.
+Înainte de a pune o întrebare, asigurați-vă că nu a mai fost pusă de altcineva înainte.
 
-Contactați asistenții sau titularii de curs pe adresele de e-mail personale doar pentru probleme private sau care nu îi privesc pe toți colegii de pe forum.
+Contactați asistenții sau titularii de curs pe adresa de e-mail personală doar în cazuri de probleme private sau care nu interesează pe toți colegii voștri prezenți pe forum.
 
 :::
 
@@ -84,13 +83,13 @@ Vă rugăm să nu folosiți Facebook pentru a comunica cu echipa USO. Folosiți 
 
 Link: https://www.facebook.com/uso.acs
 
-Pe pagina de Facebook publicăm anunțuri despre USO, activități ale comunității și știri (adesea amuzante) din lumea calculatoarelor.
+Pagina de Facebook este locul în care facem anunțuri despre USO și pentru activități de comunitate și pentru aflarea de informații (de multe ori amuzante) din lumea calculatoarelor.
 
 #### Clusterul NCIT al facultății {/* #the-facultys-ncit-cluster */}
 
 Link: https://cloud.curs.pub.ro/
 
-Clusterul NCIT al facultății, accesibil prin procesorul front-end fep.grid.pub.ro folosind protocolul SSH, este o resursă pe care o veți folosi pentru teme și pentru testul practic. Vă autentificați cu aceleași date pe care le folosiți pentru platforma Moodle (https://curs.upb.ro/).
+Clusterul NCIT al facultății, care poate fi accesat prin procesorul front-end fep.grid.pub.ro folosind protocolul SSH, este o resursă pe care o veți folosi pentru teme și pentru testul practic. Vă autentificați cu aceleași date pe care le folosiți pentru platforma Moodle (https://curs.upb.ro/).
 
 Infrastructura cloud din clusterul NCIT se bazează pe soluția open-source [OpenStack](https://www.openstack.org/). Aceasta este o soluție IaaS (Infrastructure as a Service) și va fi folosită pentru a crea în cloud mașinile virtuale pentru testele practice.
 
@@ -128,10 +127,10 @@ scriind în terminal `man` urmat de numele programului (de exemplu `man ssh`). D
 
 ## Bun venit printre panourile Sway {/* #welcome-to-the-tiles-of-sway */}
 
-Când folosiți Windows, macOS sau GNOME, ferestrele stau una peste alta și le mutați și le redimensionați cu mouse-ul.
-**Sway** funcționează altfel. Este un **window manager cu panouri** (*tiling window manager*): aranjează ferestrele
-automat, ca pe niște panouri, astfel încât **nu se suprapun niciodată** și împreună umplu tot ecranul. Când deschideți
-o fereastră nouă, celelalte panouri se micșorează ca să îi facă loc. Totul se face de la **tastatură**.
+Când folosim Windows, macOS sau GNOME, ferestrele sunt așezate una peste alta și le poți muta și redimensiona cu ajutorul
+mouse-ului. **Sway** funcționează altfel. Este un **manager de ferestre de tip „tiling”**: aranjează ferestrele automat astfel încât
+acestea să **nu se suprapună niciodată** și, împreună, să acopere întregul ecran. Când deschizi o fereastră nouă,
+celelalte se micșorează pentru a-i face loc. Totul se face cu ajutorul **tastaturii**.
 
 ![Un terminal, un browser web și managerul de fișiere Thunar, în panouri unul lângă altul în Sway](./sway-apps.png)
 
@@ -179,14 +178,13 @@ Dacă țineți minte doar acestea, puteți deja să folosiți Sway:
 | <kbd>$mod</kbd> + săgeți | Mută focusul pe altă fereastră |
 | <kbd>$mod</kbd> + <kbd>1</kbd> ... <kbd>9</kbd> | Trece la spațiul de lucru 1 ... 9 |
 | <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>q</kbd> | Închide fereastra |
-| <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>e</kbd> | Iese din Sway (log out) |
+| <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>e</kbd> | Log Out |
 
 :::caution
 
-Când Sway blochează ecranul, **nu apare nimic**: nicio casetă de autentificare, niciun câmp pentru parolă, niciun
-mesaj, doar un ecran simplu (implicit cu imaginea de fundal). Calculatorul nu s-a blocat. Scrieți parola și apăsați
-<kbd>Enter</kbd>. În timp ce scrieți, în mijlocul ecranului apare un cerc mic. Dacă monitorul este stins, apăsați mai
-întâi orice tastă sau mișcați mouse-ul ca să îl treziți.
+Când Sway blochează ecranul, **nu se afișează nimic**: nici caseta de autentificare, nici câmpul pentru parolă, niciun mesaj, doar un ecran gol (în mod implicit, cu imaginea de fundal). Calculatorul nu s-a blocat. Trebuie doar să introduceți parola și să apăsați <kbd>Enter</kbd>. În timp ce tastați,
+în mijlocul ecranului apare un cerc mic. Dacă monitorul este oprit, apăsați mai întâi orice tastă sau mișcați mouse-ul
+pentru a-l reactiva.
 
 :::
 
@@ -206,33 +204,33 @@ Nu trebuie să învățați tabelul pe de rost. Reveniți la el în timpul exerc
 | <kbd>$mod</kbd> + <kbd>b</kbd> | Următoarea fereastră se va deschide în dreapta |
 | <kbd>$mod</kbd> + <kbd>v</kbd> | Următoarea fereastră se va deschide dedesubt |
 | <kbd>$mod</kbd> + <kbd>e</kbd> | Comută între una lângă alta și una deasupra alteia |
-| <kbd>$mod</kbd> + <kbd>w</kbd> | Aranjare cu taburi |
-| <kbd>$mod</kbd> + <kbd>s</kbd> | Aranjare în stivă |
+| <kbd>$mod</kbd> + <kbd>w</kbd> | Aspect cu file |
+| <kbd>$mod</kbd> + <kbd>s</kbd> | Dispunerea în stivă |
 | <kbd>$mod</kbd> + <kbd>f</kbd> | Pornește / oprește modul fullscreen |
 | <kbd>$mod</kbd> + <kbd>r</kbd> | Modul de redimensionare (săgețile redimensionează, <kbd>Esc</kbd> iese) |
 | <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd> | Face fereastra care are focusul plutitoare / o pune înapoi în panouri |
-| <kbd>$mod</kbd> + <kbd>Space</kbd> | Mută focusul între ferestrele din panouri și cele plutitoare |
+| <kbd>$mod</kbd> + <kbd>Space</kbd> | Comutarea focusului între ferestrele dispuse în grilă și cele flotante |
 | <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>-</kbd> | Ascunde fereastra care are focusul în *scratchpad* |
 | <kbd>$mod</kbd> + <kbd>-</kbd> | Arată / ascunde fereastra din scratchpad |
 | <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>c</kbd> | Reîncarcă fișierul de configurare |
-| <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>e</kbd> | Iese din Sway (log out) |
+| <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>e</kbd> | Log Out |
 | <kbd>$mod</kbd> + tragere cu butonul stâng al mouse-ului | Mută o fereastră plutitoare |
 | <kbd>$mod</kbd> + tragere cu butonul drept al mouse-ului | Redimensionează o fereastră |
 
 :::info
 
 De ce <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd>? Vin de la editorul de text `vi`, unde înseamnă stânga,
-jos, sus și dreapta. Mâna rămâne în mijlocul tastaturii. Puteți folosi în schimb săgețile, fac același lucru.
+jos, sus și dreapta. Mâna rămâne în mijlocul tastaturii. Puteți folosi în schimb săgețile, deoarece fac același lucru.
 
 :::
 
 :::tip
 
-`vi` a fost scris de Bill Joy în 1976, pe vremea când tastaturile de obicei **nu aveau săgeți separate**. El folosea
-un terminal **ADM-3A**, pe care săgețile erau desenate direct pe tastele <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd>
-<kbd>l</kbd>, așa că aceste litere au devenit modul de a muta cursorul. Aceeași tastatură avea <kbd>Esc</kbd> acolo
-unde astăzi este <kbd>Tab</kbd>, de aceea `vi` folosește atât de mult <kbd>Esc</kbd>. Multe programe folosesc și
-astăzi aceste taste: `vim`, `less`, `man` și, desigur, Sway.
+`vi` a fost creat de Bill Joy în 1976, într-o perioadă în care tastaturile nu aveau, de obicei, **taste separate pentru săgeți**. El a folosit un
+terminal **ADM-3A**, pe care săgețile erau imprimate direct pe tastele <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd>
+<kbd>l</kbd>, astfel încât aceste litere au devenit modalitatea de a deplasa cursorul. Aceeași tastatură avea, de asemenea, tasta <kbd>Esc</kbd>
+în locul unde se află astăzi tasta <kbd>Tab</kbd>, motiv pentru care `vi` folosește atât de des tasta <kbd>Esc</kbd>. Multe programe folosesc și astăzi aceste taste:
+`vim`, `less`, `man` și, desigur, Sway.
 
 :::
 
@@ -240,112 +238,110 @@ astăzi aceste taste: `vim`, `less`, `man` și, desigur, Sway.
 
 #### Focusul {/* #focus */}
 
-În orice moment, exact **o** fereastră are **focusul**: este fereastra care primește ce scrieți. În Sway, fereastra
-care are focusul are un chenar colorat. Când scrieți și „nu se întâmplă nimic”, verificați ce fereastră are focusul.
+În orice moment, exact **o singură** fereastră are **focus**: aceasta este fereastra în care se înregistrează ceea ce tastezi. În Sway,
+fereastra cu focus are o margine colorată. Când tastezi și „nu se întâmplă nimic”, verificați care fereastră are focus.
 
 ![Un browser și un terminal unul lângă altul; terminalul din dreapta are focusul (chenarul colorat)](./sway-focus.png)
 
 #### Spațiile de lucru {/* #workspaces */}
 
 Un **spațiu de lucru** (*workspace*) este ca un ecran separat. Puteți ține browserul pe spațiul de lucru 1,
-terminalele pe spațiul de lucru 2 și muzica pe spațiul de lucru 3, și treceți de la unul la altul cu <kbd>$mod</kbd>
-+ un număr. Bara arată spațiile de lucru folosite. Un spațiu de lucru dispare automat când este gol și îl părăsiți.
+terminalele pe spațiul de lucru 2 și player-ul de muzica pe spațiul de lucru 3, și treceți de la unul la altul cu <kbd>$mod</kbd>
++ un număr. Bara din partea de sus a ecranului arată spațiile de lucru folosite. Un spațiu de lucru dispare automat când este gol și îl părăsiți.
 
 ![Bara arată spațiile de lucru 1, 2 și 3; este activ spațiul de lucru 2, cu un browser și un terminal](./sway-workspaces.png)
 
 #### Aranjările {/* #layouts */}
 
-Panourile de pe un spațiu de lucru sunt aranjate (*layout*) în unul din patru moduri:
+Ferestrele dintr-un spațiu de lucru pot fi dispuse în unul dintre cele patru moduri:
 
-| Aranjare | Combinație de taste | Ce vedeți |
+| Dispunere | Combinatii de taste | Ce se vede |
 |-|-|-|
-| Una lângă alta | <kbd>$mod</kbd> + <kbd>e</kbd> | Ferestrele una lângă alta, de la stânga la dreapta |
-| Una deasupra alteia | <kbd>$mod</kbd> + <kbd>e</kbd> (apăsați din nou) | Ferestrele una peste alta, de sus în jos |
-| Cu taburi | <kbd>$mod</kbd> + <kbd>w</kbd> | O singură fereastră odată, cu taburi sus, ca într-un browser web |
-| În stivă | <kbd>$mod</kbd> + <kbd>s</kbd> | O singură fereastră odată, cu lista titlurilor sus |
+| Alături unul de altul | <kbd>$mod</kbd> + <kbd>e</kbd> | Ferestre alăturate, de la stânga la dreapta |
+| Una deasupra celeilalte | <kbd>$mod</kbd> + <kbd>e</kbd> (apăsați din nou) | Ferestre suprapuse, de sus în jos |
+| Cu file | <kbd>$mod</kbd> + <kbd>w</kbd> | O singură fereastră la un moment dat, cu file în partea de sus, ca într-un browser web |
+| Stivuire | <kbd>$mod</kbd> + <kbd>s</kbd> | O singură fereastră la un moment dat, cu o listă de titluri în partea de sus |
 
-| Împărțit: browserul în stânga, două terminale unul deasupra celuilalt în dreapta | Cu taburi: browserul și două terminale |
+| Împărțit: browserul în stânga, două terminale unul deasupra celuilalt în dreapta | Cu file: browserul și două terminale |
 |-|-|
-| ![Aranjare împărțită](./sway-split.png) | ![Aranjare cu taburi](./sway-tabbed.png) |
+| ![Aranjare împărțită](./sway-split.png) | ![Aranjare cu file](./sway-tabbed.png) |
 
 ![Aranjare în stivă: titlurile browserului și ale celor două terminale sunt afișate sus](./sway-stacking.png)
 
 :::tip
 
-<kbd>$mod</kbd> + <kbd>b</kbd> și <kbd>$mod</kbd> + <kbd>v</kbd> **nu mută nimic imediat**. Ele îi spun lui Sway unde
-se va deschide **următoarea** fereastră. Apăsați una dintre ele, apoi deschideți un terminal nou ca să vedeți efectul.
+<kbd>$mod</kbd> + <kbd>b</kbd> și <kbd>$mod</kbd> + <kbd>v</kbd> **nu faceți nimic imediat**. Acestea îi indică
+unde se va deschide **următoarea** fereastră. Apăsați una dintre ele, apoi deschideți un nou terminal pentru a vedea efectul.
 
 :::
 
 #### Ferestrele plutitoare {/* #floating-windows */}
 
-Unele ferestre (dialoguri mici, un calculator) arată mai bine deasupra celorlalte. Acestea sunt ferestrele
-**plutitoare** (*floating*). Faceți orice fereastră plutitoare cu <kbd>$mod</kbd> + <kbd>Shift</kbd> +
-<kbd>Space</kbd> și apăsați din nou aceleași taste ca să o puneți înapoi în panouri.
+Unele ferestre (ferestre de dialog mici, calculatorul) arată mai bine așezate deasupra celorlalte. Acestea sunt ferestre **plutitoare**. Poți face orice
+fereastră să plutească apăsând <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd>, iar pentru a o readuce
+în modul de afișare în casete, apasă din nou aceleași taste.
 
 ![Un terminal plutitor deasupra unui browser și a unui terminal în panouri](./sway-floating.png)
 
 #### Scratchpadul {/* #the-scratchpad */}
 
-**Scratchpadul** este un loc ascuns pentru ferestrele de care aveți nevoie doar din când în când. Ascundeți o
-fereastră acolo cu <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>-</kbd> și o aduceți înapoi, pe orice spațiu de lucru,
-cu <kbd>$mod</kbd> + <kbd>-</kbd>.
+**Scratchpad** este un loc ascuns pentru ferestrele de care ai nevoie doar din când în când. Ascunde o fereastră acolo folosind
+<kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>-</kbd> și readu-o la vedere, în orice spațiu de lucru, cu <kbd>$mod</kbd> +
+<kbd>-</kbd>.
 
 #### Modul de redimensionare {/* #resize-mode */}
 
-După ce apăsați <kbd>$mod</kbd> + <kbd>r</kbd>, săgețile **redimensionează** fereastra care are focusul, în loc să
-mute focusul. Apăsați <kbd>Esc</kbd> ca să reveniți la normal.
+După apăsarea tastelor <kbd>$mod</kbd> + <kbd>r</kbd>, tastele săgeată **redimensionează** fereastra care are focusul, în loc să
+mute focusul. Apăsați <kbd>Esc</kbd> pentru a reveni la starea normală.
 
 ### Unelte {/* #tools */}
 
-Sway în sine doar așază ferestrele în panouri pe ecran. Aproape tot restul a ceea ce vedeți și folosiți (bara,
-terminalul, lansatorul de aplicații, ecranul de blocare, capturile de ecran) este făcut de **programe mici,
-separate**, iar Sway doar le rulează ca **comenzi în fundal**. De exemplu:
+Sway în sine se ocupă doar de afișarea ferestrelor pe ecran. Aproape tot ce vezi și folosești (bara, terminalul,
+lansatorul de aplicații, ecranul de blocare, capturile de ecran) este realizat de **mici programe separate**, iar Sway pur și simplu le execută
+ca **comenzi în fundal**. De exemplu:
 
 * <kbd>$mod</kbd> + <kbd>Enter</kbd> este doar o combinație de taste care rulează comanda `foot` (terminalul);
 * <kbd>$mod</kbd> + <kbd>d</kbd> este o combinație de taste care rulează lansatorul de aplicații.
 
-În fișierul de configurare, asta arată așa: `bindsym $mod+Return exec foot`: „când se apasă tasta aceasta, rulează
-comanda aceasta”. Asta înseamnă că puteți rula și dumneavoastră toate aceste programe, scriindu-le numele într-un
-[terminal](#the-terminal), și că puteți schimba felul în care se comportă desktopul schimbând comenzile (vedeți
+În fișierul de configurare, aceasta apare sub forma `bindsym $mod+Return exec foot`: „când se apasă această tastă, se execută această
+comandă”. Aceasta înseamnă că poți rula și tu toate aceste programe, tastând numele lor într-un
+[terminal](#the-terminal), și că poți modifica comportamentul desktopului tău schimbând comenzile (vezi
 [_Modding_ Sway](#modding-sway)).
 
 #### Blocarea ecranului {/* #locking-the-screen */}
 
-`swaylock` blochează ecranul. Rulați-l într-un terminal și ecranul se blochează imediat:
+`swaylock` blochează ecranul. Executați-l într-un terminal și ecranul se blochează imediat:
 
 ```bash
 swaylock
 ```
 
-Țineți minte că ecranul de blocare **nu arată nimic**: scrieți parola și apăsați <kbd>Enter</kbd> ca să îl
-deblocați.
+Rețineți că ecranul de blocare nu afișează **nimic**: introduceți pur și simplu parola și apăsați <kbd>Enter</kbd> pentru a-l debloca.
 
-Opțiunea `-f` înseamnă *fork*: `swaylock` blochează ecranul și apoi trece în fundal, așa că terminalul nu așteaptă să
-deblocați ecranul. Încercați: rulați `swaylock` într-un terminal și, după deblocare, uitați-vă când apare din nou `$`;
-apoi faceți la fel cu `swaylock -f`.
+Opțiunea `-f` înseamnă *fork*: `swaylock` blochează ecranul și apoi trece în fundal, astfel încât terminalul
+nu așteaptă să deblocați ecranul. Încercați: rulați `swaylock` într-un terminal și, după deblocare, observați când
+reapare simbolul `$`; apoi faceți același lucru cu `swaylock -f`.
 
 #### Capturi de ecran {/* #screenshots */}
 
-În Sway, aplicațiile nu pot captura singure ecranul. `grim` face captura de ecran:
+Pe Sway, aplicațiile nu pot captura ecranul pe cont propriu. `grim` realizează captura de ecran:
 
 ```bash
 grim ~/Pictures/full.png    # tot ecranul
 ```
 
-Ca să vă uitați la capturi, folosiți **Thunar**, managerul de fișiere instalat pe calculatoarele din laborator.
-Deschideți-l din lansatorul de aplicații (<kbd>$mod</kbd> + <kbd>d</kbd>, scrieți `thunar`) sau rulând `thunar`
-într-un terminal, intrați în directorul `Pictures` și dați dublu click pe o imagine ca să o deschideți.
+Pentru a vizualiza capturile de ecran, folosiți **Thunar**, managerul de fișiere instalat pe calculatoarele din laborator. Deschideți-l din
+lansatorul de aplicații (<kbd>$mod</kbd> + <kbd>d</kbd>, tastați `thunar`) sau executând comanda `thunar` într-un terminal, accesați
+folderul `Pictures` și faceți dublu clic pe o imagine pentru a o deschide.
 
 ## Terminalul {/* #the-terminal */}
 
-**Terminalul** este unealta pe care o veți folosi cel mai mult, nu doar în acest laborator, ci pe **tot parcursul
-cursului USO**. Este o fereastră în care scrieți comenzi în loc să dați click cu mouse-ul: scrieți o comandă, apăsați
-<kbd>Enter</kbd>, iar calculatorul o rulează și vă arată rezultatul. Aproape tot ce veți face în laboratoarele
-următoare (lucrul cu fișiere, utilizatori, procese, servicii și rețea) se întâmplă în terminal. În Sway, deschideți
-unul cu <kbd>$mod</kbd> + <kbd>Enter</kbd> (terminalul implicit este `foot`). Deocamdată aveți nevoie doar de
-lucrurile de bază de mai jos; terminalul și **shellul** (programul care citește și rulează comenzile dumneavoastră)
-vor fi prezentate în detaliu în laboratoarele următoare.
+**Terminalul** este instrumentul pe care îl veți folosi cel mai des, nu doar în acest laborator, ci și în **întregul curs USO**. Este o
+fereastră în care introduceți comenzi în loc să faceți clic cu mouse-ul: scrieți o comandă, apăsați <kbd>Enter</kbd>, iar
+calculatorul o execută și afișează rezultatul. Aproape tot ce veți face în laboratoarele următoare (lucrul cu fișiere,
+utilizatori, procese, servicii și rețea) se desfășoară în terminal. În Sway, deschideți unul cu <kbd>$mod</kbd> +
+<kbd>Enter</kbd> (terminalul implicit este `foot`). Deocamdată, aveți nevoie doar de noțiunile de bază de mai jos; terminalul și
+**shell-ul** (programul care citește și execută comenzile), vor fi prezentate în detaliu în laboratoarele următoare.
 
 ### Rularea comenzilor {/* #running-commands */}
 
@@ -356,19 +352,19 @@ așa:
 [student@fedora ~]$
 ```
 
-`$` înseamnă „aștept comanda dumneavoastră”. Scrieți o comandă după el și apăsați <kbd>Enter</kbd> ca să o rulați.
-Cât timp comanda rulează, `$` dispare; când comanda se termină, terminalul afișează un nou `$` pe o linie nouă și abia
-atunci puteți scrie următoarea comandă.
+Simbolul `$` înseamnă „Aștept comanda ta”. Tastează o comandă după acesta și apasă <kbd>Enter</kbd> pentru a o executa. În timp ce
+comanda se execută, simbolul `$` dispare; când comanda se termină, terminalul afișează un nou simbol `$` pe o linie nouă, și
+abia atunci poți tasta următoarea comandă.
 
-De exemplu, `sleep 5` nu face nimic timp de 5 secunde. Rulați-l și uitați-vă: `$` este „ascuns” 5 secunde și apare
-din nou abia când `sleep` se termină. Dacă scrieți ceva între timp, nu este rulat imediat ca o comandă nouă. Dacă nu
-vreți să așteptați, apăsați <kbd>Ctrl</kbd>+<kbd>C</kbd> ca să opriți comanda și să primiți înapoi `$`.
+De exemplu, `sleep 5` nu face nimic timp de 5 secunde. Executați-o și observați: simbolul `$` este „ascuns” timp de 5 secunde și reapare
+abia când `sleep` se termină. Dacă tastați ceva între timp, aceasta nu este executată imediat ca o nouă comandă.
+Dacă nu doriți să așteptați, apăsați <kbd>Ctrl</kbd>+<kbd>C</kbd> pentru a opri comanda și a readuce simbolul `$`.
 
 ![Cât timp rulează sleep 100, pe ultima linie nu există $](./terminal-sleep.png)
 
 :::tip
 
-Dacă nu vedeți un `$` la sfârșitul ultimei linii, o comandă încă rulează (sau este deschis un program precum `nano`
+Dacă nu vedeți simbolul `$` la sfârșitul ultimei linii, o comandă încă rulează (sau este deschis un program precum `nano`
 sau `man`). Așteptați să se termine, închideți programul sau apăsați <kbd>Ctrl</kbd>+<kbd>C</kbd>.
 
 :::
@@ -377,20 +373,20 @@ Câteva comenzi de care aveți nevoie în acest laborator:
 
 | Comandă | Ce face |
 |-|-|
-| `whoami` | Afișează numele de utilizator |
-| `hostname` | Afișează numele calculatorului |
-| `ls` | Listează fișierele din directorul curent |
-| `sleep <secunde>` | Așteaptă numărul dat de secunde, apoi se termină |
-| `clear` | Curăță ecranul terminalului (scurtătura <kbd>Ctrl</kbd>+<kbd>L</kbd> face aproape același lucru) |
-| `ip a` | Afișează adresele de rețea ale calculatorului |
-| `nano <fișier>` | Deschide un editor de text simplu (<kbd>Ctrl</kbd>+<kbd>O</kbd> salvează, <kbd>Ctrl</kbd>+<kbd>X</kbd> iese) |
+| `whoami` | Afișează numele tău de utilizator |
+| `hostname` | Afișează numele computerului |
+| `ls` | Afișează lista fișierelor din directorul curent |
+| `sleep <secunde>` | Așteaptă numărul de secunde specificat, apoi se oprește |
+| `clear` | Șterge ecranul terminalului (comanda rapidă <kbd>Ctrl</kbd>+<kbd>L</kbd> face aproape același lucru) |
+| `ip a` | Afișează adresele de rețea ale computerului |
+| `nano <fișier>` | Deschide un editor de text simplu (<kbd>Ctrl</kbd>+<kbd>O</kbd> salvează, <kbd>Ctrl</kbd>+<kbd>X</kbd> închide) |
 | `exit` | Închide terminalul (sau o conexiune SSH) |
 
 :::tip
 
-Când ecranul este plin de rezultate vechi și nu mai știți ce ați scris, rulați `clear` (sau apăsați
-<kbd>Ctrl</kbd>+<kbd>L</kbd>) ca să o luați de la capăt cu un ecran curat. Fișierele și programele dumneavoastră nu
-sunt afectate: se curăță doar fereastra terminalului.
+Când ecranul este plin de mesaje vechi și nu mai știi ce ai tastat, execută comanda `clear` (sau apasă
+<kbd>Ctrl</kbd>+<kbd>L</kbd>) pentru a începe din nou de la un ecran curat. Fișierele și programele tale nu sunt afectate: această comandă
+curăță doar fereastra terminalului.
 
 :::
 
@@ -410,12 +406,11 @@ copierea și lipirea folosesc în plus tasta <kbd>Shift</kbd>:
 
 :::caution
 
-Prefixul <kbd>Ctrl</kbd> + <kbd>Shift</kbd> este **doar pentru terminal**. În toate celelalte aplicații (browserul,
-editorul de text, managerul de fișiere) folosiți în continuare obișnuitele <kbd>Ctrl</kbd> + <kbd>C</kbd> și
-<kbd>Ctrl</kbd> + <kbd>V</kbd>. Clipboardul este comun: textul copiat în terminal cu <kbd>Ctrl</kbd> +
-<kbd>Shift</kbd> + <kbd>C</kbd> poate fi lipit în browser cu <kbd>Ctrl</kbd> + <kbd>V</kbd>, iar textul copiat în
-browser cu <kbd>Ctrl</kbd> + <kbd>C</kbd> poate fi lipit în terminal cu <kbd>Ctrl</kbd> + <kbd>Shift</kbd> +
-<kbd>V</kbd>.
+Prefixul <kbd>Ctrl</kbd> + <kbd>Shift</kbd> este **destinat exclusiv terminalului**. În orice altă aplicație (browserul,
+editorul de text, managerul de fișiere) continuați să folosiți combinațiile obișnuite <kbd>Ctrl</kbd> + <kbd>C</kbd> și <kbd>Ctrl</kbd> +
+<kbd>V</kbd>. Clipboardul este comun: textul copiat în terminal cu <kbd>Ctrl</kbd> + <kbd>Shift</kbd> +
+<kbd>C</kbd> poate fi lipit în browser cu <kbd>Ctrl</kbd> + <kbd>V</kbd>, iar textul copiat în browser cu
+<kbd>Ctrl</kbd> + <kbd>C</kbd> poate fi lipit în terminal cu <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
 
 :::
 
@@ -441,7 +436,7 @@ aveți nevoie și de un shell, de unelte, de o interfață grafică, de aplicaț
 noi. O **distribuție Linux** (sau *distro*) pune toate acestea împreună într-un sistem de operare complet.
 
 Există sute de distribuții, dar cele mai multe fac parte din câteva familii. Cea mai mare diferență dintre familii
-este **managerul de pachete**, programul cu care instalați software.
+este **managerul de pachete**, programul cu care instalați aplicatii.
 
 | Familie | Exemple | Instalați un program cu |
 |-|-|-|
@@ -488,7 +483,7 @@ distribuției.
 
 :::caution
 
-Descărcați imaginea ISO potrivită pentru procesorul calculatorului dumneavoastră. Majoritatea PC-urilor sunt
+Descărcați imaginea ISO potrivită pentru procesorul calculatorului vostru. Majoritatea PC-urilor sunt
 **x86_64** (iar arhitectura lor se numește `amd64`), în timp ce Mac-urile Apple noi (M1, M2, ...) sunt **arm64** (iar
 arhitectura lor se numește `aarch64`).
 
@@ -530,11 +525,11 @@ unitatea optică și scoateți-o, apoi porniți din nou mașina virtuală.
 
 ### Capturarea tastaturii și a mouse-ului {/* #keyboard-and-mouse-capture */}
 
-Tastatura și mouse-ul sunt împărțite între gazdă și mașina virtuală, așa că hypervisorul trebuie să decidă cine
-primește fiecare tastă pe care o apăsați. Când dați click în fereastra mașinii virtuale, hypervisorul **capturează**
-tastatura și mouse-ul: de acum, tastele ajung la mașina virtuală, nu la gazdă. Ca să le dați înapoi gazdei, apăsați
-**tasta Host** (în VirtualBox, implicit <kbd>Ctrl</kbd> din dreapta). Iconița mică de tastatură din colțul din dreapta
-jos al ferestrei VirtualBox arată cine are tastatura în acest moment.
+Tastatura și mouse-ul sunt partajate între gazdă și mașina virtuală, așa că hipervizorul trebuie să decidă cui îi revine fiecare tastă
+pe care o apeși. Când faceți clic în interiorul ferestrei mașinii virtuale, hipervizorul **preia** controlul asupra tastaturii și mouse-ului: de acum înainte,
+apăsările de taste sunt direcționate către mașina virtuală, nu către gazdă. Pentru a le restitui gazdei, apăsați **tasta Host** (în VirtualBox, implicit
+tasta din dreapta <kbd>Ctrl</kbd>). Mica pictogramă a tastaturii din colțul din dreapta jos al ferestrei VirtualBox indică cine deține
+controlul asupra tastaturii în acest moment.
 
 Fiecare hypervisor folosește altă combinație de taste pentru a elibera tastatura și mouse-ul:
 
@@ -705,7 +700,7 @@ Exercițiile sunt marcate pentru cele două tipuri de laborator:
 * 🌱 **de bază** (1 oră - **AC**): faceți doar exercițiile marcate cu 🌱;
 * 🌳 **complet** (2 ore - **CD**): faceți toate exercițiile, atât 🌱, cât și 🌳.
 
-Ambele tipuri de exerciții acoperă părțile principale: Sway, terminalul, mașinile virtuale și accesul la distanță.
+Ambele tipuri de exerciții acoperă părțile principale ale laboratorului: Sway, terminalul, mașinile virtuale și accesul la distanță.
 Dacă terminați mai devreme, continuați cu celelalte exerciții și apoi cu secțiunea [Extra](#extra).
 
 ### Să ne obișnuim cu Sway {/* #getting-used-to-sway */}
