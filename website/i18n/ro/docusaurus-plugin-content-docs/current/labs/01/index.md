@@ -2,7 +2,7 @@
 
 Bun venit la Facultatea de Automatică și Calculatoare și la cursul „Utilizarea Sistemelor de Operare” (USO)! Cursul „Utilizarea Sistemelor de Operare” vă ajută să faceți primii pași în lumea calculatoarelor, în lumea sistemelor de operare și în lumea Linux. Să începem!
 
-Aceasta este o sesiune de laborator USO. La laborator lucrăm practic cu sistemul de operare, cu window managerul Sway, cu procese, utilizatori, servicii și rețea. Pe scurt, vom trece prin toate componentele pe care le întâlnește un utilizator într-un sistem de operare.
+Acesta este un laborator de USO. Într-un laborator vom lucra practic cu sistemul de operare, cu window managerul Sway, procese, utilizatori, servicii, rețea. Pe scurt cu toate componentele expuse unui utilizator de sistemul de operare.
 
 În acest laborator vă prezentăm resursele pe care le veți folosi la USO și veți face primii pași în utilizarea Linux.
 
