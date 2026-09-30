@@ -162,11 +162,6 @@
 ]
 
 #slide[
-  == POSIX Distributions _Tree_
-  #align(center + horizon)[#image("img/distributions/unix_tree.svg", height: 100%)]
-]
-
-#slide[
   == The Linux Kernel
 
   #toolbox.side-by-side(columns: (2fr, 1fr), gutter: 1.5em)[
@@ -287,6 +282,11 @@
     [`zypper`, `rpm`],
     [2005],
   )
+]
+
+#slide[
+  == POSIX Distributions _Tree_
+  #align(center + horizon)[#image("img/distributions/unix_tree.svg", height: 100%)]
 ]
 
 #slide[
