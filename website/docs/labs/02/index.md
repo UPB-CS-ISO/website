@@ -2,7 +2,7 @@
 
 In the first lab you learned to move around Sway and to run your first commands in the terminal. Now it is time to
 work with **files**. Everything you keep on a computer (documents, movies, programs, settings) is a file, stored
-somewhere in a big tree of folders. In this lab you will learn how to **find your way** in this tree, how to **name**
+somewhere in a big tree of directories. In this lab you will learn how to **find your way** in this tree, how to **name**
 any file with a **path**, and how to create, copy, move and delete files, first with commands and then with
 **Yazi**, a file manager that runs in the terminal.
 
@@ -11,14 +11,14 @@ in this lab and in all the following ones, receives paths.
 
 ## Objectives
 
-- Understand how files and folders are organized in Linux: one tree, starting from `/`
+- Understand how files and directories are organized in Linux: one tree, starting from `/`
 - Write **absolute** and **relative** paths, and know what `.`, `..` and `~` mean
 - Calculate the absolute path from the current directory and a relative path
 - Read the **manual page** of a command and understand its `SYNOPSIS`
 - Navigate with `pwd`, `cd`, `ls` and `tree`
-- Find files anywhere in a folder tree with `find`
+- Find files anywhere in a directory tree with `find`
 - Read text files with `cat` and `nano`
-- Create, copy, move, rename and delete files and folders with `mkdir`, `touch`, `nano`, `cp`, `mv`, `rm` and `rmdir`
+- Create, copy, move, rename and delete files and directories with `mkdir`, `touch`, `nano`, `cp`, `mv`, `rm` and `rmdir`
 - Install and use **Yazi** to manage files with a few keys, including tabs
 
 ## Resources
@@ -36,7 +36,7 @@ de Operare, Printech 2021](https://github.com/systems-cs-pub-ro/carte-uso/releas
 ## The File System Tree
 
 On Windows, every drive has its own tree: `C:\`, `D:\`, and so on. On Linux there is **only one tree**, and it starts
-from a single folder called the **root**, written `/`. Everything is somewhere below it: the programs, the settings,
+from a single directory called the **root**, written `/`. Everything is somewhere below it: the programs, the settings,
 the other disks and your own files.
 
 ```
@@ -44,7 +44,7 @@ the other disks and your own files.
 ├── bin/          programs (ls, cp, mv, ...)
 ├── etc/          system wide settings
 ├── home/         the users' files
-│   └── student/  your home folder, also called ~
+│   └── student/  your home directory, also called ~
 │       ├── Downloads/
 │       ├── Movies/
 │       └── watchlist.txt
@@ -52,15 +52,8 @@ the other disks and your own files.
 └── usr/          installed software
 ```
 
-Your own files live in your **home folder**, `/home/student` (use your own user name instead of `student`).
-Usually you can write **only** in your home folder and in `/tmp`.
-
-:::info
-
-In Linux, a **folder** and a **directory** are the same thing. The commands and the manual pages say *directory*;
-the file managers usually say *folder*.
-
-:::
+Your own files live in your **home directory**, `/home/student` (use your own user name instead of `student`).
+Usually you can write **only** in your home directory and in `/tmp`.
 
 :::tip
 
@@ -71,13 +64,13 @@ care about upper and lower case letters, Linux does.
 
 ## Paths
 
-A **path** tells the operating system **where** a file or a folder is. It is the list of folders you walk through,
+A **path** tells the operating system **where** a file or a directory is. It is the list of directories you walk through,
 separated by `/`, and at the end the name of the file.
 
 ### The Current Directory
 
-Every terminal (and every running program) has **one current directory**: the folder where it "is" right now. When
-you open a new terminal, the current directory is your home folder. The prompt shows it (`~` means your home):
+Every terminal (and every running program) has **one current directory**: the directory where it "is" right now. When
+you open a new terminal, the current directory is your home directory. The prompt shows it (`~` means your home):
 
 ```shell-session
 [student@fedora ~]$ pwd
@@ -110,17 +103,17 @@ watchlist.txt               means   /home/student/watchlist.txt
 ```
 
 A relative path is shorter, but it **depends on where you are**: the same relative path means another file when
-you are in another folder. Think of directions such as "the second door on the left": they are correct only from
+you are in another directory. Think of directions such as "the second door on the left": they are correct only from
 where you are standing.
 
 ### `.` and `..`
 
-Every folder has two hidden entries:
+Every directory has two hidden entries:
 
 | Name | Means |
 |-|-|
-| `.` | the folder **itself** (the current directory) |
-| `..` | the **parent** folder, one level up |
+| `.` | the directory **itself** (the current directory) |
+| `..` | the **parent** directory, one level up |
 
 They can be used anywhere in a path, and `..` can be repeated to go up several levels. If you are in
 `/home/student/Movies`:
@@ -157,7 +150,7 @@ This is how the operating system turns a relative path into an absolute one:
 
 1. **join** the current directory, a `/` and the relative path;
 2. from left to right, **drop** every `.`;
-3. from left to right, every `..` **removes itself and the folder that is still left before it**.
+3. from left to right, every `..` **removes itself and the directory that is still left before it**.
 
 For example, from `/home/student/Movies` the path `../Downloads/./../../bob/notes.txt` becomes:
 
@@ -171,7 +164,7 @@ For example, from `/home/student/Movies` the path `../Downloads/./../../bob/note
 
 :::caution
 
-A `..` does not always cancel its neighbor: it removes the last folder **still left** before it. In the example
+A `..` does not always cancel its neighbor: it removes the last directory **still left** before it. In the example
 above, the last `..` removed `student`, which was far away from it in the original path.
 
 :::
@@ -183,9 +176,9 @@ You can check your calculation with the `realpath` command, which prints the abs
 /home/bob/notes.txt
 ```
 
-### The Home Folder: `~`
+### The Home Directory: `~`
 
-In the terminal, `~` is replaced with the path of your home folder, so `~/Movies` is `/home/student/Movies`, from
+In the terminal, `~` is replaced with the path of your home directory, so `~/Movies` is `/home/student/Movies`, from
 any directory. Paths that start with `~` behave like absolute paths.
 
 :::info
@@ -197,7 +190,7 @@ example, Windows and most graphical applications do not understand it.
 
 ### Every File is a Path
 
-When a command expects a **file** or a **folder**, you can give it **any path** to it: a name, a relative path, an
+When a command expects a **file** or a **directory**, you can give it **any path** to it: a name, a relative path, an
 absolute path or a path with `~`. From `/home/student/Movies`, all these commands print the same file:
 
 ```shell-session
@@ -250,16 +243,16 @@ Most commands also print a short summary of their options with `--help`, for exa
 | `pwd` | Prints the current directory |
 | `cat <file>` | Prints the content of a file |
 | `cd <directory>` | Changes the current directory |
-| `cd` or `cd ~` | Goes to your home folder |
+| `cd` or `cd ~` | Goes to your home directory |
 | `cd -` | Goes to the previous directory (where you were before the last `cd`) |
 | `ls` | Lists the current directory |
 | `ls <directory>` | Lists another directory |
 | `ls -a` | Also lists the hidden files (names that start with `.`) |
 | `ls -l` | Long listing: type, permissions, owner, size, date |
 | `ls -lh` | Long listing with human readable sizes (`4.0K`, `21M`) |
-| `tree` | Lists a folder and **everything inside it** |
+| `tree` | Lists a directory and **everything inside it** |
 | `tree -L 1` | Only one level deep |
-| `tree -d` | Only the folders |
+| `tree -d` | Only the directories |
 
 In the output of `ls -l`, the first letter is the **type**: `d` for a directory, `-` for a regular file.
 
@@ -275,7 +268,7 @@ drwxr-xr-x  2 student student  4096 Sep 26 21:15 Movies
 
 ### Examples
 
-The examples use this home folder. The prompt shows the name of the current directory (`~` is your home):
+The examples use this home directory. The prompt shows the name of the current directory (`~` is your home):
 
 ```
 /home/student
@@ -297,8 +290,8 @@ The examples use this home folder. The prompt shows the name of the current dire
 /home/student/Movies
 ```
 
-`pwd` printed the absolute path of the current directory: first the home folder, then, after `cd Movies`, the
-`Movies` folder inside it. The prompt shows only the last part of it (`~`, then `Movies`).
+`pwd` printed the absolute path of the current directory: first the home directory, then, after `cd Movies`, the
+`Movies` directory inside it. The prompt shows only the last part of it (`~`, then `Movies`).
 
 #### `cd`
 
@@ -316,7 +309,7 @@ The examples use this home folder. The prompt shows the name of the current dire
 * `cd ../Downloads` went up to `/home/student`, then down into `Downloads`.
 * `cd /etc` went to `/etc`, using an absolute path.
 * `cd -` went to the previous directory (`/etc`, where we were before the last `cd`), and printed its path.
-* `cd` alone went back to the home folder.
+* `cd` alone went back to the home directory.
 
 #### The Previous Directory: `cd -`
 
@@ -336,7 +329,7 @@ takes you one more step into the past. The shell remembers only **one** director
 replaces that directory with the one you just left. Pressing it again takes you **forward**, to where you came from.
 :::
 
-For example, with three folders:
+For example, with three directories:
 
 ```shell-session
 [student@fedora ~]$ cd /etc
@@ -365,7 +358,7 @@ Do not confuse `cd -` with `cd ..`, either:
 
 :::tip
 
-`cd -` is very useful when you work in two folders at the same time, for example to copy files from one to the other.
+`cd -` is very useful when you work in two directories at the same time, for example to copy files from one to the other.
 
 :::
 
@@ -387,9 +380,9 @@ drwxr-xr-x  2 student student  4096 Sep 26 21:15 Movies
 ```
 
 * `ls` listed the current directory. It does **not** show what is inside `Movies`.
-* `ls Movies` listed the `Movies` folder, without changing the current directory.
-* `ls -a` also listed the hidden entries: `.bashrc`, and `.` and `..`, which are in every folder.
-* `ls -l` listed one entry per line: the type (`d` folder, `-` file), the permissions, the owner, the size in
+* `ls Movies` listed the `Movies` directory, without changing the current directory.
+* `ls -a` also listed the hidden entries: `.bashrc`, and `.` and `..`, which are in every directory.
+* `ls -l` listed one entry per line: the type (`d` directory, `-` file), the permissions, the owner, the size in
   bytes, the date and the name.
 * `ls -lh watchlist.txt` showed the details of only one file, with the size as `21K` instead of `21504`.
 
@@ -418,30 +411,30 @@ Movies
 0 directories
 ```
 
-* `tree` showed the current directory and **everything inside it**, and counted the folders and files.
+* `tree` showed the current directory and **everything inside it**, and counted the directories and files.
 * `tree -L 1` stopped after the first level, like `ls`.
-* `tree -d Movies` showed only the folders inside `Movies`, and there are none.
+* `tree -d Movies` showed only the directories inside `Movies`, and there are none.
 
 ## Finding Files: `find`
 
-`ls` and `tree` show you what is in a folder. When you know the **name** of a file but not **where** it is, use
-`find`. It walks through a folder and through everything inside it, and prints the path of every entry that
+`ls` and `tree` show you what is in a directory. When you know the **name** of a file but not **where** it is, use
+`find`. It walks through a directory and through everything inside it, and prints the path of every entry that
 matches what you ask for.
 
 ```
-find [folder...] [tests]
+find [directory...] [tests]
 ```
 
 | Command | What it does |
 |-|-|
-| `find` | Prints every file and folder below the current directory |
-| `find <folder>` | Prints every file and folder below `<folder>` |
-| `find <folder> -name '<name>'` | Only the entries called `<name>` |
-| `find <folder> -name '*.txt'` | Only the entries whose name ends with `.txt` (`*` means "any characters") |
-| `find <folder> -iname '<name>'` | Like `-name`, but upper and lower case letters are the same |
-| `find <folder> -type f` | Only the files |
-| `find <folder> -type d` | Only the folders |
-| `find <folder> -maxdepth 1` | Only one level deep, like `ls` |
+| `find` | Prints every file and directory below the current directory |
+| `find <directory>` | Prints every file and directory below `<directory>` |
+| `find <directory> -name '<name>'` | Only the entries called `<name>` |
+| `find <directory> -name '*.txt'` | Only the entries whose name ends with `.txt` (`*` means "any characters") |
+| `find <directory> -iname '<name>'` | Like `-name`, but upper and lower case letters are the same |
+| `find <directory> -type f` | Only the files |
+| `find <directory> -type d` | Only the directories |
+| `find <directory> -maxdepth 1` | Only one level deep, like `ls` |
 
 The tests can be combined: `find ~ -type f -name '*.txt'` finds only the **files** whose name ends with `.txt`.
 
@@ -454,7 +447,7 @@ the names of the files in the current directory before `find` even starts.
 
 ### Examples
 
-Using the same home folder as in the [Navigation examples](#examples):
+Using the same home directory as in the [Navigation examples](#examples):
 
 ```shell-session
 [student@fedora ~]$ find Movies
@@ -473,13 +466,13 @@ Movies/the_odyssey.mkv
 ../Movies
 ```
 
-* `find Movies` printed the folder itself and everything inside it.
+* `find Movies` printed the directory itself and everything inside it.
 * `find . -name '*.mp4'` searched the current directory (`.`) and everything below it, and found one file.
 * `find ~ -name '*.mp4'` found the same file, but printed an **absolute** path: `find` builds every path from the
-  folder you give it. A relative start gives relative paths, an absolute start gives absolute paths.
-* From `Movies`, `find .. -name watchlist.txt` searched the parent folder and printed `../watchlist.txt`, a relative
+  directory you give it. A relative start gives relative paths, an absolute start gives absolute paths.
+* From `Movies`, `find .. -name watchlist.txt` searched the parent directory and printed `../watchlist.txt`, a relative
   path that works from `Movies`.
-* `find .. -maxdepth 1 -type d` printed only the folders of the first level of `..`, including `..` itself.
+* `find .. -maxdepth 1 -type d` printed only the directories of the first level of `..`, including `..` itself.
 
 :::tip
 
@@ -490,7 +483,7 @@ computer.
 
 :::info
 
-When `find` searches a folder that you are not allowed to read (for example in `/etc`), it prints
+When `find` searches a directory that you are not allowed to read (for example in `/etc`), it prints
 `Permission denied` for it and continues. You can ignore these messages.
 
 :::
@@ -570,34 +563,34 @@ You can open the system files from `/etc` with `nano` and read them, but you can
 
 | Command | What it does |
 |-|-|
-| `mkdir <folder>` | Creates a folder |
-| `mkdir -p <path>` | Creates a folder and all its missing parents |
+| `mkdir <directory>` | Creates a directory |
+| `mkdir -p <path>` | Creates a directory and all its missing parents |
 | `touch <file>` | Creates an empty file (or only updates the date of an existing one) |
 | `nano <file>` | Opens a text editor, the file is created when you save (<kbd>Ctrl</kbd>+<kbd>O</kbd> saves, <kbd>Ctrl</kbd>+<kbd>X</kbd> exits) |
 | `cp <source> <destination>` | Copies a file |
-| `cp <source>... <folder>` | Copies several files into a folder |
-| `cp -r <folder> <destination>` | Copies a folder and everything inside it |
-| `mv <source> <destination>` | Moves or **renames** a file or a folder |
-| `mv <source>... <folder>` | Moves several files into a folder |
-| `rmdir <folder>` | Deletes an **empty** folder |
+| `cp <source>... <directory>` | Copies several files into a directory |
+| `cp -r <directory> <destination>` | Copies a directory and everything inside it |
+| `mv <source> <destination>` | Moves or **renames** a file or a directory |
+| `mv <source>... <directory>` | Moves several files into a directory |
+| `rmdir <directory>` | Deletes an **empty** directory |
 | `rm <file>` | Deletes a file |
-| `rm -r <folder>` | Deletes a folder and everything inside it |
+| `rm -r <directory>` | Deletes a directory and everything inside it |
 
 :::info
 
-Renaming is moving to a new name in the same folder: `mv movie.mkv project_hail_mary.mkv`.
+Renaming is moving to a new name in the same directory: `mv movie.mkv project_hail_mary.mkv`.
 
 :::
 
 :::caution
 
-When you give `cp` or `mv` **several** sources, the last parameter must be a **folder** that already exists.
+When you give `cp` or `mv` **several** sources, the last parameter must be a **directory** that already exists.
 
 :::
 
 :::danger
 
-There is **no trash** in the terminal: `rm` deletes files **permanently**, and `rm -r` deletes a whole folder with
+There is **no trash** in the terminal: `rm` deletes files **permanently**, and `rm -r` deletes a whole directory with
 everything inside it. Read the command twice before pressing <kbd>Enter</kbd>, and never run `rm -r` with a path you
 do not fully understand.
 
@@ -605,7 +598,7 @@ do not fully understand.
 
 ### Examples
 
-The examples continue one after another, starting from the same home folder as in [Navigation](#navigation).
+The examples continue one after another, starting from the same home directory as in [Navigation](#navigation).
 
 #### `mkdir`
 
@@ -618,11 +611,11 @@ mkdir: cannot create directory 'Series/2025/comedy': No such file or directory
 [student@fedora ~]$ mkdir -p Series/2025/comedy
 ```
 
-* The first `mkdir Series` created the empty folder `/home/student/Series`.
-* The second one failed: the folder already exists.
+* The first `mkdir Series` created the empty directory `/home/student/Series`.
+* The second one failed: the directory already exists.
 * `mkdir Series/2025/comedy` failed, because `Series/2025` does not exist yet, and `mkdir` creates only the last
-  folder of the path.
-* `mkdir -p` created `2025` and then `comedy` inside it. With `-p`, it is not an error if a folder already exists.
+  directory of the path.
+* `mkdir -p` created `2025` and then `comedy` inside it. With `-p`, it is not an error if a directory already exists.
 
 #### `touch`
 
@@ -660,15 +653,15 @@ cp: -r not specified; omitting directory 'Movies'
 [student@fedora ~]$ cp -r Movies Movies_backup
 ```
 
-* `cp watchlist.txt Series/` copied the file into the `Series` folder, with the same name: `Series/watchlist.txt`.
-* `cp watchlist.txt backup.txt` made a copy with **another name**, in the same folder.
-* With **several** sources, `cp` copied all of them into the last parameter, the folder `Series`.
-* `cp Movies Movies_backup` refused to copy a folder.
-* `cp -r` copied the folder and everything inside it: `Movies_backup/the_odyssey.mkv`.
+* `cp watchlist.txt Series/` copied the file into the `Series` directory, with the same name: `Series/watchlist.txt`.
+* `cp watchlist.txt backup.txt` made a copy with **another name**, in the same directory.
+* With **several** sources, `cp` copied all of them into the last parameter, the directory `Series`.
+* `cp Movies Movies_backup` refused to copy a directory.
+* `cp -r` copied the directory and everything inside it: `Movies_backup/the_odyssey.mkv`.
 
 :::caution
 
-If the destination folder **already exists**, `cp -r Movies Movies_backup` copies `Movies` **inside** it, as
+If the destination directory **already exists**, `cp -r Movies Movies_backup` copies `Movies` **inside** it, as
 `Movies_backup/Movies`. Run the same command twice and look at the result with `tree`.
 
 :::
@@ -682,10 +675,10 @@ If the destination folder **already exists**, `cp -r Movies Movies_backup` copie
 [student@fedora ~]$ mv Series/watchlist.txt Series/supergirl.mp4 Downloads/
 ```
 
-* `mv backup.txt old_watchlist.txt` **renamed** the file: same folder, new name.
+* `mv backup.txt old_watchlist.txt` **renamed** the file: same directory, new name.
 * `mv old_watchlist.txt Series/` **moved** the file into `Series`, with the same name.
 * `mv notes.txt Series/notes_2025.txt` moved the file and renamed it, in a single command.
-* With several sources, `mv` moved all of them into the last parameter, the folder `Downloads`. A file that already
+* With several sources, `mv` moved all of them into the last parameter, the directory `Downloads`. A file that already
   exists there with the same name is replaced, without any question.
 
 #### `rmdir`
@@ -696,8 +689,8 @@ If the destination folder **already exists**, `cp -r Movies Movies_backup` copie
 rmdir: failed to remove 'Series': Directory not empty
 ```
 
-* `rmdir Series/2025/comedy` deleted the empty folder `comedy`.
-* `rmdir Series` failed: `Series` still has files and the folder `2025` inside it.
+* `rmdir Series/2025/comedy` deleted the empty directory `comedy`.
+* `rmdir Series` failed: `Series` still has files and the directory `2025` inside it.
 
 #### `rm`
 
@@ -709,13 +702,13 @@ rm: cannot remove 'Movies_backup': Is a directory
 ```
 
 * `rm Series/notes_2025.txt` deleted the file, **permanently**.
-* `rm Movies_backup` refused to delete a folder.
-* `rm -r Movies_backup` deleted the folder and everything inside it.
+* `rm Movies_backup` refused to delete a directory.
+* `rm -r Movies_backup` deleted the directory and everything inside it.
 
 ## Yazi
 
-**Yazi** is a file manager that runs **in the terminal**. It shows your folders in three columns (the parent folder,
-the current folder and a preview) and does the work of `cd`, `ls`, `mkdir`, `touch`, `cp`, `mv` and `rm` with a few
+**Yazi** is a file manager that runs **in the terminal**. It shows your directories in three columns (the parent directory,
+the current directory and a preview) and does the work of `cd`, `ls`, `mkdir`, `touch`, `cp`, `mv` and `rm` with a few
 keys. It is fast and works well with Sway, because you never need the mouse.
 
 ### Installing Yazi on Fedora 44
@@ -760,7 +753,7 @@ cargo install --force yazi-build
 ### A Better Terminal for Yazi: Ghostty
 
 Yazi works in any terminal, including `foot`, the default terminal of Sway. It looks better in a modern terminal such
-as **[Ghostty](https://ghostty.org)**: Ghostty comes with the icons that Yazi uses for files and folders already
+as **[Ghostty](https://ghostty.org)**: Ghostty comes with the icons that Yazi uses for files and directories already
 built in, and Yazi can show **previews of pictures** inside it. Installing it is optional, but recommended.
 
 Ghostty is not in the official Fedora repositories either. Install it from its COPR repository, the one listed on the
@@ -785,17 +778,17 @@ the line `set $term foot` (or in the line `bindsym $mod+Return exec foot`), then
 
 ### Using Yazi
 
-Start it with `yazi`, or with a folder: `yazi ~/Downloads`. Quit with <kbd>q</kbd>. Press <kbd>F1</kbd> or
+Start it with `yazi`, or with a directory: `yazi ~/Downloads`. Quit with <kbd>q</kbd>. Press <kbd>F1</kbd> or
 <kbd>~</kbd> for the help, which lists every key.
 
 | Key | Action | Like |
 |-|-|-|
 | <kbd>↑</kbd> <kbd>↓</kbd> (or <kbd>k</kbd> <kbd>j</kbd>) | Choose a file | |
-| <kbd>←</kbd> (or <kbd>h</kbd>) | Go to the parent folder | `cd ..` |
-| <kbd>→</kbd> (or <kbd>l</kbd>) | Open the folder or the file | `cd` |
+| <kbd>←</kbd> (or <kbd>h</kbd>) | Go to the parent directory | `cd ..` |
+| <kbd>→</kbd> (or <kbd>l</kbd>) | Open the directory or the file | `cd` |
 | <kbd>.</kbd> | Show / hide hidden files | `ls -a` |
 | <kbd>Space</kbd> | Select a file, for several files | |
-| <kbd>a</kbd> | Create a file; a name ending with `/` creates a folder | `touch`, `mkdir` |
+| <kbd>a</kbd> | Create a file; a name ending with `/` creates a directory | `touch`, `mkdir` |
 | <kbd>r</kbd> | Rename | `mv` |
 | <kbd>y</kbd> then <kbd>p</kbd> | Copy (*yank*), then paste | `cp` |
 | <kbd>x</kbd> then <kbd>p</kbd> | Cut, then paste | `mv` |
@@ -818,12 +811,12 @@ them **permanently**, like `rm`.
 
 ### Tabs
 
-Yazi can keep **several folders open**, one in each **tab**. Every tab has its own current directory, so tabs make
-copying and moving between two folders easy.
+Yazi can keep **several directories open**, one in each **tab**. Every tab has its own current directory, so tabs make
+copying and moving between two directories easy.
 
 | Key | Action |
 |-|-|
-| <kbd>t</kbd> then <kbd>t</kbd> | Open a new tab, in the current folder |
+| <kbd>t</kbd> then <kbd>t</kbd> | Open a new tab, in the current directory |
 | <kbd>1</kbd> ... <kbd>9</kbd> | Go to tab 1 ... 9 |
 | <kbd>[</kbd> <kbd>]</kbd> | Go to the previous / next tab |
 | <kbd>Ctrl</kbd>+<kbd>c</kbd> | Close the current tab |
@@ -837,11 +830,11 @@ To copy a file from `~/Downloads` to `~/Movies`: open `~/Downloads` in tab 1, op
 | Problem | Solution |
 |-|-|
 | `No such file or directory` | The path is wrong. Check the current directory with `pwd`, then check the path with `ls` or `realpath`. Remember that names are case sensitive |
-| `cd` says `Not a directory` | The path points to a file, not a folder |
-| `rmdir` says `Directory not empty` | `rmdir` deletes only empty folders. Delete what is inside first, or use `rm -r` (carefully) |
-| `cp` says `-r not specified; omitting directory` | Add `-r` to copy a folder |
-| `mv` or `cp` with several files says `target ... is not a directory` | The last parameter must be an existing folder |
-| `Permission denied` | You are trying to write outside your home folder (and `/tmp`) |
+| `cd` says `Not a directory` | The path points to a file, not a directory |
+| `rmdir` says `Directory not empty` | `rmdir` deletes only empty directories. Delete what is inside first, or use `rm -r` (carefully) |
+| `cp` says `-r not specified; omitting directory` | Add `-r` to copy a directory |
+| `mv` or `cp` with several files says `target ... is not a directory` | The last parameter must be an existing directory |
+| `Permission denied` | You are trying to write outside your home directory (and `/tmp`) |
 | `yazi: command not found` | Yazi is not installed, see [Installing Yazi on Fedora 44](#installing-yazi-on-fedora-44) |
 | Yazi shows strange symbols instead of icons | The terminal font has no icons. Everything still works; for icons, use [Ghostty](#a-better-terminal-for-yazi-ghostty) |
 
@@ -860,7 +853,7 @@ Keep **two terminals side by side** in Sway: one to run the commands, and one wh
 ### Setup
 
 1. 🌱 **The practice tree**:
-   1. Run these commands to create the folders and files used in the exercises (copy them from the browser with
+   1. Run these commands to create the directories and files used in the exercises (copy them from the browser with
       <kbd>Ctrl</kbd>+<kbd>C</kbd> and paste them in the terminal with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>):
 
       ```bash
@@ -898,14 +891,14 @@ Keep **two terminals side by side** in Sway: one to run the commands, and one wh
 If a command prints `No such file or directory`, the path is wrong: fix it and run the command again.
 :::
 
-2. 🌱 **Where am I**: Go to the `Games` folder using an **absolute** path, then into `puzzles` using a **relative**
+2. 🌱 **Where am I**: Go to the `Games` directory using an **absolute** path, then into `puzzles` using a **relative**
    path, then back to `~/lab02` with a **single** `cd` that uses only `..`. Print the current directory after every
    step.
 
    **Check:** you end up in `/home/student/lab02`. <small>→ [The Current Directory](#the-current-directory) · [Absolute Paths](#absolute-paths)</small>
-3. 🌱 **Absolute paths**: From your home folder, show the details of `cat.jpg`, of `sudoku.txt` and of the `Recipes`
-   folder **itself** (not what is inside it) with a **single** `ls` command and **absolute** paths. Look in `man ls`
-   for the option that lists a folder itself.
+3. 🌱 **Absolute paths**: From your home directory, show the details of `cat.jpg`, of `sudoku.txt` and of the `Recipes`
+   directory **itself** (not what is inside it) with a **single** `ls` command and **absolute** paths. Look in `man ls`
+   for the option that lists a directory itself.
 
    **Check:** you get exactly three lines, and the one of `Recipes` starts with `d`. <small>→ [Absolute Paths](#absolute-paths) · [Reading the Manual](#reading-the-manual)</small>
 4. 🌱 **Relative paths**: Do the same from `~/lab02`, this time with **relative** paths. Then, from `~/lab02/Games`,
@@ -944,7 +937,7 @@ If a command prints `No such file or directory`, the path is wrong: fix it and r
 10. 🌳 **Home from anywhere**: List `~/lab02` from `/usr/bin`, from `/tmp` and from `/usr/share/doc`, each time with a
     **relative** path. Write in `answers.txt` how many `..` you needed each time.
 
-    **Check:** the three commands print the same files. <small>→ [The Home Folder: `~`](#the-home-folder-)</small>
+    **Check:** the three commands print the same files. <small>→ [The Home Directory: `~`](#the-home-directory-)</small>
 11. 🌳 **Fix the path**: Each of these commands fails. Find out why and fix it:
     * `ls ~/lab02/games/2026`
     * `cd ~/lab02/Games/chess.txt`
@@ -956,7 +949,7 @@ If a command prints `No such file or directory`, the path is wrong: fix it and r
 
 ### Navigation
 
-12. 🌱 **Walk around**: From your home folder, go to `~/lab02/Games/2026/puzzles` with a **single** `cd` and an
+12. 🌱 **Walk around**: From your home directory, go to `~/lab02/Games/2026/puzzles` with a **single** `cd` and an
     absolute path, then to `~/lab02/Recipes` with a **single** `cd` and a relative path. Go back to `puzzles` with
     `cd -`, then home with the shortest command you can.
 
@@ -965,28 +958,28 @@ If a command prints `No such file or directory`, the path is wrong: fix it and r
     them twice. Then, from `Recipes`, list `/etc`; jump to `/etc` with `cd -` and, from there, list `Recipes` with a
     relative path.
 
-    **Check:** each `cd -` prints the folder it went to, and the last `pwd` prints `/etc`. <small>→ [The Previous Directory: `cd -`](#the-previous-directory-cd--)</small>
+    **Check:** each `cd -` prints the directory it went to, and the last `pwd` prints `/etc`. <small>→ [The Previous Directory: `cd -`](#the-previous-directory-cd--)</small>
 14. 🌱 **Listing**: With a **single** `ls` command, list `~/lab02` so that you see the hidden file, can tell the files
-    from the folders, and read the sizes in `K` / `M`.
+    from the directories, and read the sizes in `K` / `M`.
 
-    **Check:** you found `.secret`, and three folders. <small>→ [Navigation](#navigation)</small>
-15. 🌱 **ls with a folder**: From your home folder, list `~/lab02/Photos`, `~/lab02/Games/2026/puzzles` and `/` with a
+    **Check:** you found `.secret`, and three directories. <small>→ [Navigation](#navigation)</small>
+15. 🌱 **ls with a directory**: From your home directory, list `~/lab02/Photos`, `~/lab02/Games/2026/puzzles` and `/` with a
     **single** `ls`, **without** changing the current directory.
 
-    **Check:** the output has three parts, one for each folder, and `pwd` still prints your home folder. <small>→ [Every File is a Path](#every-file-is-a-path)</small>
+    **Check:** the output has three parts, one for each directory, and `pwd` still prints your home directory. <small>→ [Every File is a Path](#every-file-is-a-path)</small>
 16. 🌳 **tree**: Show the tree of `~/lab02`:
     * only the first level;
-    * only the folders, but also the hidden ones;
+    * only the directories, but also the hidden ones;
     * with the hidden files, two levels deep.
 
-    Then show only the folders of `/usr`, two levels deep.
+    Then show only the directories of `/usr`, two levels deep.
 
     **Check:** only the last command about `~/lab02` shows `.secret`. <small>→ [Navigation](#navigation)</small>
 
 ### Finding Files
 
 17. 🌱 **Find by name**: Find `sudoku.txt` twice: once searching from `~/lab02` with a relative start, once from your
-    home folder with an absolute start.
+    home directory with an absolute start.
 
     **Check:** the first command prints `./Games/2026/puzzles/sudoku.txt` and the second one
     `/home/student/lab02/Games/2026/puzzles/sudoku.txt`. <small>→ [Finding Files](#finding-files-find)</small>
@@ -995,9 +988,9 @@ If a command prints `No such file or directory`, the path is wrong: fix it and r
 
     **Check:** you get `cat.jpg` and `dog.jpg`, then `books.txt`, `chess.txt` and `sudoku.txt` (and `answers.txt`,
     if you created it). <small>→ [Finding Files](#finding-files-find)</small>
-19. 🌱 **Files or folders**: Find only the folders in `~/lab02`, then only the files.
+19. 🌱 **Files or directories**: Find only the directories in `~/lab02`, then only the files.
 
-    **Check:** the folders are `.`, `Games`, `2026`, `puzzles`, `Photos` and `Recipes`; the files include the hidden
+    **Check:** the directories are `.`, `Games`, `2026`, `puzzles`, `Photos` and `Recipes`; the files include the hidden
     `.secret`. <small>→ [Finding Files](#finding-files-find)</small>
 20. 🌱 **Use what you found**: From `~/lab02/Recipes`, find `chess.txt` searching from `..`, then copy it into `/tmp`
     using the path that `find` printed.
@@ -1013,7 +1006,7 @@ If a command prints `No such file or directory`, the path is wrong: fix it and r
 
 ### Exploring the System
 
-These exercises use real files of the operating system, outside your home folder. You can **read** most of them, but
+These exercises use real files of the operating system, outside your home directory. You can **read** most of them, but
 you cannot change them: they belong to the administrator (`root`).
 
 :::danger
@@ -1060,7 +1053,7 @@ stop the computer from starting.
     details with human readable sizes.
 
     **Check:** you find at least one `vmlinuz-...` file, of a few MB. <small>→ [Finding Files](#finding-files-find) · [Navigation](#navigation)</small>
-32. 🌳 **Logs**: List `/var/log`, the folder where the system keeps its logs, and try to print one of the files there.
+32. 🌳 **Logs**: List `/var/log`, the directory where the system keeps its logs, and try to print one of the files there.
     Find one that you are allowed to read, and one that you are not.
 
     **Check:** for one of them you get `Permission denied`. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano)</small>
@@ -1068,7 +1061,7 @@ stop the computer from starting.
     `/var/log` with another relative path, and back to `/usr/share/doc` with a third one. Jump to `/var/log` with
     `cd -`.
 
-    **Check:** after each `cd`, `pwd` prints the folder you wanted to reach. <small>→ [Relative Paths](#relative-paths) · [The Previous Directory: `cd -`](#the-previous-directory-cd--)</small>
+    **Check:** after each `cd`, `pwd` prints the directory you wanted to reach. <small>→ [Relative Paths](#relative-paths) · [The Previous Directory: `cd -`](#the-previous-directory-cd--)</small>
 
 ### Managing Files
 
@@ -1079,14 +1072,14 @@ Work in `~/lab02`, and check the result with `tree ~/lab02` in the second termin
     `Recipes`.
 
     **Check:** `ls -l` shows size `0` for `groceries.txt`, but not for `plan.txt`; `Recipes` has the three new files. <small>→ [Managing Files](#managing-files)</small>
-35. 🌱 **Create folders**: Create `Albums/2024/summer` and `Albums/2025/winter` with a **single** command.
+35. 🌱 **Create directories**: Create `Albums/2024/summer` and `Albums/2025/winter` with a **single** command.
 
-    **Check:** `tree` shows both folders. <small>→ [Managing Files](#managing-files)</small>
+    **Check:** `tree` shows both directories. <small>→ [Managing Files](#managing-files)</small>
 36. 🌱 **Copy files**: Copy `books.txt` into `Albums`. Copy `cat.jpg` and `dog.jpg` from `Photos` into `Games` with a
     **single** command. Copy `dog.jpg` into `Albums/2025/winter` under the name `snow_dog.jpg`.
 
     **Check:** the two pictures are both in `Photos` and in `Games`, and `snow_dog.jpg` is in `winter`. <small>→ [Managing Files](#managing-files)</small>
-37. 🌱 **Copy a folder**: Copy the whole `Games` folder to `/tmp/Games_backup`. Then run **exactly the same** command a
+37. 🌱 **Copy a directory**: Copy the whole `Games` directory to `/tmp/Games_backup`. Then run **exactly the same** command a
     second time, and find out where the second copy went. Delete **only** the second copy.
 
     **Check:** `tree /tmp/Games_backup` shows the same files as `tree ~/lab02/Games`, and nothing more. <small>→ [Managing Files](#managing-files)</small>
@@ -1101,11 +1094,11 @@ Work in `~/lab02`, and check the result with `tree ~/lab02` in the second termin
 
     **Check:** `Recipes` has `cat.jpg`. <small>→ [Every File is a Path](#every-file-is-a-path)</small>
 40. 🌱 **Delete**: Delete `/tmp/Games_backup/chess.txt`. Move `sudoku.txt` from `puzzles` up into `Games/2026`, then
-    delete the empty `puzzles` folder. Then delete `Albums/2024` and
+    delete the empty `puzzles` directory. Then delete `Albums/2024` and
     everything in `Albums/2025` using **only** `rmdir` and `rm` (no `-r`).
 
     **Check:** `Albums` has only `books.txt` and `plan.txt`, and `Games/2026` has only `sudoku.txt`. <small>→ [Managing Files](#managing-files)</small>
-41. 🌳 **Delete a folder**: Delete `/tmp/Games_backup` with everything inside it with a **single** command.
+41. 🌳 **Delete a directory**: Delete `/tmp/Games_backup` with everything inside it with a **single** command.
 
     **Check:** `ls /tmp` no longer shows `Games_backup`. <small>→ [Managing Files](#managing-files)</small>
 
@@ -1121,7 +1114,7 @@ check the result with `tree ~/lab02` after every exercise.
     keys, then without them. Make the hidden file appear, then hide it again.
 
     **Check:** `.secret` appears and disappears. <small>→ [Using Yazi](#using-yazi)</small>
-44. 🌱 **Create and rename**: In `~/lab02`, create a file `menu.txt` and an empty folder `Drafts`. Rename `menu.txt` to
+44. 🌱 **Create and rename**: In `~/lab02`, create a file `menu.txt` and an empty directory `Drafts`. Rename `menu.txt` to
     `dinner.txt`, and rename `soup.txt` in `Recipes` to `tomato_soup.txt`.
 
     **Check:** `tree` shows `dinner.txt`, `Drafts` and `Recipes/tomato_soup.txt`. <small>→ [Using Yazi](#using-yazi)</small>
@@ -1134,7 +1127,7 @@ check the result with `tree ~/lab02` after every exercise.
 
     **Check:** `Albums` has `cat.jpg` and `dog.jpg`; `Drafts` has the three recipes. <small>→ [Using Yazi](#using-yazi)</small>
 47. 🌱 **Tabs**: Open `Albums`, `Recipes` and `Drafts` in three different tabs. Without leaving any of the three
-    folders:
+    directories:
     * copy `plan.txt` into `Recipes`;
     * move `shopping.txt` into `Albums`;
     * move `pizza.txt` and `cake.txt` back into `Recipes` (if you moved them to `Drafts` in exercise 46).
@@ -1182,9 +1175,9 @@ that tree.
     **Check:** `ls -l` shows `sudoku.txt`, and `realpath` of your path prints `/home/student/lab02/Games/2026/sudoku.txt`. <small>→ [From Relative to Absolute](#from-relative-to-absolute)</small>
 51. 🌳 **Shortest path**: Find the **shortest** relative path from `/usr/share/doc` to `~/lab02/Notes`, and the
     shortest one from `~/lab02/Notes` back to `/usr/share/doc`. Use each of them with a single `cd`, then jump
-    between the two folders twice more with `cd -` only.
+    between the two directories twice more with `cd -` only.
 
-    **Check:** after each `cd`, `pwd` prints the folder you wanted to reach. <small>→ [Relative Paths](#relative-paths)</small>
+    **Check:** after each `cd`, `pwd` prints the directory you wanted to reach. <small>→ [Relative Paths](#relative-paths)</small>
 52. 🌳 **Clean up a path**: Write the **shortest** absolute path equivalent to
     `/home/../../../home/student/lab02/./Notes/../Games/2026/../../Recipes/desserts/..`, first on paper, then check it.
 
@@ -1193,20 +1186,20 @@ that tree.
 
     **Check:** `ls -l ~/lab02/Notes` shows that `books.txt` now has the size that `plan.txt` had before, and
     `plan.txt` is empty. <small>→ [Managing Files](#managing-files)</small>
-54. 🌳 **Mirror**: Create in `/tmp/mirror` the same **folder** structure as `~/lab02` (only the folders, no files),
+54. 🌳 **Mirror**: Create in `/tmp/mirror` the same **directory** structure as `~/lab02` (only the directories, no files),
     with a **single** `mkdir` command.
 
-    **Check:** `tree -d /tmp/mirror` and `tree -d ~/lab02` show the same folders. <small>→ [Managing Files](#managing-files)</small>
+    **Check:** `tree -d /tmp/mirror` and `tree -d ~/lab02` show the same directories. <small>→ [Managing Files](#managing-files)</small>
 55. 🌳 **From far away**: Go to `/tmp`. With a **single** `mv` command and **only relative** paths, move `chess.txt`
     and `cat.jpg` from `Games` into `Recipes/desserts`. Then move them back with a single `mv`, this time from
     `~/lab02/Notes`.
 
     **Check:** after the first `mv`, `desserts` has three files; after the second one, `tree ~/lab02` shows the
     tree of the [Challenge](#challenge) again (with the names of exercise 53). <small>→ [Every File is a Path](#every-file-is-a-path)</small>
-56. 🌳 **Backup with tabs**: With Yazi only, create the folder `~/lab02/Backup`, then copy the `Games`, `Notes` and
-    `Recipes` folders into it using **two** tabs and a **single** paste. Delete `Backup` permanently at the end.
+56. 🌳 **Backup with tabs**: With Yazi only, create the directory `~/lab02/Backup`, then copy the `Games`, `Notes` and
+    `Recipes` directories into it using **two** tabs and a **single** paste. Delete `Backup` permanently at the end.
 
-    **Check:** before deleting it, `tree ~/lab02/Backup` shows the three folders with all their files. <small>→ [Tabs](#tabs) · [Using Yazi](#using-yazi)</small>
+    **Check:** before deleting it, `tree ~/lab02/Backup` shows the three directories with all their files. <small>→ [Tabs](#tabs) · [Using Yazi](#using-yazi)</small>
 
 ## Wrap-up Questions
 
@@ -1218,19 +1211,19 @@ assistant. There are no wrong answers for the last two.
 3. Why does a relative path stop working when you change the current directory?
 4. How does the operating system turn a relative path into an absolute one?
 5. What does `[ ]` and `...` mean in the `SYNOPSIS` of a manual page?
-6. Why must the last parameter of `cp a b c` be a folder?
+6. Why must the last parameter of `cp a b c` be a directory?
 7. What is the difference between `rm` in the terminal and <kbd>d</kbd> in Yazi?
 8. When would you use the terminal, and when Yazi?
 9. What was the hardest path to calculate today?
 
 ## Extra
 
-1. **Hidden files**: Run `ls -a ~`. Most of the hidden files and folders are settings of your programs. Find the
-   folder where Yazi keeps the trash. <small>→ [Using Yazi](#using-yazi)</small>
+1. **Hidden files**: Run `ls -a ~`. Most of the hidden files and directories are settings of your programs. Find the
+   directory where Yazi keeps the trash. <small>→ [Using Yazi](#using-yazi)</small>
 2. **The whole tree**: Run `tree -L 1 /` and compare it with the tree in [The File System Tree](#the-file-system-tree).
    Look in `/etc` for the file that keeps the name of your computer (hint: `cat /etc/hostname` and the `hostname`
    command). <small>→ [The File System Tree](#the-file-system-tree)</small>
-3. **Yazi help**: Press <kbd>F1</kbd> in Yazi and find the key that filters the files in the current folder by name.
+3. **Yazi help**: Press <kbd>F1</kbd> in Yazi and find the key that filters the files in the current directory by name.
    <small>→ [Using Yazi](#using-yazi)</small>
 4. **Ghostty**: Install Ghostty, open `~/lab02/Photos` with Yazi inside it and compare it with Yazi in `foot`. Then
    make Ghostty the terminal that opens with <kbd>$mod</kbd> + <kbd>Enter</kbd>. <small>→ [A Better Terminal for Yazi: Ghostty](#a-better-terminal-for-yazi-ghostty)</small>
