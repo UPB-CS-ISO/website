@@ -29,7 +29,7 @@
   - `command` - this is a command or a part of a source code
 
   Code
-  #reveal-terminal(before: none, lines: (1, 2, 6))[```terminal
+  #reveal-terminal(before: none, lines: (1, 2, 6), full: false)[```terminal
   $ command arguments
   this is what the command wrote
   $ command2 arguments placed \ # mind the \ that splits the command over multiple lines

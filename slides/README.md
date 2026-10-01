@@ -53,7 +53,10 @@ slides/
     ├── polylux.typ     # re-exports polylux (#only, #uncover, #toolbox, ...)
     ├── terminal.typ    # ```terminal blocks: shell highlighting + #reveal-terminal
     ├── ai-prompt.typ   # #ai-prompt and #ai-prompt-overlay boxes
-    └── 01_intro/       # one folder per lecture
+    ├── highlight.typ   # #highlight-code: step-by-step line highlighting
+    ├── kbd.typ         # #kbd: keyboard keys (like <kbd> in Docusaurus)
+    ├── 01_intro/       # one folder per lecture
+    └── 02_file_management/
         ├── main.typ    # deck entry point
         ├── *.typ       # sections pulled in with #include
         └── img/        # images for this deck
@@ -126,6 +129,28 @@ $ echo "hello" | wc -c
 ````
 
 `#terminal("$ ls\nfile.txt")` builds the same block from a string.
+
+**Highlighting lines** — `#highlight-code` walks through an existing listing
+(a directory tree, a man page, ...) step by step: every step shows the whole
+block, only the listed lines keep their normal look and the rest are grayed
+out (nothing is hidden, unlike `#reveal-code`). Each entry of the steps array
+is one subslide, either `"all"` or an array of line numbers; `lines-range(a, b)`
+builds `a..b` inclusive.
+
+````typst
+#highlight-code(("all", (1,), lines-range(2, 3), "all"))[```rust
+fn read(block: usize) -> [u8; 512];
+fn write(block: usize, data: [u8; 512]);
+```]
+````
+
+`start:` delays the first step and `offset:` shifts the block's line numbers,
+so a long listing can be split into columns while the steps keep using the
+line numbers of the whole listing.
+
+**Keyboard keys** — `#kbd("q")` draws a key cap, the same look as `<kbd>`
+on the website (Docusaurus); combine keys with `+`, e.g.
+`#kbd("Ctrl") + #kbd("C")`.
 
 **AI prompts** — a boxed prompt students can copy into an AI assistant:
 
