@@ -563,7 +563,7 @@ When `find` searches a directory that you are not allowed to read (for example i
 
 ## Viewing Text Files: `cat` and `nano`
 
-Most files in Linux, especially the settings in `/etc`, are **text files**: you can read them. There are two easy
+Most files in Linux, especially the settings in `/etc`, are **text files**: you can read them edit them using a text editor. There are two easy
 ways to look inside a text file: `cat` and `nano`.
 
 ### `cat`
@@ -870,6 +870,8 @@ rm: cannot remove 'Movies_backup': Is a directory
 the current directory and a preview) and does the work of `cd`, `ls`, `mkdir`, `touch`, `cp`, `mv` and `rm` with a few
 keys. It is fast and works well with Sway, because you never need the mouse.
 
+![Yazi](./yazi.png)
+
 ### Installing Yazi on Fedora 44
 
 Yazi is not in the official Fedora repositories. It is available from **COPR**, a service where Fedora users build
@@ -957,7 +959,7 @@ Start it with `yazi`, or with a directory: `yazi ~/Downloads`. Quit with <kbd>q<
 
 :::info
 
-The <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd> keys are the same as in Sway and `vi` (see lab 01).
+  The <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd> keys are the same as in Sway and `vi` (see [Default Keybindings](/docs/labs/01#default-keybindings) in lab 01).
 
 :::
 
