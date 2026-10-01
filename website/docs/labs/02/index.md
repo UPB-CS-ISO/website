@@ -500,10 +500,8 @@ find [directory...] [tests]
 | `find <directory>` | Prints every file and directory below `<directory>` |
 | `find <directory> -name '<name>'` | Only the entries called `<name>` |
 | `find <directory> -name '*.txt'` | Only the entries whose name ends with `.txt` (`*` means "any characters") |
-| `find <directory> -iname '<name>'` | Like `-name`, but upper and lower case letters are the same |
 | `find <directory> -type f` | Only the files |
 | `find <directory> -type d` | Only the directories |
-| `find <directory> -maxdepth 1` | Only one level deep, like `ls` |
 
 The tests can be combined: `find ~ -type f -name '*.txt'` finds only the **files** whose name ends with `.txt`.
 
@@ -529,7 +527,7 @@ Movies/the_odyssey.mkv
 [student@fedora ~]$ cd Movies
 [student@fedora Movies]$ find .. -name watchlist.txt
 ../watchlist.txt
-[student@fedora Movies]$ find .. -maxdepth 1 -type d
+[student@fedora Movies]$ find .. -type d
 ..
 ../Downloads
 ../Movies
@@ -541,7 +539,7 @@ Movies/the_odyssey.mkv
   directory you give it. A relative start gives relative paths, an absolute start gives absolute paths.
 * From `Movies`, `find .. -name watchlist.txt` searched the parent directory and printed `../watchlist.txt`, a relative
   path that works from `Movies`.
-* `find .. -maxdepth 1 -type d` printed only the directories of the first level of `..`, including `..` itself.
+* `find .. -type d` printed only the directories of `..`, including `..` itself.
 
 :::tip
 
@@ -1070,7 +1068,7 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
    **Check:** you end up in `/home/student/lab02`. <small>→ [The Current Directory](#the-current-directory) · [Absolute Paths](#absolute-paths)</small>
 3. 🌱 **Absolute paths**: From your home directory, show the details of `cat.jpg`, of `sudoku.txt` and of the `Recipes`
    directory **itself** (not what is inside it) with a **single** `ls` command and **absolute** paths. Look in `man ls`
-   for the option that lists a directory itself.
+   for the option that lists a directory itself (🔍 search for `contents`).
 
    **Check:** you get exactly three lines, and the one of `Recipes` starts with `d`. <small>→ [Absolute Paths](#absolute-paths) · [Reading the Manual](#reading-the-manual)</small>
 4. 🌱 **Relative paths**: Do the same from `~/lab02`, this time with **relative** paths. Then, from `~/lab02/Games`,
@@ -1098,7 +1096,8 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
 
    **Check:** each `cd -` prints the directory it went to, and the last `pwd` prints `/etc`. <small>→ [The Previous Directory: `cd -`](#the-previous-directory-cd--)</small>
 9. 🌱 **Listing**: With a **single** `ls` command, list `~/lab02` so that you see the hidden file, can tell the files
-   from the directories, and read the sizes in `K` / `M` (look in `man ls` for the sizes).
+   from the directories, and read the sizes in `K` / `M` (look in `man ls`, 🔍 search for `sizes`
+   and read every match).
 
    **Check:** you found `.secret`, and three directories. <small>→ [Navigation](#navigation) · [Reading the Manual](#reading-the-manual)</small>
 10. 🌱 **ls with a directory**: From your home directory, list `~/lab02/Photos`, `~/lab02/Games/2026/puzzles` and `/` with a
@@ -1106,7 +1105,7 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
 
     **Check:** the output has three parts, one for each directory, and `pwd` still prints your home directory. <small>→ [Every File is a Path](#every-file-is-a-path)</small>
 11. 🌱 **First look with tree**: Show the tree of `~/lab02` only **one** level deep, then the whole tree with a `/`
-    after the name of every directory (look in `man tree`).
+    after the name of every directory (look in `man tree`, 🔍 search for `Append`).
 
     **Check:** the first command shows `Games`, `Photos` and `Recipes`, but not `chess.txt`; in the second one, every
     directory ends with `/`. <small>→ [Navigation](#navigation) · [Reading the Manual](#reading-the-manual)</small>
@@ -1135,7 +1134,7 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
 
     **Check:** `ls /tmp` shows `chess.txt`. <small>→ [Finding Files](#finding-files-find) · [Every File is a Path](#every-file-is-a-path)</small>
 17. 🌱 **Which Linux**: Print the content of `/etc/os-release` with `cat`, with the **number** of every line in front of it
-    (look in `man cat`). Then open it in `nano` in view mode and search for `VERSION` with <kbd>Ctrl</kbd>+<kbd>W</kbd>.
+    (look in `man cat`, 🔍 search for `number`). Then open it in `nano` in view mode and search for `VERSION` with <kbd>Ctrl</kbd>+<kbd>W</kbd>.
 
     **Check:** the lines `NAME=` and `VERSION_ID=` show `Fedora` and `44`, and every line starts with its number. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano) · [Reading the Manual](#reading-the-manual)</small>
 18. 🌱 **The identity of the computer**: Print the content of `/etc/machine-id`, the number that identifies this
@@ -1169,7 +1168,8 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
 
     **Check:** `tree` shows both directories. <small>→ [Managing Files](#managing-files)</small>
 25. 🌱 **Copy files**: Copy `books.txt` into `Albums`. Copy `cat.jpg` and `dog.jpg` from `Photos` into `Games` with a
-    **single** command, and make `cp` print the name of every file it copies (look in `man cp`). Copy `dog.jpg` into `Albums/2025/winter` under the name `snow_dog.jpg`.
+    **single** command, and make `cp` print the name of every file it copies (look in
+    `man cp`, 🔍 search for `explain`). Copy `dog.jpg` into `Albums/2025/winter` under the name `snow_dog.jpg`.
 
     **Check:** `cp` printed a line like `'Photos/cat.jpg' -> 'Games/cat.jpg'` for each picture; the two pictures are both
     in `Photos` and in `Games`, and `snow_dog.jpg` is in `winter`. <small>→ [Managing Files](#managing-files) · [Reading the Manual](#reading-the-manual)</small>
@@ -1185,7 +1185,7 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
 28. 🌱 **Delete**: Delete `/tmp/Games_backup/chess.txt`. Move `sudoku.txt` from `puzzles` up into `Games/2026`, then
     delete the empty `puzzles` directory. Then delete `Albums/2024` and
     everything in `Albums/2025` using **only** `rmdir` and `rm` (no `-r`). Make `rm` **ask you** before it deletes every
-    file (look in `man rm`).
+    file (look in `man rm`, 🔍 search for `prompt`).
 
     **Check:** `rm` asked `remove regular empty file ...?` before every file; `Albums` has only `books.txt` and
     `plan.txt`, and `Games/2026` has only `sudoku.txt`. <small>→ [Managing Files](#managing-files) · [Reading the Manual](#reading-the-manual)</small>
@@ -1235,7 +1235,8 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
     **Check:** `pwd` prints `/` no matter how many times you try to go up, and the last `cd` works. <small>→ [`.` and `..`](#-and-)</small>
 37. 🌳 **Home from anywhere**: List `~/lab02` from `/usr/bin`, from `/tmp` and from `/usr/share/doc`, each time with a
     **relative** path. Write in `answers.txt` how many `..` you needed each time. Then let `realpath` calculate, for
-    each of the three directories, the relative path from it to `~/lab02` (look in `man realpath`).
+    each of the three directories, the relative path from it to `~/lab02` (look in `man realpath`, 🔍 search for
+    `relative`).
 
     **Check:** the three commands print the same files, and `realpath` prints the same relative paths as yours. <small>→ [The Home Directory: `~`](#the-home-directory-) · [Reading the Manual](#reading-the-manual)</small>
 38. 🌳 **Fix the path**: Each of these commands fails. Find out why and fix it:
@@ -1247,23 +1248,27 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
 
     **Check:** the commands print no error. <small>→ [Troubleshooting](#troubleshooting)</small>
 39. 🌳 **More tree**: Show the tree of `~/lab02` (look in `man tree` for the options):
-    * only the directories, but also the hidden ones;
+    * only the directories, but also the hidden ones (🔍 search for `only` and for `hidden`);
     * with the hidden files, two levels deep;
-    * with the size of every file, in `K` / `M`, and the directories listed **before** the files.
+    * with the size of every file, in `K` / `M`, and the directories listed **before** the files (🔍 search for
+      `human` and for `before`).
 
     Then show only the directories of `/usr`, two levels deep.
 
     **Check:** only the second command shows `.secret`; in the third one, every name has its size in brackets, like `[4.0K]`, in
     front of it, and in every directory the subdirectories come first. <small>→ [Navigation](#navigation) · [Reading the Manual](#reading-the-manual)</small>
-40. 🌳 **Not too deep**: Find the `.txt` files of `~/lab02` that are at most **two** levels deep. Then find all the
-    **empty** files in `~/lab02` (look in `man find`).
+40. 🌳 **Not too deep**: Find the `.txt` files of `~/lab02` that are at most **two** levels deep (look in `man find`,
+    🔍 search for `levels`). Then find all the **empty** files in `~/lab02` (🔍 search for `empty`).
 
     **Check:** `chess.txt` and the files in `Albums` and `Recipes` appear, but not `sudoku.txt`; the empty files
     include `chess.txt` and `cat.jpg`, but not `plan.txt`. <small>→ [Finding Files](#finding-files-find) · [Reading the Manual](#reading-the-manual)</small>
 41. 🌳 **Somewhere in the system**: Find the file called `hosts` in `/etc`, and every file whose name starts with
-    `passwd` in `/etc`. Ignore the `Permission denied` messages.
+    `passwd` in `/etc`. Ignore the `Permission denied` messages. Then find, in `/usr/share/doc`, the files called
+    `readme`, written with **any** upper or lower case letters: `README`, `Readme`, ... (look in `man find`, 🔍 search
+    for `insensitive`).
 
-    **Check:** the results include `/etc/hosts` and `/etc/passwd`. <small>→ [Finding Files](#finding-files-find)</small>
+    **Check:** the results include `/etc/hosts` and `/etc/passwd`, and the last command finds many files called
+    `README`. <small>→ [Finding Files](#finding-files-find) · [Reading the Manual](#reading-the-manual)</small>
 42. 🌳 **Settings of the package manager**: Find, somewhere in `/etc`, the file called `dnf.conf` (the settings of
     `dnf`, the program that installs packages). Print it using the path that `find` printed.
 
@@ -1273,11 +1278,11 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
 
     **Check:** the line starts with `127.0.0.1`, the address of your own computer. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano)</small>
 44. 🌳 **The kernel**: Find the files of the kernel in `/boot` (their names start with `vmlinuz`), then show their
-    details with the sizes in `M`.
+    details with the sizes in `M` (look in `man ls`, 🔍 search for `sizes`).
 
-    **Check:** you find at least one `vmlinuz-...` file, of a few MB. <small>→ [Finding Files](#finding-files-find) · [Navigation](#navigation)</small>
+    **Check:** you find at least one `vmlinuz-...` file, of a few MB. <small>→ [Finding Files](#finding-files-find) · [Navigation](#navigation) · [Reading the Manual](#reading-the-manual)</small>
 45. 🌳 **Logs**: List the details of `/var/log`, the directory where the system keeps its logs, with the files changed
-    most **recently** at the top (look in `man ls`). Try to print some of the text files there (check them with
+    most **recently** at the top (look in `man ls`, 🔍 search for `newest`). Try to print some of the text files there (check them with
     `file` first): find one that you are allowed to read, and one that you are not.
 
     **Check:** the dates go from the newest to the oldest, and for one of the files you get `Permission denied`. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano) · [Reading the Manual](#reading-the-manual)</small>
@@ -1302,7 +1307,7 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
 
     **Check:** `Recipes` has `cat.jpg`. <small>→ [Every File is a Path](#every-file-is-a-path)</small>
 50. 🌳 **Delete a directory**: Delete `/tmp/Games_backup` with everything inside it with a **single** command, and make
-    `rm` print everything it deletes (look in `man rm`).
+    `rm` print everything it deletes (look in `man rm`, 🔍 search for `explain`).
 
     **Check:** the last line printed by `rm` is `removed directory '/tmp/Games_backup'`, and `ls /tmp` no longer
     shows it. <small>→ [Managing Files](#managing-files) · [Reading the Manual](#reading-the-manual)</small>
@@ -1373,7 +1378,8 @@ exactly that tree.
     **Check:** `ls -l ~/lab02/Notes` shows that `books.txt` now has the size that `plan.txt` had before, and
     `plan.txt` is empty. <small>→ [Managing Files](#managing-files)</small>
 60. 🌳 **Mirror**: Create in `/tmp/mirror` the same **directory** structure as `~/lab02` (only the directories, no files),
-    with a **single** `mkdir` command that prints every directory it creates (look in `man mkdir`).
+    with a **single** `mkdir` command that prints every directory it creates (look in `man mkdir`, 🔍 search
+    for `message`).
 
     **Check:** `mkdir` printed a `created directory` line for every directory, and the trees of `/tmp/mirror`
     and `~/lab02` have the same directories. <small>→ [Managing Files](#managing-files) · [Reading the Manual](#reading-the-manual)</small>
