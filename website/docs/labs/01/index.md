@@ -348,8 +348,8 @@ users, processes, services and the network) happens in the terminal. In Sway, op
 When the terminal is ready, it shows a line that ends with a **`$`** sign, called the **prompt**. It usually looks
 like this:
 
-```
-[student@fedora ~]$
+```shell-session
+[student@fedora ~]$ 
 ```
 
 The `$` means "I am waiting for your command". Type a command after it and press <kbd>Enter</kbd> to run it. While
