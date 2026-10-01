@@ -34,7 +34,7 @@
   text(fill: if active { white } else { black }, weight: "bold")[#n #name],
 )
 
-// one tab: its label and the folder it shows
+// one tab: its label and the directory it shows
 #let yazi-pane(n, name, active, tree) = [
   #yazi-tab(n, name, active)
   #v(-0.5em)
@@ -50,11 +50,11 @@
   #let keys = (
     ([move], none, none),
     ([#kbd("↑") #kbd("↓")], [choose a file], none),
-    ([#kbd("←") / #kbd("→")], [parent folder / open], [`cd`]),
+    ([#kbd("←") / #kbd("→")], [parent directory / open], [`cd`]),
     ([#kbd(".")], [show hidden files], [`ls -a`]),
     ([manage files], none, none),
     ([#kbd("Space")], [select, for several files], none),
-    ([#kbd("a")], [create a file, `name/` for a folder], [`touch`, `mkdir`]),
+    ([#kbd("a")], [create a file, `name/` for a directory], [`touch`, `mkdir`]),
     ([#kbd("r")], [rename], [`mv`]),
     ([#kbd("y") then #kbd("p")], [copy, then paste], [`cp`]),
     ([#kbd("x") then #kbd("p")], [cut, then paste], [`mv`]),

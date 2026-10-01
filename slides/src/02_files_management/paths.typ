@@ -20,7 +20,7 @@
 #slide[
   == What Is a Path?
 
-  A *path* tells the operating system _where a file or folder is_.
+  A *path* tells the operating system _where a file or directory is_.
 
   Two main types:
   - *Absolute paths* start from the root of the file system: `/home/student/Movies/the_odyssey.mkv`
@@ -69,7 +69,7 @@
   to the current directory
 
   - ✅ Shorter
-  - ⚠️ Depends on the current folder (_where you are_)
+  - ⚠️ Depends on the current directory (_where you are_)
   - 📦 allows an application to find its own files, regardless of where it is installed (`./textures`)
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
@@ -106,12 +106,12 @@
     #table(
       columns: (auto, auto, auto, 1fr),
       table.header([Meaning], [#windows-logo() Windows], [#linux-logo() Linux (POSIX)], [Notes]),
-      [Current directory], [`.`], [`.`], [Refers to the folder you are currently in],
+      [Current directory], [`.`], [`.`], [Refers to the directory you are currently in],
       [Parent directory], [`..`], [`..`], [Moves one level up in the hierarchy],
-      [Directory separator], [`\`], [`/`], [Used to separate folder names in a path],
+      [Directory separator], [`\`], [`/`], [Used to separate directory names in a path],
       [Root directory], [Drive + `\` (e.g. `C:\`)], [`/`], [Top-level directory in the file system],
     )
 
     #only("2,3")[⚠️ `\` in POSIX systems is used for escaping characters (`\n ...`)\ ]
-    #only(3)[⚠️ `~` in `bash`-like (`...sh`) command interpreters is used for the _user's home folder_]
+    #only(3)[⚠️ `~` in `bash`-like (`...sh`) command interpreters is used for the _user's home directory_]
 ]

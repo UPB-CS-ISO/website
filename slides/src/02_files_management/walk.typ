@@ -25,12 +25,12 @@
 #let dot-tree-arrow = " <-- "
 #let dot-tree-comment = luma(110)
 
-// the icons drawn larger on the current folder and the target lines
+// the icons drawn larger on the current directory and the target lines
 #let dot-tree-target-mark = fs-target-mark
 #let dot-tree-icons = ("📁", "🎬", "📄", fs-cwd-mark, dot-tree-target-mark)
 #let dot-tree-big(body) = fs-big(icons: dot-tree-icons, body)
 
-// `big` - the lines whose emoji are drawn larger (the current folder and the target)
+// `big` - the lines whose emoji are drawn larger (the current directory and the target)
 #let dot-tree(notes: (:), here: (), big: (4,), target: none, caption: none) = {
   let width = calc.max(..dot-tree-lines.map(l => l.clusters().len()))
   let lines = dot-tree-lines
@@ -133,7 +133,7 @@
       (9, "bob", [`bob` go down ⬇️]),
       (10, "open", [open `notes.txt` 🎯]),
     ),
-    extra: [`..` removes the last folder _still left_ in the path],
+    extra: [`..` removes the last directory _still left_ in the path],
   ),
 )
 
@@ -142,12 +142,12 @@
 // the current directory of every example
 #let path-pwd = "/home/alice/Movies"
 
-// every `..` and the folder it removes share one color (and number)
+// every `..` and the directory it removes share one color (and number)
 #let path-pair-colors = (rgb("e65100"), rgb("6a1b9a"), rgb("00838f"), rgb("ad1457"))
 
 // How an absolute path is calculated from the current directory and a
 // relative path: join them with `/`, then, from left to right, every `.`
-// is dropped and every `..` removes itself and the folder before it.
+// is dropped and every `..` removes itself and the directory before it.
 // Returns the parts of the joined path, the removal steps (the indices of
 // the parts each step removes) and the resulting absolute path.
 #let path-resolve(pwd, rel) = {
@@ -220,7 +220,7 @@
     row-gutter: 0.5em,
     [🔗 #pwd-part("pwd") + #mono("/") + #rel-part("relative")], joined,
     ..(
-      [✂️ drop `.`, each `..` removes a folder], resolved,
+      [✂️ drop `.`, each `..` removes a directory], resolved,
     ).map(c => show-if(step >= 2, c)),
     ..([🌍 absolute path], mono(result)).map(c => show-if(step >= events.len() + 2, c)),
   )

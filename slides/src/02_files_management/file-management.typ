@@ -25,8 +25,8 @@
   📋 Copy Files and Directories
 
   ```terminal
-  $ cp [options] source destination_file_or_folder
-  $ cp [options] source... destination_folder
+  $ cp [options] source destination_file_or_directory
+  $ cp [options] source... destination_directory
   ```
 
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
@@ -37,7 +37,7 @@
     $ cp -r Movies/ /home/alice/backup/
     ```]]
 
-    #uncover("3-")[💡 without `-r`, `cp` refuses to copy folders]
+    #uncover("3-")[💡 without `-r`, `cp` refuses to copy directories]
 
     the source is *not changed*, a new copy is created
 
@@ -57,7 +57,7 @@
       └── backup/
           └── watchlist.txt
       ```,
-      caption: [copy a file into a folder],
+      caption: [copy a file into a directory],
     )]
     #only(2)[#fs-tree(
       cwd: 1,
@@ -74,7 +74,7 @@
           ├── the_odyssey.mkv
           └── toy_story_5.mkv
       ```,
-      caption: [several sources: the *last* parameter\ must be a *folder*],
+      caption: [several sources: the *last* parameter\ must be a *directory*],
     )]
     #only("3-")[#fs-tree(
       cwd: 1,
@@ -94,7 +94,7 @@
               ├── the_odyssey.mkv
               └── toy_story_5.mkv
       ```,
-      caption: [`-r` copies the folder and everything inside],
+      caption: [`-r` copies the directory and everything inside],
     )]
   ]
 ]
@@ -105,7 +105,7 @@
 
   ```terminal
   $ mv [options] source destination
-  $ mv [options] source... destination_folder
+  $ mv [options] source... destination_directory
   ```
 
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
@@ -117,7 +117,7 @@
     $ mv Movies/ Movies_2026/
     ```]
 
-    💡 renaming is moving to a new name in the same folder
+    💡 renaming is moving to a new name in the same directory
 
     #fs-legend
   ][
@@ -152,7 +152,7 @@
           ├── the_odyssey.mkv
           └── project_hail_mary.mkv
       ```,
-      caption: [move a file to a folder],
+      caption: [move a file to a directory],
     )]
     #only(3)[#fs-tree(
       cwd: 1,
@@ -169,7 +169,7 @@
           ├── supergirl.mp4
           └── michael.mp4
       ```,
-      caption: [move several files to a folder],
+      caption: [move several files to a directory],
     )]
     #only("4-")[#fs-tree(
       cwd: 1,
@@ -185,7 +185,7 @@
           ├── supergirl.mp4
           └── michael.mp4
       ```,
-      caption: [rename a folder, the contents stay inside],
+      caption: [rename a directory, the contents stay inside],
     )]
   ]
 ]
@@ -204,7 +204,7 @@
     $ mkdir -p Movies/2026/animation
     ```]
 
-    #uncover("2-")[💡 `-p` also creates the missing _parent_ folders]
+    #uncover("2-")[💡 `-p` also creates the missing _parent_ directories]
 
     #fs-legend
   ][
@@ -216,7 +216,7 @@
       ├── Movies/
       └── watchlist.txt
       ```,
-      caption: [make a folder],
+      caption: [make a directory],
     )]
     #only("2-")[#fs-tree(
       cwd: 1,
@@ -364,7 +364,7 @@
       │   └── the_odyssey.mp4
       └── Watched/
       ```,
-      caption: [`-r` deletes the folder and everything inside],
+      caption: [`-r` deletes the directory and everything inside],
     )]
     #only("4-")[#fs-tree(
       cwd: 1,
@@ -373,7 +373,7 @@
       /home/alice
       └── Watched/
       ```,
-      caption: [delete an empty folder],
+      caption: [delete an empty directory],
     )]
   ]
 ]

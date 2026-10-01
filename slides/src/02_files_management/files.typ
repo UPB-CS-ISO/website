@@ -52,7 +52,7 @@
   ⚠️ no drive letters, *one single root*
 ]
 
-// the Windows equivalent of a Linux folder, shown under its explanation
+// the Windows equivalent of a Linux directory, shown under its explanation
 #let windows-eq(body) = block(
   width: 100%,
   inset: (x: 0.8em, y: 0.5em),
@@ -65,14 +65,14 @@
 #let layout-steps = (
   ("all", [
     === The file system tree
-    - every file and folder lives under *one single root* `/`
-    - each folder has a _job_: programs, configuration, user data ...
+    - every file and directory lives under *one single root* `/`
+    - each directory has a _job_: programs, configuration, user data ...
     #windows-eq[one tree *per drive*: `C:\`, `D:\`, ... every partition gets a drive letter]
   ]),
   ((1,), [
     === `/` - root
     - the top of the hierarchy, the start of every absolute path
-    - other partitions and disks are _mounted_ in folders below it
+    - other partitions and disks are _mounted_ in directories below it
     #windows-eq[`C:\` - the root of the drive Windows is installed on]
   ]),
   ((2, 18), [
@@ -97,7 +97,7 @@
     - `/dev/sda` - the first disk, `/dev/sda1` - its first partition
     - `/dev/null` - discards everything written to it
     - `/dev/tty` - the current terminal
-    #windows-eq[no folder, devices have special names: `\\.\PhysicalDrive0`, `COM1`, `NUL`]
+    #windows-eq[no directory, devices have special names: `\\.\PhysicalDrive0`, `COM1`, `NUL`]
   ]),
   ((5,), [
     === `/etc` - configuration
@@ -109,9 +109,9 @@
   ]),
   ((6,7,8), [
     === `/home` - the users' files
-    - one folder for every user: `/home/alice`
+    - one directory for every user: `/home/alice`
     - documents, downloads, `Movies`, settings (`.bashrc`)
-    - 🔒 a user can usually write *only* in their own folder
+    - 🔒 a user can usually write *only* in their own directory
     #windows-eq[
       - `C:\Users\Ana` - `Videos`, `Downloads`, `Documents`
       - `C:\Users\Student`
@@ -137,7 +137,7 @@
     === `/mnt` - temporary mounts
     - the administrator mounts file systems here _manually_
     - `mount /dev/sdb1 /mnt/temp`
-    #windows-eq[a drive letter, or a volume mounted in an empty NTFS folder (_Disk Management_)]
+    #windows-eq[a drive letter, or a volume mounted in an empty NTFS directory (_Disk Management_)]
   ]),
   ((15,), [
     === `/opt` - optional applications
@@ -158,7 +158,7 @@
   ]),
   ((17,), [
     === `/root` - the administrator's home
-    - the home folder of the `root` user
+    - the home directory of the `root` user
     - ⚠️ not the same as `/`, the root of the file system
     #windows-eq[`C:\Users\Administrator`]
   ]),

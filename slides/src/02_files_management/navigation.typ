@@ -2,7 +2,7 @@
 #import "diagram.typ": *
 
 #slide[
-  = Navigation #text(size: 10pt, weight: "regular")[\ `pwd`, `cd`, `ls` and `tree`]
+  = Navigation #text(size: 10pt, weight: "regular")[\ `pwd`, `cd`, `ls`, `tree` and `find`]
 ]
 
 #slide[
@@ -14,6 +14,7 @@
       - Section 2.3.1 - `ls`
       - Section 2.4.1 - `cd`
       - Section 2.5.3 - `pwd`
+      - Section 2.5.6 - `find`
   + *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
     - Chapter 2 - _Utilizarea sistemului de fișiere_
       - Section 2.3.1 - _Afișarea și schimbarea directorului curent_
@@ -73,20 +74,29 @@
     $ cd [directory]    # `[directory]` means that the `directory` parameter is optional
     ```
 
+  #set text(size: 0.85em)
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
-    #reveal-terminal(before: none, lines: (1, 2, 3, 4), full: false)[```terminal
+    #reveal-terminal(before: none, lines: (1, 2, 4, 6, 7, 8), full: false)[```terminal
     $ cd /home/alice/Downloads  # absolute path
     $ cd ../Movies              # relative path
+    $ cd -                      # previous directory
+    /home/alice/Downloads
+    $ cd -
+    /home/alice/Movies
     $ cd ~                      # home directory
     $ cd                        # home directory
     ```]
 
-    #uncover("3-")[⚠️ `~` means `/home/alice`]
+    #uncover("3-")[🔁 `cd -` goes where you were *before* the last `cd`]
+
+    #uncover("4-")[⚠️ `cd -` is *not* "back": it switches between two directories]
   ][
     #only(1)[#cd-tree(5, [absolute: start from `/`, go down])]
     #only(2)[#cd-tree(4, [`..` goes up to `alice`, then into `Movies`])]
-    #only(3)[#cd-tree(3, [`~` is the home folder of the user])]
-    #only("4-")[#cd-tree(3, [no parameter, go to the home folder])]
+    #only(3)[#cd-tree(5, [`cd -` goes to `Downloads`, where we were\ before, and prints its path])]
+    #only(4)[#cd-tree(4, [`cd -` again goes to `Movies`,\ not to the directory before `Downloads`])]
+    #only(5)[#cd-tree(3, [`~` is the home directory of the user,\ `/home/alice`])]
+    #only("6-")[#cd-tree(3, [no parameter, go to the home directory])]
   ]
 ]
 
@@ -125,8 +135,8 @@
     │   └── the_odyssey.mkv
     └── watchlist.txt
     ```
-    #only(1)[#fs-tree(here: (3, 4, 6), cwd: 1, caption: [only the entries of the folder,\ not what is inside `Movies`], tree)]
-    #only(2)[#fs-tree(here: (4, 5), cwd: 1, caption: [a folder as parameter:\ list what is _inside_ `Movies`], tree)]
+    #only(1)[#fs-tree(here: (3, 4, 6), cwd: 1, caption: [only the entries of the directory,\ not what is inside `Movies`], tree)]
+    #only(2)[#fs-tree(here: (4, 5), cwd: 1, caption: [a directory as parameter:\ list what is _inside_ `Movies`], tree)]
     #only(3)[#fs-tree(here: (2, 3, 4, 6), cwd: 1, caption: [names starting with `.` are _hidden_], tree)]
     // the same tree with the type letter that `ls -l` prints for every entry it lists
     #let typed-tree = ```
@@ -150,7 +160,7 @@
 
 #slide[
   == `tree`
-  🌳 List a Folder and Everything Inside
+  🌳 List a Directory and Everything Inside
 
   ```terminal
   $ tree [options] [directory]
@@ -211,9 +221,9 @@
       only(frames, step)
     }
   ][
-    `ls` lists _one_ folder, `tree` also goes *inside* every folder
+    `ls` lists _one_ directory, `tree` also goes *inside* every directory
 
-    #uncover("2-")[`Movies` - only what is inside this folder]
+    #uncover("2-")[`Movies` - only what is inside this directory]
 
     #uncover("3-")[`-L 1` - only 1 level deep]
 
@@ -225,5 +235,64 @@
 
   #align(bottom)[
     #text(size: 0.8em)[📦 not installed by default? Ubuntu: `sudo apt install tree` #h(1em) Fedora: `sudo dnf install tree`]
+  ]
+]
+
+#slide[
+  == `find`
+  🔍 Search for Files and Directories
+
+  ```terminal
+  $ find [directory...] [conditions]
+  ```
+
+  // every step: the command and what it prints, in /home/alice
+  #let find-steps = (
+    ```terminal
+    $ find Movies
+    Movies
+    Movies/the_odyssey.mkv
+    ```,
+    ```terminal
+    $ find . -name "*.mkv"
+    ./Movies/the_odyssey.mkv
+    ```,
+    ```terminal
+    $ find . -type d
+    .
+    ./Downloads
+    ./Movies
+    ```,
+    ```terminal
+    $ find ~ -name watchlist.txt
+    /home/alice/watchlist.txt
+    ```,
+  )
+
+  #let tree = ```
+  ~ (/home/alice)
+  ├── Downloads
+  │   └── supergirl.mp4
+  ├── Movies
+  │   └── the_odyssey.mkv
+  └── watchlist.txt
+  ```
+
+  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
+    #for (i, step) in find-steps.enumerate() {
+      let frames = if i == find-steps.len() - 1 { str(i + 1) + "-" } else { i + 1 }
+      only(frames, step)
+    }
+
+    #uncover("2-")[`-name` - by name, `*` means _any characters_]
+
+    #uncover("3-")[`-type d` - only directories, `-type f` - only files]
+
+    #uncover("4-")[every result is a path that starts with the directory you gave]
+  ][
+    #only(1)[#fs-tree(here: (4, 5), cwd: 1, caption: [the directory and everything inside it], tree)]
+    #only(2)[#fs-tree(here: (5,), cwd: 1, caption: [search all of `.`, keep the names\ that end with `.mkv`], tree)]
+    #only(3)[#fs-tree(here: (1, 2, 4), cwd: 1, caption: [only the directories], tree)]
+    #only("4-")[#fs-tree(here: (6,), cwd: 1, caption: [start from an absolute path,\ get absolute paths], tree)]
   ]
 ]

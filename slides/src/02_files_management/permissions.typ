@@ -54,12 +54,12 @@
 ]
 
 #slide[
-  == Folder Data
+  == Directory Data
   where the file name is stored
 
   - _*links* iNodes to file names_
   - `.` and `..` are always present
-  - the folder is a _file whose contents are read by the file system driver_
+  - the directory is a _file whose contents are read by the file system driver_
 
   #align(center)[#image("img/permissions/folder_data.pdf", width: 80%)]
 ]
@@ -113,7 +113,7 @@
   how the file system finds the contents of `Movies/the_odyssey.mkv`
 
   #ascii-art[```
-   Movies/ (folder data)            inode 507                   data blocks
+   Movies/ (directory data)         inode 507                   data blocks
   ┌─────────────────┬───────┐     ┌────────────────────┐      ┌────┬────┬────┐
   │ name            │ inode │     │ type:   file       │      │ 12 │ 13 │ 14 │
   ├─────────────────┼───────┤     │ links:  1          │      └────┴────┴────┘
@@ -124,7 +124,7 @@
   ```]
 
   #set text(size: 12.5pt)
-  #uncover("2-")[① the *folder* maps a *name* to an *inode number*]\
+  #uncover("2-")[① the *directory* maps a *name* to an *inode number*]\
   #uncover("3-")[② the *inode* keeps everything about the file, *except its name*]\
   #uncover("4-")[③ the *data blocks* keep the contents]\
   #uncover("5-")[💡 a _link_ is just one more way to reach an inode]
@@ -212,11 +212,11 @@
   #table(
     columns: (auto, 1fr, 1fr),
     table.header([], [⚓ Hard Link (`ln`)], [🔗 Symbolic Link (`ln -s`)]),
-    [creates], [a new *name* in a folder], [a new small *file* that keeps a *path*],
+    [creates], [a new *name* in a directory], [a new small *file* that keeps a *path*],
     [inode], [the *same* as the target], [a *new* one],
     [`ls -l`], [the link count grows: `2`], [type `l`, `tonight.mkv -> the_odyssey.mkv`],
     [target deleted], [✅ the data is still there], [❌ the link is broken],
-    [folders], [❌ not allowed], [✅ allowed],
+    [directories], [❌ not allowed], [✅ allowed],
     [other partitions], [❌ inode numbers are per partition], [✅ it is just a path],
   )
 ]
@@ -230,10 +230,10 @@
   #table(
     columns: (auto, auto, auto, 1fr, 1fr),
     align: (center, center, left, left, left),
-    table.header([Symbol], [🔢 Octal], [Meaning], [🧾 For Files], [📁 For Folders]),
-    [`r`], [4], [📖 Read], [View file contents], [List files inside the folder],
+    table.header([Symbol], [🔢 Octal], [Meaning], [🧾 For Files], [📁 For Directories]),
+    [`r`], [4], [📖 Read], [View file contents], [List files inside the directory],
     [`w`], [2], [✏️ Write], [Modify or delete the file], [Create, delete or rename files inside],
-    [`x`], [1], [⚙️ Execute], [Run the file (if executable)], [Enter the folder (`cd`) and access contents],
+    [`x`], [1], [⚙️ Execute], [Run the file (if executable)], [Enter the directory (`cd`) and access contents],
   )
 
   Example

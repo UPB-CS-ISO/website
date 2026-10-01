@@ -222,7 +222,7 @@
          -L, --logical
                 keep the symbolic links that are part of the path
          -P, --physical
-                replace symbolic links with the folders they point to
+                replace symbolic links with the directories they point to
          --help show a short help text and exit
 
   EXIT STATUS
@@ -252,7 +252,7 @@
   ]
 ]
 
-// Every command that receives a file or a folder receives a *path* to it.
+// Every command that receives a file or a directory receives a *path* to it.
 // The tree used by the next slides: the current directory is `Movies`
 // (line 5) and the file used in the examples is `watchlist.txt` (line 7).
 #let path-param-tree(here, caption, target: 7) = {
@@ -302,10 +302,10 @@
     #only(2)[#path-param-tree((5, 6), [in the current directory], target: 6)]
     #only(3)[#path-param-tree((3, 5, 7), [from the current directory])]
     #only(4)[#path-param-tree((1, 2, 3, 7), [from the root `/`])]
-    #only(5)[#path-param-tree((3, 7), [from the home folder `/home/alice`])]
+    #only(5)[#path-param-tree((3, 7), [from the home directory `/home/alice`])]
   ]
   #align(bottom)[
-    When a command expects a *file* or a *folder*, it accepts *any path* to it
+    When a command expects a *file* or a *directory*, it accepts *any path* to it
   ]
 ]
 
@@ -331,7 +331,7 @@
     #let same-file = (
       ((3, 5, 7), "↩️", [relative path], [joined to `/home/alice/Movies`]),
       ((1, 2, 3, 7), "🌍", [absolute path], [starts from the root `/`]),
-      ((3, 7), "🏠", [home folder], [`~` is `/home/alice`]),
+      ((3, 7), "🏠", [home directory], [`~` is `/home/alice`]),
       ((2, 3, 4, 5, 7), "🌀", [a detour], [through `Downloads` and back]),
     )
     #for (i, (here, icon, title, how)) in same-file.enumerate() {
