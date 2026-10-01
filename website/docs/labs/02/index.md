@@ -320,7 +320,7 @@ nothing, even when you press it twice, then **no name** starts with what you typ
 | `ls <path>` | if `<path>` is a directory, list the directory's contents / if `<path>` is a file, list the details of the file |
 | `ls -a` | Also lists the hidden files (names that start with `.`) |
 | `ls -l` | Long format listing: type, permissions, owner, size, last modified date |
-| `tree` | Lists a directory and **everything inside it** |
+| `tree` | Lists a directory and **everything inside it**, as a tree |
 | `tree -L <number of levels>` | Only `<number of levels>` level deep |
 
 In the output of `ls -l`, the first letter is the **type**: `d` for a directory, `-` for a regular file. On Fedora,
