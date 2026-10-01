@@ -945,7 +945,7 @@ If a command prints `No such file or directory`, the path is wrong: fix it and r
     * `ls ~/lab02/Photos/cat.jpg/`
     * `cd ../lab02/Games` (run it from `~/lab02/Photos`)
 
-    **Check:** the fixed commands print no error. <small>→ [Troubleshooting](#troubleshooting)</small>
+    **Check:** the commands print no error. <small>→ [Troubleshooting](#troubleshooting)</small>
 
 ### Navigation
 
