@@ -786,7 +786,7 @@ Start it with `yazi`, or with a directory: `yazi ~/Downloads`. Quit with <kbd>q<
 | <kbd>↑</kbd> <kbd>↓</kbd> (or <kbd>k</kbd> <kbd>j</kbd>) | Choose a file | |
 | <kbd>←</kbd> (or <kbd>h</kbd>) | Go to the parent directory | `cd ..` |
 | <kbd>→</kbd> (or <kbd>l</kbd>) | Open the directory or the file | `cd` |
-| <kbd>.</kbd> | Show / hide hidden files | `ls -a` |
+| <kbd>.</kbd> | Show / hide hidden files/directories | `ls -a` |
 | <kbd>Space</kbd> | Select a file, for several files | |
 | <kbd>a</kbd> | Create a file; a name ending with `/` creates a directory | `touch`, `mkdir` |
 | <kbd>r</kbd> | Rename | `mv` |
