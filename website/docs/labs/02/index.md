@@ -15,10 +15,11 @@ in this lab and in all the following ones, receives paths.
 - Write **absolute** and **relative** paths, and know what `.`, `..` and `~` mean
 - Calculate the absolute path from the current directory and a relative path
 - Read the **manual page** of a command and understand its `SYNOPSIS`
-- Navigate with `pwd`, `cd`, `ls` and `tree`
+- Navigate with `pwd`, `cd`, `ls` and `tree`, and type less with **TAB completion**
 - Find files anywhere in a directory tree with `find`
-- Read text files with `cat` and `nano`
+- Read text files with `cat` and `nano`, and find out the type of any file with `file`
 - Create, copy, move, rename and delete files and directories with `mkdir`, `touch`, `nano`, `cp`, `mv`, `rm` and `rmdir`
+- Work with names that contain spaces and other special characters
 - Install and use **Yazi** to manage files with a few keys, including tabs
 
 ## Resources
@@ -27,11 +28,11 @@ in this lab and in all the following ones, receives paths.
 de Operare, Printech 2021](https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf)*
    - Chapter 2 - *Utilizarea sistemului de fișiere*, sections 2.1.2, 2.1.3, 2.3.1, 2.3.2, 2.3.4 and 2.3.5
 2. *Brian Ward, How LINUX Works, 3rd Edition, No Starch Press, 2021*
-   - Chapter 2 - *Basic Commands and Directory Hierarchy*, sections 2.3, 2.4, 2.5.3, 2.5.6, 2.12, 2.13 and 2.19
+   - Chapter 2 - *Basic Commands and Directory Hierarchy*, sections 2.3, 2.4, 2.5.3, 2.5.5, 2.5.6, 2.12, 2.13 and 2.19
 3. *[Yazi - Quick Start](https://yazi-rs.github.io/docs/quick-start)*
 4. *[Yazi - Installation](https://yazi-rs.github.io/docs/installation)*
 5. The lecture slides: [02. Files Management](/docs/lectures/02)
-6. The manual pages: `man ls`, `man cp`, `man mv`, `man rm`, `man mkdir`, `man tree`, `man find`
+6. The manual pages: `man ls`, `man cp`, `man mv`, `man rm`, `man mkdir`, `man tree`, `man find`, `man file`
 
 ## The File System Tree
 
@@ -86,7 +87,7 @@ works the same no matter where you are:
 
 ```
 /home/student/Movies/the_odyssey.mkv
-/etc/hostname
+/etc/hosts
 /tmp
 ```
 
@@ -205,9 +206,12 @@ You can also mix relative and absolute paths in the same command: `cp ../watchli
 ## Reading the Manual
 
 Every command has a **manual page**: `man ls`, `man cp`, and so on. Scroll with the arrow keys and
-<kbd>Space</kbd>, search with <kbd>/</kbd> followed by a word and <kbd>Enter</kbd>, and quit with <kbd>q</kbd>.
+<kbd>Space</kbd>, jump to the beginning or the end of the page with <kbd>g</kbd> and <kbd>G</kbd>, see all the
+keys with <kbd>h</kbd>, and quit with <kbd>q</kbd>.
 
-The most useful part of a manual page is the `SYNOPSIS`: it shows how to call the command.
+A manual page has several parts: `NAME` (what the command does, in one line), `SYNOPSIS` (how to call it),
+`DESCRIPTION` (what it does and **all its options**, one after another) and, at the end, `SEE ALSO` (related
+commands). The most useful part of a manual page is the `SYNOPSIS`: it shows how to call the command.
 
 ```
 SYNOPSIS
@@ -223,6 +227,45 @@ SYNOPSIS
 | `-r` | a short option |
 | `--recursive` | a long option, often the same as a short one |
 
+### Searching in a Manual Page
+
+A manual page is long: `man ls` has more than 200 lines. Do not read it from the top, **search** in it:
+
+| Key | What it does |
+|-|-|
+| <kbd>/</kbd> `word` <kbd>Enter</kbd> | Searches **forward** for `word` and jumps to the first line that contains it |
+| <kbd>n</kbd> | Jumps to the **next** match |
+| <kbd>N</kbd> | Jumps to the **previous** match |
+| <kbd>?</kbd> `word` <kbd>Enter</kbd> | Searches **backward**, towards the beginning of the page |
+
+When you search, `man` **highlights** every match on the screen. The search is case sensitive: `/Size` does not find
+`size`.
+
+For example, say you want `ls` to list the files in **reverse** order, but you do not know the option:
+
+1. Run `man ls`.
+2. Type <kbd>/</kbd>, then `reverse`, and press <kbd>Enter</kbd>. The page jumps to the first line that contains
+   `reverse`:
+
+   ```
+          -r, --reverse
+                 reverse order while sorting
+   ```
+
+3. This is what you were looking for: the option is `-r` (or the long one, `--reverse`). If the first match is not
+   what you need, press <kbd>n</kbd> until you find it.
+4. Press <kbd>q</kbd> and try it: `ls -r`.
+
+How to search well:
+
+* **Search for what you want to do**, not for the option, since you do not know it yet: `size`, `hidden`, `reverse`,
+  `directories`, `sort`, `time`. The manual is in English, so search for English words.
+* **Try other words** if you find nothing: `size`, then `human`, then `bytes`.
+* **Read the lines around** every match, a word can appear in many options. Press <kbd>n</kbd> to go to the next one.
+* **Jump to an option you already know**: in the manual, an option starts its line, after a few spaces. To jump to
+  the description of `-l`, search for `^ *-l`: `^` means "the start of the line" and ` *` means "any number of
+  spaces". Searching only for `-l` also stops at every place where `-l` is just mentioned.
+
 :::caution
 
 Always read the manual **before** searching online or asking an AI. The manual on your computer is written for the
@@ -236,6 +279,34 @@ Most commands also print a short summary of their options with `--help`, for exa
 
 :::
 
+## TAB Completion
+
+You do not have to type the full names of files, directories and commands. Type the first letters and press
+<kbd>Tab</kbd>:
+
+* if only **one** name starts with those letters, the shell writes the rest of it for you;
+* if **several** names start with them, nothing happens: press <kbd>Tab</kbd> a **second** time to see all of them,
+  type one or two more letters and press <kbd>Tab</kbd> again.
+
+| You type | You press | The shell |
+|-|-|-|
+| `cd Mo` | <kbd>Tab</kbd> | completes it to `cd Movies/` (only `Movies` starts with `Mo`) |
+| `cat wa` | <kbd>Tab</kbd> | completes it to `cat watchlist.txt` |
+| `ls /etc/host` | <kbd>Tab</kbd> <kbd>Tab</kbd> | shows all the names that start with `host`, for example `host.conf  hosts` |
+| `ls /etc/she` | <kbd>Tab</kbd> | completes it to `ls /etc/shells` |
+| `whoa` | <kbd>Tab</kbd> | completes the **command** to `whoami` |
+| `ls --recu` | <kbd>Tab</kbd> | completes the **option** to `ls --recursive` |
+
+Completion works for every part of a path: `cd /us`<kbd>Tab</kbd>`sh`<kbd>Tab</kbd>`do`<kbd>Tab</kbd> becomes
+`cd /usr/share/doc/`.
+
+:::tip
+
+Use <kbd>Tab</kbd> all the time: it is faster, and it does not make typing mistakes. If <kbd>Tab</kbd> completes
+nothing, even when you press it twice, then **no name** starts with what you typed: the path is wrong.
+
+:::
+
 ## Navigation
 
 | Command | What it does |
@@ -246,21 +317,22 @@ Most commands also print a short summary of their options with `--help`, for exa
 | `cd` or `cd ~` | Goes to your home directory |
 | `cd -` | Goes to the previous directory (where you were before the last `cd`) |
 | `ls` | Lists the current directory |
-| `ls <directory>` | Lists another directory |
+| `ls <path>` | if `<path>` is a directory, list the directory's contents / if `<path>` is a file, list the details of the file |
 | `ls -a` | Also lists the hidden files (names that start with `.`) |
 | `ls -l` | Long listing: type, permissions, owner, size, date |
-| `ls -lh` | Long listing with human readable sizes (`4.0K`, `21M`) |
 | `tree` | Lists a directory and **everything inside it** |
-| `tree -L 1` | Only one level deep |
-| `tree -d` | Only the directories |
+| `tree -L <number of levels>` | Only `<number of levels>` level deep |
 
-In the output of `ls -l`, the first letter is the **type**: `d` for a directory, `-` for a regular file.
+In the output of `ls -l`, the first letter is the **type**: `d` for a directory, `-` for a regular file. On Fedora,
+the permissions end with a `.`: it shows that the file has an SELinux label, you can ignore it for now. The first
+line, `total`, is the space used by the listed files, in blocks of 1 KB.
 
 ```shell-session
 $ ls -l
-drwxr-xr-x  2 student student  4096 Sep 20 18:02 Downloads
-drwxr-xr-x  2 student student  4096 Sep 26 21:15 Movies
--rw-r--r--  1 student student 21504 Sep 28 21:40 watchlist.txt
+total 32
+drwxr-xr-x. 2 student student  4096 Sep 20 18:02 Downloads
+drwxr-xr-x. 2 student student  4096 Sep 26 21:15 Movies
+-rw-r--r--. 1 student student 21504 Sep 28 21:40 watchlist.txt
 ```
 
 `tree` is not always installed. On Fedora install it with `sudo dnf install tree`, on Ubuntu with
@@ -372,11 +444,12 @@ the_odyssey.mkv
 [student@fedora ~]$ ls -a
 .  ..  .bashrc  Downloads  Movies  watchlist.txt
 [student@fedora ~]$ ls -l
-drwxr-xr-x  2 student student  4096 Sep 20 18:02 Downloads
-drwxr-xr-x  2 student student  4096 Sep 26 21:15 Movies
--rw-r--r--  1 student student 21504 Sep 28 21:40 watchlist.txt
-[student@fedora ~]$ ls -lh watchlist.txt
--rw-r--r--  1 student student 21K Sep 28 21:40 watchlist.txt
+total 32
+drwxr-xr-x. 2 student student  4096 Sep 20 18:02 Downloads
+drwxr-xr-x. 2 student student  4096 Sep 26 21:15 Movies
+-rw-r--r--. 1 student student 21504 Sep 28 21:40 watchlist.txt
+[student@fedora ~]$ ls -l watchlist.txt
+-rw-r--r--. 1 student student 21504 Sep 28 21:40 watchlist.txt
 ```
 
 * `ls` listed the current directory. It does **not** show what is inside `Movies`.
@@ -384,7 +457,7 @@ drwxr-xr-x  2 student student  4096 Sep 26 21:15 Movies
 * `ls -a` also listed the hidden entries: `.bashrc`, and `.` and `..`, which are in every directory.
 * `ls -l` listed one entry per line: the type (`d` directory, `-` file), the permissions, the owner, the size in
   bytes, the date and the name.
-* `ls -lh watchlist.txt` showed the details of only one file, with the size as `21K` instead of `21504`.
+* `ls -l watchlist.txt` showed the details of only one file.
 
 #### `tree`
 
@@ -397,23 +470,19 @@ drwxr-xr-x  2 student student  4096 Sep 26 21:15 Movies
 │   └── the_odyssey.mkv
 └── watchlist.txt
 
-2 directories, 3 files
+3 directories, 3 files
 [student@fedora ~]$ tree -L 1
 .
 ├── Downloads
 ├── Movies
 └── watchlist.txt
 
-2 directories, 1 file
-[student@fedora ~]$ tree -d Movies
-Movies
-
-0 directories
+3 directories, 1 file
 ```
 
-* `tree` showed the current directory and **everything inside it**, and counted the directories and files.
+* `tree` showed the current directory and **everything inside it**, and counted the directories and files. The
+  count includes the directory it started from, `.`, so there are **3** directories.
 * `tree -L 1` stopped after the first level, like `ls`.
-* `tree -d Movies` showed only the directories inside `Movies`, and there are none.
 
 ## Finding Files: `find`
 
@@ -498,20 +567,21 @@ ways to look inside a text file: `cat` and `nano`.
 `cat` prints the whole content of one or more files in the terminal, and then the prompt comes back:
 
 ```shell-session
-[student@fedora ~]$ cat /etc/hostname
-fedora
+[student@fedora ~]$ cat /etc/machine-id
+4c8e1f0a9d2b4e7f8a6c3b5d1e0f2a9c
 [student@fedora ~]$ cat watchlist.txt
 The Odyssey
 Project Hail Mary
-[student@fedora ~]$ cat /etc/hostname watchlist.txt
-fedora
+[student@fedora ~]$ cat /etc/machine-id watchlist.txt
+4c8e1f0a9d2b4e7f8a6c3b5d1e0f2a9c
 The Odyssey
 Project Hail Mary
 [student@fedora ~]$ cat notes.txt
 [student@fedora ~]$
 ```
 
-* `cat /etc/hostname` printed the content of the file: the name of the computer, on a single line.
+* `cat /etc/machine-id` printed the content of the file: a number that is different on every installation of
+  Linux, on a single line.
 * `cat watchlist.txt` printed a file from the current directory, using a relative path.
 * With several files, `cat` printed them one after another, with nothing in between.
 * `notes.txt` is empty, so `cat` printed nothing at all.
@@ -559,6 +629,37 @@ You can open the system files from `/etc` with `nano` and read them, but you can
 | `cat` | The file is short, and you want to see it all at once, in the terminal |
 | `nano` (or `nano -v`) | The file is long, you want to scroll or search in it, or you want to change it |
 
+### What Kind of File: `file`
+
+The extension (`.txt`, `.jpg`, `.mkv`) is only **part of the name**: Linux does not need it, and it can lie. `file`
+looks **inside** a file and tells you what it really is (if `file` is missing, install it with
+`sudo dnf install file`):
+
+```shell-session
+[student@fedora ~]$ file watchlist.txt notes.txt Movies /etc/hosts
+watchlist.txt: ASCII text
+notes.txt:     empty
+Movies:        directory
+/etc/hosts:    ASCII text
+[student@fedora ~]$ file /usr/bin/bash
+/usr/bin/bash: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, ...
+[student@fedora ~]$ cp /etc/hosts photo.jpg
+[student@fedora ~]$ file photo.jpg
+photo.jpg: ASCII text
+```
+
+* `watchlist.txt` and `/etc/hosts` are **text** files: you can read them with `cat` or `nano`.
+* `notes.txt` is **empty**, and `Movies` is a **directory**.
+* `/usr/bin/bash` is an **ELF executable**, a program: do not `cat` it (the output above is shortened).
+* `photo.jpg` is called like a picture, but `file` shows that it is text: the extension does not change what is
+  inside.
+
+:::tip
+
+Not sure if you can `cat` a file? Run `file` first: if the answer contains `text`, you can.
+
+:::
+
 ## Managing Files
 
 | Command | What it does |
@@ -596,6 +697,57 @@ do not fully understand.
 
 :::
 
+### Names with Spaces and Special Characters
+
+The shell splits a command into **words** at every space. A name that contains a space becomes **two** parameters:
+
+```shell-session
+[student@fedora ~]$ touch shopping list.txt
+[student@fedora ~]$ ls
+Downloads  list.txt  Movies  shopping  watchlist.txt
+```
+
+`touch` received two names, `shopping` and `list.txt`, and created two files. To give a name with spaces as **one**
+parameter, put it between **quotes**, or put a `\` before every space:
+
+```shell-session
+[student@fedora ~]$ rm shopping list.txt
+[student@fedora ~]$ touch "shopping list.txt"
+[student@fedora ~]$ ls -l shopping\ list.txt
+-rw-r--r--. 1 student student 0 Sep 29 10:12 'shopping list.txt'
+[student@fedora ~]$ rm 'shopping list.txt'
+```
+
+* `rm shopping list.txt` deleted the two files created by mistake.
+* `"shopping list.txt"`, `'shopping list.txt'` and `shopping\ list.txt` are the **same** name. <kbd>Tab</kbd> completion adds the
+  `\` for you.
+* `ls` shows the name between quotes, so you can see that the space is part of the name.
+
+Other characters also mean something to the shell: `*`, `?`, `$`, `!`, `&`, `;`, `|`, `<`, `>`, `(`, `)`, `#`,
+`'`, `"` and `\`. Put names that contain them between **single** quotes, for example `touch 'rock & roll.txt'`
+(between double quotes, `$` and `!` still have a special meaning). For a name with a `'` in it, use double quotes:
+`touch "it's mine.txt"`.
+
+A name that starts with `-` looks like an **option**:
+
+```shell-session
+[student@fedora ~]$ touch -list.txt
+touch: invalid option -- 'l'
+Try 'touch --help' for more information.
+[student@fedora ~]$ touch ./-list.txt
+[student@fedora ~]$ rm ./-list.txt
+```
+
+Quotes do not help here, as the name still starts with `-`. `./-list.txt` is another **path** to the same file, and
+it does not start with `-`.
+
+:::tip
+
+Name your own files using only letters, digits, `.`, `_` and `-` (but not at the start): `shopping_list.txt` instead of
+`shopping list.txt`. They are much easier to use in the terminal.
+
+:::
+
 ### Examples
 
 The examples continue one after another, starting from the same home directory as in [Navigation](#navigation).
@@ -622,10 +774,10 @@ mkdir: cannot create directory 'Series/2025/comedy': No such file or directory
 ```shell-session
 [student@fedora ~]$ touch notes.txt
 [student@fedora ~]$ ls -l notes.txt
--rw-r--r--  1 student student 0 Oct  1 10:15 notes.txt
+-rw-r--r--. 1 student student 0 Oct  1 10:15 notes.txt
 [student@fedora ~]$ touch watchlist.txt
 [student@fedora ~]$ ls -l watchlist.txt
--rw-r--r--  1 student student 21504 Oct  1 10:16 watchlist.txt
+-rw-r--r--. 1 student student 21504 Oct  1 10:16 watchlist.txt
 ```
 
 * `touch notes.txt` created a new, **empty** file: its size is `0`.
@@ -834,23 +986,50 @@ To copy a file from `~/Downloads` to `~/Movies`: open `~/Downloads` in tab 1, op
 | `rmdir` says `Directory not empty` | `rmdir` deletes only empty directories. Delete what is inside first, or use `rm -r` (carefully) |
 | `cp` says `-r not specified; omitting directory` | Add `-r` to copy a directory |
 | `mv` or `cp` with several files says `target ... is not a directory` | The last parameter must be an existing directory |
+| A name with spaces became several files | Put the name between quotes: `touch "shopping list.txt"` |
+| `invalid option` for a file whose name starts with `-` | Use a path that does not start with `-`: `./-list.txt` |
 | `Permission denied` | You are trying to write outside your home directory (and `/tmp`) |
 | `yazi: command not found` | Yazi is not installed, see [Installing Yazi on Fedora 44](#installing-yazi-on-fedora-44) |
 | Yazi shows strange symbols instead of icons | The terminal font has no icons. Everything still works; for icons, use [Ghostty](#a-better-terminal-for-yazi-ghostty) |
 
 ## Exercises
 
-The exercises are marked for the two types of lab:
+The exercises get harder as you go:
 
-* 🌱 **basic** (1 hour - **AC**): do only the exercises marked with 🌱;
+* [First Steps](#first-steps) (exercises 1 - 34) goes once through **everything** in this lab, with easy exercises;
+* [Going Further](#going-further) (exercises 35 - 53) has harder exercises;
+* [Challenges](#challenges) (exercises 54 - 62) has the hardest ones.
+
+The exercises are also marked for the two types of lab:
+
+* 🌱 **basic** (1 hour - **AC**): do only the exercises marked with 🌱 (exercises 1 - 34);
 * 🌳 **full** (2 hours - **CD**): do all the exercises, both 🌱 and 🌳.
 
 Do the exercises **in order**: each one uses the files left by the previous ones.
 
-Keep **two terminals side by side** in Sway: one to run the commands, and one where you check the result with
-`tree`, `ls` or `pwd`. In the paths below, replace `student` with your user name (run `whoami` to find it).
+Some exercises ask for things that the lab does not show you, for example an option that is not in the tables
+above. Find it in the **manual page** of the command (`man <command>`), as explained in
+[Searching in a Manual Page](#searching-in-a-manual-page): search for words that describe what you need.
 
-### Setup
+Keep **two terminals side by side** in Sway: one to run the commands, and one where you check the result with
+`tree ~/lab02`, `ls` or `pwd` after **every** exercise. In the paths below, replace `student` with your user name
+(run `whoami` to find it).
+
+:::tip
+
+If a command prints `No such file or directory`, the path is wrong: fix it and run the command again.
+
+:::
+
+:::danger
+
+Some exercises use real files of the operating system, outside your home directory. You can **read** most of them,
+but you cannot change them: they belong to the administrator (`root`). Never use `sudo` in these exercises. Without
+it, you cannot break anything; with it, a typing mistake in `/etc` can stop the computer from starting.
+
+:::
+
+### First Steps
 
 1. 🌱 **The practice tree**:
    1. Run these commands to create the directories and files used in the exercises (copy them from the browser with
@@ -884,13 +1063,6 @@ Keep **two terminals side by side** in Sway: one to run the commands, and one wh
    ```
 
    <small>→ [The File System Tree](#the-file-system-tree) · [Navigation](#navigation)</small>
-
-### Paths
-
-:::tip
-If a command prints `No such file or directory`, the path is wrong: fix it and run the command again.
-:::
-
 2. 🌱 **Where am I**: Go to the `Games` directory using an **absolute** path, then into `puzzles` using a **relative**
    path, then back to `~/lab02` with a **single** `cd` that uses only `..`. Print the current directory after every
    step.
@@ -910,35 +1082,163 @@ If a command prints `No such file or directory`, the path is wrong: fix it and r
    with another **single** `cd`, both with relative paths.
 
    **Check:** you end up in `/home/student/lab02/Games/2026/puzzles`. <small>→ [`.` and `..`](#-and-)</small>
-6. 🌳 **Calculate**: Go to `~/lab02/Games`. Create the file `~/lab02/answers.txt` with `nano`, **without leaving**
-   `Games`. In it, write the absolute path of each of these relative paths:
-   * `../Photos/dog.jpg`
-   * `./2026/../chess.txt`
-   * `../../lab02/Recipes/.`
-   * `2026/puzzles/../../../books.txt`
-   * `../Games/2026/puzzles/../../../Photos/./cat.jpg`
-   * `../../../../..`
-
-   **Check:** `realpath` prints the same absolute paths as the ones you wrote. <small>→ [From Relative to Absolute](#from-relative-to-absolute)</small>
-7. 🌳 **Tricky paths**: From `~/lab02/Photos`, calculate where `../Games/2026/./../../Photos/../Recipes` leads, and write
-   each step of the calculation in `answers.txt`. Go there with a **single** `cd`. Then go back to `Photos` with a
-   path that contains **exactly two** `..`.
-
-   **Check:** you are back in `/home/student/lab02/Photos`. <small>→ [From Relative to Absolute](#from-relative-to-absolute)</small>
-8. 🌳 **Above the root**: Go to `/` and try to go even higher. Find out, with `realpath` and `ls`, where `/../../..`
-   leads. From `/`, reach `~/lab02` with a relative path that starts with `../..`.
-
-   **Check:** `pwd` prints `/` no matter how many times you try to go up, and the last `cd` works. <small>→ [`.` and `..`](#-and-)</small>
-9. 🌱 **Same file, many paths**: From `~/lab02/Games/2026`, show the details of `books.txt` with **five** different
+6. 🌱 **Same file, many paths**: From `~/lab02/Games/2026`, show the details of `books.txt` with **five** different
    paths: an absolute one, one with `~`, a relative one with only `..`, a relative one that goes through `Photos`,
    and a relative one that goes through **both** `Photos` and `Recipes`.
 
    **Check:** all five commands print the same line. <small>→ [Every File is a Path](#every-file-is-a-path)</small>
-10. 🌳 **Home from anywhere**: List `~/lab02` from `/usr/bin`, from `/tmp` and from `/usr/share/doc`, each time with a
-    **relative** path. Write in `answers.txt` how many `..` you needed each time.
+7. 🌱 **Walk around**: From your home directory, go to `~/lab02/Games/2026/puzzles` with a **single** `cd` and an
+   absolute path, then to `~/lab02/Recipes` with a **single** `cd` and a relative path. Go back to `puzzles` with
+   `cd -`, then home with the shortest command you can.
 
-    **Check:** the three commands print the same files. <small>→ [The Home Directory: `~`](#the-home-directory-)</small>
-11. 🌳 **Fix the path**: Each of these commands fails. Find out why and fix it:
+   **Check:** `cd -` prints `/home/student/lab02/Games/2026/puzzles`, and you end up in `/home/student`. <small>→ [Navigation](#navigation)</small>
+8. 🌱 **Back and forth**: Go to `/etc`, then to `~/lab02/Recipes`. Using only `cd -`, jump back and forth between
+   them twice. Then, from `Recipes`, list `/etc`; jump to `/etc` with `cd -` and, from there, list `Recipes` with a
+   relative path.
+
+   **Check:** each `cd -` prints the directory it went to, and the last `pwd` prints `/etc`. <small>→ [The Previous Directory: `cd -`](#the-previous-directory-cd--)</small>
+9. 🌱 **Listing**: With a **single** `ls` command, list `~/lab02` so that you see the hidden file, can tell the files
+   from the directories, and read the sizes in `K` / `M` (look in `man ls` for the sizes).
+
+   **Check:** you found `.secret`, and three directories. <small>→ [Navigation](#navigation) · [Reading the Manual](#reading-the-manual)</small>
+10. 🌱 **ls with a directory**: From your home directory, list `~/lab02/Photos`, `~/lab02/Games/2026/puzzles` and `/` with a
+    **single** `ls`, **without** changing the current directory.
+
+    **Check:** the output has three parts, one for each directory, and `pwd` still prints your home directory. <small>→ [Every File is a Path](#every-file-is-a-path)</small>
+11. 🌱 **First look with tree**: Show the tree of `~/lab02` only **one** level deep, then the whole tree with a `/`
+    after the name of every directory (look in `man tree`).
+
+    **Check:** the first command shows `Games`, `Photos` and `Recipes`, but not `chess.txt`; in the second one, every
+    directory ends with `/`. <small>→ [Navigation](#navigation) · [Reading the Manual](#reading-the-manual)</small>
+12. 🌱 **Type less**: Press <kbd>Tab</kbd> after typing **at most three letters** of every name:
+    * go to `/usr/share/doc`;
+    * from there, show the details of `~/lab02/Games/2026/puzzles/sudoku.txt`;
+    * find out which names in `/etc` start with `pass`, without running any command.
+
+    **Check:** `pwd` prints `/usr/share/doc`, `ls -l` shows `sudoku.txt`, and <kbd>Tab</kbd> <kbd>Tab</kbd> shows
+    `passwd` and `passwd-`. <small>→ [TAB Completion](#tab-completion)</small>
+13. 🌱 **Find by name**: Find `sudoku.txt` twice: once searching from `~/lab02` with a relative start, once from your
+    home directory with an absolute start.
+
+    **Check:** the first command prints `./Games/2026/puzzles/sudoku.txt` and the second one
+    `/home/student/lab02/Games/2026/puzzles/sudoku.txt`. <small>→ [Finding Files](#finding-files-find)</small>
+14. 🌱 **Find by extension**: With a **single** `find`, find all the pictures (`.jpg`) in `~/lab02`. Then all the
+    `.txt` files.
+
+    **Check:** you get `cat.jpg` and `dog.jpg`, then `books.txt`, `chess.txt` and `sudoku.txt`. <small>→ [Finding Files](#finding-files-find)</small>
+15. 🌱 **Files or directories**: Find only the directories in `~/lab02`, then only the files.
+
+    **Check:** the directories are `.`, `Games`, `2026`, `puzzles`, `Photos` and `Recipes`; the files include the hidden
+    `.secret`. <small>→ [Finding Files](#finding-files-find)</small>
+16. 🌱 **Use what you found**: From `~/lab02/Recipes`, find `chess.txt` searching from `..`, then copy it into `/tmp`
+    using the path that `find` printed.
+
+    **Check:** `ls /tmp` shows `chess.txt`. <small>→ [Finding Files](#finding-files-find) · [Every File is a Path](#every-file-is-a-path)</small>
+17. 🌱 **Which Linux**: Print the content of `/etc/os-release` with `cat`, with the **number** of every line in front of it
+    (look in `man cat`). Then open it in `nano` in view mode and search for `VERSION` with <kbd>Ctrl</kbd>+<kbd>W</kbd>.
+
+    **Check:** the lines `NAME=` and `VERSION_ID=` show `Fedora` and `44`, and every line starts with its number. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano) · [Reading the Manual](#reading-the-manual)</small>
+18. 🌱 **The identity of the computer**: Print the content of `/etc/machine-id`, the number that identifies this
+    installation of Linux. Then run `hostnamectl`, which prints information about the computer.
+
+    **Check:** the `Machine ID` line of `hostnamectl` shows the same number as the file. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano)</small>
+19. 🌱 **The users**: Print `/etc/passwd`, the list of the users of the system, and find the line of your user (it
+    starts with your user name; on some lab computers the accounts come from a central server, then look for the
+    line of `root`). Copy the file to `/tmp/users.txt` and change the copy with `nano`.
+
+    **Check:** `ls -l /etc/passwd /tmp/users.txt` shows that only the copy was changed (look at the dates). <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano) · [Managing Files](#managing-files)</small>
+20. 🌱 **The shells**: Print `/etc/shells`, the list of the shells installed. Then show the details of
+    `/usr/bin/bash`, the shell that runs in your terminal.
+
+    **Check:** `/usr/bin/bash` is in the list, and `ls -l` shows a file (first letter `-`) of about 1 MB. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano) · [Every File is a Path](#every-file-is-a-path)</small>
+21. 🌱 **Programs are files**: Show the details of the `ls` program itself, `/usr/bin/ls`. Then find every program in
+    `/usr/bin` whose name starts with `mk`.
+
+    **Check:** `mkdir` is one of them. <small>→ [Finding Files](#finding-files-find)</small>
+22. 🌱 **What is this file**: With a **single** `file` command, find out the type of `/etc/hosts`, `/usr/bin/ls`,
+    `/boot` and `~/lab02/Photos/cat.jpg`.
+
+    **Check:** `/etc/hosts` is text, `/usr/bin/ls` is an `ELF` executable, `/boot` is a directory, and `cat.jpg` is
+    `empty`, even if its name ends with `.jpg`. <small>→ [What Kind of File](#what-kind-of-file-file)</small>
+23. 🌱 **Create files**: Create an **empty** file `groceries.txt` and a file `plan.txt` with two lines of text in it.
+    Then create `soup.txt`, `pizza.txt` and `cake.txt` in `Recipes` with a **single** command, without going into
+    `Recipes`.
+
+    **Check:** `ls -l` shows size `0` for `groceries.txt`, but not for `plan.txt`; `Recipes` has the three new files. <small>→ [Managing Files](#managing-files)</small>
+24. 🌱 **Create directories**: Create `Albums/2024/summer` and `Albums/2025/winter` with a **single** command.
+
+    **Check:** `tree` shows both directories. <small>→ [Managing Files](#managing-files)</small>
+25. 🌱 **Copy files**: Copy `books.txt` into `Albums`. Copy `cat.jpg` and `dog.jpg` from `Photos` into `Games` with a
+    **single** command, and make `cp` print the name of every file it copies (look in `man cp`). Copy `dog.jpg` into `Albums/2025/winter` under the name `snow_dog.jpg`.
+
+    **Check:** `cp` printed a line like `'Photos/cat.jpg' -> 'Games/cat.jpg'` for each picture; the two pictures are both
+    in `Photos` and in `Games`, and `snow_dog.jpg` is in `winter`. <small>→ [Managing Files](#managing-files) · [Reading the Manual](#reading-the-manual)</small>
+26. 🌱 **Copy a directory**: Copy the whole `Games` directory to `/tmp/Games_backup`. Then run **exactly the same** command a
+    second time, and find out where the second copy went. Delete **only** the second copy.
+
+    **Check:** `tree /tmp/Games_backup` shows the same files as `tree ~/lab02/Games`, and nothing more. <small>→ [Managing Files](#managing-files)</small>
+27. 🌱 **Rename and move**: Rename `groceries.txt` to `shopping.txt` and move it into `Recipes` with a **single** `mv`.
+    Move `plan.txt` and `books.txt` into `Albums` with a **single** command.
+
+    **Check:** `Recipes` has `shopping.txt`; `Albums` has `books.txt` and `plan.txt`; no `.txt` file is left directly
+    in `~/lab02`. <small>→ [Managing Files](#managing-files)</small>
+28. 🌱 **Delete**: Delete `/tmp/Games_backup/chess.txt`. Move `sudoku.txt` from `puzzles` up into `Games/2026`, then
+    delete the empty `puzzles` directory. Then delete `Albums/2024` and
+    everything in `Albums/2025` using **only** `rmdir` and `rm` (no `-r`). Make `rm` **ask you** before it deletes every
+    file (look in `man rm`).
+
+    **Check:** `rm` asked `remove regular empty file ...?` before every file; `Albums` has only `books.txt` and
+    `plan.txt`, and `Games/2026` has only `sudoku.txt`. <small>→ [Managing Files](#managing-files) · [Reading the Manual](#reading-the-manual)</small>
+29. 🌱 **Spaces in names**: In `~/lab02/Recipes`, create the directory `Shopping Lists` and, inside it, the files
+    `week 1.txt` and `week 2.txt` with a **single** command. Copy `week 1.txt` to `/tmp`, and rename `week 2.txt` to
+    `last week.txt`. At the end, delete the whole `Shopping Lists` directory.
+
+    **Check:** `ls /tmp` shows `'week 1.txt'`; before the last step `Shopping Lists` has `week 1.txt` and
+    `last week.txt`, and after it `Recipes` no longer has `Shopping Lists`. <small>→ [Names with Spaces and Special Characters](#names-with-spaces-and-special-characters)</small>
+30. 🌱 **Install Yazi**: Install Yazi.
+
+    **Check:** `yazi --version` prints a version number. <small>→ [Installing Yazi on Fedora 44](#installing-yazi-on-fedora-44)</small>
+31. 🌱 **Look around**: Open `~/lab02` in Yazi. Walk down into `Albums` and back up to `~/lab02`, first with the arrow
+    keys, then without them. Make the hidden file appear, then hide it again.
+
+    **Check:** `.secret` appears and disappears. <small>→ [Using Yazi](#using-yazi)</small>
+32. 🌱 **Create and rename**: With Yazi only, in `~/lab02`, create a file `menu.txt` and an empty directory `Drafts`. Rename `menu.txt` to
+    `dinner.txt`, and rename `soup.txt` in `Recipes` to `tomato_soup.txt`.
+
+    **Check:** `tree` shows `dinner.txt`, `Drafts` and `Recipes/tomato_soup.txt`. <small>→ [Using Yazi](#using-yazi)</small>
+33. 🌱 **Copy and move**: With Yazi only, copy `dinner.txt` into `Recipes`. Move `dog.jpg` from `Photos` into `Drafts`.
+
+    **Check:** `dinner.txt` is both in `~/lab02` and in `Recipes`; `dog.jpg` is in `Drafts` and no longer in
+    `Photos`. <small>→ [Using Yazi](#using-yazi)</small>
+34. 🌱 **Tabs**: With Yazi only, open `Albums`, `Recipes` and `Drafts` in three different tabs. Without leaving any of the three
+    directories:
+    * copy `plan.txt` into `Recipes`;
+    * move `shopping.txt` into `Albums`.
+
+    **Check:** `plan.txt` is both in `Albums` and in `Recipes`; `shopping.txt` is in `Albums` and no longer in `Recipes`. <small>→ [Tabs](#tabs)</small>
+
+### Going Further
+
+35. 🌳 **Calculate**: Go to `~/lab02/Games`. Create the file `~/lab02/answers.txt` with `nano`, **without leaving**
+    `Games`. In it, write the absolute path of each of these relative paths:
+    * `../Photos/cat.jpg`
+    * `./2026/../chess.txt`
+    * `../../lab02/Recipes/.`
+    * `2026/../../Albums/books.txt`
+    * `../Games/2026/../../Photos/./cat.jpg`
+    * `../../../../..`
+
+    **Check:** `realpath` prints the same absolute paths as the ones you wrote. <small>→ [From Relative to Absolute](#from-relative-to-absolute)</small>
+36. 🌳 **Above the root**: Go to `/` and try to go even higher. Find out, with `realpath` and `ls`, where `/../../..`
+    leads. From `/`, reach `~/lab02` with a relative path that starts with `../..`.
+
+    **Check:** `pwd` prints `/` no matter how many times you try to go up, and the last `cd` works. <small>→ [`.` and `..`](#-and-)</small>
+37. 🌳 **Home from anywhere**: List `~/lab02` from `/usr/bin`, from `/tmp` and from `/usr/share/doc`, each time with a
+    **relative** path. Write in `answers.txt` how many `..` you needed each time. Then let `realpath` calculate, for
+    each of the three directories, the relative path from it to `~/lab02` (look in `man realpath`).
+
+    **Check:** the three commands print the same files, and `realpath` prints the same relative paths as yours. <small>→ [The Home Directory: `~`](#the-home-directory-) · [Reading the Manual](#reading-the-manual)</small>
+38. 🌳 **Fix the path**: Each of these commands fails. Find out why and fix it:
     * `ls ~/lab02/games/2026`
     * `cd ~/lab02/Games/chess.txt`
     * `ls ~/lab2`
@@ -946,201 +1246,89 @@ If a command prints `No such file or directory`, the path is wrong: fix it and r
     * `cd ../lab02/Games` (run it from `~/lab02/Photos`)
 
     **Check:** the commands print no error. <small>→ [Troubleshooting](#troubleshooting)</small>
-
-### Navigation
-
-12. 🌱 **Walk around**: From your home directory, go to `~/lab02/Games/2026/puzzles` with a **single** `cd` and an
-    absolute path, then to `~/lab02/Recipes` with a **single** `cd` and a relative path. Go back to `puzzles` with
-    `cd -`, then home with the shortest command you can.
-
-    **Check:** `cd -` prints `/home/student/lab02/Games/2026/puzzles`, and you end up in `/home/student`. <small>→ [Navigation](#navigation)</small>
-13. 🌱 **Back and forth**: Go to `/etc`, then to `~/lab02/Recipes`. Using only `cd -`, jump back and forth between
-    them twice. Then, from `Recipes`, list `/etc`; jump to `/etc` with `cd -` and, from there, list `Recipes` with a
-    relative path.
-
-    **Check:** each `cd -` prints the directory it went to, and the last `pwd` prints `/etc`. <small>→ [The Previous Directory: `cd -`](#the-previous-directory-cd--)</small>
-14. 🌱 **Listing**: With a **single** `ls` command, list `~/lab02` so that you see the hidden file, can tell the files
-    from the directories, and read the sizes in `K` / `M`.
-
-    **Check:** you found `.secret`, and three directories. <small>→ [Navigation](#navigation)</small>
-15. 🌱 **ls with a directory**: From your home directory, list `~/lab02/Photos`, `~/lab02/Games/2026/puzzles` and `/` with a
-    **single** `ls`, **without** changing the current directory.
-
-    **Check:** the output has three parts, one for each directory, and `pwd` still prints your home directory. <small>→ [Every File is a Path](#every-file-is-a-path)</small>
-16. 🌳 **tree**: Show the tree of `~/lab02`:
-    * only the first level;
+39. 🌳 **More tree**: Show the tree of `~/lab02` (look in `man tree` for the options):
     * only the directories, but also the hidden ones;
-    * with the hidden files, two levels deep.
+    * with the hidden files, two levels deep;
+    * with the size of every file, in `K` / `M`, and the directories listed **before** the files.
 
     Then show only the directories of `/usr`, two levels deep.
 
-    **Check:** only the last command about `~/lab02` shows `.secret`. <small>→ [Navigation](#navigation)</small>
+    **Check:** only the second command shows `.secret`; in the third one, every name has its size in brackets, like `[4.0K]`, in
+    front of it, and in every directory the subdirectories come first. <small>→ [Navigation](#navigation) · [Reading the Manual](#reading-the-manual)</small>
+40. 🌳 **Not too deep**: Find the `.txt` files of `~/lab02` that are at most **two** levels deep. Then find all the
+    **empty** files in `~/lab02` (look in `man find`).
 
-### Finding Files
-
-17. 🌱 **Find by name**: Find `sudoku.txt` twice: once searching from `~/lab02` with a relative start, once from your
-    home directory with an absolute start.
-
-    **Check:** the first command prints `./Games/2026/puzzles/sudoku.txt` and the second one
-    `/home/student/lab02/Games/2026/puzzles/sudoku.txt`. <small>→ [Finding Files](#finding-files-find)</small>
-18. 🌱 **Find by extension**: With a **single** `find`, find all the pictures (`.jpg`) in `~/lab02`. Then all the
-    `.txt` files.
-
-    **Check:** you get `cat.jpg` and `dog.jpg`, then `books.txt`, `chess.txt` and `sudoku.txt` (and `answers.txt`,
-    if you created it). <small>→ [Finding Files](#finding-files-find)</small>
-19. 🌱 **Files or directories**: Find only the directories in `~/lab02`, then only the files.
-
-    **Check:** the directories are `.`, `Games`, `2026`, `puzzles`, `Photos` and `Recipes`; the files include the hidden
-    `.secret`. <small>→ [Finding Files](#finding-files-find)</small>
-20. 🌱 **Use what you found**: From `~/lab02/Recipes`, find `chess.txt` searching from `..`, then copy it into `/tmp`
-    using the path that `find` printed.
-
-    **Check:** `ls /tmp` shows `chess.txt`. <small>→ [Finding Files](#finding-files-find) · [Every File is a Path](#every-file-is-a-path)</small>
-21. 🌳 **Not too deep**: Find the `.txt` files of `~/lab02` that are at most **two** levels deep.
-
-    **Check:** `books.txt` and `chess.txt` appear, but not `sudoku.txt`. <small>→ [Finding Files](#finding-files-find)</small>
-22. 🌳 **Somewhere in the system**: Find the file called `hostname` in `/etc`, and every file whose name starts with
+    **Check:** `chess.txt` and the files in `Albums` and `Recipes` appear, but not `sudoku.txt`; the empty files
+    include `chess.txt` and `cat.jpg`, but not `plan.txt`. <small>→ [Finding Files](#finding-files-find) · [Reading the Manual](#reading-the-manual)</small>
+41. 🌳 **Somewhere in the system**: Find the file called `hosts` in `/etc`, and every file whose name starts with
     `passwd` in `/etc`. Ignore the `Permission denied` messages.
 
-    **Check:** the results include `/etc/hostname` and `/etc/passwd`. <small>→ [Finding Files](#finding-files-find)</small>
-
-### Exploring the System
-
-These exercises use real files of the operating system, outside your home directory. You can **read** most of them, but
-you cannot change them: they belong to the administrator (`root`).
-
-:::danger
-
-Never use `sudo` in these exercises. Without it, you cannot break anything; with it, a typing mistake in `/etc` can
-stop the computer from starting.
-
-:::
-
-23. 🌱 **Which Linux**: Print the content of `/etc/os-release` with `cat`, then open it in `nano` in view mode and
-    search for `VERSION` with <kbd>Ctrl</kbd>+<kbd>W</kbd>.
-
-    **Check:** the lines `NAME=` and `VERSION_ID=` show `Fedora` and `44`. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano)</small>
-24. 🌱 **The name of the computer**: Print the content of `/etc/hostname`, then run the `hostname` command.
-
-    **Check:** both print the same name. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano)</small>
-25. 🌱 **The users**: Print `/etc/passwd`, the list of the users of the system, and find the line of your user (it
-    starts with your user name; on some lab computers the accounts come from a central server, then look for the
-    line of `root`). Copy the file to `/tmp/users.txt` and change the copy with `nano`.
-
-    **Check:** `ls -l /etc/passwd /tmp/users.txt` shows that only the copy was changed (look at the dates). <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano) · [Managing Files](#managing-files)</small>
-26. 🌱 **The shells**: Print `/etc/shells`, the list of the shells installed. Then show the details of
-    `/usr/bin/bash`, the shell that runs in your terminal.
-
-    **Check:** `/usr/bin/bash` is in the list, and `ls -l` shows a file (first letter `-`) of about 1 MB. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano) · [Every File is a Path](#every-file-is-a-path)</small>
-27. 🌱 **Programs are files**: Show the details of the `ls` program itself, `/usr/bin/ls`. Then find every program in
-    `/usr/bin` whose name starts with `mk`.
-
-    **Check:** `mkdir` is one of them. <small>→ [Finding Files](#finding-files-find)</small>
-28. 🌳 **Settings of the package manager**: Find, somewhere in `/etc`, the file called `dnf.conf` (the settings of
+    **Check:** the results include `/etc/hosts` and `/etc/passwd`. <small>→ [Finding Files](#finding-files-find)</small>
+42. 🌳 **Settings of the package manager**: Find, somewhere in `/etc`, the file called `dnf.conf` (the settings of
     `dnf`, the program that installs packages). Print it using the path that `find` printed.
 
-    **Check:** the file is `/etc/dnf/dnf.conf`, and its first line is `[main]`. <small>→ [Finding Files](#finding-files-find) · [Viewing Text Files](#viewing-text-files-cat-and-nano)</small>
-29. 🌳 **Look, do not touch**: Try to create `/etc/test.txt`, to save `/etc/hostname` from `nano` after adding a letter
-    (exit **without** saving after the error), and to delete `/etc/hostname` (if `rm` asks
-    `remove write-protected regular file?`, answer `y`).
-
-    **Check:** every attempt prints `Permission denied`, and `/etc/hostname` is unchanged. <small>→ [Troubleshooting](#troubleshooting)</small>
-30. 🌳 **Names of computers**: Print `/etc/hosts`, the file that gives names to network addresses, and find the
+    **Check:** the file is `/etc/dnf/dnf.conf`, and it has a line `[main]`. <small>→ [Finding Files](#finding-files-find) · [Viewing Text Files](#viewing-text-files-cat-and-nano)</small>
+43. 🌳 **Names of computers**: Print `/etc/hosts`, the file that gives names to network addresses, and find the
     line with `localhost`. Then open it with `nano -v` and search for `localhost` with <kbd>Ctrl</kbd>+<kbd>W</kbd>.
 
     **Check:** the line starts with `127.0.0.1`, the address of your own computer. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano)</small>
-31. 🌳 **The kernel**: Find the files of the kernel in `/boot` (their names start with `vmlinuz`), then show their
-    details with human readable sizes.
+44. 🌳 **The kernel**: Find the files of the kernel in `/boot` (their names start with `vmlinuz`), then show their
+    details with the sizes in `M`.
 
     **Check:** you find at least one `vmlinuz-...` file, of a few MB. <small>→ [Finding Files](#finding-files-find) · [Navigation](#navigation)</small>
-32. 🌳 **Logs**: List `/var/log`, the directory where the system keeps its logs, and try to print one of the files there.
-    Find one that you are allowed to read, and one that you are not.
+45. 🌳 **Logs**: List the details of `/var/log`, the directory where the system keeps its logs, with the files changed
+    most **recently** at the top (look in `man ls`). Try to print some of the text files there (check them with
+    `file` first): find one that you are allowed to read, and one that you are not.
 
-    **Check:** for one of them you get `Permission denied`. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano)</small>
-33. 🌳 **Moving around the system**: From `/usr/share/doc`, go to `/etc` with the **shortest** relative path, then to
+    **Check:** the dates go from the newest to the oldest, and for one of the files you get `Permission denied`. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano) · [Reading the Manual](#reading-the-manual)</small>
+46. 🌳 **Look, do not touch**: Try to create `/etc/test.txt`, to save `/etc/hosts` from `nano` after adding a letter
+    (exit **without** saving after the error), and to delete `/etc/hosts` (if `rm` asks
+    `remove write-protected regular file?`, answer `y`).
+
+    **Check:** every attempt prints `Permission denied`, and `/etc/hosts` is unchanged. <small>→ [Troubleshooting](#troubleshooting)</small>
+47. 🌳 **Moving around the system**: From `/usr/share/doc`, go to `/etc` with the **shortest** relative path, then to
     `/var/log` with another relative path, and back to `/usr/share/doc` with a third one. Jump to `/var/log` with
     `cd -`.
 
     **Check:** after each `cd`, `pwd` prints the directory you wanted to reach. <small>→ [Relative Paths](#relative-paths) · [The Previous Directory: `cd -`](#the-previous-directory-cd--)</small>
+48. 🌳 **The extension lies**: Copy `/usr/bin/ls` to `/tmp/song.mp3` and `/etc/hosts` to `/tmp/program`, and find out
+    what they really are. Then run `/tmp/song.mp3 ~/lab02`. Delete both copies at the end.
 
-### Managing Files
-
-Work in `~/lab02`, and check the result with `tree ~/lab02` in the second terminal after **every** exercise.
-
-34. 🌱 **Create files**: Create an **empty** file `groceries.txt` and a file `plan.txt` with two lines of text in it.
-    Then create `soup.txt`, `pizza.txt` and `cake.txt` in `Recipes` with a **single** command, without going into
-    `Recipes`.
-
-    **Check:** `ls -l` shows size `0` for `groceries.txt`, but not for `plan.txt`; `Recipes` has the three new files. <small>→ [Managing Files](#managing-files)</small>
-35. 🌱 **Create directories**: Create `Albums/2024/summer` and `Albums/2025/winter` with a **single** command.
-
-    **Check:** `tree` shows both directories. <small>→ [Managing Files](#managing-files)</small>
-36. 🌱 **Copy files**: Copy `books.txt` into `Albums`. Copy `cat.jpg` and `dog.jpg` from `Photos` into `Games` with a
-    **single** command. Copy `dog.jpg` into `Albums/2025/winter` under the name `snow_dog.jpg`.
-
-    **Check:** the two pictures are both in `Photos` and in `Games`, and `snow_dog.jpg` is in `winter`. <small>→ [Managing Files](#managing-files)</small>
-37. 🌱 **Copy a directory**: Copy the whole `Games` directory to `/tmp/Games_backup`. Then run **exactly the same** command a
-    second time, and find out where the second copy went. Delete **only** the second copy.
-
-    **Check:** `tree /tmp/Games_backup` shows the same files as `tree ~/lab02/Games`, and nothing more. <small>→ [Managing Files](#managing-files)</small>
-38. 🌱 **Rename and move**: Rename `groceries.txt` to `shopping.txt` and move it into `Recipes` with a **single** `mv`.
-    Move `plan.txt` and `books.txt` into `Albums` with a **single** command.
-
-    **Check:** `Recipes` has `shopping.txt`; `Albums` has `books.txt` and `plan.txt`; the only `.txt` file left in
-    `~/lab02` is `answers.txt` (if you created it). <small>→ [Managing Files](#managing-files)</small>
-39. 🌳 **Paths everywhere**: From `~/lab02/Games/2026`, without changing the current directory, copy `cat.jpg` from
+    **Check:** `song.mp3` is an `ELF` executable and `program` is text; `/tmp/song.mp3 ~/lab02` lists `~/lab02`, exactly
+    like `ls ~/lab02`. <small>→ [What Kind of File](#what-kind-of-file-file)</small>
+49. 🌳 **Paths everywhere**: From `~/lab02/Games/2026`, without changing the current directory, copy `cat.jpg` from
     `Photos` into `Recipes` using **only relative** paths. Delete the copy, then copy it again using **only
     absolute** paths.
 
     **Check:** `Recipes` has `cat.jpg`. <small>→ [Every File is a Path](#every-file-is-a-path)</small>
-40. 🌱 **Delete**: Delete `/tmp/Games_backup/chess.txt`. Move `sudoku.txt` from `puzzles` up into `Games/2026`, then
-    delete the empty `puzzles` directory. Then delete `Albums/2024` and
-    everything in `Albums/2025` using **only** `rmdir` and `rm` (no `-r`).
+50. 🌳 **Delete a directory**: Delete `/tmp/Games_backup` with everything inside it with a **single** command, and make
+    `rm` print everything it deletes (look in `man rm`).
 
-    **Check:** `Albums` has only `books.txt` and `plan.txt`, and `Games/2026` has only `sudoku.txt`. <small>→ [Managing Files](#managing-files)</small>
-41. 🌳 **Delete a directory**: Delete `/tmp/Games_backup` with everything inside it with a **single** command.
+    **Check:** the last line printed by `rm` is `removed directory '/tmp/Games_backup'`, and `ls /tmp` no longer
+    shows it. <small>→ [Managing Files](#managing-files) · [Reading the Manual](#reading-the-manual)</small>
+51. 🌳 **Strange names**: In `/tmp`, create the files `rock & roll.txt`, `price $5.txt`, `it's here.txt` and
+    `-help.txt`. Check the names with `ls -l`, then delete the four files, with one `rm` for each of them.
 
-    **Check:** `ls /tmp` no longer shows `Games_backup`. <small>→ [Managing Files](#managing-files)</small>
+    **Check:** `ls -l /tmp` shows the four names exactly as above, and none of them at the end. <small>→ [Names with Spaces and Special Characters](#names-with-spaces-and-special-characters)</small>
+52. 🌳 **Several files**: With Yazi only, copy both pictures from `Games` into `Albums` with a **single** paste. Then move
+    `tomato_soup.txt`, `pizza.txt` and `cake.txt` from `Recipes` into `Drafts` with a **single** paste, and move
+    `pizza.txt` and `cake.txt` back into `Recipes` with another **single** paste.
 
-### Yazi
-
-Do these exercises **only with Yazi** (the key table is in [Using Yazi](#using-yazi)). Keep a terminal next to it and
-check the result with `tree ~/lab02` after every exercise.
-
-42. 🌱 **Install Yazi**: Install Yazi.
-
-    **Check:** `yazi --version` prints a version number. <small>→ [Installing Yazi on Fedora 44](#installing-yazi-on-fedora-44)</small>
-43. 🌱 **Look around**: Open `~/lab02` in Yazi. Walk down into `Albums` and back up to `~/lab02`, first with the arrow
-    keys, then without them. Make the hidden file appear, then hide it again.
-
-    **Check:** `.secret` appears and disappears. <small>→ [Using Yazi](#using-yazi)</small>
-44. 🌱 **Create and rename**: In `~/lab02`, create a file `menu.txt` and an empty directory `Drafts`. Rename `menu.txt` to
-    `dinner.txt`, and rename `soup.txt` in `Recipes` to `tomato_soup.txt`.
-
-    **Check:** `tree` shows `dinner.txt`, `Drafts` and `Recipes/tomato_soup.txt`. <small>→ [Using Yazi](#using-yazi)</small>
-45. 🌱 **Copy and move**: Copy `dinner.txt` into `Recipes`. Move `dog.jpg` from `Photos` into `Drafts`.
-
-    **Check:** `dinner.txt` is both in `~/lab02` and in `Recipes`; `dog.jpg` is in `Drafts` and no longer in
-    `Photos`. <small>→ [Using Yazi](#using-yazi)</small>
-46. 🌳 **Several files**: Copy both pictures from `Games` into `Albums` with a **single** paste. Then move
-    `tomato_soup.txt`, `pizza.txt` and `cake.txt` from `Recipes` into `Drafts` with a **single** paste.
-
-    **Check:** `Albums` has `cat.jpg` and `dog.jpg`; `Drafts` has the three recipes. <small>→ [Using Yazi](#using-yazi)</small>
-47. 🌱 **Tabs**: Open `Albums`, `Recipes` and `Drafts` in three different tabs. Without leaving any of the three
-    directories:
-    * copy `plan.txt` into `Recipes`;
-    * move `shopping.txt` into `Albums`;
-    * move `pizza.txt` and `cake.txt` back into `Recipes` (if you moved them to `Drafts` in exercise 46).
-
-    **Check:** `Recipes` has `plan.txt`, `pizza.txt` and `cake.txt`; `Albums` has `shopping.txt`. <small>→ [Tabs](#tabs)</small>
-48. 🌳 **Trash or delete**: Send `dinner.txt` (the one in `~/lab02`) to the trash, and delete `Drafts` permanently. Then,
+    **Check:** `Albums` has `cat.jpg` and `dog.jpg`; `Drafts` has `dog.jpg` and `tomato_soup.txt`; `Recipes` has
+    `pizza.txt` and `cake.txt`. <small>→ [Using Yazi](#using-yazi)</small>
+53. 🌳 **Trash or delete**: With Yazi only, send `dinner.txt` (the one in `~/lab02`) to the trash, and delete `Drafts` permanently. Then,
     from the terminal, find `dinner.txt` in the trash and move it back to `~/lab02`.
 
     **Check:** `dinner.txt` is back in `~/lab02`, and `Drafts` is gone. <small>→ [Using Yazi](#using-yazi)</small>
 
-### Challenge
+### Challenges
 
-49. 🌳 **Reorganize**: Using the terminal for half of the work and Yazi for the other half, change `~/lab02` so that
+54. 🌳 **Tricky paths**: From `~/lab02/Photos`, calculate where `../Games/2026/./../../Photos/../Recipes` leads, and write
+    each step of the calculation in `answers.txt`. Go there with a **single** `cd`. Then go back to `Photos` with a
+    path that contains **exactly two** `..`.
+
+    **Check:** you are back in `/home/student/lab02/Photos`. <small>→ [From Relative to Absolute](#from-relative-to-absolute)</small>
+55. 🌳 **Reorganize**: Using the terminal for half of the work and Yazi for the other half, change `~/lab02` so that
     `tree ~/lab02` prints exactly this tree (delete everything that is not in it):
 
     ```
@@ -1164,39 +1352,38 @@ check the result with `tree ~/lab02` after every exercise.
 
     **Check:** compare your `tree ~/lab02` with the tree above, line by line (the order of the lines does not matter). <small>→ [Managing Files](#managing-files) · [Using Yazi](#using-yazi)</small>
 
-### Harder Exercises
+Exercises 56 - 62 start from the tree of exercise 55: do them only after `tree ~/lab02` shows
+exactly that tree.
 
-These exercises start from the tree of the [Challenge](#challenge). Do them only after `tree ~/lab02` shows exactly
-that tree.
-
-50. 🌳 **Exactly five**: From `~/lab02/Recipes/desserts`, write a relative path to `sudoku.txt` that contains
+56. 🌳 **Exactly five**: From `~/lab02/Recipes/desserts`, write a relative path to `sudoku.txt` that contains
     **exactly five** `..` and no `.`. Use it with `ls -l`.
 
     **Check:** `ls -l` shows `sudoku.txt`, and `realpath` of your path prints `/home/student/lab02/Games/2026/sudoku.txt`. <small>→ [From Relative to Absolute](#from-relative-to-absolute)</small>
-51. 🌳 **Shortest path**: Find the **shortest** relative path from `/usr/share/doc` to `~/lab02/Notes`, and the
+57. 🌳 **Shortest path**: Find the **shortest** relative path from `/usr/share/doc` to `~/lab02/Notes`, and the
     shortest one from `~/lab02/Notes` back to `/usr/share/doc`. Use each of them with a single `cd`, then jump
     between the two directories twice more with `cd -` only.
 
     **Check:** after each `cd`, `pwd` prints the directory you wanted to reach. <small>→ [Relative Paths](#relative-paths)</small>
-52. 🌳 **Clean up a path**: Write the **shortest** absolute path equivalent to
+58. 🌳 **Clean up a path**: Write the **shortest** absolute path equivalent to
     `/home/../../../home/student/lab02/./Notes/../Games/2026/../../Recipes/desserts/..`, first on paper, then check it.
 
     **Check:** `realpath` prints the path you wrote. <small>→ [From Relative to Absolute](#from-relative-to-absolute)</small>
-53. 🌳 **Swap**: Swap the names of `Notes/books.txt` and `Notes/plan.txt` using **only** `mv`.
+59. 🌳 **Swap**: Swap the names of `Notes/books.txt` and `Notes/plan.txt` using **only** `mv`.
 
     **Check:** `ls -l ~/lab02/Notes` shows that `books.txt` now has the size that `plan.txt` had before, and
     `plan.txt` is empty. <small>→ [Managing Files](#managing-files)</small>
-54. 🌳 **Mirror**: Create in `/tmp/mirror` the same **directory** structure as `~/lab02` (only the directories, no files),
-    with a **single** `mkdir` command.
+60. 🌳 **Mirror**: Create in `/tmp/mirror` the same **directory** structure as `~/lab02` (only the directories, no files),
+    with a **single** `mkdir` command that prints every directory it creates (look in `man mkdir`).
 
-    **Check:** `tree -d /tmp/mirror` and `tree -d ~/lab02` show the same directories. <small>→ [Managing Files](#managing-files)</small>
-55. 🌳 **From far away**: Go to `/tmp`. With a **single** `mv` command and **only relative** paths, move `chess.txt`
+    **Check:** `mkdir` printed a `created directory` line for every directory, and the trees of `/tmp/mirror`
+    and `~/lab02` have the same directories. <small>→ [Managing Files](#managing-files) · [Reading the Manual](#reading-the-manual)</small>
+61. 🌳 **From far away**: Go to `/tmp`. With a **single** `mv` command and **only relative** paths, move `chess.txt`
     and `cat.jpg` from `Games` into `Recipes/desserts`. Then move them back with a single `mv`, this time from
     `~/lab02/Notes`.
 
     **Check:** after the first `mv`, `desserts` has three files; after the second one, `tree ~/lab02` shows the
-    tree of the [Challenge](#challenge) again (with the names of exercise 53). <small>→ [Every File is a Path](#every-file-is-a-path)</small>
-56. 🌳 **Backup with tabs**: With Yazi only, create the directory `~/lab02/Backup`, then copy the `Games`, `Notes` and
+    tree of exercise 55 again (with the names of exercise 59). <small>→ [Every File is a Path](#every-file-is-a-path)</small>
+62. 🌳 **Backup with tabs**: With Yazi only, create the directory `~/lab02/Backup`, then copy the `Games`, `Notes` and
     `Recipes` directories into it using **two** tabs and a **single** paste. Delete `Backup` permanently at the end.
 
     **Check:** before deleting it, `tree ~/lab02/Backup` shows the three directories with all their files. <small>→ [Tabs](#tabs) · [Using Yazi](#using-yazi)</small>
@@ -1221,8 +1408,7 @@ assistant. There are no wrong answers for the last two.
 1. **Hidden files**: Run `ls -a ~`. Most of the hidden files and directories are settings of your programs. Find the
    directory where Yazi keeps the trash. <small>→ [Using Yazi](#using-yazi)</small>
 2. **The whole tree**: Run `tree -L 1 /` and compare it with the tree in [The File System Tree](#the-file-system-tree).
-   Look in `/etc` for the file that keeps the name of your computer (hint: `cat /etc/hostname` and the `hostname`
-   command). <small>→ [The File System Tree](#the-file-system-tree)</small>
+   Find in `/etc` the file that says which Linux this is, and print it (hint: its name ends with `release`). <small>→ [The File System Tree](#the-file-system-tree)</small>
 3. **Yazi help**: Press <kbd>F1</kbd> in Yazi and find the key that filters the files in the current directory by name.
    <small>→ [Using Yazi](#using-yazi)</small>
 4. **Ghostty**: Install Ghostty, open `~/lab02/Photos` with Yazi inside it and compare it with Yazi in `foot`. Then
