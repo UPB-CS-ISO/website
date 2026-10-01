@@ -1368,8 +1368,10 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
 
     **Check:** compare your `tree ~/lab02` with the tree above, line by line (the order of the lines does not matter). <small>→ [Managing Files](#managing-files) · [Using Yazi](#using-yazi)</small>
 
+:::info
 Exercises 56 - 62 start from the tree of exercise 55: do them only after `tree ~/lab02` shows
 exactly that tree.
+:::
 
 56. 🌳 **Exactly five**: From `~/lab02/Recipes/desserts`, write a relative path to `sudoku.txt` that contains
     **exactly five** `..` and no `.`. Use it with `ls -l`.
