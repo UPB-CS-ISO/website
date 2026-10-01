@@ -1153,8 +1153,7 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
 
     **Check:** the `Machine ID` line of `hostnamectl` shows the same number as the file. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano)</small>
 19. 🌱 **The users**: Print `/etc/passwd`, the list of the users of the system, and find the line of your user (it
-    starts with your user name; on some lab computers the accounts come from a central server, then look for the
-    line of `root`). Copy the file to `/tmp/users.txt` and change the copy with `nano`.
+    starts with your user name. Copy the file to `/tmp/users.txt` and change the copy with `nano`.
 
     **Check:** `ls -l /etc/passwd /tmp/users.txt` shows that only the copy was changed (look at the dates). <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano) · [Managing Files](#managing-files)</small>
 20. 🌱 **The shells**: Print `/etc/shells`, the list of the shells installed. Then show the details of
@@ -1181,9 +1180,12 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
 25. 🌱 **Copy files**: Copy `books.txt` into `Albums`. Copy `cat.jpg` and `dog.jpg` from `Photos` into `Games` with a
     **single** command, and make `cp` print the name of every file it copies (look in
     `man cp`, 🔍 search for `explain`). Copy `dog.jpg` into `Albums/2025/winter` under the name `snow_dog.jpg`.
+    Finally, copy `books.txt` into `Albums` **once more**, but make `cp` **ask you** before it overwrites the file that
+    is already there (🔍 search for `overwrite`), and answer `n`.
 
     **Check:** `cp` printed a line like `'Photos/cat.jpg' -> 'Games/cat.jpg'` for each picture; the two pictures are both
-    in `Photos` and in `Games`, and `snow_dog.jpg` is in `winter`. <small>→ [Managing Files](#managing-files) · [Reading the Manual](#reading-the-manual)</small>
+    in `Photos` and in `Games`, and `snow_dog.jpg` is in `winter`; the last `cp` asked
+    `cp: overwrite 'Albums/books.txt'?`. <small>→ [Managing Files](#managing-files) · [Reading the Manual](#reading-the-manual)</small>
 26. 🌱 **Copy a directory**: Copy the whole `Games` directory to `/tmp/Games_backup`. Then run **exactly the same** command a
     second time, and find out where the second copy went. Delete **only** the second copy.
 
@@ -1314,9 +1316,10 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
     like `ls ~/lab02`. <small>→ [What Kind of File](#what-kind-of-file-file)</small>
 49. 🌳 **Paths everywhere**: From `~/lab02/Games/2026`, without changing the current directory, copy `cat.jpg` from
     `Photos` into `Recipes` using **only relative** paths. Delete the copy, then copy it again using **only
-    absolute** paths.
+    absolute** paths. Copy it a third time, with relative paths, so that `cp` asks before overwriting it, and answer
+    `y`.
 
-    **Check:** `Recipes` has `cat.jpg`. <small>→ [Every File is a Path](#every-file-is-a-path)</small>
+    **Check:** `Recipes` has `cat.jpg`, and the third `cp` asked `cp: overwrite '../../Recipes/cat.jpg'?`. <small>→ [Every File is a Path](#every-file-is-a-path) · [Reading the Manual](#reading-the-manual)</small>
 50. 🌳 **Delete a directory**: Delete `/tmp/Games_backup` with everything inside it with a **single** command, and make
     `rm` print everything it deletes (look in `man rm`, 🔍 search for `explain`).
 
