@@ -279,7 +279,7 @@ Most commands also print a short summary of their options with `--help`, for exa
 
 :::
 
-## TAB Completion
+## <kbd>TAB</kbd> Completion
 
 You do not have to type the full names of files, directories and commands. Type the first letters and press
 <kbd>Tab</kbd>:
@@ -1296,7 +1296,7 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
     most **recently** at the top (look in `man ls`, 🔍 search for `newest`). Try to print some of the text files there (check them with
     `file` first): find one that you are allowed to read, and one that you are not.
 
-    **Check:** the dates go from the newest to the oldest, and for one of the files you get `Permission denied`. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano) · [Reading the Manual](#reading-the-manual)</small>
+    **Check:** the dates go from th e newest to the oldest, and for one of the files you get `Permission denied`. <small>→ [Viewing Text Files](#viewing-text-files-cat-and-nano) · [Reading the Manual](#reading-the-manual)</small>
 46. 🌳 **Look, do not touch**: Try to create `/etc/test.txt`, to save `/etc/hosts` from `nano` after adding a letter
     (exit **without** saving after the error), and to delete `/etc/hosts` (if `rm` asks
     `remove write-protected regular file?`, answer `y`).
