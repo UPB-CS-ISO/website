@@ -1,7 +1,7 @@
 # 02. Files Management
 
 In the first lab you learned to move around Sway and to run your first commands in the terminal. Now it is time to
-work with **files**. Everything you keep on a computer (documents, movies, programs, settings) is a file, stored
+work with **files** and **directories**. Everything you keep on a computer (documents, movies, programs, settings) is a file, stored
 somewhere in a big tree of directories. In this lab you will learn how to **find your way** in this tree, how to **name**
 any file with a **path**, and how to create, copy, move and delete files, first with commands and then with
 **Yazi**, a file manager that runs in the terminal.
@@ -311,15 +311,15 @@ nothing, even when you press it twice, then **no name** starts with what you typ
 
 | Command | What it does |
 |-|-|
-| `pwd` | Prints the current directory |
-| `cat <file>` | Prints the content of a file |
+| `pwd` | Prints the full path of the directory you're in ("print working directory") |
+| `cat <file>` | Prints a file's entire contents to the screen |
 | `cd <directory>` | Changes the current directory |
 | `cd` or `cd ~` | Goes to your home directory |
 | `cd -` | Goes to the previous directory (where you were before the last `cd`) |
 | `ls` | Lists the current directory |
 | `ls <path>` | if `<path>` is a directory, list the directory's contents / if `<path>` is a file, list the details of the file |
 | `ls -a` | Also lists the hidden files (names that start with `.`) |
-| `ls -l` | Long listing: type, permissions, owner, size, date |
+| `ls -l` | Long format listing: type, permissions, owner, size, last modified date |
 | `tree` | Lists a directory and **everything inside it** |
 | `tree -L <number of levels>` | Only `<number of levels>` level deep |
 
@@ -335,8 +335,10 @@ drwxr-xr-x. 2 student student  4096 Sep 26 21:15 Movies
 -rw-r--r--. 1 student student 21504 Sep 28 21:40 watchlist.txt
 ```
 
+:::info
 `tree` is not always installed. On Fedora install it with `sudo dnf install tree`, on Ubuntu with
 `sudo apt install tree`.
+:::
 
 ### Examples
 
@@ -420,6 +422,7 @@ For example, with three directories:
 * The second `cd -` did **not** go back to `/etc`. It went to `Movies`, and the previous directory became `/tmp` again.
 * From now on, `cd -` only switches between `/tmp` and `Movies`, like the "previous channel" button of a TV remote.
 
+:::caution
 Do not confuse `cd -` with `cd ..`, either:
 
 | Command | Goes to | Pressed twice |
@@ -427,6 +430,7 @@ Do not confuse `cd -` with `cd ..`, either:
 | `cd -` | the directory you were in before the last `cd` | you are back where you started |
 | `cd ..` | the parent of the current directory, one level up the tree | you are two levels up |
 | a browser's Back | the previous page, then the one before it, and so on | the shell has no such command |
+:::
 
 :::tip
 
@@ -497,13 +501,15 @@ find [directory...] [tests]
 | Command | What it does |
 |-|-|
 | `find` | Prints every file and directory below the current directory |
-| `find <directory>` | Prints every file and directory below `<directory>` |
-| `find <directory> -name '<name>'` | Only the entries called `<name>` |
+| `find <directory>` | Lists everything inside `<directory>`, including subdirectories |
+| `find <directory> -name '<name>'` | Only entries whose name is exactly `<name>` |
 | `find <directory> -name '*.txt'` | Only the entries whose name ends with `.txt` (`*` means "any characters") |
 | `find <directory> -type f` | Only the files |
 | `find <directory> -type d` | Only the directories |
 
-The tests can be combined: `find ~ -type f -name '*.txt'` finds only the **files** whose name ends with `.txt`.
+:::tip
+The tests can be combined, for example:`find ~ -type f -name '*.txt'` finds only the **files** whose name ends with `.txt`.
+:::
 
 :::caution
 
@@ -584,8 +590,10 @@ Project Hail Mary
 * With several files, `cat` printed them one after another, with nothing in between.
 * `notes.txt` is empty, so `cat` printed nothing at all.
 
+:::tip
 `cat` is perfect for **short** files. For a long file, the beginning scrolls off the screen: scroll back with
 <kbd>Shift</kbd>+<kbd>Page Up</kbd>, or open the file with `nano` instead.
+:::
 
 :::caution
 
@@ -625,7 +633,8 @@ You can open the system files from `/etc` with `nano` and read them, but you can
 | Use | When |
 |-|-|
 | `cat` | The file is short, and you want to see it all at once, in the terminal |
-| `nano` (or `nano -v`) | The file is long, you want to scroll or search in it, or you want to change it |
+| `nano` | The file is long, you want to scroll or search in it, or you want to edit it |
+| `nano -v` | You prefer nano's interface but want read-only mode, so you can't change anything by accident |
 
 ### What Kind of File: `file`
 
@@ -663,17 +672,17 @@ Not sure if you can `cat` a file? Run `file` first: if the answer contains `text
 | Command | What it does |
 |-|-|
 | `mkdir <directory>` | Creates a directory |
-| `mkdir -p <path>` | Creates a directory and all its missing parents |
-| `touch <file>` | Creates an empty file (or only updates the date of an existing one) |
+| `mkdir -p <path>` | Creates a directory and any missing parents (no error if it already exists) |
+| `touch <file>` | Creates an empty file, or updates the "last modified" date of an existing one |
 | `nano <file>` | Opens a text editor, the file is created when you save (<kbd>Ctrl</kbd>+<kbd>O</kbd> saves, <kbd>Ctrl</kbd>+<kbd>X</kbd> exits) |
 | `cp <source> <destination>` | Copies a file |
-| `cp <source>... <directory>` | Copies several files into a directory |
+| `cp <source>... <directory>` | Copies one or more files into a directory |
 | `cp -r <directory> <destination>` | Copies a directory and everything inside it |
 | `mv <source> <destination>` | Moves or **renames** a file or a directory |
-| `mv <source>... <directory>` | Moves several files into a directory |
+| `mv <source>... <directory>` | Moves one or more files or directories into a directory |
 | `rmdir <directory>` | Deletes an **empty** directory |
 | `rm <file>` | Deletes a file |
-| `rm -r <directory>` | Deletes a directory and everything inside it |
+| `rm -r <directory>` | Deletes a directory and **everything** inside it |
 
 :::info
 
@@ -690,7 +699,7 @@ When you give `cp` or `mv` **several** sources, the last parameter must be a **d
 :::danger
 
 There is **no trash** in the terminal: `rm` deletes files **permanently**, and `rm -r` deletes a whole directory with
-everything inside it. Read the command twice before pressing <kbd>Enter</kbd>, and never run `rm -r` with a path you
+everything inside it. Read the command twice before pressing <kbd>Enter</kbd>, and **never** run `rm -r` with a path you
 do not fully understand.
 
 :::
