@@ -348,8 +348,8 @@ utilizatori, procese, servicii și rețea) se desfășoară în terminal. În Sw
 Când terminalul este gata, afișează o linie care se termină cu semnul **`$`**, numită **prompt**. De obicei arată
 așa:
 
-```
-[student@fedora ~]$
+```shell-session
+[student@fedora ~]$ 
 ```
 
 Simbolul `$` înseamnă „Aștept comanda ta”. Tastează o comandă după acesta și apasă <kbd>Enter</kbd> pentru a o executa. În timp ce
