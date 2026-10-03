@@ -4,7 +4,7 @@
 
 #slide[
   == Welcome
-  to the _Introduction to Operating Systems_ class
+  to the _Internal Structure of Operating Systems_ class
 
   *You will learn, understand and experiment*
   - how operating systems work
@@ -29,7 +29,7 @@
   - `command` - this is a command or a part of a source code
 
   Code
-  #reveal-terminal(before: none, lines: (1, 2, 6))[```terminal
+  #reveal-terminal(before: none, lines: (1, 2, 6), full: false)[```terminal
   $ command arguments
   this is what the command wrote
   $ command2 arguments placed \ # mind the \ that splits the command over multiple lines

@@ -26,7 +26,7 @@
 ]
 
 #slide[
-  == Desktop and Server Operating Systems - abstractions
+  == Desktop and Server Operating Systems — abstractions
 
   #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.5em)[
     #only("2,3")[

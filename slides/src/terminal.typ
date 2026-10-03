@@ -129,15 +129,17 @@
 
 // Fenced ```terminal``` blocks are rendered as a shell session using the
 // exact same background and style diatypst gives a normal fenced code
-// block (it's the same `raw(..., block: true)` call, just with a custom
-// per-line show rule laid on top).
+// block: the original raw block is returned with a custom per-line show
+// rule laid on top. It must not emit a new raw(...) inside this show rule:
+// the default `raw` text size (0.8em) would then apply twice (0.64em) and
+// fenced blocks would be smaller than #reveal-terminal blocks.
 #let render-terminal(it) = {
   let src-lines = it.text.split("\n")
   show raw.line: line => {
     let is-cont = line.number > 1 and shell-continues(src-lines.at(line.number - 2))
     render-terminal-line(line.text, is-continuation: is-cont)
   }
-  raw(it.text, lang: none, block: true)
+  it
 }
 
 // Convenience for calling it as a function instead of a fenced block, e.g.
@@ -211,8 +213,15 @@
     raw(content, lang: none, block: true)
   }
 
-  for (idx, (from, to)) in windows.windows(2).enumerate() {
-    only(start + idx, render-window(from, to))
+  let steps = windows.windows(2)
+  for (idx, (from, to)) in steps.enumerate() {
+    if full or idx < steps.len() - 1 {
+      only(start + idx, render-window(from, to))
+    } else {
+      // without `full`, the last step stays on the following subslides
+      // (e.g. while an #uncover under the terminal is revealed)
+      only((beginning: start + idx), render-window(from, to))
+    }
   }
   if full {
     only((beginning: start + windows.len() - 1), render-window(0, content.split("\n").len()))
