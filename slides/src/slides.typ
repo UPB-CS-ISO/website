@@ -1,6 +1,8 @@
 #import "@preview/diatypst:0.9.3": *
 #import "polylux.typ": *
 #import "terminal.typ": *
+#import "highlight.typ": *
+#import "kbd.typ": *
 #import "ai-prompt.typ": *
 
 // Two-column layouts use polylux's own #toolbox.side-by-side(columns: (..),
