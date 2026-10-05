@@ -2,7 +2,7 @@
 
 In the first lab you learned to move around Sway and to run your first commands in the terminal. Now it is time to
 work with **files** and **directories**. Everything you keep on a computer (documents, movies, programs, settings) is a file, stored
-somewhere in a big ree of directories. In this lab you will learn how to **find your way** in this tree, how to **name**
+somewhere in a big tree of directories. In this lab you will learn how to **find your way** in this tree, how to **name**
 any file with a **path**, and how to create, copy, move and delete files, first with commands and then with
 **Yazi**, a file manager that runs in the terminal.
 
