@@ -2,7 +2,7 @@
 
 In the first lab you learned to move around Sway and to run your first commands in the terminal. Now it is time to
 work with **files** and **directories**. Everything you keep on a computer (documents, movies, programs, settings) is a file, stored
-somewhere in a big tree of directories. In this lab you will learn how to **find your way** in this tree, how to **name**
+somewhere in a big ree of directories. In this lab you will learn how to **find your way** in this tree, how to **name**
 any file with a **path**, and how to create, copy, move and delete files, first with commands and then with
 **Yazi**, a file manager that runs in the terminal.
 
@@ -60,6 +60,32 @@ Usually you can write **only** in your home directory and in `/tmp`.
 
 Names in Linux are **case sensitive**: `Movies`, `movies` and `MOVIES` are three different names. Windows does not
 care about upper and lower case letters, Linux does.
+
+:::
+
+### Hidden Files
+
+A file or a directory whose name starts with a `.` is **hidden**: `ls`, `tree` and the file managers do not show it,
+unless you ask them to. There is nothing secret about hidden files, Linux only hides them to keep the listings short.
+Most of them keep the **settings** of your programs, in your home directory:
+
+```
+/home/student
+├── .bashrc       settings of the shell (hidden)
+├── .config/      settings of most programs: Sway, Yazi, ... (hidden)
+├── .local/       data of the programs, for example the trash (hidden)
+├── Downloads/
+└── Movies/
+```
+
+* `ls -a` (**a**ll) also lists the hidden files, and so does `find`, without any option.
+* To hide a file, rename it so that its name starts with a `.`: `mv notes.txt .notes.txt`. To show it again, rename it
+  back: `mv .notes.txt notes.txt`.
+
+:::caution
+
+Do not delete the hidden files of your home directory if you do not know what they are: you can lose the settings of
+your programs.
 
 :::
 
@@ -225,11 +251,11 @@ SYNOPSIS
 
 | Notation | Meaning |
 |-|-|
-| `[ ]` | optional |
-| `...` | can repeat |
+| `[ ]` | optional: this may or may not be present |
+| `...` | can repeat: there may be more than one of these |
 | `SOURCE`, `DEST`, `FILE`, `DIRECTORY` | a **path** (relative or absolute) |
-| `-r` | a short option |
-| `--recursive` | a long option, often the same as a short one |
+| `-r` | a short option: one dash and a single letter |
+| `--recursive` | a long option: two dashes and a full word, often the same as a short one |
 
 ### Searching in a Manual Page
 
@@ -748,8 +774,11 @@ Try 'touch --help' for more information.
 [student@fedora ~]$ rm ./-list.txt
 ```
 
-Quotes do not help here, as the name still starts with `-`. `./-list.txt` is another **path** to the same file, and
-it does not start with `-`.
+:::note
+Quotes would not help here, as the name still starts with `-`. Using `./-list.txt` make is clear that it is
+a **path**. The `./-list.txt` path is equivalent to the `-list.txt`, they point to the same file, just that
+and the first one it does not start with `-` and the command does not consider it an option.
+:::
 
 :::tip
 
@@ -1015,7 +1044,8 @@ The exercises get harder as you go:
 The exercises are also marked for the two types of lab:
 
 * 🌱 **basic** (1 hour - **AC**): do only the exercises marked with 🌱 (exercises 1 - 34);
-* 🌳 **full** (2 hours - **CD**): do all the exercises, both 🌱 and 🌳.
+* 🌳 **full** (2 hours - **CD**): do all the exercises, both 🌱 and 🌳, except the 🏠 ones;
+* 🏠 **at home**: the hardest exercises, to solve at home after the lab.
 
 Do the exercises **in order**: each one uses the files left by the previous ones.
 
@@ -1345,12 +1375,12 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
 
 ### Challenges
 
-54. 🌳 **Tricky paths**: From `~/lab02/Photos`, calculate where `../Games/2026/./../../Photos/../Recipes` leads, and write
+54. 🏠 **Tricky paths**: From `~/lab02/Photos`, calculate where `../Games/2026/./../../Photos/../Recipes` leads, and write
     each step of the calculation in `answers.txt`. Go there with a **single** `cd`. Then go back to `Photos` with a
     path that contains **exactly two** `..`.
 
     **Check:** you are back in `/home/student/lab02/Photos`. <small>→ [From Relative to Absolute](#from-relative-to-absolute)</small>
-55. 🌳 **Reorganize**: Using the terminal for half of the work and Yazi for the other half, change `~/lab02` so that
+55. 🏠 **Reorganize**: Using the terminal for half of the work and Yazi for the other half, change `~/lab02` so that
     `tree ~/lab02` prints exactly this tree (delete everything that is not in it):
 
     ```
@@ -1379,36 +1409,36 @@ Exercises 56 - 62 start from the tree of exercise 55: do them only after `tree ~
 exactly that tree.
 :::
 
-56. 🌳 **Exactly five**: From `~/lab02/Recipes/desserts`, write a relative path to `sudoku.txt` that contains
+56. 🏠 **Exactly five**: From `~/lab02/Recipes/desserts`, write a relative path to `sudoku.txt` that contains
     **exactly five** `..` and no `.`. Use it with `ls -l`.
 
     **Check:** `ls -l` shows `sudoku.txt`, and `realpath` of your path prints `/home/student/lab02/Games/2026/sudoku.txt`. <small>→ [From Relative to Absolute](#from-relative-to-absolute)</small>
-57. 🌳 **Shortest path**: Find the **shortest** relative path from `/usr/share/doc` to `~/lab02/Notes`, and the
+57. 🏠 **Shortest path**: Find the **shortest** relative path from `/usr/share/doc` to `~/lab02/Notes`, and the
     shortest one from `~/lab02/Notes` back to `/usr/share/doc`. Use each of them with a single `cd`, then jump
     between the two directories twice more with `cd -` only.
 
     **Check:** after each `cd`, `pwd` prints the directory you wanted to reach. <small>→ [Relative Paths](#relative-paths)</small>
-58. 🌳 **Clean up a path**: Write the **shortest** absolute path equivalent to
+58. 🏠 **Clean up a path**: Write the **shortest** absolute path equivalent to
     `/home/../../../home/student/lab02/./Notes/../Games/2026/../../Recipes/desserts/..`, first on paper, then check it.
 
     **Check:** `realpath` prints the path you wrote. <small>→ [From Relative to Absolute](#from-relative-to-absolute)</small>
-59. 🌳 **Swap**: Swap the names of `Notes/books.txt` and `Notes/plan.txt` using **only** `mv`.
+59. 🏠 **Swap**: Swap the names of `Notes/books.txt` and `Notes/plan.txt` using **only** `mv`.
 
     **Check:** `ls -l ~/lab02/Notes` shows that `books.txt` now has the size that `plan.txt` had before, and
     `plan.txt` is empty. <small>→ [Managing Files](#managing-files)</small>
-60. 🌳 **Mirror**: Create in `/tmp/mirror` the same **directory** structure as `~/lab02` (only the directories, no files),
+60. 🏠 **Mirror**: Create in `/tmp/mirror` the same **directory** structure as `~/lab02` (only the directories, no files),
     with a **single** `mkdir` command that prints every directory it creates (look in `man mkdir`, 🔍 search
     for `message`).
 
     **Check:** `mkdir` printed a `created directory` line for every directory, and the trees of `/tmp/mirror`
     and `~/lab02` have the same directories. <small>→ [Managing Files](#managing-files) · [Reading the Manual](#reading-the-manual)</small>
-61. 🌳 **From far away**: Go to `/tmp`. With a **single** `mv` command and **only relative** paths, move `chess.txt`
+61. 🏠 **From far away**: Go to `/tmp`. With a **single** `mv` command and **only relative** paths, move `chess.txt`
     and `cat.jpg` from `Games` into `Recipes/desserts`. Then move them back with a single `mv`, this time from
     `~/lab02/Notes`.
 
     **Check:** after the first `mv`, `desserts` has three files; after the second one, `tree ~/lab02` shows the
     tree of exercise 55 again (with the names of exercise 59). <small>→ [Every File is a Path](#every-file-is-a-path)</small>
-62. 🌳 **Backup with tabs**: With Yazi only, create the directory `~/lab02/Backup`, then copy the `Games`, `Notes` and
+62. 🏠 **Backup with tabs**: With Yazi only, create the directory `~/lab02/Backup`, then copy the `Games`, `Notes` and
     `Recipes` directories into it using **two** tabs and a **single** paste. Delete `Backup` permanently at the end.
 
     **Check:** before deleting it, `tree ~/lab02/Backup` shows the three directories with all their files. <small>→ [Tabs](#tabs) · [Using Yazi](#using-yazi)</small>
