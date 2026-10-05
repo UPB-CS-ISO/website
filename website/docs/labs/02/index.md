@@ -58,8 +58,8 @@ Usually you can write **only** in your home directory and in `/tmp`.
 
 :::tip
 
-Names in Linux are **case sensitive**: `Movies`, `movies` and `MOVIES` are three different names. Windows does not
-care about upper and lower case letters, Linux does.
+Names in Linux are **case sensitive**: `Movies`, `movies` and `MOVIES` are three different names. Windows and macOS
+(with its default settings) do not care about upper and lower case letters, Linux does.
 
 :::
 
