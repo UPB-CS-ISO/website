@@ -78,7 +78,9 @@ you open a new terminal, the current directory is your home directory. The promp
 /home/student
 ```
 
+:::info
 `pwd` (*print working directory*) prints the current directory as an absolute path.
+:::
 
 ### Absolute Paths
 
@@ -201,7 +203,9 @@ $ cat ~/watchlist.txt
 $ cat ../../student/Downloads/../watchlist.txt
 ```
 
+:::tip
 You can also mix relative and absolute paths in the same command: `cp ../watchlist.txt /tmp/`.
+:::
 
 ## Reading the Manual
 
@@ -459,8 +463,7 @@ drwxr-xr-x. 2 student student  4096 Sep 26 21:15 Movies
 * `ls` listed the current directory. It does **not** show what is inside `Movies`.
 * `ls Movies` listed the `Movies` directory, without changing the current directory.
 * `ls -a` also listed the hidden entries: `.bashrc`, and `.` and `..`, which are in every directory.
-* `ls -l` listed one entry per line: the type (`d` directory, `-` file), the permissions, the owner, the size in
-  bytes, the date and the name.
+* `ls -l` listed one entry per line: the type (`d` directory, `-` file), the permissions, the owner, the size in bytes, the modification date, and the name.
 * `ls -l watchlist.txt` showed the details of only one file.
 
 #### `tree`
@@ -686,7 +689,7 @@ Not sure if you can `cat` a file? Run `file` first: if the answer contains `text
 
 :::info
 
-Renaming is moving to a new name in the same directory: `mv movie.mkv project_hail_mary.mkv`.
+There is no separate rename command: renaming is just moving a file to a new name in the same directory. For example, `mv movie.mkv project_hail_mary.mkv` renames `movie.mkv` to `project_hail_mary.mkv`.
 
 :::
 
@@ -959,7 +962,7 @@ Start it with `yazi`, or with a directory: `yazi ~/Downloads`. Quit with <kbd>q<
 
 :::info
 
-  The <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd> keys are the same as in Sway and `vi` (see [Default Keybindings](/docs/labs/01#default-keybindings) in lab 01).
+The <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd> keys are the same as in Sway and `vi` (see [Default Keybindings](/docs/labs/01#default-keybindings) in lab 01).
 
 :::
 
