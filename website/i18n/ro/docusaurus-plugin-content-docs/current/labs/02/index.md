@@ -1,6 +1,6 @@
 # 02. Gestionarea fișierelor
 
-În primul laborator ați învățat să navigați în Sway și să rulați primele comenzi în terminal. Acum este momentul să
+În primul laborator ați învățat cum să navigați în Sway și să rulați primele comenzi în terminal. Acum este momentul să
 lucrați cu **fișiere** și **directoare**. Tot ce păstrați pe un computer (documente, filme, programe, setări) este un
 fișier, stocat undeva într-un arbore mare de directoare. În acest laborator veți învăța cum să **vă orientați** în acest
 arbore, cum să **denumiți** orice fișier cu o **cale** și cum să creați, să copiați, să mutați și să ștergeți fișiere,
@@ -15,10 +15,10 @@ fișiere, atât în acest laborator, cât și în toate cele următoare, primeș
 - Să scrieți căi **absolute** și **relative** și să știți ce înseamnă `.`, `..` și `~`
 - Să calculați calea absolută pornind de la directorul curent și o cale relativă
 - Să citiți **pagina de manual** a unei comenzi și să îi înțelegeți secțiunea `SYNOPSIS`
-- Să navigați cu `pwd`, `cd`, `ls` și `tree` și să tastați mai puțin cu **completarea automată cu TAB**
-- Să găsiți fișiere oriunde într-un arbore de directoare cu `find`
-- Să citiți fișiere text cu `cat` și `nano` și să aflați tipul oricărui fișier cu `file`
-- Să creați, copiați, mutați, redenumiți și ștergeți fișiere și directoare cu `mkdir`, `touch`, `nano`, `cp`, `mv`, `rm`
+- Să navigați folosind comenzile `pwd`, `cd`, `ls` și `tree` și să tastați mai puțin cu **completarea automată folosind tasta TAB**
+- Să găsiți fișiere oriunde într-un arbore de directoare folosind comanda `find`
+- Să citiți fișiere text folosind comenzile `cat` și `nano` și să aflați tipul oricărui fișier cu comanda `file`
+- Să creați, copiați, mutați, redenumiți și ștergeți fișiere și directoare folosind comenzile `mkdir`, `touch`, `nano`, `cp`, `mv`, `rm`
   și `rmdir`
 - Să lucrați cu nume care conțin spații și alte caractere speciale
 - Să instalați și să folosiți **Yazi** pentru a gestiona fișierele cu câteva taste, inclusiv cu tab-uri
@@ -39,7 +39,7 @@ de Operare, Printech 2021](https://github.com/systems-cs-pub-ro/carte-uso/releas
 
 În Windows, fiecare unitate de stocare are propriul arbore: `C:\`, `D:\` și așa mai departe. În Linux există **un singur
 arbore**, care pornește dintr-un singur director numit **rădăcină** (*root*), notat `/`. Totul se află undeva sub acesta:
-programele, setările, celelalte discuri și propriile dvs. fișiere.
+programele, setările, celelalte discuri și propriile voastre fișiere.
 
 ```
 /
@@ -54,8 +54,8 @@ programele, setările, celelalte discuri și propriile dvs. fișiere.
 └── usr/          installed software
 ```
 
-Fișierele dvs. se află în **directorul utilizatorului** (*home*), `/home/student` (folosiți numele dvs. de utilizator în
-locul lui `student`). De obicei, puteți scrie **numai** în directorul utilizatorului și în `/tmp`.
+Fișierele voastre se află în **directorul utilizatorului** (*home*), `/home/student` (folosiți numele vostru de utilizator în
+locul numelui `student`). De obicei, puteți scrie **numai** în directorul utilizatorului și în `/tmp`.
 
 :::tip
 
@@ -68,7 +68,7 @@ macOS (cu setările implicite) nu țin cont de majuscule și minuscule, Linux da
 
 Un fișier sau un director al cărui nume începe cu `.` este **ascuns**: `ls`, `tree` și managerii de fișiere nu îl
 afișează, decât dacă le cereți acest lucru. Nu este nimic secret în legătură cu fișierele ascunse, Linux le ascunde doar
-pentru a păstra listele scurte. Majoritatea dintre ele păstrează **setările** programelor dvs., în directorul utilizatorului:
+pentru a păstra listele scurte. Majoritatea dintre ele păstrează **setările** programelor, în directorul utilizatorului:
 
 ```
 /home/student
@@ -86,7 +86,7 @@ pentru a păstra listele scurte. Majoritatea dintre ele păstrează **setările*
 :::caution
 
 Nu ștergeți fișierele ascunse din directorul utilizatorului dacă nu știți ce sunt: puteți pierde setările
-programelor dvs.
+programelor voastre.
 
 :::
 
@@ -129,8 +129,8 @@ O **cale relativă** **nu** începe cu `/`. Ea pornește din **directorul curent
 `/home/student`, atunci:
 
 ```
-Movies/the_odyssey.mkv      means   /home/student/Movies/the_odyssey.mkv
-watchlist.txt               means   /home/student/watchlist.txt
+Movies/the_odyssey.mkv      înseamnă   /home/student/Movies/the_odyssey.mkv
+watchlist.txt               înseamnă   /home/student/watchlist.txt
 ```
 
 O cale relativă este mai scurtă, dar **depinde de locul în care vă aflați**: aceeași cale relativă indică un alt fișier
@@ -153,7 +153,7 @@ Acestea pot fi folosite oriunde într-o cale, iar `..` poate fi repetat pentru a
 /
 └── home
     ├── student
-    │   ├── Movies            <-- .      (you are here)
+    │   ├── Movies            <-- .      (sunteți aici)
     │   │   └── the_odyssey.mkv
     │   ├── Downloads
     │   │   └── supergirl.mp4
@@ -186,11 +186,11 @@ Iată cum transformă sistemul de operare o cale relativă într-una absolută:
 De exemplu, din `/home/student/Movies` calea `../Downloads/./../../bob/notes.txt` devine:
 
 ```
-/home/student/Movies/../Downloads/./../../bob/notes.txt      1. join
-/home/student/Movies/../Downloads/../../bob/notes.txt        2. drop the .
-/home/student/Downloads/../../bob/notes.txt                  3. Movies/.. cancel each other
-/home/student/../bob/notes.txt                               3. Downloads/.. cancel each other
-/home/bob/notes.txt                                          3. student/.. cancel each other
+/home/student/Movies/../Downloads/./../../bob/notes.txt      1. unește
+/home/student/Movies/../Downloads/../../bob/notes.txt        2. renunță la .
+/home/student/Downloads/../../bob/notes.txt                  3. Movies/.. se anulează reciproc
+/home/student/../bob/notes.txt                               3. Downloads/.. se anulează reciproc
+/home/bob/notes.txt                                          3. student/.. se anulează reciproc
 ```
 
 :::caution
@@ -303,7 +303,7 @@ Cum să căutați eficient:
 :::caution
 
 Citiți întotdeauna manualul **înainte** de a căuta online sau de a întreba o inteligență artificială. Manualul de pe
-computerul dvs. este scris pentru **versiunea instalată** pe computerul dvs. Un răspuns găsit online ar putea fi pentru
+computerul vostru este scris pentru **versiunea instalată** pe computerul vostru. Un răspuns găsit online ar putea fi pentru
 o altă versiune sau pur și simplu greșit.
 
 :::
@@ -314,23 +314,23 @@ Majoritatea comenzilor afișează, de asemenea, un scurt rezumat al opțiunilor 
 
 :::
 
-## Completarea cu <kbd>TAB</kbd> {/* #tab-completion */}
+## Completarea folosind tasta <kbd>TAB</kbd> {/* #tab-completion */}
 
 Nu este necesar să tastați numele complete ale fișierelor, directoarelor și comenzilor. Tastați primele litere și apăsați
-<kbd>Tab</kbd>:
+tasta <kbd>Tab</kbd>:
 
-* dacă doar **un singur** nume începe cu acele litere, shell-ul scrie restul în locul dvs.;
+* dacă doar **un singur** nume începe cu acele litere, shell-ul scrie restul în locul vostru;
 * dacă **mai multe** nume încep cu ele, nu se întâmplă nimic: apăsați <kbd>Tab</kbd> a **doua** oară pentru a le vedea
   pe toate, tastați încă una sau două litere și apăsați <kbd>Tab</kbd> din nou.
 
 | Tastați | Apăsați | Shell-ul |
 |-|-|-|
-| `cd Mo` | <kbd>Tab</kbd> | completează la `cd Movies/` (doar `Movies` începe cu `Mo`) |
-| `cat wa` | <kbd>Tab</kbd> | completează la `cat watchlist.txt` |
+| `cd Mo` | <kbd>Tab</kbd> | o completează astfel `cd Movies/` (doar `Movies` începe cu `Mo`) |
+| `cat wa` | <kbd>Tab</kbd> | o completează astfel `cat watchlist.txt` |
 | `ls /etc/host` | <kbd>Tab</kbd> <kbd>Tab</kbd> | afișează toate numele care încep cu `host`, de exemplu `host.conf  hosts` |
-| `ls /etc/she` | <kbd>Tab</kbd> | completează la `ls /etc/shells` |
+| `ls /etc/she` | <kbd>Tab</kbd> | o completează astfel `ls /etc/shells` |
 | `whoa` | <kbd>Tab</kbd> | completează **comanda** la `whoami` |
-| `ls --recu` | <kbd>Tab</kbd> | completează **opțiunea** la `ls --recursive` |
+| `ls --recu` | <kbd>Tab</kbd> | o completează **opțiunea** astfel `ls --recursive` |
 
 Completarea funcționează pentru fiecare parte a unei căi: `cd /us`<kbd>Tab</kbd>`sh`<kbd>Tab</kbd>`do`<kbd>Tab</kbd> devine
 `cd /usr/share/doc/`.
@@ -356,7 +356,7 @@ greșită.
 | `ls -a` | Listează și fișierele ascunse (numele care încep cu `.`) |
 | `ls -l` | Listare în format detaliat: tip, permisiuni, proprietar, dimensiune, data ultimei modificări |
 | `tree` | Listează un director și **tot ce se află în el**, sub formă de arbore |
-| `tree -L <number of levels>` | Doar până la adâncimea de `<number of levels>` niveluri |
+| `tree -L <number of levels>` | Listează doar până la adâncimea de `<number of levels>` niveluri |
 
 În rezultatul comenzii `ls -l`, prima literă indică **tipul**: `d` pentru un director, `-` pentru un fișier obișnuit. Pe
 Fedora, permisiunile se termină cu `.`: aceasta arată că fișierul are o etichetă SELinux, o puteți ignora deocamdată.
@@ -585,7 +585,7 @@ Movies/the_odyssey.mkv
 :::tip
 
 `find` găsește și fișierele **ascunse**, fără nicio opțiune. Ordinea rezultatelor poate fi diferită pe
-computerul dvs.
+computerul vostru.
 
 :::
 
@@ -911,7 +911,7 @@ părinte, directorul curent și o previzualizare) și îndeplinește funcțiile 
 
 ### Instalarea Yazi pe Fedora 44 {/* #installing-yazi-on-fedora-44 */}
 
-Yazi nu se află în depozitele oficiale Fedora. Este disponibil prin **COPR**, un serviciu în care utilizatorii Fedora
+Yazi nu se află în repository-ul oficial Fedora. Este disponibil prin **COPR**, un serviciu în care utilizatorii Fedora
 compilează pachete suplimentare. Activați depozitul COPR al Yazi și instalați pachetul:
 
 ```bash
@@ -919,7 +919,7 @@ sudo dnf copr enable lihaohong/yazi
 sudo dnf install yazi
 ```
 
-`dnf` vă cere să confirmați de două ori: o dată pentru a activa depozitul, o dată pentru a instala pachetele. Instalează
+`dnf` vă cere să confirmați de două ori: o dată pentru a activa repository-ul, o dată pentru a instala pachetele. Instalează
 și câteva utilitare opționale pe care Yazi le folosește pentru previzualizări. Verificați dacă funcționează:
 
 ```bash
@@ -938,7 +938,7 @@ este cel menționat pe [pagina oficială de instalare a Yazi](https://yazi-rs.gi
 Dacă `dnf` afișează `No such command: copr`, instalați mai întâi plugin-ul cu `sudo dnf install dnf5-plugins`, apoi
 rulați din nou comenzile.
 
-Dacă depozitul COPR nu conține încă un pachet pentru versiunea dvs. de Fedora, puteți compila Yazi singuri cu ajutorul
+Dacă depozitul COPR nu conține încă un pachet pentru versiunea voastra de Fedora, puteți compila Yazi singuri cu ajutorul
 managerului de pachete al limbajului Rust, `cargo` (durează câteva minute):
 
 ```bash
@@ -1061,7 +1061,7 @@ de mai sus. Găsiți-o în **pagina de manual** a comenzii (`man <command>`), a�
 [Căutarea într-o pagină de manual](#searching-in-a-manual-page): căutați cuvinte care descriu ceea ce vă trebuie.
 
 Păstrați **două terminale unul lângă altul** în Sway: unul în care rulați comenzile și unul în care verificați rezultatul
-cu `tree ~/lab02`, `ls` sau `pwd` după **fiecare** exercițiu. În căile de mai jos, înlocuiți `student` cu numele dvs. de
+cu `tree ~/lab02`, `ls` sau `pwd` după **fiecare** exercițiu. În căile de mai jos, înlocuiți `student` cu numele vostru de
 utilizator (rulați `whoami` ca să îl aflați).
 
 :::tip
@@ -1194,12 +1194,12 @@ calculatorului.
     instalare de Linux. Apoi rulați `hostnamectl`, care afișează informații despre calculator.
 
     **Verificare:** linia `Machine ID` din `hostnamectl` arată același număr ca fișierul. <small>→ [Vizualizarea fișierelor text](#viewing-text-files-cat-and-nano)</small>
-19. 🌱 **Utilizatorii**: Afișați `/etc/passwd`, lista utilizatorilor sistemului, și găsiți linia utilizatorului dvs. (ea
-    începe cu numele dvs. de utilizator). Copiați fișierul în `/tmp/users.txt` și modificați copia cu `nano`.
+19. 🌱 **Utilizatorii**: Afișați `/etc/passwd`, lista utilizatorilor sistemului, și găsiți linia utilizatorului vostru (ea
+    începe cu numele vostru de utilizator). Copiați fișierul în `/tmp/users.txt` și modificați copia cu `nano`.
 
     **Verificare:** `ls -l /etc/passwd /tmp/users.txt` arată că doar copia a fost modificată (uitați-vă la date). <small>→ [Vizualizarea fișierelor text](#viewing-text-files-cat-and-nano) · [Gestionarea fișierelor](#managing-files)</small>
 20. 🌱 **Shell-urile**: Afișați `/etc/shells`, lista shell-urilor instalate. Apoi afișați detaliile lui
-    `/usr/bin/bash`, shell-ul care rulează în terminalul dvs.
+    `/usr/bin/bash`, shell-ul care rulează în terminalul vostru
 
     **Verificare:** `/usr/bin/bash` se află în listă, iar `ls -l` arată un fișier (prima literă `-`) de aproximativ 1 MB. <small>→ [Vizualizarea fișierelor text](#viewing-text-files-cat-and-nano) · [Fiecare fișier este o cale](#every-file-is-a-path)</small>
 21. 🌱 **Programele sunt fișiere**: Afișați detaliile programului `ls` însuși, `/usr/bin/ls`. Apoi găsiți toate
