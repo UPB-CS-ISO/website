@@ -1,5 +1,6 @@
 #import "/src/slides.typ": *
 #import "diagram.typ": *
+#import "params.typ": *
 
 #slide[
   = Navigation #text(size: 10pt, weight: "regular")[\ `pwd`, `cd`, `ls`, `tree` and `find`]
@@ -70,22 +71,37 @@
   == `cd`
   📁 Change (Current) Directory
 
-    ```terminal
-    $ cd [directory]    # `[directory]` means that the `directory` parameter is optional
-    ```
+  #let c = param-colors
+  #let cd-synopsis = "$ cd [directory]    # `[directory]` means that the `directory` parameter is optional"
+  #let cd-commands = "$ cd /home/alice/Downloads  # absolute path
+$ cd ../Movies              # relative path
+$ cd -                      # previous directory
+/home/alice/Downloads
+$ cd -
+/home/alice/Movies
+$ cd ~                      # home directory
+$ cd                        # home directory"
+  // every step: the visible lines, the current command and its directory
+  #let cd-steps = (
+    (shown: 1, line: 1, dir: "/home/alice/Downloads"),
+    (shown: 2, line: 2, dir: "../Movies"),
+    (shown: 4, line: 3, dir: "-"),
+    (shown: 6, line: 5, dir: "-"),
+    (shown: 7, line: 7, dir: "~"),
+    (shown: 8, line: 8, dir: none),
+  )
+
+  #for (k, st) in cd-steps.enumerate() {
+    synopsis-step(cd-steps, k, marked-terminal(cd-synopsis,
+      marks: if st.dir == none { (:) } else { ("1": (("[directory]", c.path),)) }))
+  }
 
   #set text(size: 0.85em)
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
-    #reveal-terminal(before: none, lines: (1, 2, 4, 6, 7, 8), full: false)[```terminal
-    $ cd /home/alice/Downloads  # absolute path
-    $ cd ../Movies              # relative path
-    $ cd -                      # previous directory
-    /home/alice/Downloads
-    $ cd -
-    /home/alice/Movies
-    $ cd ~                      # home directory
-    $ cd                        # home directory
-    ```]
+    #for (k, st) in cd-steps.enumerate() {
+      synopsis-step(cd-steps, k, marked-terminal(cd-commands, shown: st.shown,
+        marks: if st.dir == none { (:) } else { (str(st.line): ((st.dir, c.path),)) }))
+    }
 
     #uncover("3-")[🔁 `cd -` goes where you were *before* the last `cd`]
 
@@ -104,57 +120,69 @@
   == `ls`
   📂 Listing Files and Directories
 
-  ```terminal
-  $ ls [options] [directory]
-  ```
+  #let c = param-colors
+  #let ls-synopsis = "$ ls [option]... [file]..."
+  #let ls-commands = "$ ls
+Downloads  Movies  watchlist.txt
+$ ls watchlist.txt Movies
+watchlist.txt
+
+Movies:
+the_odyssey.mkv
+$ ls -a
+.  ..  .bashrc  Downloads  Movies  watchlist.txt
+$ ls -l -h ~
+drwxr-xr-x  2 alice alice 4.0K Sep 20 18:02 Downloads
+drwxr-xr-x  2 alice alice 4.0K Sep 26 21:15 Movies
+-rw-r--r--  1 alice alice  21K Sep 28 21:40 watchlist.txt"
+  // every step: the visible lines, the current command, its parameters and
+  // the matching parts of the synopsis
+  #let ls-steps = (
+    (shown: 2, line: 1, marks: (), synopsis: ()),
+    (shown: 7, line: 3, marks: (("watchlist.txt", c.path), ("Movies", c.path)), synopsis: (("[file]...", c.path),)),
+    (shown: 9, line: 8, marks: (("-a", c.option),), synopsis: (("[option]...", c.option),)),
+    (shown: 13, line: 10, marks: (("-l", c.option), ("-h", c.option), ("~", c.path)), synopsis: (("[option]...", c.option), ("[file]...", c.path))),
+  )
+
+  #for (k, st) in ls-steps.enumerate() {
+    synopsis-step(ls-steps, k, marked-terminal(ls-synopsis, marks: ("1": st.synopsis)))
+  }
 
   #set text(size: 0.85em)
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
-    #reveal-terminal(before: none, lines: (2, 4, 6, 10, 14), full: false)[```terminal
-    $ ls
-    Downloads  Movies  watchlist.txt
-    $ ls Movies
-    the_odyssey.mkv
-    $ ls -a
-    .  ..  .bashrc  Downloads  Movies  watchlist.txt
-    $ ls -l
-    drwxr-xr-x  2 alice alice  4096 Sep 20 18:02 Downloads
-    drwxr-xr-x  2 alice alice  4096 Sep 26 21:15 Movies
-    -rw-r--r--  1 alice alice 21504 Sep 28 21:40 watchlist.txt
-    $ ls -lh
-    drwxr-xr-x  2 alice alice 4.0K Sep 20 18:02 Downloads
-    drwxr-xr-x  2 alice alice 4.0K Sep 26 21:15 Movies
-    -rw-r--r--  1 alice alice  21K Sep 28 21:40 watchlist.txt
-    ```]
+    #for (k, st) in ls-steps.enumerate() {
+      synopsis-step(ls-steps, k, marked-terminal(ls-commands, shown: st.shown, marks: (str(st.line): st.marks)))
+    }
   ][
     #let tree = ```
     ~ (/home/alice)
     ├── .bashrc
     ├── Downloads
+    │   └── supergirl.mp4
     ├── Movies
     │   └── the_odyssey.mkv
     └── watchlist.txt
     ```
-    #only(1)[#fs-tree(here: (3, 4, 6), cwd: 1, caption: [only the entries of the directory,\ not what is inside `Movies`], tree)]
-    #only(2)[#fs-tree(here: (4, 5), cwd: 1, caption: [a directory as parameter:\ list what is _inside_ `Movies`], tree)]
-    #only(3)[#fs-tree(here: (2, 3, 4, 6), cwd: 1, caption: [names starting with `.` are _hidden_], tree)]
+    #only(1)[#fs-tree(here: (3, 5, 7), cwd: 1, caption: [only the entries of the directory,\ not what is inside `Movies`], tree)]
+    #only(2)[#fs-tree(here: (5, 6, 7), cwd: 1, caption: [a file is listed by its name,\ a directory by what is _inside_ it], tree)]
+    #only(3)[#fs-tree(here: (2, 3, 5, 7), cwd: 1, caption: [names starting with `.` are _hidden_], tree)]
     // the same tree with the type letter that `ls -l` prints for every entry it lists
     #let typed-tree = ```
     ~ (/home/alice)
     ├── .bashrc
     ├── Downloads        d
+    │   └── supergirl.mp4
     ├── Movies           d
     │   └── the_odyssey.mkv
     └── watchlist.txt    -
     ```
-    #only(4)[#fs-tree(here: (3, 4, 6), cwd: 1, caption: [1#super[st] letter: `d` directory, `-` file\ then permissions, owner, size, date], typed-tree)]
-    #only("5-")[#fs-tree(here: (3, 4, 6), cwd: 1, caption: [sizes in `K`, `M`, `G` instead of bytes], typed-tree)]
+    #only("4-")[#fs-tree(here: (3, 5, 7), cwd: 1, caption: [1#super[st] letter: `d` directory, `-` file,\ sizes in `K`, `M`, `G` instead of bytes], typed-tree)]
 
-    #item-by-item(start: 3)[
-    - `-a` - include hidden files (_`.` files_)
-    - `-l` - long listing
-    - `-h` - human-readable sizes (with `-l`)
-    ]
+    #uncover("3-")[`-a` - include hidden files (_`.` files_)]
+
+    #uncover("4-")[`-l` - long listing, `-h` - human-readable sizes]
+
+    #uncover("4-")[💡 `ls -l -h ~` is the same as `ls -lh ~`]
   ]
 ]
 
@@ -162,74 +190,88 @@
   == `tree`
   🌳 List a Directory and Everything Inside
 
-  ```terminal
-  $ tree [options] [directory]
-  ```
-
-  // every step: the command and what it prints, in /home/alice
+  #let c = param-colors
+  #let tree-synopsis = "$ tree [option]... [directory]..."
+  // every step: the command and what it prints, in /home/alice, its parameters
+  // and the matching parts of the synopsis
   #let tree-steps = (
-    ```terminal
-    $ tree
-    .
-    ├── Downloads
-    │   └── supergirl.mp4
-    ├── Movies
-    │   └── the_odyssey.mkv
-    └── watchlist.txt
+    (
+      text: "$ tree
+.
+├── Downloads
+│   └── supergirl.mp4
+├── Movies
+│   └── the_odyssey.mkv
+└── watchlist.txt
 
-    2 directories, 3 files
-    ```,
-    ```terminal
-    $ tree Movies
-    Movies
-    └── the_odyssey.mkv
+3 directories, 3 files",
+      marks: (),
+      synopsis: (),
+    ),
+    (
+      text: "$ tree Movies Downloads
+Movies
+└── the_odyssey.mkv
+Downloads
+└── supergirl.mp4
 
-    0 directories, 1 file
-    ```,
-    ```terminal
-    $ tree -L 1
-    .
-    ├── Downloads
-    ├── Movies
-    └── watchlist.txt
+2 directories, 2 files",
+      marks: (("Movies", c.path), ("Downloads", c.path)),
+      synopsis: (("[directory]...", c.path),),
+    ),
+    (
+      text: "$ tree -L 1
+.
+├── Downloads
+├── Movies
+└── watchlist.txt
 
-    2 directories, 1 file
-    ```,
-    ```terminal
-    $ tree -d
-    .
-    ├── Downloads
-    └── Movies
+3 directories, 1 file",
+      marks: (("-L 1", c.option),),
+      synopsis: (("[option]...", c.option),),
+    ),
+    (
+      text: "$ tree -d
+.
+├── Downloads
+└── Movies
 
-    2 directories
-    ```,
-    ```terminal
-    $ tree -a -L 1
-    .
-    ├── .bashrc
-    ├── Downloads
-    ├── Movies
-    └── watchlist.txt
+3 directories",
+      marks: (("-d", c.option),),
+      synopsis: (("[option]...", c.option),),
+    ),
+    (
+      text: "$ tree -a -L 1 ~
+/home/alice
+├── .bashrc
+├── Downloads
+├── Movies
+└── watchlist.txt
 
-    2 directories, 2 files
-    ```,
+3 directories, 2 files",
+      marks: (("-a", c.option), ("-L 1", c.option), ("~", c.path)),
+      synopsis: (("[option]...", c.option), ("[directory]...", c.path)),
+    ),
   )
 
+  #for (k, st) in tree-steps.enumerate() {
+    synopsis-step(tree-steps, k, marked-terminal(tree-synopsis, marks: ("1": st.synopsis)))
+  }
+
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
-    #for (i, step) in tree-steps.enumerate() {
-      let frames = if i == tree-steps.len() - 1 { str(i + 1) + "-" } else { i + 1 }
-      only(frames, step)
+    #for (k, st) in tree-steps.enumerate() {
+      synopsis-step(tree-steps, k, marked-terminal(st.text, marks: ("1": st.marks)))
     }
   ][
     `ls` lists _one_ directory, `tree` also goes *inside* every directory
 
-    #uncover("2-")[`Movies` - only what is inside this directory]
+    #uncover("2-")[`Movies Downloads` - only what is inside these directories]
 
     #uncover("3-")[`-L 1` - only 1 level deep]
 
     #uncover("4-")[`-d` - only directories]
 
-    #uncover("5-")[`-a` - include hidden files]
+    #uncover("5-")[`-a` - include hidden files, `~` - list the home directory]
 
   ]
 
@@ -242,32 +284,42 @@
   == `find`
   🔍 Search for Files and Directories
 
-  ```terminal
-  $ find [directory...] [conditions]
-  ```
-
-  // every step: the command and what it prints, in /home/alice
+  #let c = param-colors
+  #let find-synopsis = "$ find [directory]... [filter]..."
+  // every step: the command and what it prints, in /home/alice, its parameters
+  // and the matching parts of the synopsis
   #let find-steps = (
-    ```terminal
-    $ find Movies
-    Movies
-    Movies/the_odyssey.mkv
-    ```,
-    ```terminal
-    $ find . -name "*.mkv"
-    ./Movies/the_odyssey.mkv
-    ```,
-    ```terminal
-    $ find . -type d
-    .
-    ./Downloads
-    ./Movies
-    ```,
-    ```terminal
-    $ find ~ -name watchlist.txt
-    /home/alice/watchlist.txt
-    ```,
+    (
+      text: "$ find Movies
+Movies
+Movies/the_odyssey.mkv",
+      marks: (("Movies", c.path),),
+      synopsis: (("[directory]...", c.path),),
+    ),
+    (
+      text: "$ find . -name \"*.mkv\"
+./Movies/the_odyssey.mkv",
+      marks: ((".", c.path), ("-name \"*.mkv\"", c.filter)),
+      synopsis: (("[directory]...", c.path), ("[filter]...", c.filter)),
+    ),
+    (
+      text: "$ find Movies Downloads -type f
+Movies/the_odyssey.mkv
+Downloads/supergirl.mp4",
+      marks: (("Movies", c.path), ("Downloads", c.path), ("-type f", c.filter)),
+      synopsis: (("[directory]...", c.path), ("[filter]...", c.filter)),
+    ),
+    (
+      text: "$ find ~ -type f -name \"*.txt\"
+/home/alice/watchlist.txt",
+      marks: (("~", c.path), ("-type f", c.filter), ("-name \"*.txt\"", c.filter)),
+      synopsis: (("[directory]...", c.path), ("[filter]...", c.filter)),
+    ),
   )
+
+  #for (k, st) in find-steps.enumerate() {
+    synopsis-step(find-steps, k, marked-terminal(find-synopsis, marks: ("1": st.synopsis)))
+  }
 
   #let tree = ```
   ~ (/home/alice)
@@ -279,20 +331,19 @@
   ```
 
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
-    #for (i, step) in find-steps.enumerate() {
-      let frames = if i == find-steps.len() - 1 { str(i + 1) + "-" } else { i + 1 }
-      only(frames, step)
+    #for (k, st) in find-steps.enumerate() {
+      synopsis-step(find-steps, k, marked-terminal(st.text, marks: ("1": st.marks)))
     }
 
     #uncover("2-")[`-name` - by name, `*` means _any characters_]
 
-    #uncover("3-")[`-type d` - only directories, `-type f` - only files]
+    #uncover("3-")[`-type f` - only files, `-type d` - only directories]
 
-    #uncover("4-")[every result is a path that starts with the directory you gave]
+    #uncover("4-")[several filters: a result must match *all* of them]
   ][
     #only(1)[#fs-tree(here: (4, 5), cwd: 1, caption: [the directory and everything inside it], tree)]
     #only(2)[#fs-tree(here: (5,), cwd: 1, caption: [search all of `.`, keep the names\ that end with `.mkv`], tree)]
-    #only(3)[#fs-tree(here: (1, 2, 4), cwd: 1, caption: [only the directories], tree)]
+    #only(3)[#fs-tree(here: (3, 5), cwd: 1, caption: [only the files, in both directories], tree)]
     #only("4-")[#fs-tree(here: (6,), cwd: 1, caption: [start from an absolute path,\ get absolute paths], tree)]
   ]
 ]

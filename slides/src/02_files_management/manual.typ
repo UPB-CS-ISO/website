@@ -1,5 +1,6 @@
 #import "/src/slides.typ": *
 #import "diagram.typ": *
+#import "params.typ": *
 
 // a note in the same style as the tips of the other sections
 #let card(icon: none, title: none, color: rgb("004d65"), height: auto, body) = block(
@@ -343,35 +344,6 @@
     }
   ]
 ]
-
-// Colors that tie a parameter in the SYNOPSIS to the value given to it
-#let param-colors = (
-  source: rgb("e65100"),
-  dest: rgb("6a1b9a"),
-  option: rgb("00838f"),
-)
-#let param-mark(color, body) = highlight(
-  fill: color.lighten(82%),
-  radius: 2pt,
-  extent: 1pt,
-  text(fill: color, weight: "bold", body),
-)
-
-// `body` with every (substring, color) of `marks` highlighted, in order;
-// the text between the marks is drawn with `plain(text, is-first)`
-#let param-marked(body, marks, plain) = {
-  let out = ()
-  let rest = body
-  for (sub, color) in marks {
-    let at = rest.position(sub)
-    assert(at != none, message: "`" + sub + "` not found in `" + body + "`")
-    out.push(plain(rest.slice(0, at), out.len() == 0))
-    out.push(param-mark(color, sub))
-    rest = rest.slice(at + sub.len())
-  }
-  out.push(plain(rest, out.len() == 0))
-  out.join()
-}
 
 // the SYNOPSIS lines, the commands and, for every command, what to highlight
 // (manual page, its SYNOPSIS line)

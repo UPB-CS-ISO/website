@@ -524,7 +524,7 @@ drwxr-xr-x. 2 student student  4096 Sep 26 21:15 Movies
 matches what you ask for.
 
 ```
-find [directory...] [tests]
+find [directory]... [filter]...
 ```
 
 | Command | What it does |
@@ -537,7 +537,7 @@ find [directory...] [tests]
 | `find <directory> -type d` | Only the directories |
 
 :::tip
-The tests can be combined, for example:`find ~ -type f -name '*.txt'` finds only the **files** whose name ends with `.txt`.
+The filters can be combined, for example: `find ~ -type f -name '*.txt'` finds only the **files** whose name ends with `.txt`.
 :::
 
 :::caution
