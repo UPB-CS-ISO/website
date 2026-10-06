@@ -530,7 +530,7 @@ utilizați `find`. Acesta parcurge un director și tot ce se află în interioru
 intrări care corespunde criteriilor cerute.
 
 ```
-find [directory...] [tests]
+find [directory]... [filter]...
 ```
 
 | Comandă | Ce face |
@@ -543,7 +543,7 @@ find [directory...] [tests]
 | `find <directory> -type d` | Doar directoarele |
 
 :::tip
-Testele pot fi combinate, de exemplu: `find ~ -type f -name '*.txt'` găsește doar **fișierele** al căror nume se termină cu `.txt`.
+Filtrele pot fi combinate, de exemplu: `find ~ -type f -name '*.txt'` găsește doar **fișierele** al căror nume se termină cu `.txt`.
 :::
 
 :::caution
