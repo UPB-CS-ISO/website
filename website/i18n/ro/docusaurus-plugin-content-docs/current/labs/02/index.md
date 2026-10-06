@@ -43,15 +43,15 @@ programele, setările, celelalte discuri și propriile voastre fișiere.
 
 ```
 /
-├── bin/          programs (ls, cp, mv, ...)
-├── etc/          system wide settings
-├── home/         the users' files
-│   └── student/  your home directory, also called ~
+├── bin/          programe (ls, cp, mv, ...)
+├── etc/          setările sistemului
+├── home/         fișierele utilizatorilor
+│   └── student/  directorul vostru de utilizator, reprezentat de către ~
 │       ├── Downloads/
 │       ├── Movies/
 │       └── watchlist.txt
-├── tmp/          temporary files, anyone can write here
-└── usr/          installed software
+├── tmp/          fișiere temporare, toti utilizatorii pot scrie aici
+└── usr/          software instalate
 ```
 
 Fișierele voastre se află în **directorul utilizatorului** (*home*), `/home/student` (folosiți numele vostru de utilizator în
@@ -72,9 +72,9 @@ pentru a păstra listele scurte. Majoritatea dintre ele păstrează **setările*
 
 ```
 /home/student
-├── .bashrc       settings of the shell (hidden)
-├── .config/      settings of most programs: Sway, Yazi, ... (hidden)
-├── .local/       data of the programs, for example the trash (hidden)
+├── .bashrc       setările shell-ului (fișier ascuns)
+├── .config/      setările celor mai multe programe: Sway, Yazi, ... (director ascuns)
+├── .local/       datele programelor, de exemplu coșul de gunoi (director ascuns)
 ├── Downloads/
 └── Movies/
 ```
@@ -214,7 +214,7 @@ Puteți verifica calculul cu comanda `realpath`, care afișează calea absolută
 
 :::info
 
-`~` este o facilitate a shell-ului (programul care citește comenzile dvs.). Nu funcționează în toate programele: de
+`~` este o facilitate a shell-ului (programul care citește comenzile voastre). Nu funcționează în toate programele: de
 exemplu, Windows și majoritatea aplicațiilor grafice nu îl înțeleg.
 
 :::
@@ -433,9 +433,9 @@ Shell-ul reține directorul în care vă aflați **înainte** de ultima comandă
 ```
 
 :::caution
-`cd -` **nu** este un buton „Înapoi”. Butonul „Înapoi” al unui browser reține fiecare pagină pe care ați vizitat-o, iar
+`cd -` **nu** este echivalent cu un buton „Înapoi”. Butonul „Înapoi” al unui browser reține fiecare pagină pe care ați vizitat-o, iar
 o nouă apăsare vă duce cu încă un pas în trecut. Shell-ul reține un **singur** director, iar `cd -` este el însuși un
-`cd`, așa că înlocuiește acel director cu cel pe care tocmai l-ați părăsit. O nouă apăsare vă duce **înainte**, de unde
+`cd`, așa că înlocuiește acel director cu cel pe care tocmai l-ați părăsit. O nouă folosire vă duce **înainte**, de unde
 ați venit.
 :::
 
