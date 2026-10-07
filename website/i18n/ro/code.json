@@ -359,24 +359,39 @@
     "message": "Etichete",
     "description": "The title of the tag list page"
   },
-  "cmfcmf/d-s-l.searchBar.placeholder": {
-    "message": "Căutați...",
-    "description": "Placeholder shown in the searchbar"
+  "theme.SearchBar.noResultsText": {
+    "message": "Nu sunt rezultate"
   },
-  "cmfcmf/d-s-l.searchBar.clearButtonTitle": {
-    "message": "Ștergeți",
-    "description": "Title of the button to clear the current search input"
+  "theme.SearchBar.seeAllOutsideContext": {
+    "message": "Vizualizați toate rezultatele în afara \"{context}\""
   },
-  "cmfcmf/d-s-l.searchBar.detachedCancelButtonText": {
-    "message": "Închideți",
-    "description": "Text of the button to close the detached search window"
+  "theme.SearchBar.searchInContext": {
+    "message": "Vizualizați toate rezultatele din \"{context}\""
   },
-  "cmfcmf/d-s-l.searchBar.submitButtonTitle": {
-    "message": "Căutați",
-    "description": "Title of the button to submit a new search"
+  "theme.SearchBar.seeAll": {
+    "message": "Vedeți toate rezultatele"
   },
-  "cmfcmf/d-s-l.searchBar.noResults": {
-    "message": "Nimic",
-    "description": "message shown if no results are found"
+  "theme.SearchBar.label": {
+    "message": "Căutare",
+    "description": "The ARIA label and placeholder for search button"
+  },
+  "theme.SearchPage.existingResultsTitle": {
+    "message": "Rezultatele căutării pentru \"{query}\"",
+    "description": "The search page title for non-empty query"
+  },
+  "theme.SearchPage.emptyResultsTitle": {
+    "message": "Căutați în documentație",
+    "description": "The search page title for empty query"
+  },
+  "theme.SearchPage.searchContext.everywhere": {
+    "message": "Peste tot"
+  },
+  "theme.SearchPage.documentsFound.plurals": {
+    "message": "S-a găsit un document|S-au găsit {count} de documente",
+    "description": "Pluralized label for \"{count} documents found\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.SearchPage.noResultsText": {
+    "message": "Nu s-au găsite documente",
+    "description": "The paragraph for empty search result"
   }
 }

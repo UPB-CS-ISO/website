@@ -64,11 +64,25 @@ const config: Config = {
     ],
   ],
 
-  plugins: [
+  // plugins: [
+  //   [
+  //     "@cmfcmf/docusaurus-search-local",
+  //     {
+  //       includeParentCategoriesInPageTitle: true,
+  //     },
+  //   ],
+  // ],
+
+  themes: [
     [
-      "@cmfcmf/docusaurus-search-local",
+      require.resolve("@easyops-cn/docusaurus-search-local"),
+      /** @type {import("@easyops-cn/docusaurus-search-local").PluginOptions} */
       {
-        includeParentCategoriesInPageTitle: true,
+        hashed: true,
+        language: ["en", "ro"],
+        searchBarShortcutKeymap: "/", // Use '/' key
+        highlightSearchTermsOnTargetPage: true,
+        explicitSearchResultPath: true,
       },
     ],
   ],
