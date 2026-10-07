@@ -578,7 +578,10 @@
   let src = lines.map(text-of).join("\n")
   show raw.line: it => {
     let l = lines.at(it.number - 1)
-    if type(l) == str { return render-terminal-line(it.text) }
+    // a command continued from the line above (it ended with `\`)
+    let prev = if it.number > 1 { lines.at(it.number - 2) } else { none }
+    let is-cont = type(prev) == str and shell-continues(prev)
+    if type(l) == str { return render-terminal-line(it.text, is-continuation: is-cont) }
     text(fill: luma(100), for (k, t) in l {
       let c = hl.find(((keys, colors)) => k != none and k in keys)
       if c != none { highlight(fill: c.at(1).hl, extent: 1pt, radius: 2pt, t) } else { t }

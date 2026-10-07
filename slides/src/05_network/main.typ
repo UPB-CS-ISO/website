@@ -55,6 +55,7 @@
     - Home Gateway
     - Connecting to the Internet
     - DHCP
+    - Network Configuration
   ]
   ]
   #v(0pt)
@@ -65,10 +66,11 @@
 #include "ethernet.typ"
 #include "wifi.typ"
 #include "network.typ"
-#include "transport.typ"
+// #include "transport.typ"
 #include "gateway.typ"
-#include "config.typ"
+// #include "config.typ"
 #include "dhcp.typ"
+#include "netconfig.typ"
 
 #slide[
   == We talked about
@@ -82,4 +84,5 @@
   - The home gateway and NAT
   - What a computer needs for the Internet: IP address and mask, gateway, DNS
   - DHCP
+  - Network configuration: temporary and permanent, static and dynamic
 ]

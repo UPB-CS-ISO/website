@@ -205,10 +205,10 @@
 
 // the star used by the hub and switch slides
 #let star-hosts = (
-  (name: "A", p: (40pt, 45pt), mac: "aa:aa:aa:aa:aa:aa", below: false),
-  (name: "B", p: (40pt, 150pt), mac: "bb:bb:bb:bb:bb:bb", below: true),
-  (name: "C", p: (250pt, 45pt), mac: "cc:cc:cc:cc:cc:cc", below: false),
-  (name: "D", p: (250pt, 150pt), mac: "dd:dd:dd:dd:dd:dd", below: true),
+  (name: "Ana", p: (40pt, 45pt), mac: "5c:8f:2a:91:d4:07", below: false),
+  (name: "Bogdan", p: (40pt, 150pt), mac: "e4:3b:71:0c:9a:52", below: true),
+  (name: "Carla", p: (250pt, 45pt), mac: "08:d1:6e:b3:47:ac", below: false),
+  (name: "Dan", p: (250pt, 150pt), mac: "f0:9e:4a:c2:16:3d", below: true),
 )
 #let center-pt = (145pt, 97pt)
 #let star-w = 290pt
@@ -294,10 +294,10 @@
     ]
   ][
     #set text(size: 11pt)
-    #uncover("2-")[#block[- A sends a frame to C]]
+    #uncover("2-")[#block[- Ana sends a frame to Carla]]
     #uncover("3-")[
       #block[- the hub sends it on *all* ports]
-      #block[- only C keeps it]
+      #block[- only Carla keeps it]
       #note-box[a hub copies *bits*, \ it knows no MAC addresses]
     ]
   ]
@@ -317,7 +317,7 @@
     ]
   ][
     #set text(size: 11pt)
-    #block[- A sends a *broadcast*: \ to `ff:ff:ff:ff:ff:ff`]
+    #block[- Ana sends a *broadcast*: \ to `ff:ff:ff:ff:ff:ff`]
     #uncover("2-")[
       #block[- the hub sends it on *all* ports]
       #block[- *everyone* keeps it]
@@ -343,7 +343,7 @@
     ]
   ][
     #set text(size: 11pt)
-    #uncover("2-")[#block[- A and D send *at the same time*]]
+    #uncover("2-")[#block[- Ana and Dan send *at the same time*]]
     #uncover("3-")[#block[- the signals mix: a *collision*, everyone receives garbage]]
     #uncover("4-")[#block[- *CSMA/CD*: wait a random time, try again]]
   ]
@@ -383,7 +383,7 @@
 }
 
 #let full-table = mac-table(
-  (("aa:aa:...", 1, 0), ("bb:bb:...", 2, 0), ("cc:cc:...", 3, 0), ("dd:dd:...", 4, 0)),
+  (("5c:8f:2a:...", 1, 0), ("e4:3b:71:...", 2, 0), ("08:d1:6e:...", 3, 0), ("f0:9e:4a:...", 4, 0)),
   99,
 )
 
@@ -404,8 +404,8 @@
     #set text(size: 11pt)
     #block[- a *MAC table*: which computer is on which port]
     #full-table
-    #uncover("2-")[#block[- A sends a frame to C]]
-    #uncover("3-")[#block[- C is on port 3: \ the switch sends it *only* there]]
+    #uncover("2-")[#block[- Ana sends a frame to Carla]]
+    #uncover("3-")[#block[- Carla is on port 3: \ the switch sends it *only* there]]
   ]
 ]
 
@@ -423,7 +423,7 @@
     ]
   ][
     #set text(size: 11pt)
-    #block[- A sends a *broadcast*: \ to `ff:ff:ff:ff:ff:ff`]
+    #block[- Ana sends a *broadcast*: \ to `ff:ff:ff:ff:ff:ff`]
     #uncover("2-")[
       #block[- the switch sends it on *all* ports, like a hub]
       #block[- *everyone* keeps it]
@@ -468,8 +468,8 @@
   ][
     #set text(size: 11pt)
     #block[- each port is separate: *no collisions*]
-    #uncover("2-")[#block[- A *and* B send to C]]
-    #uncover("3-")[#block[- B's frame waits in a *queue*]]
+    #uncover("2-")[#block[- Ana *and* Bogdan send to Carla]]
+    #uncover("3-")[#block[- Bogdan's frame waits in a *queue*]]
     #uncover("5-")[#block[- queue full: the frame is *dropped*]]
   ]
 ]

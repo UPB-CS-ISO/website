@@ -14,6 +14,61 @@
       - Section 4.4 - _Wireless LANs_
 ]
 
+// radio waves around a point: dashed circles
+#let waves(x, y, color: hl, radii: (22pt, 40pt, 58pt)) = for (i, r) in radii.enumerate() {
+  place(top + left, dx: x - r, dy: y - r, circle(radius: r, stroke: (
+    // the farther, the weaker
+    paint: color.transparentize(30% + i * 15%),
+    thickness: 1pt,
+    dash: "dashed",
+  )))
+}
+
+#slide[
+  == Plugging In, Without a Cable
+  connecting to the access point
+
+  #drawing(height: 140pt)[
+    #let y = 62pt
+    // Ethernet: the PC, the cable with its plugs, the switch
+    #label(120pt, 8pt, text(size: 11pt, weight: "bold")[🔌 Ethernet])
+    #wire((78pt, y), (166pt, y), stroke: (paint: luma(90), thickness: 4pt, cap: "round"))
+    #for x in (74pt, 162pt) { at(x, y - 6pt, box(width: 9pt, height: 12pt, radius: 1.5pt, fill: luma(55))) }
+    #host(45pt, y, "PC", size: 40pt)
+    #netdev(195pt, y, "switch", name: "Switch", size: 22pt)
+    #label(122pt, y + 20pt, text(size: 8pt, fill: hl, weight: "bold")[plug the cable])
+
+    // Wi-Fi: the laptop, the radio link, the access point
+    #uncover("2-")[
+      #label(368pt, 8pt, text(size: 11pt, weight: "bold")[📶 Wi-Fi])
+      #waves(440pt, y, radii: (24pt, 32pt, 40pt))
+      // the "software cable": a dotted cable
+      #wire((326pt, y), (414pt, y), stroke: (paint: hl, thickness: 3.5pt, dash: (array: (0pt, 7pt), phase: 0pt), cap: "round"))
+      #tag(352pt, y + 54pt, [📶 `Home` #h(3pt) 🔑 `********`], fill: hl-bg, stroke: 1pt + hl, size: 7.5pt)
+      #host(298pt, y, "laptop", size: 40pt)
+      #netdev(440pt, y, "wifi-router", name: "Access Point", size: 30pt)
+      #label(352pt, y + 25pt, align(center, text(size: 8pt, fill: hl, weight: "bold")[connect to the AP \ = a *software cable*]))
+    ]
+
+    // the two are the same thing
+    #uncover("2-")[#pin(243pt, y, text(size: 30pt, weight: "bold", fill: hl, "="))]
+  ]
+
+  // a note with a big emoji on the left
+  #let note(e, body) = block(
+    width: 100%,
+    inset: (x: 10pt, y: 8pt),
+    fill: ip-peach.bg,
+    stroke: (left: 3pt + ip-peach.bar),
+    radius: (right: 4pt),
+    grid(columns: (auto, 1fr), column-gutter: 10pt, align: horizon, icon(e, size: 20pt), body),
+  )
+  #place(bottom + left, block(width: 100%, text(size: 11pt)[
+    #only(1, note("🔌")[*Ethernet*: you *plug the cable* into the switch, and the computer is *in the network*])
+    #only(2, note("📶")[*Wi-Fi*: no cable to plug in, you *choose the network* and type the *password*: connecting to the access point is a *software cable*, made by the programs of the laptop and of the AP; *disconnecting* is pulling the cable out])
+  ]))
+]
+
 // the fields of a Wi-Fi (802.11) data frame, sent through the access point
 // to a destination on the wired side
 #let wifi-fields = (
@@ -102,15 +157,6 @@
   ]
 ]
 
-// radio waves around a point: dashed circles
-#let waves(x, y, color: hl, radii: (22pt, 40pt, 58pt)) = for (i, r) in radii.enumerate() {
-  place(top + left, dx: x - r, dy: y - r, circle(radius: r, stroke: (
-    // the farther, the weaker
-    paint: color.transparentize(30% + i * 15%),
-    thickness: 1pt,
-    dash: "dashed",
-  )))
-}
 // who can read a frame, for each kind of Wi-Fi security: the phone sends a
 // frame to the AP (for the laptop), phone 2 listens
 #let key-badge(color) = box(

@@ -16,6 +16,10 @@
 #let shell-var-color = rgb("b35900")
 #let shell-op-color = rgb("555555")
 #let shell-comment-color = luma(130)
+// `sudo` runs the command after it as root: it gets its own color, and
+// the word after it is still highlighted as the command
+#let shell-sudo-color = rgb("b3261e")
+#let shell-sudo-words = ("sudo", "doas")
 
 // Order matters: more specific alternatives (quoted strings, assignments,
 // $variables) must come before the generic word fallback so it doesn't
@@ -44,6 +48,7 @@
   // &&, ||, ;, | or &.
   let expect-command = start-expect-command
   let in-comment = false
+  let after-sudo = false
   let out = ()
   for m in tokens {
     let t = m.text
@@ -75,9 +80,16 @@
       } else {
         out.push(text(value))
       }
+    } else if expect-command and t in shell-sudo-words {
+      // still waiting for the real command, after the options of sudo
+      out.push(text(fill: shell-sudo-color, weight: "bold", style: "italic", t))
+      after-sudo = true
+    } else if expect-command and after-sudo and t.starts-with("-") {
+      out.push(text(fill: shell-flag-color, t))
     } else if expect-command {
       out.push(text(fill: shell-command-color, weight: "bold", t))
       expect-command = false
+      after-sudo = false
     } else if t.starts-with("\"") or t.starts-with("'") {
       out.push(text(fill: shell-string-color, t))
     } else if t.starts-with("$") {

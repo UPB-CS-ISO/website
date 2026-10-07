@@ -21,93 +21,102 @@
 // IPv4
 // ---------------------------------------------------------------------------
 
-#let octet-box(x, dec, bin, layer: none) = {
-  at(x, 0pt, field(text(size: 14pt, dec), 100pt, layer: layer, height: 28pt))
-  at(x, 32pt, box(width: 100pt, align(center, text(size: 9pt, font: "DejaVu Sans Mono", bin))))
-}
+// the bits of an address written with dots, as a string of 32 `0` / `1`
+#let addr-bits(addr) = addr.split(".").map(b => {
+  let v = int(b)
+  range(7, -1, step: -1).map(i => str(calc.rem(calc.quo(v, calc.pow(2, i)), 2))).join()
+}).join()
+
+// a string of 32 bits, written back as an address with dots
+#let bits-addr(bits) = range(4).map(k => {
+  let byte = bits.slice(k * 8, k * 8 + 8)
+  str(byte.clusters().fold(0, (acc, b) => acc * 2 + int(b)))
+}).join(".")
+
+// The 32 bits of an IP address, with the bytes in decimal above them.
+// With `n`, the first `n` bits are the network (in the color of the network
+// layer) and the rest the host, with a dashed line where they split.
+#let split-drawing(ip, n: none) = drawing(width: 470pt, height: 76pt)[
+  #let (x0, cw, gap, rh) = (64pt, 10pt, 7pt, 18pt)
+  #let bit-x(i) = x0 + i * cw + calc.floor(i / 8) * gap
+  #let net = layer-colors.network
+  #let host = layer-colors.application
+  #for (k, d) in ip.split(".").enumerate() {
+    label(bit-x(k * 8) + 4 * cw, 8pt, text(size: 14pt, weight: "bold", d))
+  }
+  #for k in range(1, 4) { label(bit-x(k * 8) - gap / 2, 8pt, text(size: 14pt, weight: "bold", ".")) }
+  #for (i, b) in addr-bits(ip).clusters().enumerate() {
+    let c = if n == none { (fill: luma(248), stroke: luma(160)) } else if i < n { net } else { host }
+    at(bit-x(i), 22pt, box(
+      width: cw,
+      height: rh,
+      fill: c.fill,
+      stroke: 0.5pt + c.stroke,
+      align(center + horizon, text(size: 8pt, font: "DejaVu Sans Mono", b)),
+    ))
+  }
+  #if n != none {
+    let cut = if calc.rem(n, 8) == 0 { bit-x(n) - gap / 2 } else { bit-x(n) - 0.5pt }
+    place(top + left, line(start: (cut, 20pt), end: (cut, 50pt), stroke: (paint: hl, thickness: 2pt, dash: "dashed")))
+    let bracket(x1, x2, color, body) = {
+      let yb = 54pt
+      wire((x1, yb - 4pt), (x1, yb), stroke: 1.2pt + color)
+      wire((x1, yb), (x2, yb), stroke: 1.2pt + color)
+      wire((x2, yb - 4pt), (x2, yb), stroke: 1.2pt + color)
+      wire(((x1 + x2) / 2, yb), ((x1 + x2) / 2, yb + 4pt), stroke: 1.2pt + color)
+      label((x1 + x2) / 2, yb + 13pt, text(size: 9pt, body))
+    }
+    bracket(bit-x(0), cut - 2pt, net.stroke, [🛣️ *network*: #n bits])
+    bracket(cut + 2pt, bit-x(31) + cw, host.stroke, [🏠 *host*: #(32 - n) bits])
+  }
+]
+
+// a small card with an emoji on the left, for the facts under a drawing
+#let fact(e, body, c: (fill: luma(247), stroke: luma(215))) = block(
+  width: 100%,
+  inset: (x: 8pt, y: 6pt),
+  radius: 4pt,
+  fill: c.fill,
+  stroke: 0.6pt + c.stroke,
+  grid(columns: (auto, 1fr), column-gutter: 8pt, align: (center + horizon, left + horizon), icon(e, size: 15pt), body),
+)
 
 #slide[
   == IP Address
   version 4 (IPv4)
 
-  #drawing(height: 95pt)[
-    #at(10pt, 10pt)[
-      #octet-box(0pt, "192", "11000000", layer: "network")
-      #octet-box(115pt, "168", "10101000", layer: "network")
-      #octet-box(230pt, "1", "00000001", layer: "network")
-      #octet-box(345pt, "105", "01101001", layer: "application")
-      #for x in (104pt, 219pt, 334pt) { at(x, 8pt, text(size: 16pt, weight: "bold", ".")) }
-    ]
-    #uncover("2-")[
-      #wire((10pt, 68pt), (340pt, 68pt), stroke: 1pt + layer-colors.network.stroke)
-      #label(175pt, 80pt, [*network*: the street])
-      #wire((355pt, 68pt), (455pt, 68pt), stroke: 1pt + layer-colors.application.stroke)
-      #label(405pt, 80pt, [*host*: the number])
-    ]
-  ]
+  #only(1, split-drawing("192.168.1.105"))
+  #only(2, split-drawing("192.168.1.105", n: 24))
+  #only(3, split-drawing("192.168.1.105", n: 16))
+  #only("4-", split-drawing("192.168.1.105", n: 20))
 
-  - *32 bits* (4 bytes), written as 4 decimal numbers (0 - 255): `192.168.1.105`
-  - $2^32 approx 4.3$ billion addresses
-  #uncover("2-")[#block[- two parts: the *network* and the *host* (the device in that network)]]
-  #uncover("3-")[#block[- how many bits are the network? the *network mask* says it]]
-]
-
-#let bits-row(name, bits, dec, n: 24, color: black) = {
-  let groups = bits.split(".")
-  let cells = ()
-  for (g, byte) in groups.enumerate() {
-    let s = for (i, b) in byte.clusters().enumerate() {
-      let pos = g * 8 + i
-      text(fill: if pos < n { layer-colors.network.stroke.darken(20%) } else { layer-colors.application.stroke.darken(20%) }, b)
-    }
-    cells.push(s)
-  }
-  (text(weight: "bold", fill: color, name), ..cells, text(fill: color, dec))
-}
-
-#slide[
-  == Network Mask
-  which bits are the network
-
-  #text(size: 10pt)[
-  #align(center, table(
-    columns: 6,
-    stroke: none,
-    inset: (x: 5pt, y: 4pt),
-    align: (left, center, center, center, center, left),
-    ..bits-row("IP address", "11000000.10101000.00000001.01101001", raw("192.168.1.105")).map(c => text(
-      font: "DejaVu Sans Mono",
-      c,
-    )),
-    ..bits-row("Mask /24", "11111111.11111111.11111111.00000000", raw("255.255.255.0")).map(c => uncover(
-      "2-",
-      text(font: "DejaVu Sans Mono", c),
-    )),
-    table.hline(stroke: 0.8pt),
-    ..bits-row("Network (AND)", "11000000.10101000.00000001.00000000", raw("192.168.1.0"), color: hl).map(c => uncover(
-      "3-",
-      text(font: "DejaVu Sans Mono", c),
-    )),
-  ))
-
-  #uncover("2-")[#block[- the mask has `1` for the network bits: `/24` = 24 bits of `1` = `255.255.255.0`]]
-  #uncover("3-")[#block[- network address = IP address *AND* mask: `192.168.1.0/24`]]
-  #uncover("4-")[
-    #block[- `192.168.1.20` is in *the same network*: talk to it directly (layer 2)]
-    #block[- `192.168.2.20` is in *another network*: go through a *router*]
-  ]
-  ]
+  #set text(size: 10pt)
+  #let net = layer-colors.network
+  #let host = layer-colors.application
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 8pt,
+    row-gutter: 6pt,
+    fact("📏", [*32 bits* = 4 bytes, each byte written as a decimal number, from `0` to `255`]),
+    fact("🌍", [$2^32 approx$ *4.3 billion* addresses for the whole Internet]),
+    uncover("2-", fact("🛣️", [*network*: the street, the same for all the devices in the network], c: net)),
+    uncover("2-", fact("🏠", [*host*: the house number, different for every device in the network], c: host)),
+    uncover("3-", fact("✂️", [the network part is *not* always 24 bits: here it is *16*])),
+    uncover("4-", fact("📐", [it can end *inside a byte*: here it is *20*])),
+  )
   #v(0pt)
 ]
 
-#slide[
-  == Network Mask /20
-  the mask can end in the middle of a byte
-
-  // the 32 bits as small cells, grouped in bytes; the network bits (the first
-  // `n`) in the color of the network layer, the host bits in another color
-  #drawing(width: 470pt, height: 110pt)[
-    #let n = 20
+// The IP address, the mask and the network, bit by bit, for a prefix `/n`.
+// Step 1 shows the IP address, step 2 the mask, step 3 the network.
+// The network bits (the first `n`) are in the color of the network layer,
+// the host bits in another color; a dashed line marks where the mask ends.
+#let mask-drawing(ip, n) = {
+  let mask = range(32).map(i => if i < n { "1" } else { "0" }).join()
+  let ip-b = addr-bits(ip)
+  let net-b = range(32).map(i => if i < n { ip-b.at(i) } else { "0" }).join()
+  let bc-b = range(32).map(i => if i < n { ip-b.at(i) } else { "1" }).join()
+  drawing(width: 470pt, height: 128pt)[
     #let (x0, cw, gap, rh) = (40pt, 10pt, 7pt, 15pt)
     #let bit-x(i) = x0 + i * cw + calc.floor(i / 8) * gap
     #let net = layer-colors.network
@@ -127,80 +136,162 @@
       }
       at(bit-x(32) + 4pt, y + 2pt, text(size: 8.5pt, font: "DejaVu Sans Mono", weight: "bold", dec))
     }
+    // where the mask ends: between two bytes, or inside a byte
+    #let cut = if calc.rem(n, 8) == 0 { bit-x(n) - gap / 2 } else { bit-x(n) - 0.5pt }
+    #tag(cut, 6pt, text(weight: "bold", "/" + str(n)), fill: hl-bg, stroke: 1pt + hl, size: 8pt)
     // the bytes, in decimal, above the IP address
-    #for (k, d) in ("172", "16", "45", "130").enumerate() {
-      label(bit-x(k * 8) + 4 * cw, 10pt, text(size: 9pt, weight: "bold", d))
+    #for (k, d) in ip.split(".").enumerate() {
+      label(bit-x(k * 8) + 4 * cw, 20pt, text(size: 9pt, weight: "bold", d))
     }
-    #strip(20pt, "10101100000100000010110110000010", "172.16.45.130", [IP])
-    #uncover("2-")[#strip(42pt, "11111111111111111111000000000000", "255.255.240.0", [mask])]
-    #uncover("3-")[#strip(64pt, "10101100000100000010000000000000", "172.16.32.0", text(fill: hl)[network], faded: true)]
-    // the cut, after bit 20, in the middle of the third byte
-    #let cut = bit-x(n) - 0.5pt
-    #place(top + left, line(start: (cut, 14pt), end: (cut, 86pt), stroke: (paint: hl, thickness: 2pt, dash: "dashed")))
-    #tag(cut, 7pt, text(weight: "bold", "/20"), fill: hl-bg, stroke: 1pt + hl, size: 8pt)
+    #strip(28pt, ip-b, ip, [IP])
+    #uncover("2-")[#strip(48pt, mask, bits-addr(mask), [mask])]
+    #uncover("3-")[#strip(68pt, net-b, bits-addr(net-b), text(fill: hl)[network])]
+    #uncover("4-")[#strip(88pt, bc-b, bits-addr(bc-b), text(fill: hl)[broadcast])]
+    #place(top + left, line(start: (cut, 26pt), end: (cut, 106pt), stroke: (paint: hl, thickness: 2pt, dash: "dashed")))
     // the two parts
     #let bracket(x1, x2, color, body) = {
-      let yb = 90pt
+      let yb = 110pt
       wire((x1, yb - 4pt), (x1, yb), stroke: 1.2pt + color)
       wire((x1, yb), (x2, yb), stroke: 1.2pt + color)
       wire((x2, yb - 4pt), (x2, yb), stroke: 1.2pt + color)
       wire(((x1 + x2) / 2, yb), ((x1 + x2) / 2, yb + 4pt), stroke: 1.2pt + color)
       label((x1 + x2) / 2, yb + 13pt, text(size: 9pt, body))
     }
-    #bracket(bit-x(0), bit-x(n) - 2pt, net.stroke, [*network*: 20 bits])
-    #bracket(bit-x(n) + 1pt, bit-x(31) + cw, host.stroke, [*host*: 12 bits])
+    #bracket(bit-x(0), cut - 2pt, net.stroke, [*network*: #n bits])
+    #bracket(cut + 2pt, bit-x(31) + cw, host.stroke, [*host*: #(32 - n) bits])
+  ]
+}
+
+// a big address (or prefix) in a colored box, with a caption under it;
+// the caption may be wider than the box, it does not move the boxes apart
+#let big-chip(body, c, caption, size: 24pt) = context {
+  let chip = box(
+    fill: c.fill,
+    stroke: 1pt + c.stroke,
+    radius: 4pt,
+    inset: (x: 8pt, y: 6pt),
+    text(font: "DejaVu Sans Mono", size: size, weight: "bold", body),
+  )
+  let w = measure(chip).width
+  box(stack(
+    spacing: 4pt,
+    chip,
+    box(width: w, height: 11pt, place(top + center, box(width: 300pt, align(center, text(size: 9pt, caption))))),
+  ))
+}
+
+// the bits of a mask `/n`, the `1` bits in the color of the network layer,
+// the `0` bits in another color
+#let mask-bits(n) = {
+  let bits = range(32).map(i => {
+    let b = if i < n { "1" } else { "0" }
+    let c = if i < n { layer-colors.network.stroke.darken(20%) } else { layer-colors.application.stroke.darken(20%) }
+    let dot = if calc.rem(i, 8) == 7 and i < 31 { text(fill: luma(120), ".") }
+    text(fill: c, b) + dot
+  })
+  text(font: "DejaVu Sans Mono", size: 15pt, weight: "bold", bits.join())
+}
+
+#slide[
+  == Network Mask
+  which bits of the address are the network
+
+  #let ip-c = layer-colors.physical
+  #let mask-c = (fill: hl-bg, stroke: hl)
+  #align(center)[
+    #big-chip("192.168.1.105", ip-c, [IP address])#big-chip("/24", mask-c, [mask as a *prefix*: the number of `1` bits])
+    #uncover("2-")[
+      #v(-2pt)
+      #text(size: 10pt, fill: luma(90))[the same thing, written in the other format]
+      #v(-2pt)
+      #big-chip("192.168.1.105", ip-c, [IP address])
+      #h(14pt)
+      #big-chip("255.255.255.0", mask-c, [mask written like an address])
+    ]
+    #uncover("3-")[
+      #v(-2pt)
+      #mask-bits(24)
+      #v(-8pt)
+      #text(size: 9pt)[#text(fill: layer-colors.network.stroke.darken(20%), weight: "bold")[24 bits of `1`]: the *network*,
+        #text(fill: layer-colors.application.stroke.darken(20%), weight: "bold")[8 bits of `0`]: the *host*]
+    ]
   ]
 
-  #set text(size: 10.5pt)
-  #uncover("2-")[#block[- `/20`: 20 bits of `1`, the third byte is `11110000` = `240`, the mask is `255.255.240.0`]]
-  #uncover("3-")[#block[- network: `172.16.45.130` *AND* `255.255.240.0` = `172.16.32.0/20`]]
-  #uncover("4-")[
-    #block[- 12 host bits: `172.16.32.0` - `172.16.47.255`, $2^12 - 2 = 4094$ devices]
-    #block[- `172.16.40.1` is in *the same network*, `172.16.50.1` is in *another network*]
-  ]
+  #v(0pt)
+]
+
+// the statements under a mask drawing, one for each step: what the mask is,
+// the network address, the addresses in the network, and two examples
+#let mask-facts(mask, network, broadcast, devices, same, other) = {
+  set text(size: 10pt)
+  let row(step, term, body) = uncover(step, block(below: 0.5em, grid(
+    columns: (62pt, 1fr),
+    text(weight: "bold", term), body,
+  )))
+  row("2-", [mask], mask)
+  row("3-", [network], [all the host bits `0` = #network: the address of the network itself])
+  row("4-", [broadcast], [all the host bits `1` = #broadcast: a packet for *everyone* in the network])
+  row("5-", [devices], devices)
+  row("5-", [examples], [#same: ✅ *the same* network #h(1em) #other: ❌ *another* network, through a router])
+}
+
+#slide[
+  == Network Mask /24
+  the mask ends at the end of a byte (a multiple of 8)
+
+  #mask-drawing("192.168.1.105", 24)
+
+  #mask-facts(
+    [24 bits of `1` = `255.255.255.0`],
+    [`192.168.1.0`],
+    [`192.168.1.255`],
+    [`192.168.1.1` to `192.168.1.254`: *254* devices],
+    [`192.168.1.20`],
+    [`192.168.2.20`],
+  )
+  #v(0pt)
+]
+
+#slide[
+  == Network Mask /20
+  the mask ends in the middle of a byte (not a multiple of 8)
+
+  #mask-drawing("172.16.45.130", 20)
+
+  #mask-facts(
+    [20 bits of `1` = `255.255.240.0` (`11110000` = `240`)],
+    [`172.16.32.0`],
+    [`172.16.47.255`],
+    [`172.16.32.1` to `172.16.47.254`: *4094* devices],
+    [`172.16.40.1`],
+    [`172.16.50.1`],
+  )
   #v(0pt)
 ]
 
 #slide[
   == Special Addresses
 
-  #text(size: 10.5pt)[
-  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
-    #table(
-      columns: 2,
-      inset: 5pt,
-      stroke: 0.6pt + luma(170),
-      table.header([*Address*], [*Meaning*]),
-      [`192.168.1.0`], [the network itself],
-      [`192.168.1.255`], [*broadcast*: all hosts of the network],
-      [`192.168.1.1` - `.254`], [hosts: $2^8 - 2 = 254$ addresses],
-      [`127.0.0.1`], [*loopback* (`localhost`): this computer],
-      [`10.0.0.0/8` \ `172.16.0.0/12` \ `192.168.0.0/16`], [*private* networks: not used on the Internet, free for everyone at home],
-      [`169.254.0.0/16`], [_link local_: no one gave us an address],
-    )
-  ][
-    #table(
-      columns: 3,
-      inset: 5pt,
-      stroke: 0.6pt + luma(170),
-      table.header([*Prefix*], [*Mask*], [*Hosts*]),
-      [`/8`], [`255.0.0.0`], [16 777 214],
-      [`/16`], [`255.255.0.0`], [65 534],
-      [`/24`], [`255.255.255.0`], [254],
-      [`/30`], [`255.255.255.252`], [2],
-    )
-  ]
-  ]
-  #v(0pt)
+  #v(1em)
+  #align(center, text(size: 12pt, table(
+    columns: (auto, auto, 1fr),
+    inset: 7pt,
+    align: (center + horizon, left + horizon, left + horizon),
+    stroke: 0.6pt + luma(170),
+    table.header([], [*Address*], [*Meaning*]),
+    text(size: 1.4em, "🔁"), [`127.0.0.1`], [*loopback* (`localhost`): this computer, the packets never leave it],
+    text(size: 1.4em, "🔒"), [`10.0.0.0/8` \ `172.16.0.0/12` \ `192.168.0.0/16`], [*private* networks: not used on the Internet, free for everyone at home or at work],
+    text(size: 1.4em, "🤷"), [`169.254.0.0/16`], [_link local_: no one gave us an address, so the computer picked one by itself],
+  )))
 ]
 
 // ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
 
-#let two-nets(r-highlight: false) = {
-  area(5pt, 5pt, 175pt, 175pt, [network `192.168.1.0/24`])
-  area(300pt, 5pt, 175pt, 175pt, [network `192.168.2.0/24`], name-at: top + right)
+#let two-nets(r-highlight: false, router: true) = {
+  area(5pt, 5pt, 157pt, 175pt, [network `192.168.1.0/24`])
+  area(318pt, 5pt, 157pt, 175pt, [network `192.168.2.0/24`], name-at: top + right)
   let a = (45pt, 55pt)
   let b = (45pt, 140pt)
   let s1 = (130pt, 97pt)
@@ -210,73 +301,152 @@
   let d = (435pt, 140pt)
   for p in (a, b) { wire(p, s1) }
   for p in (c, d) { wire(p, s2) }
-  wire(s1, r)
-  wire(r, s2)
-  host(..a, "A", addr: "192.168.1.10", size: 24pt)
-  host(..b, "B", addr: "192.168.1.11", size: 24pt)
-  host(..c, "C", addr: "192.168.2.20", size: 24pt)
-  host(..d, "D", addr: "192.168.2.21", size: 24pt)
+  if router {
+    wire(s1, r)
+    wire(r, s2)
+  }
+  host(..a, "Ana", addr: [192.168.1.10 \ #text(fill: luma(110))[5c:8f:2a:91:d4:07]], size: 24pt)
+  host(..b, "Bogdan", addr: [192.168.1.11 \ #text(fill: luma(110))[e4:3b:71:0c:9a:52]], size: 24pt)
+  host(..c, "Carla", addr: [192.168.2.20 \ #text(fill: luma(110))[08:d1:6e:b3:47:ac]], size: 24pt)
+  host(..d, "Dan", addr: [192.168.2.21 \ #text(fill: luma(110))[f0:9e:4a:c2:16:3d]], size: 24pt)
   netdev(..s1, "switch", size: 16pt)
   netdev(..s2, "switch", size: 16pt)
-  netdev(..r, "router", name: "Router", size: 30pt, highlight: r-highlight)
-  sees-stack(r.at(0), r.at(1) + 36pt, "network")
-  label(192pt, 80pt, text(size: 6pt, font: "DejaVu Sans Mono")[eth0 \ 192.168.1.1])
-  label(288pt, 80pt, text(size: 6pt, font: "DejaVu Sans Mono")[eth1 \ 192.168.2.1])
+  if router {
+    netdev(..r, "router", name: "Router", size: 30pt, highlight: r-highlight)
+    sees-stack(r.at(0), r.at(1) + 36pt, "network")
+    // the two cards of the router, each one in its own network
+    label(192pt, 80pt, align(center, text(size: 5pt, font: "DejaVu Sans Mono")[*eth0* \ 192.168.1.1 \ #text(fill: luma(110))[70:b5:e8:2d:91:4c]]))
+    label(288pt, 80pt, align(center, text(size: 5pt, font: "DejaVu Sans Mono")[*eth1* \ 192.168.2.1 \ #text(fill: luma(110))[b8:27:c4:6a:0e:93]]))
+  }
 }
+
+// a thick arrow along the wire from p to q, a bit shorter at both ends
+#let hop(p, q, color: hl, from: 0.2, to: 0.8) = {
+  let at-t(t) = (p.at(0) + (q.at(0) - p.at(0)) * t, p.at(1) + (q.at(1) - p.at(1)) * t)
+  draw-arrow(at-t(from), at-t(to), color: color, thickness: 2.4pt, head: 7pt)
+}
+
+// a frame (layer 2, MAC addresses) carrying a packet (layer 3, IP addresses);
+// the color of the frame says what the sender knows about the MAC address:
+// "unknown" not yet, "found" found, "missing" not found, "gateway" the gateway's
+#let mac-states = (
+  unknown: (fill: luma(245), stroke: luma(150)),
+  found: (fill: ok-color.lighten(88%), stroke: ok-color),
+  missing: (fill: bad-color.lighten(88%), stroke: bad-color),
+  gateway: (fill: rgb("fff3bf"), stroke: rgb("f08c00")),
+)
+#let pkt(x, y, mac, ip, state: "found") = {
+  let c = mac-states.at(state)
+  let net = layer-colors.network
+  pin(x, y, box(
+    fill: c.fill,
+    stroke: 1.2pt + c.stroke,
+    radius: 3pt,
+    inset: (x: 3pt, y: 2pt),
+    stack(
+      spacing: 2pt,
+      text(size: 7.5pt)[#icon("✉️", size: 8pt) *MAC* #mac],
+      box(fill: net.fill, stroke: 0.6pt + net.stroke, radius: 2pt, inset: (x: 3pt, y: 1.5pt), text(size: 7.5pt)[*IP* #ip]),
+    ),
+  ))
+}
+// the path already traveled: a dashed line through the points
+#let trail(..pts) = {
+  let ps = pts.pos()
+  for i in range(ps.len() - 1) {
+    wire(ps.at(i), ps.at(i + 1), stroke: (paint: hl, thickness: 2.5pt, dash: "dashed", cap: "round"))
+  }
+}
+// the middle of a wire
+#let mid(p, q) = ((p.at(0) + q.at(0)) / 2, (p.at(1) + q.at(1)) / 2)
+#let ok-mark(p, dx: 26pt) = pin(p.at(0) + dx, p.at(1) - 4pt, icon("✅", size: 14pt))
+
+// what a device found out: the MAC address for an IP address
+#let mac-found(x, y, who, ip, mac, color: accent) = pin(x, y, box(
+  fill: white,
+  stroke: 1pt + color,
+  radius: 4pt,
+  inset: (x: 5pt, y: 3pt),
+  text(size: 7.5pt)[🔎 #who: #raw(ip) → #if mac == none { text(fill: bad-color, weight: "bold")[???] } else { raw(mac) }],
+))
 
 #slide[
   == Router
-  connects networks
 
-  #drawing(height: 185pt)[#two-nets(r-highlight: true)]
+  #let (a, b, s1, r, s2, c) = ((45pt, 55pt), (45pt, 140pt), (130pt, 97pt), (240pt, 97pt), (350pt, 97pt), (435pt, 55pt))
+  // where the packet is drawn, next to each device
+  #let (at-a, at-s1, at-b, at-r, at-s2, at-c) = (
+    (108pt, 42pt),
+    (130pt, 124pt),
+    (108pt, 140pt),
+    (240pt, 50pt),
+    (350pt, 124pt),
+    (372pt, 42pt),
+  )
+  #let ip-ab = [Ana → Bogdan]
+  #let ip-ac = [Ana → Carla]
+  #align(center, scale(96%, reflow: true, drawing(height: 185pt)[
+    #only("1-4")[#two-nets(router: false)]
+    #only("5-")[#two-nets(r-highlight: true)]
+    // the gateway of A: none without a router, the router after
+    #only(4)[#tag(55pt, 104pt, [🚪 gateway: *none*], stroke: 1pt + bad-color, size: 7.5pt)]
+    #only("5-")[#tag(55pt, 104pt, [🚪 gateway: `192.168.1.1`], fill: hl-bg, stroke: 1pt + hl, size: 7.5pt)]
 
-  #place(bottom + left, block(width: 100%, text(size: 11pt)[
-    - a computer with *two or more* network cards, one (and one IP address) *in each network*
-    - forwards *packets* from one network to another: works on *layer 3*
-  ]))
-]
-
-#slide[
-  == Sending a Packet
-  from A to C
-
-  #drawing(height: 185pt)[
-    #two-nets()
+    // 1 - 3: to B, in the same network
+    #only(1)[#pkt(..at-a, [Ana → ?], ip-ab, state: "unknown")]
+    #only(2)[
+      #mac-found(240pt, 40pt, [Ana], "192.168.1.11", "e4:3b:…", color: ok-color)
+      #pkt(..at-a, [Ana → *Bogdan*], ip-ab)
+    ]
     #only(3)[
-      #frame(240pt, 30pt, [MAC: A #arrow Router \ IP: A #arrow C])
-      #draw-arrow((60pt, 50pt), (200pt, 85pt), color: hl)
+      #trail(a, s1, b)
+      #pkt(..at-b, [Ana → *Bogdan*], ip-ab)
+      #ok-mark(b, dx: -26pt)
     ]
+
+    // 4: to C, in another network, without a router
     #only(4)[
-      #frame(240pt, 30pt, [#text(fill: bad-color)[MAC: Router #arrow C] \ IP: A #arrow C])
-      #draw-arrow((280pt, 85pt), (420pt, 50pt), color: hl)
+      #mac-found(240pt, 40pt, [Ana], "192.168.2.20", none, color: bad-color)
+      #pkt(..at-a, [Ana → *???*], ip-ac, state: "missing")
+      #pin(240pt, 97pt, icon("❌", size: 26pt))
+      #tag(240pt, 130pt, text(fill: bad-color)[`Network is unreachable`], stroke: 1pt + bad-color, size: 7.5pt)
     ]
-  ]
 
-  #place(bottom + left, block(width: 100%, text(size: 11pt)[
-    #only(1)[- A wants to send a packet to `192.168.2.20`]
-    #only(2)[- A: `192.168.2.20` is not in my network, I send it to my *gateway*, `192.168.1.1`]
-    #only(3)[- A puts the packet in a frame for the *MAC of the router* (found with ARP: _who has 192.168.1.1?_)]
-    #only(4)[- the router puts the packet in a *new frame* for C: the MAC addresses change at every hop, the IP addresses *stay the same*]
+    // 5 - 7: with a router
+    #only(5)[
+      #mac-found(240pt, 22pt, [Ana], "192.168.1.1", "70:b5:…", color: rgb("f08c00"))
+      #pkt(..at-a, [Ana → *Router*], ip-ac, state: "gateway")
+    ]
+    #only(6)[
+      #trail(a, s1, r)
+      #mac-found(240pt, 18pt, [Router], "192.168.2.20", "08:d1:…", color: ok-color)
+      #pkt(..at-r, [Router → *Carla*], ip-ac)
+    ]
+    #only("7-")[
+      #trail(a, s1, r, s2, c)
+      #pkt(..at-c, [Router → *Carla*], ip-ac)
+      #ok-mark(c)
+    ]
   ]))
-]
 
-#slide[
-  == Routing Table
-  where to send each packet
-
-  #reveal-terminal(before: none, lines: (1, 3), full: false)[```terminal
-  $ ip route
-  default via 192.168.1.1 dev wlp2s0 proto dhcp src 192.168.1.105 metric 600
-  192.168.1.0/24 dev wlp2s0 proto kernel scope link src 192.168.1.105 metric 600
-  ```]
-
-  #uncover("2-")[
-    #block[- `192.168.1.0/24 dev wlp2s0` - my network: send *directly* on the `wlp2s0` card]
-  ]
-  #uncover("3-")[
-    #block[- `default via 192.168.1.1` - everything else: send to the *default gateway* (the router)]
-    #note-box[💡 a computer usually has a single router, the *default gateway*, routers have bigger tables]
-  ]
+  // what happens, one card for each step
+  #let bad = (fill: bad-color.lighten(90%), stroke: bad-color)
+  #let good = (fill: ok-color.lighten(90%), stroke: ok-color)
+  #place(bottom + left, block(width: 100%, text(size: 10.5pt)[
+    #only(1, fact("📦", [Ana has a packet for Bogdan `192.168.1.11`: *the same network*]))
+    #only(2, fact("🔎", [Ana gets *the MAC address of Bogdan* and puts it on the frame]))
+    #only(3, fact("✅", [the switch delivers the frame to Bogdan], c: good))
+    #only(4, fact("❌", [Carla `192.168.2.20` is in *another network*: Ana cannot get her MAC address], c: bad))
+    #only(5, fact("🚪", [Ana sends it to her *gateway* `192.168.1.1`, the router: she gets *its MAC address*, the IP is still Carla's]))
+    #only(6, fact("🔁", [the router gets *the MAC address of Carla* and puts the *same packet* in a *new frame*]))
+    #only(7, fact("✅", [Carla gets the packet: the MAC addresses changed, the IP addresses *stayed the same*], c: good))
+    #only("8-", grid(
+      columns: (1fr, 1fr),
+      column-gutter: 8pt,
+      fact("🔌", [a computer with *two or more* network cards, *one in each network*], c: layer-colors.network),
+      fact("📬", [forwards *packets* from one network to another: *layer 3*], c: layer-colors.network),
+    ))
+  ]))
 ]
 
 #slide[

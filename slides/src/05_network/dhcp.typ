@@ -79,21 +79,3 @@
   ]
   #v(0pt)
 ]
-
-#slide[
-  == Static Configuration
-  instead of DHCP
-
-  #text(size: 0.9em)[
-  #reveal-terminal(before: none, lines: (2, 4), full: false)[```terminal
-    $ sudo nmcli connection modify HomeWiFi ipv4.method manual \
-        ipv4.addresses 192.168.1.50/24 ipv4.gateway 192.168.1.1 ipv4.dns 1.1.1.1
-    $ sudo nmcli connection up HomeWiFi
-    Connection successfully activated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/5)
-    ```]
-  ]
-
-  #uncover("3-")[
-    #note-box[💡 `ipv4.method auto` goes back to DHCP, `nmtui` does the same in a text menu]
-  ]
-]
