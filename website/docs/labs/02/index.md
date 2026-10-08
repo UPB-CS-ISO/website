@@ -235,9 +235,18 @@ You can also mix relative and absolute paths in the same command: `cp ../watchli
 
 ## Reading the Manual
 
-Every command has a **manual page**: `man ls`, `man cp`, and so on. Scroll with the arrow keys and
-<kbd>Space</kbd>, jump to the beginning or the end of the page with <kbd>g</kbd> and <kbd>G</kbd>, see all the
-keys with <kbd>h</kbd>, and quit with <kbd>q</kbd>.
+Every command has a **manual page**: `man ls`, `man cp`, and so on. The page opens in a viewer with its own keys:
+
+| Key | What it does |
+|-|-|
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Scrolls one line up / down |
+| <kbd>Page Down</kbd> or <kbd>Space</kbd> | Scrolls one page down |
+| <kbd>Page Up</kbd> or <kbd>b</kbd> | Scrolls one page up |
+| <kbd>g</kbd> / <kbd>G</kbd> | Jumps to the beginning / the end of the page |
+| <kbd>/</kbd> `word` <kbd>Enter</kbd> | Searches for `word`, see [Searching in a Manual Page](#searching-in-a-manual-page) |
+| <kbd>n</kbd> / <kbd>N</kbd> | Jumps to the next / previous match of the search |
+| <kbd>h</kbd> | Shows the help, with all the keys |
+| <kbd>q</kbd> | Quits |
 
 A manual page has several parts: `NAME` (what the command does, in one line), `SYNOPSIS` (how to call it),
 `DESCRIPTION` (what it does and **all its options**, one after another) and, at the end, `SEE ALSO` (related
@@ -309,7 +318,9 @@ Most commands also print a short summary of their options with `--help`, for exa
 
 :::
 
-## <kbd>TAB</kbd> Completion
+## Working in the Terminal
+
+### <kbd>TAB</kbd> Completion
 
 You do not have to type the full names of files, directories and commands. Type the first letters and press
 <kbd>Tab</kbd>:
@@ -336,6 +347,33 @@ Use <kbd>Tab</kbd> all the time: it is faster, and it does not make typing mista
 nothing, even when you press it twice, then **no name** starts with what you typed: the path is wrong.
 
 :::
+
+### Editing a Command
+
+You can fix a command before you press <kbd>Enter</kbd>, without typing it again:
+
+| Key | What it does |
+|-|-|
+| <kbd>←</kbd> / <kbd>→</kbd> | Moves the cursor one character left / right |
+| <kbd>Ctrl</kbd>+<kbd>A</kbd> | Jumps to the **beginning** of the line |
+| <kbd>Ctrl</kbd>+<kbd>E</kbd> | Jumps to the **end** of the line |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Brings back the previous / next command you ran, so you can run it again or change it |
+
+For example, you typed `ls ~/lab02/Gmaes/2026` and `ls` says `No such file or directory`: press <kbd>↑</kbd>, move
+the cursor to the mistake with <kbd>←</kbd>, fix it and press <kbd>Enter</kbd>. To add `sudo` or an option at the
+beginning of a long command, press <kbd>Ctrl</kbd>+<kbd>A</kbd>, then <kbd>Ctrl</kbd>+<kbd>E</kbd> to go back to the end.
+
+### Scrolling the Terminal
+
+When a command prints more lines than fit on the screen, the first ones scroll off the top. Scroll the terminal back
+with the keyboard (or with the mouse wheel):
+
+| Key | What it does |
+|-|-|
+| <kbd>Shift</kbd>+<kbd>Page Up</kbd> | Scrolls the terminal one page **up**, towards older lines |
+| <kbd>Shift</kbd>+<kbd>Page Down</kbd> | Scrolls the terminal one page **down**, back towards the prompt |
+
+This works in `foot` and in Ghostty. Typing anything brings the terminal back to the prompt.
 
 ## Navigation
 
@@ -1073,8 +1111,28 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
 
 ### First Steps
 
+
+:::info 
+
+**Turn off the colors**
+
+For this lab, turn off the colors of `ls` and `tree`, so that you read the **names** and the **type letters**, not
+the colors, and your output looks like the one in the lab. Run these two commands in **both** terminals:
+
+```bash
+unset LS_COLORS
+unalias ls
+```
+
+`unset LS_COLORS` turns off the colors of `tree`. On Fedora, `ls` is an alias for `ls --color=auto`, which has its own
+colors, so `unalias ls` turns them off too. The change lasts only until you close the terminal: to get the colors back,
+open a new terminal.
+
+:::
+
 1. 🌱 **The practice tree**:
-   1. Run these commands to create the directories and files used in the exercises (copy them from the browser with
+   1. Turn off the colors in **both** terminals, as explained above.
+   2. Run these commands to create the directories and files used in the exercises (copy them from the browser with
       <kbd>Ctrl</kbd>+<kbd>C</kbd> and paste them in the terminal with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>):
 
       ```bash
@@ -1084,10 +1142,10 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
       touch ~/lab02/Games/chess.txt ~/lab02/Games/2026/puzzles/sudoku.txt
       ```
 
-   2. Install `tree` with `sudo dnf install tree`, if it is missing.
-   3. Run `tree ~/lab02`.
+   3. Install `tree` with `sudo dnf install tree`, if it is missing.
+   4. Run `tree ~/lab02`.
 
-   **Check:** you see this tree (the order of the lines might be a little different). Keep it open in the second
+   **Check:** you see this tree, without colors (the order of the lines might be a little different). Keep it open in the second
    terminal, you will need it in every exercise.
 
    ```
@@ -1105,6 +1163,14 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
    ```
 
    <small>→ [The File System Tree](#the-file-system-tree) · [Navigation](#navigation)</small>
+
+:::tip
+
+In exercises 2 - 8, run `tree ~/lab02` in the second terminal **before** every command. Find on the tree the
+directory you are in, then follow the path of your command one name at a time, before you press <kbd>Enter</kbd>.
+
+:::
+
 2. 🌱 **Where am I**: Go to the `Games` directory using an **absolute** path, then into `puzzles` using a **relative**
    path, then back to `~/lab02` with a **single** `cd` that uses only `..`. Print the current directory after every
    step.
@@ -1128,18 +1194,18 @@ it, you cannot break anything; with it, a typing mistake in `/etc` can stop the 
    paths: an absolute one, one with `~`, a relative one with only `..`, a relative one that goes through `Photos`,
    and a relative one that goes through **both** `Photos` and `Recipes`.
 
-   **Check:** all five commands print the same line. <small>→ [Every File is a Path](#every-file-is-a-path)</small>
+   **Check:** all five commands print details about the same file. <small>→ [Every File is a Path](#every-file-is-a-path)</small>
 7. 🌱 **Walk around**: From your home directory, go to `~/lab02/Games/2026/puzzles` with a **single** `cd` and an
    absolute path, then to `~/lab02/Recipes` with a **single** `cd` and a relative path. Go back to `puzzles` with
    `cd -`, then home with the shortest command you can.
 
    **Check:** `cd -` prints `/home/student/lab02/Games/2026/puzzles`, and you end up in `/home/student`. <small>→ [Navigation](#navigation)</small>
-8. 🌱 **Back and forth**: Go to `/etc`, then to `~/lab02/Recipes`. Using only `cd -`, jump back and forth between
-   them twice. Then, from `Recipes`, list `/etc`; jump to `/etc` with `cd -` and, from there, list `Recipes` with a
+8. 🌱 **Back and forth**: Go to `/etc`, then to `~/lab02/Photos`. Using only `cd -`, jump back and forth between
+   them twice. Then, from `Photos`, list `/etc`; jump to `/etc` with `cd -` and, from there, list `Photos` with a
    relative path.
 
    **Check:** each `cd -` prints the directory it went to, and the last `pwd` prints `/etc`. <small>→ [The Previous Directory: `cd -`](#the-previous-directory-cd--)</small>
-9. 🌱 **Listing**: With a **single** `ls` command, list `~/lab02` so that you see the hidden file, can tell the files
+9. 🌱 **Listing**: With a **single** `ls` command, list `~/lab02` and `/` so that you see the hidden file, can tell the files
    from the directories, and read the sizes in `K` / `M` (look in `man ls`, 🔍 search for `sizes`
    and read every match).
 
