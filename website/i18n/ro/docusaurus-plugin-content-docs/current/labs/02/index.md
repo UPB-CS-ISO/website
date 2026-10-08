@@ -237,9 +237,19 @@ Puteți combina, de asemenea, căi relative și absolute în aceeași comandă: 
 
 ## Citirea manualului {/* #reading-the-manual */}
 
-Fiecare comandă are o **pagină de manual**: `man ls`, `man cp` și așa mai departe. Derulați cu tastele săgeți și
-<kbd>Space</kbd>, săriți la începutul sau la sfârșitul paginii cu <kbd>g</kbd> și <kbd>G</kbd>, vedeți toate
-tastele cu <kbd>h</kbd> și ieșiți cu <kbd>q</kbd>.
+Fiecare comandă are o **pagină de manual**: `man ls`, `man cp` și așa mai departe. Pagina se deschide într-un
+vizualizator cu propriile taste:
+
+| Tastă | Ce face |
+|-|-|
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Derulează cu o linie în sus / în jos |
+| <kbd>Page Down</kbd> sau <kbd>Space</kbd> | Derulează cu o pagină în jos |
+| <kbd>Page Up</kbd> sau <kbd>b</kbd> | Derulează cu o pagină în sus |
+| <kbd>g</kbd> / <kbd>G</kbd> | Sare la începutul / la sfârșitul paginii |
+| <kbd>/</kbd> `cuvânt` <kbd>Enter</kbd> | Caută `cuvânt`, vedeți [Căutarea într-o pagină de manual](#searching-in-a-manual-page) |
+| <kbd>n</kbd> / <kbd>N</kbd> | Sare la potrivirea următoare / anterioară a căutării |
+| <kbd>h</kbd> | Afișează ajutorul, cu toate tastele |
+| <kbd>q</kbd> | Ieșire |
 
 O pagină de manual are mai multe părți: `NAME` (ce face comanda, într-un singur rând), `SYNOPSIS` (cum se apelează),
 `DESCRIPTION` (ce face și **toate opțiunile sale**, una după alta) și, la final, `SEE ALSO` (comenzi
@@ -314,7 +324,9 @@ Majoritatea comenzilor afișează, de asemenea, un scurt rezumat al opțiunilor 
 
 :::
 
-## Completarea folosind tasta <kbd>TAB</kbd> {/* #tab-completion */}
+## Lucrul în terminal {/* #working-in-the-terminal */}
+
+### Completarea folosind tasta <kbd>TAB</kbd> {/* #tab-completion */}
 
 Nu este necesar să tastați numele complete ale fișierelor, directoarelor și comenzilor. Tastați primele litere și apăsați
 tasta <kbd>Tab</kbd>:
@@ -342,6 +354,34 @@ chiar și atunci când îl apăsați de două ori, înseamnă că **niciun nume*
 greșită.
 
 :::
+
+### Modificarea unei comenzi {/* #editing-a-command */}
+
+Puteți corecta o comandă înainte să apăsați <kbd>Enter</kbd>, fără să o tastați din nou:
+
+| Tastă | Ce face |
+|-|-|
+| <kbd>←</kbd> / <kbd>→</kbd> | Mută cursorul cu un caracter la stânga / la dreapta |
+| <kbd>Ctrl</kbd>+<kbd>A</kbd> | Sare la **începutul** liniei |
+| <kbd>Ctrl</kbd>+<kbd>E</kbd> | Sare la **sfârșitul** liniei |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Aduce înapoi comanda anterioară / următoare pe care ați rulat-o, ca să o rulați din nou sau să o modificați |
+
+De exemplu, ați tastat `ls ~/lab02/Gmaes/2026` și `ls` afișează `No such file or directory`: apăsați <kbd>↑</kbd>,
+mutați cursorul la greșeală cu <kbd>←</kbd>, corectați-o și apăsați <kbd>Enter</kbd>. Ca să adăugați `sudo` sau o opțiune
+la începutul unei comenzi lungi, apăsați <kbd>Ctrl</kbd>+<kbd>A</kbd>, apoi <kbd>Ctrl</kbd>+<kbd>E</kbd> ca să reveniți
+la sfârșit.
+
+### Derularea terminalului {/* #scrolling-the-terminal */}
+
+Când o comandă afișează mai multe linii decât încap pe ecran, primele dispar în partea de sus. Derulați terminalul
+înapoi cu tastatura (sau cu rotița mouse-ului):
+
+| Tastă | Ce face |
+|-|-|
+| <kbd>Shift</kbd>+<kbd>Page Up</kbd> | Derulează terminalul cu o pagină **în sus**, spre liniile mai vechi |
+| <kbd>Shift</kbd>+<kbd>Page Down</kbd> | Derulează terminalul cu o pagină **în jos**, înapoi spre prompt |
+
+Funcționează în `foot` și în Ghostty. Când tastați ceva, terminalul revine la prompt.
 ## Navigare {/* #navigation */}
 
 | Comandă | Ce face |
@@ -1081,8 +1121,27 @@ calculatorului.
 
 ### Primii pași {/* #first-steps */}
 
+:::info 
+
+**Dezactivați culorile**
+
+În acest laborator, dezactivați culorile pentru `ls` și `tree`, ca să citiți **numele** și **literele de tip**, nu
+culorile, iar rezultatul să arate ca cel din laborator. Rulați aceste două comenzi în **ambele** terminale:
+
+```bash
+unset LS_COLORS
+unalias ls
+```
+
+`unset LS_COLORS` dezactivează culorile pentru `tree`. Pe Fedora, `ls` este un alias pentru `ls --color=auto`, care are
+propriile culori, așa că `unalias ls` le dezactivează și pe acestea. Schimbarea durează doar până închideți terminalul:
+ca să reactivați culorile, deschideți un terminal nou.
+
+:::
+
 1. 🌱 **Arborele de exersare**:
-   1. Rulați aceste comenzi ca să creați directoarele și fișierele folosite în exerciții (copiați-le din browser cu
+   1. Dezactivați culorile în **ambele** terminale, așa cum este explicat mai sus.
+   2. Rulați aceste comenzi ca să creați directoarele și fișierele folosite în exerciții (copiați-le din browser cu
       <kbd>Ctrl</kbd>+<kbd>C</kbd> și lipiți-le în terminal cu <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>):
 
       ```bash
@@ -1092,10 +1151,10 @@ calculatorului.
       touch ~/lab02/Games/chess.txt ~/lab02/Games/2026/puzzles/sudoku.txt
       ```
 
-   2. Instalați `tree` cu `sudo dnf install tree`, dacă lipsește.
-   3. Rulați `tree ~/lab02`.
+   3. Instalați `tree` cu `sudo dnf install tree`, dacă lipsește.
+   4. Rulați `tree ~/lab02`.
 
-   **Verificare:** vedeți acest arbore (ordinea liniilor poate fi puțin diferită). Păstrați-l deschis în al doilea
+   **Verificare:** vedeți acest arbore, fără culori (ordinea liniilor poate fi puțin diferită). Păstrați-l deschis în al doilea
    terminal, veți avea nevoie de el la fiecare exercițiu.
 
    ```
@@ -1113,6 +1172,15 @@ calculatorului.
    ```
 
    <small>→ [Arborele sistemului de fișiere](#the-file-system-tree) · [Navigare](#navigation)</small>
+
+:::tip
+
+În exercițiile 2 - 8, rulați `tree ~/lab02` în al doilea terminal **înainte** de fiecare comandă. Găsiți pe arbore
+directorul în care vă aflați, apoi urmăriți calea din comanda voastră, câte un nume pe rând, înainte să apăsați
+<kbd>Enter</kbd>.
+
+:::
+
 2. 🌱 **Unde sunt**: Mergeți în directorul `Games` folosind o cale **absolută**, apoi în `puzzles` folosind o cale
    **relativă**, apoi înapoi în `~/lab02` cu o **singură** comandă `cd` care folosește doar `..`. Afișați directorul
    curent după fiecare pas.
@@ -1136,18 +1204,18 @@ calculatorului.
    diferite: una absolută, una cu `~`, una relativă doar cu `..`, una relativă care trece prin `Photos` și una relativă
    care trece **atât** prin `Photos`, cât și prin `Recipes`.
 
-   **Verificare:** toate cele cinci comenzi afișează aceeași linie. <small>→ [Fiecare fișier este o cale](#every-file-is-a-path)</small>
+   **Verificare:** toate cele cinci comenzi afișează detalii despre aceelași fișier. <small>→ [Fiecare fișier este o cale](#every-file-is-a-path)</small>
 7. 🌱 **Plimbare**: Din directorul utilizatorului, mergeți în `~/lab02/Games/2026/puzzles` cu o **singură** comandă `cd`
    și o cale absolută, apoi în `~/lab02/Recipes` cu o **singură** comandă `cd` și o cale relativă. Reveniți în `puzzles`
    cu `cd -`, apoi în directorul utilizatorului cu cea mai scurtă comandă posibilă.
 
    **Verificare:** `cd -` afișează `/home/student/lab02/Games/2026/puzzles`, iar la final ajungeți în `/home/student`. <small>→ [Navigare](#navigation)</small>
-8. 🌱 **Dus-întors**: Mergeți în `/etc`, apoi în `~/lab02/Recipes`. Folosind doar `cd -`, săriți de două ori între ele,
-   dus și întors. Apoi, din `Recipes`, listați `/etc`; săriți în `/etc` cu `cd -` și, de acolo, listați `Recipes` cu o
+8. 🌱 **Dus-întors**: Mergeți în `/etc`, apoi în `~/lab02/Photos`. Folosind doar `cd -`, săriți de două ori între ele,
+   dus și întors. Apoi, din `Photos`, listați `/etc`; săriți în `/etc` cu `cd -` și, de acolo, listați `Photos` cu o
    cale relativă.
 
    **Verificare:** fiecare `cd -` afișează directorul în care a mers, iar ultimul `pwd` afișează `/etc`. <small>→ [Directorul anterior: `cd -`](#the-previous-directory-cd--)</small>
-9. 🌱 **Listare**: Cu o **singură** comandă `ls`, listați `~/lab02` astfel încât să vedeți fișierul ascuns, să puteți
+9. 🌱 **Listare**: Cu o **singură** comandă `ls`, listați `~/lab02` și `/` astfel încât să vedeți fișierul ascuns, să puteți
    deosebi fișierele de directoare și să citiți dimensiunile în `K` / `M` (căutați în `man ls`, 🔍 căutați `sizes`
    și citiți fiecare potrivire).
 

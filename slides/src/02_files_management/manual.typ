@@ -253,6 +253,49 @@
   ]
 ]
 
+// The keys of the manual viewer: moving in the page and searching in it
+#let man-keys(rows) = grid(
+  columns: (auto, 1fr),
+  column-gutter: 1em,
+  row-gutter: 0.5em,
+  align: (right + horizon, left + horizon),
+  ..rows.flatten(),
+)
+
+#slide[
+  == Inside `man`
+  ⌨️ The Keys of the Manual Viewer
+
+  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
+    #card(icon: "↕️", title: [move in the page])[
+      #man-keys((
+        ([#kbd("↑") #kbd("↓")], [one line up / down]),
+        ([#kbd("Page Down") #kbd("Space")], [one page down]),
+        ([#kbd("Page Up") #kbd("b")], [one page up]),
+        ([#kbd("g") #kbd("G")], [the beginning / the end]),
+        ([#kbd("h")], [help, with all the keys]),
+        ([#kbd("q")], [quit]),
+      ))
+    ]
+  ][
+    #card(icon: "🔍", title: [search in the page])[
+      #man-keys((
+        ([#kbd("/") _word_ #kbd("Enter")], [search forward]),
+        ([#kbd("?") _word_ #kbd("Enter")], [search backward]),
+        ([#kbd("n")], [next match]),
+        ([#kbd("N")], [previous match]),
+      ))
+    ]
+  ]
+
+  #uncover("2-")[
+    #card(icon: "💡", title: [search for _what you want to do_, not for the option])[
+      `man ls`, then #kbd("/") `reverse` #kbd("Enter") jumps to
+      #h(0.5em) `-r, --reverse` #h(0.3em) _reverse order while sorting_
+    ]
+  ]
+]
+
 // Every command that receives a file or a directory receives a *path* to it.
 // The tree used by the next slides: the current directory is `Movies`
 // (line 5) and the file used in the examples is `watchlist.txt` (line 7).
