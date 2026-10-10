@@ -57,7 +57,7 @@
     - peripherals are viewed as files (_POSIX_)
       - `/dev/input/keyboard` - keyboard
       - `/dev/fb` - screen (framebuffer)
-      - `/dev/sda` - Disk Drive A (first)
+      - `/dev/sda` - Disk Drive A (the first drive)
   ][
     #align(center)[#image("img/os/abstractions.pdf", width: 90%)]
   ]
