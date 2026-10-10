@@ -139,7 +139,8 @@
   place(top + left, dx: x + 17pt, dy: y - 11pt, text(size: 9pt)[*#name* \ #text(fill: accent, server)])
 }
 
-#slide[
+// a function, so that 06 - Network Services can show it again
+#let highway-slide() = slide[
   == The Internet is a Highway
 
   #drawing(height: 150pt)[
@@ -200,6 +201,7 @@
     uncover("3-", legend("🚚", [vans with parcels], [the *data packets*], "Transport")),
   )
 ]
+#highway-slide()
 
 // one row of the services table: emoji, service, protocol, client, server
 #let service-row(e, name, proto, client, server) = (
@@ -249,7 +251,8 @@
   ]))
 }
 
-#slide[
+// a function, so that 06 - Network Services can show it again
+#let osi-slide() = slide[
   == From OSI to TCP/IP
 
   #drawing(height: 168pt)[
@@ -335,6 +338,7 @@
     #only(4)[- the same layers as the highway: who uses it, what carries the data, what it drives on]
   ]))
 ]
+#osi-slide()
 
 #slide[
   == Interchangeable Layers
@@ -408,7 +412,8 @@
 ]
 
 
-#slide[
+// a function, so that 06 - Network Services can show it again
+#let os-slide() = slide[
   == The Network in the OS
 
   #drawing(height: 172pt)[
@@ -490,6 +495,7 @@
     ]
   ]))
 ]
+#os-slide()
 
 #let interop-names = (
   ("💻", [Fedora Linux], ([Firefox], [Linux kernel], [Linux kernel], [Intel Wi-Fi driver], [Wi-Fi radio])),

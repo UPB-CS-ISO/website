@@ -29,7 +29,7 @@
       ([📤 *Source*], [who sent the frame, so the receiver can answer]),
       ([💡], [a network card *ignores* the frames that are not for it]),
     )),
-    (("type",), explain(
+    (("type", "data"), explain(
       [🏷️ *Type*: what is inside the frame],
       ([`0x0800`], [an IPv4 packet]),
       ([`0x86DD`], [an IPv6 packet]),
@@ -43,7 +43,15 @@
   )
   #for (i, (keys, body)) in steps.enumerate() {
     only(i + 1)[
-      #frame-drawing(selected: if keys == none { () } else { keys })
+      #frame-drawing(
+        selected: if keys == none { () } else { keys },
+        height: 106pt,
+        extra: if keys == ("type", "data") {
+          hint-arrow(232pt, 372pt, [🏷️ a hint: what the data means])
+        } else if keys == ("data", "crc") {
+          hint-arrow(432pt, (372pt, 96pt), [✅ checks the header and the data], label-x: 234pt)
+        },
+      )
       #if body != none { body }
     ]
   }

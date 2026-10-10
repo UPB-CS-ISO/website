@@ -1,7 +1,7 @@
 #import "/src/slides.typ": *
 #import "common.typ": ward, tanenbaum, uso-book
 
-#show: uso_slides.with(title: "5. Network")
+#show: uso_slides.with(title: "5. Network Infrastructure")
 
 #slide[
   == Bibliography
@@ -14,7 +14,6 @@
       - Chapter 1 - _Introduction_
       - Chapter 4 - _The Medium Access Control Sublayer_
       - Chapter 5 - _The Network Layer_
-      - Section 7.1 - _DNS, the Domain Name System_
     + #uso-book
       - Chapter 11 - _Rețelistică și Internet_
   ]
@@ -49,13 +48,11 @@
       - frames, access points
     #colbreak()
     - Network Layer
-      - IP addresses, routers
-    - Transport Layer
-      - ports, TCP, UDP
-    - Home Gateway
-    - Connecting to the Internet
-    - DHCP
-    - Network Configuration
+      - IP addresses, `ping`, NAT
+    - Routing
+      - routers, `traceroute`
+    - Capturing Packets
+      - `tcpdump`, Wireshark
   ]
   ]
   #v(0pt)
@@ -66,11 +63,8 @@
 #include "ethernet.typ"
 #include "wifi.typ"
 #include "network.typ"
-// #include "transport.typ"
-#include "gateway.typ"
-// #include "config.typ"
-#include "dhcp.typ"
-#include "netconfig.typ"
+#include "routing.typ"
+#include "capture.typ"
 
 #slide[
   == We talked about
@@ -79,10 +73,7 @@
   - Link Layer: network cards, MAC addresses
   - Ethernet: frames, hubs and switches
   - Wi-Fi: frames, access points, connecting with `nmcli`
-  - Network Layer: IPv4 addresses, masks, routers
-  - Transport Layer: ports, TCP and UDP
-  - The home gateway and NAT
-  - What a computer needs for the Internet: IP address and mask, gateway, DNS
-  - DHCP
-  - Network configuration: temporary and permanent, static and dynamic
+  - Network Layer: IPv4 addresses, masks, `ping`, NAT, IPv6
+  - Routing: routers, `traceroute`
+  - Capturing packets: `tcpdump`, Wireshark
 ]

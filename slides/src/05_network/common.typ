@@ -397,9 +397,13 @@
   groups: (("dst", "type", [*header*: 14 bytes]), ("data", "data", [*data*]), ("crc", "crc", [*trailer*])),
   packet: [*IPv4 packet* \ #text(size: 6.5pt)[from the Network layer]],
   name-size: 8pt,
-) = drawing(height: 98pt, width: 440pt)[
+  color: layer-colors.link,
+  inner: layer-colors.network,
+  height: 98pt,
+  extra: none,
+) = drawing(height: height, width: 440pt)[
   #let (y, h) = (24pt, 46pt)
-  #let c = layer-colors.link
+  #let c = color
   #let xs = fields.fold((0pt,), (acc, f) => acc + (acc.last() + f.at(3),))
   #let x-of(key) = xs.at(fields.position(f => f.at(0) == key))
   #let end-of(key) = x-of(key) + fields.find(f => f.at(0) == key).at(3)
@@ -424,8 +428,8 @@
           width: w - 12pt,
           height: h - 12pt,
           radius: 3pt,
-          fill: layer-colors.network.fill,
-          stroke: (paint: layer-colors.network.stroke, thickness: 0.8pt, dash: "dashed"),
+          fill: inner.fill,
+          stroke: (paint: inner.stroke, thickness: 0.8pt, dash: "dashed"),
           align(center + horizon, text(size: 7.5pt)[#icon(e, size: 9pt) #packet]),
         ))
       } else {
@@ -443,7 +447,7 @@
     place(top + left, dx: xs.at(i), dy: y + h + 6pt, box(width: w, align(center, text(
       size: 7.5pt,
       fill: luma(100),
-      if key == "data" { [*payload*: #size] } else { size },
+      if key == "data" { if size != none [*payload*: #size] } else { size },
     ))))
   }
 
@@ -469,7 +473,33 @@
       }
     }
   }
+  // more drawings on top (arrows, notes), in the same coordinates
+  #if extra != none { extra }
 ]
+
+// a thin dotted gray arrow under a frame (or packet), from the field at x1
+// to the field(s) at `to` (one x, or an array), with a note on the line:
+// e.g. Type -> the data, or CRC -> the header and the data.
+// `label-at: left` puts the note before x1 (when the fields are narrow),
+// `label-x` puts it at that x.
+#let hint-arrow(x1, to, body, y1: 72pt, y2: 97pt, label-at: center, label-x: none) = {
+  let c = luma(120)
+  let st = (paint: c, thickness: 0.9pt, dash: "dotted")
+  let xs = if type(to) == array { to } else { (to,) }
+  let all = (x1,) + xs
+  let (lo, hi) = (calc.min(..all), calc.max(..all))
+  place(top + left, line(start: (x1, y1), end: (x1, y2), stroke: st))
+  place(top + left, line(start: (lo, y2), end: (hi, y2), stroke: st))
+  for x in xs { draw-arrow((x, y2), (x, y1), color: c, thickness: 0.9pt, head: 5pt, dash: "dotted") }
+  let note = text(size: 7.5pt, fill: luma(90), body)
+  if label-x != none {
+    pin(label-x, y2, box(fill: white, inset: (x: 4pt, y: 1pt), note))
+  } else if label-at == left {
+    place(top + left, dx: x1 - 244pt, dy: y2 - 6pt, box(width: 240pt, align(right + horizon, note)))
+  } else {
+    pin((lo + hi) / 2, y2, box(fill: white, inset: (x: 4pt, y: 1pt), note))
+  }
+}
 
 // a box of the layer drawings: name in bold, what implements it below
 #let layer-box(x, y, w, h, name, layer, sub: none, size: 8pt, highlight: false) = {
@@ -596,3 +626,86 @@
 #let tab(widths, ..cells) = cells.pos().zip(widths).fold((), (acc, ((k, t), w)) => {
   acc + ((if t.trim() == "" { none } else { k }, t), (none, " " * calc.max(1, w - t.clusters().len())))
 })
+
+// ---------------------------------------------------------------------------
+// Packets moving in a network (the Router and DHCP slides)
+// ---------------------------------------------------------------------------
+
+// a thick arrow along the wire from p to q, a bit shorter at both ends
+#let hop(p, q, color: hl, from: 0.2, to: 0.8) = {
+  let at-t(t) = (p.at(0) + (q.at(0) - p.at(0)) * t, p.at(1) + (q.at(1) - p.at(1)) * t)
+  draw-arrow(at-t(from), at-t(to), color: color, thickness: 2.4pt, head: 7pt)
+}
+
+// a frame (layer 2, MAC addresses) carrying a packet (layer 3, IP addresses);
+// the color of the frame says what the sender knows about the MAC address:
+// "unknown" not yet, "found" found, "missing" not found, "gateway" the gateway's
+#let mac-states = (
+  unknown: (fill: luma(245), stroke: luma(150)),
+  found: (fill: ok-color.lighten(88%), stroke: ok-color),
+  missing: (fill: bad-color.lighten(88%), stroke: bad-color),
+  gateway: (fill: rgb("fff3bf"), stroke: rgb("f08c00")),
+)
+#let pkt(x, y, mac, ip, state: "found") = {
+  let c = mac-states.at(state)
+  let net = layer-colors.network
+  pin(x, y, box(
+    fill: c.fill,
+    stroke: 1.2pt + c.stroke,
+    radius: 3pt,
+    inset: (x: 3pt, y: 2pt),
+    stack(
+      spacing: 2pt,
+      text(size: 7.5pt)[#icon("✉️", size: 8pt) *MAC* #mac],
+      box(fill: net.fill, stroke: 0.6pt + net.stroke, radius: 2pt, inset: (x: 3pt, y: 1.5pt), text(size: 7.5pt)[*IP* #ip]),
+    ),
+  ))
+}
+// the path already traveled: a dashed line through the points
+// (`arrows`: an arrow head on each piece, to show the direction)
+// (`gap`: the line stops this far from the first and the last device)
+#let trail(..pts, color: hl, arrows: false, gap: 17pt) = {
+  // move the point p a distance d toward the point q
+  let toward(p, q, d) = {
+    let (dx, dy) = ((q.at(0) - p.at(0)).pt(), (q.at(1) - p.at(1)).pt())
+    let len = calc.sqrt(dx * dx + dy * dy)
+    if len == 0 { p } else { (p.at(0) + dx / len * d, p.at(1) + dy / len * d) }
+  }
+  let ps = pts.pos()
+  let n = ps.len()
+  if n >= 2 {
+    ps.at(0) = toward(ps.at(0), ps.at(1), gap)
+    ps.at(n - 1) = toward(ps.at(n - 1), ps.at(n - 2), gap)
+  }
+  for i in range(ps.len() - 1) {
+    let (a, b) = (ps.at(i), ps.at(i + 1))
+    wire(a, b, stroke: (paint: color, thickness: 2.5pt, dash: "dashed", cap: "round"))
+    if arrows {
+      let (dx, dy) = ((b.at(0) - a.at(0)).pt(), (b.at(1) - a.at(1)).pt())
+      let len = calc.sqrt(dx * dx + dy * dy)
+      let (ux, uy) = (dx / len, dy / len)
+      // the head, a bit after the middle of the piece
+      let (cx, cy) = (a.at(0) + (b.at(0) - a.at(0)) * 0.6, a.at(1) + (b.at(1) - a.at(1)) * 0.6)
+      let h = 6
+      place(top + left, polygon(
+        fill: color,
+        (cx + ux * h * 1pt, cy + uy * h * 1pt),
+        (cx - ux * h * 1pt - uy * h * 1pt, cy - uy * h * 1pt + ux * h * 1pt),
+        (cx - ux * h * 1pt + uy * h * 1pt, cy - uy * h * 1pt - ux * h * 1pt),
+      ))
+    }
+  }
+}
+// the middle of a wire
+#let mid(p, q) = ((p.at(0) + q.at(0)) / 2, (p.at(1) + q.at(1)) / 2)
+#let ok-mark(p, dx: 26pt) = pin(p.at(0) + dx, p.at(1) - 4pt, icon("✅", size: 14pt))
+
+// a small card with an emoji on the left, for the facts under a drawing
+#let fact(e, body, c: (fill: luma(247), stroke: luma(215))) = block(
+  width: 100%,
+  inset: (x: 8pt, y: 6pt),
+  radius: 4pt,
+  fill: c.fill,
+  stroke: 0.6pt + c.stroke,
+  grid(columns: (auto, 1fr), column-gutter: 8pt, align: (center + horizon, left + horizon), icon(e, size: 15pt), body),
+)

@@ -69,57 +69,6 @@
   ]))
 ]
 
-// the fields of a Wi-Fi (802.11) data frame, sent through the access point
-// to a destination on the wired side
-#let wifi-fields = (
-  ("fc", [Control], [2 B], 50pt, none, "data, to AP"),
-  ("dur", [Duration], [2 B], 46pt, none, "44 µs"),
-  ("a1", [Address 1], [6 B], 66pt, none, "AP"),
-  ("a2", [Address 2], [6 B], 66pt, none, "source"),
-  ("a3", [Address 3], [6 B], 66pt, none, "destination"),
-  ("seq", [Seq.], [2 B], 38pt, none, "#1234"),
-  ("data", [Payload], [0 - 2304 B], 78pt, "📦", none),
-  ("crc", [FCS], [4 B], 36pt, none, "CRC"),
-)
-
-#slide[
-  == Wi-Fi Frame
-  the same idea, a few more fields
-
-  #let steps = (
-    (none, none),
-    (("a1", "a2", "a3"), explain(
-      [*three addresses*: on Wi-Fi the frame goes *through the access point*],
-      ([*Address 1*], [who receives it over the air: the *AP*]),
-      ([*Address 2*], [who sends it over the air: the *source*]),
-      ([*Address 3*], [the final *destination*, on the Ethernet side: the AP puts the data in an Ethernet frame for it]),
-    )),
-    (("fc", "dur", "seq"), explain(
-      [the radio needs *more control*],
-      ([*Control*], [the kind of frame (data, management like _beacons_, control like _ACK_), to or from the AP, encrypted or not]),
-      ([*Duration*], [how long the radio stays busy: the others wait (collision avoidance)]),
-      ([*Seq.*], [the number of the frame, to recognize a frame received twice]),
-    )),
-    (("data", "crc"), explain(
-      [the *data* and the *trailer*],
-      ([📦 *Payload*], [the data, *encrypted* if the network has a password (WPA2, WPA3), in clear on an open network; it starts with a small header that holds the type, like Ethernet's Type]),
-      ([*FCS*], [the same CRC as Ethernet; the radio loses frames, so every frame is confirmed by an *ACK* and sent again if the ACK does not come]),
-    )),
-  )
-  #for (i, (keys, body)) in steps.enumerate() {
-    only(i + 1)[
-      #frame-drawing(
-        selected: if keys == none { () } else { keys },
-        fields: wifi-fields,
-        groups: (("fc", "seq", [*header*: 24 bytes]), ("data", "data", [*data*]), ("crc", "crc", [*trailer*])),
-        packet: [*IPv4* \ #text(size: 6.5pt)[usually encrypted]],
-        name-size: 7.5pt,
-      )
-      #if body != none { body }
-    ]
-  }
-]
-
 #slide[
   == Wi-Fi Access Point
 
@@ -304,6 +253,81 @@
       ]
     }
   ]
+]
+
+// the fields of a Wi-Fi (802.11) data frame, sent through the access point
+// to a destination on the wired side
+#let wifi-fields = (
+  ("fc", [Control], [2 B], 40pt, none, "data"),
+  ("dur", [Duration], [2 B], 40pt, none, "44 µs"),
+  ("a1", [Address 1], [6 B], 50pt, none, "AP"),
+  ("a2", [Address 2], [6 B], 50pt, none, "source"),
+  ("a3", [Address 3], [6 B], 56pt, none, "destination"),
+  ("seq", [Seq.], [2 B], 32pt, none, "#1234"),
+  ("data", [Payload], none, 138pt, "🔒", none),
+  ("crc", [FCS], [4 B], 34pt, none, "CRC"),
+)
+
+// the data of a Wi-Fi frame: the type, then the packet, both encrypted
+#let wifi-data = {
+  let part(c, w, size, body) = box(width: w, fill: c.fill, stroke: 0.6pt + c.stroke, radius: 2pt, inset: (y: 2.5pt), align(center, text(size: size, body)))
+  box(baseline: 40%, grid(
+    columns: 2,
+    column-gutter: 6pt,
+    align: horizon,
+    part(layer-colors.link, 26pt, 5pt)[*Type* \ `0x0800`],
+    part(layer-colors.network, 60pt, 6.5pt)[*IPv4* \ packet],
+  ))
+}
+
+#slide[
+  == Wi-Fi Frame
+  the same idea, a few more fields
+
+  #let steps = (
+    (none, none),
+    (("a1", "a2", "a3"), explain(
+      [*three addresses*: on Wi-Fi the frame goes *through the access point*],
+      ([*Address 1*], [who receives it over the air: the *AP*]),
+      ([*Address 2*], [who sends it over the air: the *source*]),
+      ([*Address 3*], [the final *destination*, on the Ethernet side: the AP puts the data in an Ethernet frame for it]),
+    )),
+    (("fc", "dur", "seq"), explain(
+      [the radio needs *more control*],
+      ([*Control*], [the kind of frame (data, management like _beacons_, control like _ACK_), to or from the AP, encrypted or not]),
+      ([*Duration*], [how long the radio stays busy: the others wait (collision avoidance)]),
+      ([*Seq.*], [the number of the frame, to recognize a frame received twice]),
+    )),
+    (("data",), explain(
+      [🏷️ *Type*: what is inside the frame, like on Ethernet],
+      ([`0x0800`], [an IPv4 packet (the same numbers as Ethernet)]),
+      ([💡], [not in the header: it starts the data (a small _LLC/SNAP_ header, 8 bytes), so it is encrypted too]),
+    )),
+    (("data", "crc"), explain(
+      [the *data* and the *trailer*],
+      ([📦 *Payload*], [the data, *encrypted* if the network has a password (WPA2, WPA3), in clear on an open network]),
+      ([*FCS*], [the same CRC as Ethernet; the radio loses frames, so every frame is confirmed by an *ACK* and sent again if the ACK does not come]),
+    )),
+  )
+  #for (i, (keys, body)) in steps.enumerate() {
+    only(i + 1)[
+      #frame-drawing(
+        selected: if keys == none { () } else { keys },
+        fields: wifi-fields,
+        groups: (("fc", "seq", [*header*: 24 bytes]), ("data", "data", [*data*: 0 - 2304 bytes, 🔒 encrypted]), ("crc", "crc", [*trailer*])),
+        packet: wifi-data,
+        inner: (fill: luma(238), stroke: luma(110)),
+        name-size: 7.5pt,
+        height: 106pt,
+        extra: if keys == ("data",) {
+          hint-arrow(310pt, 359pt, [🏷️ a hint: what the data means], label-at: left, y1: 57pt)
+        } else if keys == ("data", "crc") {
+          hint-arrow(432pt, (396pt, 130pt), [✅ checks the header and the data], label-x: 262pt)
+        },
+      )
+      #if body != none { body }
+    ]
+  }
 ]
 
 // ---------------------------------------------------------------------------

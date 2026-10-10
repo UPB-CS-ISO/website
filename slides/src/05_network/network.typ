@@ -1,6 +1,6 @@
 #import "common.typ": *
 
-#section-cover([Network Layer], [connecting networks], layers: ("network",), note: [IP])
+#section-cover([Network Layer], [IP addresses], layers: ("network",), note: [IP])
 
 #slide[
   == Bibliography
@@ -8,7 +8,10 @@
 
   + #ward
     - Chapter 9 - _Understanding Your Network and Its Configuration_
-      - Sections 9.1 - 9.6
+      - Sections 9.1 - 9.3
+      - Section 9.6 - _IPv6 Addresses and Networks_
+      - Section 9.7 - _Basic ICMP and DNS Tools_
+      - Section 9.22 - _Network Address Translation (IP Masquerading)_
   + #tanenbaum
     - Section 1.4 - _Reference Models_
     - Section 5.6 - _The Network Layer in the Internet_
@@ -70,16 +73,6 @@
     bracket(cut + 2pt, bit-x(31) + cw, host.stroke, [🏠 *host*: #(32 - n) bits])
   }
 ]
-
-// a small card with an emoji on the left, for the facts under a drawing
-#let fact(e, body, c: (fill: luma(247), stroke: luma(215))) = block(
-  width: 100%,
-  inset: (x: 8pt, y: 6pt),
-  radius: 4pt,
-  fill: c.fill,
-  stroke: 0.6pt + c.stroke,
-  grid(columns: (auto, 1fr), column-gutter: 8pt, align: (center + horizon, left + horizon), icon(e, size: 15pt), body),
-)
 
 #slide[
   == IP Address
@@ -269,256 +262,292 @@
   #v(0pt)
 ]
 
-#slide[
-  == Special Addresses
-
-  #v(1em)
-  #align(center, text(size: 12pt, table(
-    columns: (auto, auto, 1fr),
-    inset: 7pt,
-    align: (center + horizon, left + horizon, left + horizon),
-    stroke: 0.6pt + luma(170),
-    table.header([], [*Address*], [*Meaning*]),
-    text(size: 1.4em, "🔁"), [`127.0.0.1`], [*loopback* (`localhost`): this computer, the packets never leave it],
-    text(size: 1.4em, "🔒"), [`10.0.0.0/8` \ `172.16.0.0/12` \ `192.168.0.0/16`], [*private* networks: not used on the Internet, free for everyone at home or at work],
-    text(size: 1.4em, "🤷"), [`169.254.0.0/16`], [_link local_: no one gave us an address, so the computer picked one by itself],
-  )))
-]
-
-// ---------------------------------------------------------------------------
-// Router
-// ---------------------------------------------------------------------------
-
-#let two-nets(r-highlight: false, router: true) = {
-  area(5pt, 5pt, 157pt, 175pt, [network `192.168.1.0/24`])
-  area(318pt, 5pt, 157pt, 175pt, [network `192.168.2.0/24`], name-at: top + right)
-  let a = (45pt, 55pt)
-  let b = (45pt, 140pt)
-  let s1 = (130pt, 97pt)
-  let r = (240pt, 97pt)
-  let s2 = (350pt, 97pt)
-  let c = (435pt, 55pt)
-  let d = (435pt, 140pt)
-  for p in (a, b) { wire(p, s1) }
-  for p in (c, d) { wire(p, s2) }
-  if router {
-    wire(s1, r)
-    wire(r, s2)
-  }
-  host(..a, "Ana", addr: [192.168.1.10 \ #text(fill: luma(110))[5c:8f:2a:91:d4:07]], size: 24pt)
-  host(..b, "Bogdan", addr: [192.168.1.11 \ #text(fill: luma(110))[e4:3b:71:0c:9a:52]], size: 24pt)
-  host(..c, "Carla", addr: [192.168.2.20 \ #text(fill: luma(110))[08:d1:6e:b3:47:ac]], size: 24pt)
-  host(..d, "Dan", addr: [192.168.2.21 \ #text(fill: luma(110))[f0:9e:4a:c2:16:3d]], size: 24pt)
-  netdev(..s1, "switch", size: 16pt)
-  netdev(..s2, "switch", size: 16pt)
-  if router {
-    netdev(..r, "router", name: "Router", size: 30pt, highlight: r-highlight)
-    sees-stack(r.at(0), r.at(1) + 36pt, "network")
-    // the two cards of the router, each one in its own network
-    label(192pt, 80pt, align(center, text(size: 5pt, font: "DejaVu Sans Mono")[*eth0* \ 192.168.1.1 \ #text(fill: luma(110))[70:b5:e8:2d:91:4c]]))
-    label(288pt, 80pt, align(center, text(size: 5pt, font: "DejaVu Sans Mono")[*eth1* \ 192.168.2.1 \ #text(fill: luma(110))[b8:27:c4:6a:0e:93]]))
-  }
-}
-
-// a thick arrow along the wire from p to q, a bit shorter at both ends
-#let hop(p, q, color: hl, from: 0.2, to: 0.8) = {
-  let at-t(t) = (p.at(0) + (q.at(0) - p.at(0)) * t, p.at(1) + (q.at(1) - p.at(1)) * t)
-  draw-arrow(at-t(from), at-t(to), color: color, thickness: 2.4pt, head: 7pt)
-}
-
-// a frame (layer 2, MAC addresses) carrying a packet (layer 3, IP addresses);
-// the color of the frame says what the sender knows about the MAC address:
-// "unknown" not yet, "found" found, "missing" not found, "gateway" the gateway's
-#let mac-states = (
-  unknown: (fill: luma(245), stroke: luma(150)),
-  found: (fill: ok-color.lighten(88%), stroke: ok-color),
-  missing: (fill: bad-color.lighten(88%), stroke: bad-color),
-  gateway: (fill: rgb("fff3bf"), stroke: rgb("f08c00")),
+// the fields of an IPv4 packet, simplified: (key, name, size, width, emoji, example)
+#let ip-fields = (
+  ("ttl", [TTL], [1 byte], 48pt, "⏳", "64"),
+  ("proto", [Protocol], [1 byte], 60pt, "🏷️", "6"),
+  ("sum", [Checksum], [2 bytes], 60pt, "✅", "0xb1e6"),
+  ("src", [Source IP], [4 bytes], 94pt, "📤", "192.168.1.105"),
+  ("dst", [Destination IP], [4 bytes], 94pt, "📬", "141.85.220.33"),
+  ("data", [Data], [any], 84pt, "📦", none),
 )
-#let pkt(x, y, mac, ip, state: "found") = {
-  let c = mac-states.at(state)
-  let net = layer-colors.network
-  pin(x, y, box(
-    fill: c.fill,
-    stroke: 1.2pt + c.stroke,
-    radius: 3pt,
-    inset: (x: 3pt, y: 2pt),
-    stack(
-      spacing: 2pt,
-      text(size: 7.5pt)[#icon("✉️", size: 8pt) *MAC* #mac],
-      box(fill: net.fill, stroke: 0.6pt + net.stroke, radius: 2pt, inset: (x: 3pt, y: 1.5pt), text(size: 7.5pt)[*IP* #ip]),
-    ),
-  ))
-}
-// the path already traveled: a dashed line through the points
-#let trail(..pts) = {
-  let ps = pts.pos()
-  for i in range(ps.len() - 1) {
-    wire(ps.at(i), ps.at(i + 1), stroke: (paint: hl, thickness: 2.5pt, dash: "dashed", cap: "round"))
-  }
-}
-// the middle of a wire
-#let mid(p, q) = ((p.at(0) + q.at(0)) / 2, (p.at(1) + q.at(1)) / 2)
-#let ok-mark(p, dx: 26pt) = pin(p.at(0) + dx, p.at(1) - 4pt, icon("✅", size: 14pt))
-
-// what a device found out: the MAC address for an IP address
-#let mac-found(x, y, who, ip, mac, color: accent) = pin(x, y, box(
-  fill: white,
-  stroke: 1pt + color,
-  radius: 4pt,
-  inset: (x: 5pt, y: 3pt),
-  text(size: 7.5pt)[🔎 #who: #raw(ip) → #if mac == none { text(fill: bad-color, weight: "bold")[???] } else { raw(mac) }],
-))
 
 #slide[
-  == Router
+  == IPv4 Packet
+  simplified: only the important fields
 
-  #let (a, b, s1, r, s2, c) = ((45pt, 55pt), (45pt, 140pt), (130pt, 97pt), (240pt, 97pt), (350pt, 97pt), (435pt, 55pt))
-  // where the packet is drawn, next to each device
-  #let (at-a, at-s1, at-b, at-r, at-s2, at-c) = (
-    (108pt, 42pt),
-    (130pt, 124pt),
-    (108pt, 140pt),
-    (240pt, 50pt),
-    (350pt, 124pt),
-    (372pt, 42pt),
+  #let steps = (
+    (none, none),
+    (("src", "dst"), explain(
+      [the *IP addresses*: which computer sends, which computer receives],
+      ([📬 *Destination*], [the routers look at it to find the way]),
+      ([📤 *Source*], [the computer that sent it, so the answer comes back]),
+      ([💡], [usually the *same* on the whole way; the MACs change at every router]),
+    )),
+    (("ttl",), explain(
+      [⏳ *TTL*: _time to live_],
+      ([`-1`], [every router subtracts 1; at `0` the packet is *dropped*]),
+      ([🔁], [so a packet does not go around in circles forever (`ping` shows it: `ttl=117`)]),
+    )),
+    (("proto", "data"), explain(
+      [🏷️ *Protocol*: what is inside the packet],
+      ([`6`], [a TCP segment]),
+      ([`17`], [a UDP datagram]),
+      ([`1`], [an ICMP message (`ping`)]),
+    )),
+    (("sum", "data"), explain(
+      [the *check* and the *data*],
+      ([✅ *Checksum*], [of the header only; a damaged packet is dropped]),
+      ([➕], [a few more fields, not shown here: the header has at least 20 bytes]),
+    )),
   )
-  #let ip-ab = [Ana → Bogdan]
-  #let ip-ac = [Ana → Carla]
-  #align(center, scale(96%, reflow: true, drawing(height: 185pt)[
-    #only("1-4")[#two-nets(router: false)]
-    #only("5-")[#two-nets(r-highlight: true)]
-    // the gateway of A: none without a router, the router after
-    #only(4)[#tag(55pt, 104pt, [🚪 gateway: *none*], stroke: 1pt + bad-color, size: 7.5pt)]
-    #only("5-")[#tag(55pt, 104pt, [🚪 gateway: `192.168.1.1`], fill: hl-bg, stroke: 1pt + hl, size: 7.5pt)]
-
-    // 1 - 3: to B, in the same network
-    #only(1)[#pkt(..at-a, [Ana → ?], ip-ab, state: "unknown")]
-    #only(2)[
-      #mac-found(240pt, 40pt, [Ana], "192.168.1.11", "e4:3b:…", color: ok-color)
-      #pkt(..at-a, [Ana → *Bogdan*], ip-ab)
+  #for (i, (keys, body)) in steps.enumerate() {
+    only(i + 1)[
+      #frame-drawing(
+        selected: if keys == none { () } else { keys },
+        fields: ip-fields,
+        groups: (("ttl", "dst", [*header*: 20 bytes (simplified)]), ("data", "data", [*data*])),
+        packet: [*TCP segment* \ #text(size: 6.5pt)[from the Transport layer]],
+        name-size: 7.5pt,
+        color: layer-colors.network,
+        inner: layer-colors.transport,
+        height: 106pt,
+        extra: if keys != none and "proto" in keys {
+          hint-arrow(96pt, 366pt, [🏷️ a hint: what the data means])
+        },
+      )
+      #if body != none { body }
     ]
-    #only(3)[
-      #trail(a, s1, b)
-      #pkt(..at-b, [Ana → *Bogdan*], ip-ab)
-      #ok-mark(b, dx: -26pt)
-    ]
-
-    // 4: to C, in another network, without a router
-    #only(4)[
-      #mac-found(240pt, 40pt, [Ana], "192.168.2.20", none, color: bad-color)
-      #pkt(..at-a, [Ana → *???*], ip-ac, state: "missing")
-      #pin(240pt, 97pt, icon("❌", size: 26pt))
-      #tag(240pt, 130pt, text(fill: bad-color)[`Network is unreachable`], stroke: 1pt + bad-color, size: 7.5pt)
-    ]
-
-    // 5 - 7: with a router
-    #only(5)[
-      #mac-found(240pt, 22pt, [Ana], "192.168.1.1", "70:b5:…", color: rgb("f08c00"))
-      #pkt(..at-a, [Ana → *Router*], ip-ac, state: "gateway")
-    ]
-    #only(6)[
-      #trail(a, s1, r)
-      #mac-found(240pt, 18pt, [Router], "192.168.2.20", "08:d1:…", color: ok-color)
-      #pkt(..at-r, [Router → *Carla*], ip-ac)
-    ]
-    #only("7-")[
-      #trail(a, s1, r, s2, c)
-      #pkt(..at-c, [Router → *Carla*], ip-ac)
-      #ok-mark(c)
-    ]
-  ]))
-
-  // what happens, one card for each step
-  #let bad = (fill: bad-color.lighten(90%), stroke: bad-color)
-  #let good = (fill: ok-color.lighten(90%), stroke: ok-color)
-  #place(bottom + left, block(width: 100%, text(size: 10.5pt)[
-    #only(1, fact("📦", [Ana has a packet for Bogdan `192.168.1.11`: *the same network*]))
-    #only(2, fact("🔎", [Ana gets *the MAC address of Bogdan* and puts it on the frame]))
-    #only(3, fact("✅", [the switch delivers the frame to Bogdan], c: good))
-    #only(4, fact("❌", [Carla `192.168.2.20` is in *another network*: Ana cannot get her MAC address], c: bad))
-    #only(5, fact("🚪", [Ana sends it to her *gateway* `192.168.1.1`, the router: she gets *its MAC address*, the IP is still Carla's]))
-    #only(6, fact("🔁", [the router gets *the MAC address of Carla* and puts the *same packet* in a *new frame*]))
-    #only(7, fact("✅", [Carla gets the packet: the MAC addresses changed, the IP addresses *stayed the same*], c: good))
-    #only("8-", grid(
-      columns: (1fr, 1fr),
-      column-gutter: 8pt,
-      fact("🔌", [a computer with *two or more* network cards, *one in each network*], c: layer-colors.network),
-      fact("📬", [forwards *packets* from one network to another: *layer 3*], c: layer-colors.network),
-    ))
-  ]))
+  }
 ]
 
-#slide[
-  == The Internet
-  a network of routers
+// ---------------------------------------------------------------------------
+// Testing the connection: ping
+// ---------------------------------------------------------------------------
 
-  #drawing(height: 190pt)[
-    #let routers = (
-      (110pt, 50pt), (110pt, 140pt), (220pt, 30pt), (240pt, 120pt), (340pt, 60pt), (360pt, 150pt),
-    )
-    #let links = ((0, 1), (0, 2), (0, 3), (1, 3), (2, 3), (2, 4), (3, 4), (3, 5), (4, 5), (1, 5))
-    #let path = ((0, 3), (3, 4))
-    #for (i, j) in links { wire(routers.at(i), routers.at(j)) }
-    #wire((30pt, 50pt), routers.at(0))
-    #wire(routers.at(4), (450pt, 60pt))
-    #uncover("2-")[
-      #wire((30pt, 50pt), routers.at(0), stroke: 2.5pt + hl)
-      #for (i, j) in path { wire(routers.at(i), routers.at(j), stroke: 2.5pt + hl) }
-      #wire(routers.at(4), (450pt, 60pt), stroke: 2.5pt + hl)
+// the steps of a shell: (lines shown, highlighted parts, explanation)
+#let test-steps(lines, steps, size: 0.9em) = for (i, (n, keys, body)) in steps.enumerate() {
+  only(i + 1)[
+    #parts-terminal(lines.slice(0, n), hl: ((keys, ip-peach),), size: size)
+    #body
+  ]
+}
+
+// ---------------------------------------------------------------------------
+// ping
+// ---------------------------------------------------------------------------
+
+#let ping-ok = (
+  "$ ping -c 4 141.85.220.33",
+  ((none, "PING "), ("ip", "141.85.220.33"), (none, " (141.85.220.33) 56(84) bytes of data.")),
+  ..range(1, 5).map(i => (
+    (none, "64 bytes from 141.85.220.33: "),
+    ("seq", "icmp_seq=" + str(i)),
+    (none, " "),
+    ("ttl", "ttl=57"),
+    (none, " "),
+    ("time", "time=" + ("4.21", "3.98", "4.05", "4.11").at(i - 1) + " ms"),
+  )),
+  "",
+  "--- 141.85.220.33 ping statistics ---",
+  ((none, "4 packets transmitted, 4 received, "), ("loss", "0% packet loss"), (none, ", time 3005ms")),
+  ((none, "rtt "), ("rtt", "min/avg/max"), (none, "/mdev = "), ("rtt", "3.980/4.087/4.210"), (none, "/0.087 ms")),
+)
+
+#slide[
+  == ping
+  is that computer there? does it answer?
+
+  #test-steps(ping-ok, (
+    (2, ("ip",), explain(
+      [`ping` sends an ICMP *echo request*, the computer answers with an *echo reply*],
+      ([`-c 4`], [only 4 times; without it, `ping` runs until #box[`Ctrl+C`]]),
+      ([`141.85.220.33`], [the IP address of the computer we test]),
+    )),
+    (6, ("seq", "ttl", "time"), explain(
+      [one line for every answer],
+      ([`icmp_seq`], [the number of the request: a missing number is a *lost* packet]),
+      ([`ttl`], [the TTL left in the answer: it started at 64, so it passed 7 routers]),
+      ([`time`], [the round trip: there and back]),
+    )),
+    (10, ("loss", "rtt"), explain(
+      [the *statistics*, at the end],
+      ([`packet loss`], [`0%` is good; a few lost packets: a bad Wi-Fi or a busy network]),
+      ([`min/avg/max`], [the shortest, the average and the longest round trip, in ms]),
+    )),
+  ), size: 0.82em)
+]
+
+// four ways for `ping` to fail, and what each one means
+#let ping-fails = (
+  (
+    (
+      "$ ping -c 1 8.8.8.8",
+      ((none, "ping: connect: "), ("err", "Network is unreachable")),
+    ),
+    explain(
+      [no *route* to that network: usually no *default gateway*],
+      ([check], [`ip route`: is there a `default via ...` line?]),
+    ),
+  ),
+  (
+    (
+      "$ ping -c 1 192.168.1.20",
+      "PING 192.168.1.20 (192.168.1.20) 56(84) bytes of data.",
+      ((none, "From 192.168.1.105 icmp_seq=1 "), ("err", "Destination Host Unreachable")),
+    ),
+    explain(
+      [a computer in *my network*, but nobody answered with a *MAC address*],
+      ([why], [the computer is off, or the IP address is wrong]),
+    ),
+  ),
+  (
+    (
+      "$ ping -c 2 141.85.220.250",
+      "PING 141.85.220.250 (141.85.220.250) 56(84) bytes of data.",
+      "",
+      "--- 141.85.220.250 ping statistics ---",
+      ((none, "2 packets transmitted, 0 received, "), ("err", "100% packet loss"), (none, ", time 1031ms")),
+    ),
+    explain(
+      [the packets leave, *no answer* comes back],
+      ([why], [the computer is down, or a *firewall* drops `ping` (many servers do)]),
+      ([💡], [no answer to `ping` does not always mean the computer is down]),
+    ),
+  ),
+)
+
+#slide[
+  == When ping Fails
+  the error tells where the problem is
+
+  #let bad = (hl: bad-color.lighten(75%), bg: bad-color.lighten(93%), bar: bad-color)
+  #for (i, (lines, body)) in ping-fails.enumerate() {
+    only(i + 1)[
+      #parts-terminal(lines, hl: ((("err",), bad),), size: 0.9em)
+      #body
     ]
-    #for (i, p) in routers.enumerate() { netdev(..p, "router", size: 20pt) }
-    #host(30pt, 50pt, "home", size: 24pt)
-    #host(450pt, 60pt, "upb.ro", kind: "server", size: 24pt)
+  }
+]
+
+// NAT: the private addresses of a home behind the one public address of the router
+#slide[
+  == NAT
+  many private addresses behind one public address
+
+  #drawing(height: 150pt)[
+    #area(5pt, 5pt, 250pt, 140pt, [LAN (private)])
+    #wire((50pt, 75pt), (230pt, 75pt))
+    #wire((230pt, 75pt), (400pt, 75pt))
+    #host(50pt, 75pt, "PC", addr: "192.168.1.105", size: 26pt)
+    #netdev(230pt, 75pt, "router", name: "router", sub: "203.0.113.42", size: 28pt, highlight: true)
+    #pin(420pt, 75pt, pic("cloud", size: 50pt))
+    #only(2)[#frame(140pt, 45pt)[from `192.168.1.105` \ to `141.85.220.33`]]
+    #only(3)[#frame(330pt, 45pt)[from #text(fill: bad-color)[`203.0.113.42`] \ to `141.85.220.33`]]
+    #only(4)[
+      #frame(330pt, 110pt, color: ok-color)[from `141.85.220.33` \ to `203.0.113.42`]
+      #frame(140pt, 110pt, color: ok-color)[from `141.85.220.33` \ to #text(fill: bad-color)[`192.168.1.105`]]
+    ]
   ]
 
   #place(bottom + left, block(width: 100%, text(size: 11pt)[
-    #only(1)[- networks of companies, universities and Internet Service Providers (ISP) connected by routers]
-    #only("2-")[- each router only knows the *next hop*, if a link fails, packets take another path]
+    #only("1-2")[- the PC sends a packet to `141.85.220.33`, from its private address]
+    #only(3)[- the router *replaces* the source with its public address and remembers the connection]
+    #only(4)[- the answer comes back to the router, which sends it to the PC: *private addresses are not visible on the Internet*]
   ]))
 ]
 
-#slide[
-  == Hub, Switch, AP, Router
-
-  #text(size: 10pt)[
-  #align(center, table(
-    columns: (auto, 1fr, 1fr, 1fr, 1fr),
-    inset: 5pt,
-    stroke: 0.6pt + luma(170),
-    align: left + horizon,
-    table.header([], align(center, pic("hub", size: 14pt)) + [*Hub*], align(center, pic("switch", size: 14pt))
-      + [*Switch*], align(center, pic("wifi-router", size: 20pt)) + [*Access Point*], align(center, pic(
-      "router",
-      size: 20pt,
-    ))
-      + [*Router*]),
-    [*Layer*],
-    table.cell(fill: layer-colors.physical.fill)[1: bits],
-    table.cell(fill: layer-colors.link.fill)[2: frames],
-    table.cell(fill: layer-colors.link.fill)[2: frames],
-    table.cell(fill: layer-colors.network.fill)[3: packets],
-
-    [*Uses*], [nothing], [MAC addresses], [MAC addresses], [IP addresses],
-    [*Sends to*], [all ports], [the destination port], [the destination device (radio)], [the next network],
-    [*Medium*], [shared cable], [one cable per port], [shared radio], [one per network],
-    [*Connects*], [devices], [devices of one network], [wireless devices to a wired network], [*different networks*],
-  ))
-  ]
-  #v(0pt)
+// an IPv6 address in 8 groups of 16 bits (4 hexadecimal digits);
+// `step` 2 dims the leading zeros, step 3 also marks the run of zero groups
+#let ipv6-drawing(step) = drawing(width: 470pt, height: 112pt)[
+  #let groups = ("2001", "0db8", "0000", "0000", "0000", "ff00", "0042", "8329")
+  #let (x0, gw, gap) = (8pt, 50pt, 8pt)
+  #let gx(k) = x0 + k * (gw + gap)
+  #let net = layer-colors.network
+  #let host = layer-colors.application
+  #for (k, g) in groups.enumerate() {
+    let c = if k < 4 { net } else { host }
+    // the leading zeros (at most 3: one digit always stays)
+    let z = calc.min(g.len() - g.trim("0", at: start).len(), 3)
+    let digits = if step >= 2 {
+      text(fill: luma(185), g.slice(0, z)) + g.slice(z)
+    } else { g }
+    let zero-run = step >= 3 and k in (2, 3, 4)
+    let st = if zero-run { (paint: hl, thickness: 1.6pt, dash: "dashed") } else { 0.8pt + c.stroke }
+    at(gx(k), 4pt, box(width: gw, height: 22pt, radius: 2pt, fill: c.fill, stroke: st, align(
+      center + horizon,
+      text(size: 11pt, font: "DejaVu Sans Mono", weight: "bold", digits),
+    )))
+    if k > 0 { label(gx(k) - gap / 2, 15pt, text(size: 12pt, weight: "bold", ":")) }
+  }
+  // the two halves
+  #let bracket(x1, x2, color, body) = {
+    let yb = 32pt
+    wire((x1, yb), (x1, yb + 4pt), stroke: 1.2pt + color)
+    wire((x1, yb + 4pt), (x2, yb + 4pt), stroke: 1.2pt + color)
+    wire((x2, yb), (x2, yb + 4pt), stroke: 1.2pt + color)
+    label((x1 + x2) / 2, yb + 14pt, text(size: 9pt, body))
+  }
+  #bracket(gx(0), gx(3) + gw, net.stroke, [🛣️ *network*: 64 bits])
+  #bracket(gx(4), gx(7) + gw, host.stroke, [🏠 *host*: 64 bits])
+  // the shorter ways to write it
+  #let short(y, caption, body) = {
+    at(x0, y - 6pt, text(size: 9pt, caption))
+    pin(285pt, y, text(size: 13pt, font: "DejaVu Sans Mono", weight: "bold", body))
+  }
+  #if step >= 2 { short(76pt, [✂️ skip the *leading zeros*], [2001:db8:0:0:0:ff00:42:8329]) }
+  #if step >= 3 { short(100pt, [🫥 `::` for *one* run of zeros], [2001:db8#text(fill: hl)[::]ff00:42:8329]) }
 ]
 
 #slide[
   == IPv6
-  the next version of IP
+  the next version of IP: 128 bits
 
-  - IPv4 has only 4.3 billion addresses, they *ran out* in 2011
-  - IPv6: *128 bits*, $2^128 approx 3.4 times 10^38$ addresses
-  - written as 8 groups of 4 hexadecimal digits
-    - `2001:0db8:0000:0000:0000:0000:0000:0001`
-    - leading zeros and one run of zero groups can be skipped: `2001:db8::1`
-  - `::1` - loopback, `fe80::/10` - link local
-  - works *next to* IPv4 (_dual stack_), most computers have both
+  #only(1, ipv6-drawing(1))
+  #only(2, ipv6-drawing(2))
+  #only("3-", ipv6-drawing(3))
 
-  #note-box[💡 in this lecture we use IPv4]
+  #set text(size: 9.5pt)
+  #grid(
+    columns: (1fr, 1fr, 1fr),
+    column-gutter: 6pt,
+    row-gutter: 6pt,
+    fact("📏", [*128 bits*: 8 groups of 16 bits, in *hexadecimal*]),
+    fact("🌍", [$2^128 approx 3.4 dot 10^38$ addresses; IPv4 *ran out* in 2011]),
+    uncover("5-", fact("🤝", [*dual stack*: next to IPv4, most computers have both])),
+    uncover("4-", fact("🔁", [`::1`: this computer (_loopback_), like `127.0.0.1`])),
+    uncover("4-", fact("🔗", [`fe80::...`: _link local_, every card has one])),
+    uncover("5-", fact("💡", [in this lecture we use *IPv4*])),
+  )
+  #v(0pt)
+]
+
+#let ping6 = (
+  "$ ping -c 2 2a00:1450:4017:80e::200e",
+  ((none, "PING "), ("ip", "2a00:1450:4017:80e::200e"), (none, " (2a00:1450:4017:80e::200e) 56 data bytes")),
+  ((none, "64 bytes from 2a00:1450:4017:80e::200e: icmp_seq=1 "), ("ttl", "ttl=117"), (none, " time=12.4 ms")),
+  ((none, "64 bytes from 2a00:1450:4017:80e::200e: icmp_seq=2 "), ("ttl", "ttl=117"), (none, " time=12.1 ms")),
+  "$ ping -c 1 ::1",
+  ((none, "PING "), ("lo", "::1"), (none, " (::1) 56 data bytes")),
+  "64 bytes from ::1: icmp_seq=1 ttl=64 time=0.041 ms",
+  "$ ping -c 1 fe80::1%wlp2s0",
+  ((none, "PING fe80::1"), ("zone", "%wlp2s0"), (none, " (fe80::1%wlp2s0) 56 data bytes")),
+  "64 bytes from fe80::1%wlp2s0: icmp_seq=1 ttl=64 time=2.31 ms",
+)
+
+#slide[
+  == ping with IPv6
+  the same command, longer addresses
+
+  #test-steps(ping6, (
+    (4, ("ip", "ttl"), explain(
+      [`ping` works with IPv6 too: it sees an IPv6 address and uses IPv6],
+      ([`ttl`], [in IPv6 it is called _hop limit_, the same idea]),
+    )),
+    (7, ("lo",), explain[`::1`: the loopback, this computer, like `127.0.0.1`]),
+    (10, ("zone",), explain(
+      [a _link local_ address needs the *card*: every card has an `fe80::` network],
+      ([`%wlp2s0`], [send it on the Wi-Fi card]),
+    )),
+  ), size: 0.85em)
 ]
