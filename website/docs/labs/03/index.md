@@ -173,7 +173,7 @@ between:
 
 | Command | What it does with its input |
 |-|-|
-| `sort` | Sorts the lines (`-n` as numbers, `-r` in reverse order) |
+| `sort` | Sorts the lines in alphabetical order |
 | `wc -l` | Counts the lines |
 | `head -n <N>` | Keeps the first `N` lines (`head -c <N>` the first `N` bytes) |
 | `tail -n <N>` | Keeps the last `N` lines |
@@ -228,11 +228,11 @@ Put the text between quotes when it has spaces: `grep 'model name' /proc/cpuinfo
 The kernel makes some **special files** in `/dev`. They are not stored on the disk: a driver in the kernel answers
 when a command reads or writes them.
 
-| File | Writing | Reading |
-|-|-|-|
-| `/dev/null` | Everything is **discarded** | Gives *end of file* right away |
-| `/dev/zero` | Everything is discarded | Gives as many `0` bytes as you ask for |
-| `/dev/urandom` | — | Gives as many **random** bytes as you ask for |
+| File | Reading gives | Writing | Used for |
+|-|-|-|-|
+| `/dev/null` | nothing: *end of file* right away | everything is **discarded** | throwing away output you don't want: `find /etc -name passwd 2> /dev/null` |
+| `/dev/zero` | bytes with the value `0`, **without end** | everything is discarded | creating a file of a given size: `head -c 1M /dev/zero > zeros.bin` |
+| `/dev/urandom` | **random** bytes, **without end** | allowed, but not needed | random data, keys and passwords: `head -c 16 /dev/urandom \| xxd` |
 
 ```shell-session
 [student@fedora lab03]$ find /etc -name passwd 2> /dev/null
@@ -270,7 +270,7 @@ end, and they put it back when you decompress it.
 |-|-|
 | `-k` | **keep** the original file |
 | `-c` | write the result to the standard output, to use with `>` or `\|` |
-| `-v` | print how much smaller the file got |
+| `-v` | **verbose**: print how much smaller the file got |
 | `-1` ... `-9` | from the fastest (`-1`) to the best compression (`-9`) |
 
 ```shell-session
@@ -330,6 +330,13 @@ letters, written together, and the most used ones are:
 | `tar xvf music.tar Music/jazz.mp3` | Extracts only one file, with the name it has in the archive |
 | `tar rvf music.tar numbers.txt` | Adds `numbers.txt` at the end of the archive |
 
+:::caution
+
+`tar x` **overwrites** the files that already exist, without asking. Extract into an empty directory with `-C` when you
+are not sure what is in the archive.
+
+:::
+
 ```shell-session
 [student@fedora lab03]$ tar cvf music.tar Music fruits.txt
 Music/
@@ -369,7 +376,9 @@ an archive.
 
 :::info
 
-A `.tar` archive is **not** compressed: it is as large as all its files together, plus a little.
+A `.tar` archive is **not** compressed. It is as large as all its files together, plus a little: for every file and
+directory, `tar` adds 512 bytes with its name, permissions, owner and date, and it fills the end of every file up to a
+multiple of 512 bytes. 
 
 :::
 
@@ -382,7 +391,6 @@ A `.tar` archive is **not** compressed: it is as large as all its files together
 | `z` | `gzip` | `.tar.gz` or `.tgz` | `tar czvf music.tar.gz Music` |
 | `j` | `bzip2` | `.tar.bz2` or `.tbz2` | `tar cjvf music.tar.bz2 Music` |
 | `J` | `xz` | `.tar.xz` or `.txz` | `tar cJvf music.tar.xz Music` |
-| `a` | chosen from the **extension** of the name | any of the above | `tar cavf music.tar.xz Music` |
 
 To **list** or **extract** a compressed archive, you do not need the letter: `tar` finds out the compression by
 itself.
@@ -499,7 +507,7 @@ the process that started it, its **parent**: the **PPID** (*Parent Process ID*).
 | `ps -ef` | **All** the processes of the system, with the columns of `-f` |
 | `ps -p <PID>` | Only the process with this PID |
 | `ps -o <columns>` | Only the columns you choose, for example `ps -o pid,ppid,stat,cmd` |
-| `pgrep <name>` | Only the PIDs of the processes whose name is `name` |
+| `pgrep <name>` | Only the PIDs of the processes whose name **contains** `name` |
 
 ```shell-session
 [student@fedora ~]$ echo $$
@@ -529,7 +537,7 @@ with it, stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd> in its terminal.
 
 ### The `/proc` File System
 
-The kernel shows every process as a **directory** in `/proc`, named after its PID: `/proc/3150` for the `sleep` above.
+The kernel shows every process as a **directory** in `/proc`, named after its PID, for example for the `sleep` above it will be `/proc/3150`.
 Like the special files, these files are not on the disk: the kernel makes up their content when you read them.
 `/proc/self` is always the directory of the process that reads it, and `/proc/$$` is the one of your shell.
 
@@ -574,8 +582,8 @@ The letter in the `State` line (and in the `STAT` column of `ps`) is the **state
 | Letter | State | Means |
 |-|-|-|
 | `R` | Running or Ready | Runs on a processor, or waits for one |
-| `S` | Sleeping (waiting) | Waits for something: a key, a file, a timer |
-| `T` | Stopped | Paused |
+| `S` | Sleeping (waiting) | Waits for something: a key, a timer, data from a pipe |
+| `T` | Stopped | Paused, for example with <kbd>Ctrl</kbd>+<kbd>Z</kbd> |
 | `Z` | Zombie | Finished, but its parent has not read its exit code yet |
 
 `/proc` also has files about the whole system:
@@ -584,9 +592,9 @@ The letter in the `State` line (and in the `STAT` column of `ps`) is the **state
 |-|-|
 | `/proc/cpuinfo` | The processors, one block for each of them |
 | `/proc/meminfo` | The memory: `MemTotal`, `MemFree`, `MemAvailable`, ... |
-| `/proc/uptime` | The number of seconds since the system started |
+| `/proc/uptime` | Two numbers: the seconds since the system started, then the seconds the processors were idle (added up for all of them) |
 | `/proc/loadavg` | How busy the system was in the last 1, 5 and 15 minutes |
-| `/proc/version` | The version of the kernel |
+| `/proc/version` | The version of the kernel, and the compiler that built it |
 
 :::info
 
@@ -652,12 +660,12 @@ pipeline `sleep 800 | sleep 900`). The chosen process is `sleep 1000`.
 | Key | Action | Like |
 |-|-|-|
 | <kbd>↑</kbd> <kbd>↓</kbd> | Choose a process | |
-| <kbd>F3</kbd> or <kbd>/</kbd> | Search for a process by name | `pgrep` |
-| <kbd>F4</kbd> or <kbd>\\</kbd> | Show only the processes whose name contains a text (filter) | |
+| <kbd>F3</kbd> or <kbd>/</kbd> | **Search**: jump to the next process whose command contains a text (press again for the next one) | `pgrep` |
+| <kbd>F4</kbd> or <kbd>\\</kbd> | **Filter**: show only the processes whose command contains a text (<kbd>Esc</kbd> shows all again) | |
 | <kbd>F5</kbd> or <kbd>t</kbd> | Show the processes as a tree | <kbd>V</kbd> in `top` |
 | <kbd>F6</kbd> | Choose the column to sort by | |
-| <kbd>P</kbd> / <kbd>M</kbd> | Sort by processor / by memory use | <kbd>P</kbd> / <kbd>M</kbd> in `top` |
-| <kbd>u</kbd> | Show only the processes of a user | <kbd>u</kbd> in `top` |
+| <kbd>P</kbd> / <kbd>M</kbd> | Sort by processor use / memory use / processor time | <kbd>P</kbd> / <kbd>M</kbd> in `top` |
+| <kbd>u</kbd> | Show only the processes of a user, chosen from a list | <kbd>u</kbd> in `top` |
 | <kbd>l</kbd> | Show the open files of the chosen process | `ls -l /proc/<PID>/fd` |
 | <kbd>F2</kbd> | Setup: choose the columns and the colors | |
 | <kbd>F1</kbd> or <kbd>h</kbd> | Help | |
@@ -665,7 +673,7 @@ pipeline `sleep 800 | sleep 900`). The chosen process is `sleep 1000`.
 
 :::tip
 
-`htop` also shows the **threads** of the processes, in green. Press <kbd>H</kbd> to hide them, the list becomes much
+`htop` also shows the **threads** of the processes, in green. Press <kbd>H</kbd> to hide them and the list becomes much
 shorter.
 
 :::
