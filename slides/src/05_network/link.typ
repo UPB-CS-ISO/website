@@ -8,7 +8,7 @@
 
   + #ward
     - Chapter 9 - _Understanding Your Network and Its Configuration_
-      - Section 9.9 - _Understanding Kernel Network Interfaces_
+      - Section 9.10 - _Understanding Kernel Network Interfaces_
   + #tanenbaum
     - Chapter 3 - _The Data Link Layer_
   + #uso-book

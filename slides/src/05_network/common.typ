@@ -481,6 +481,7 @@
 // to the field(s) at `to` (one x, or an array), with a note on the line:
 // e.g. Type -> the data, or CRC -> the header and the data.
 // `label-at: left` puts the note before x1 (when the fields are narrow),
+// `label-at: bottom` puts it under the line,
 // `label-x` puts it at that x.
 #let hint-arrow(x1, to, body, y1: 72pt, y2: 97pt, label-at: center, label-x: none) = {
   let c = luma(120)
@@ -494,6 +495,8 @@
   let note = text(size: 7.5pt, fill: luma(90), body)
   if label-x != none {
     pin(label-x, y2, box(fill: white, inset: (x: 4pt, y: 1pt), note))
+  } else if label-at == bottom {
+    pin((lo + hi) / 2, y2 + 9pt, note)
   } else if label-at == left {
     place(top + left, dx: x1 - 244pt, dy: y2 - 6pt, box(width: 240pt, align(right + horizon, note)))
   } else {

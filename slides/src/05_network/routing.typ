@@ -8,12 +8,15 @@
 
   + #ward
     - Chapter 9 - _Understanding Your Network and Its Configuration_
-      - Section 9.4 - _Routes and the Kernel Routing Table_
-      - Section 9.5 - _The Default Gateway_
-      - Section 9.7 - _Basic ICMP and DNS Tools_
+      - Section 9.5 - _Routes and the Kernel Routing Table_
+      - Section 9.6 - _The Default Gateway_
+      - Section 9.22 - _Private Networks (IPv4)_
+      - Section 9.23 - _Network Address Translation (IP Masquerading)_
   + #tanenbaum
     - Section 5.2 - _Routing Algorithms_
     - Section 5.6 - _The Network Layer in the Internet_
+  + #uso-book
+    - Section 11.4.3 - _Limita de adrese IP_
 ]
 
 // ---------------------------------------------------------------------------
@@ -140,46 +143,6 @@
   ]))
 ]
 
-// the neighbor table of Ana (the Router slide), with `ip neigh`
-#let neigh-lines = (
-  "$ ip neigh",
-  (("ip", "192.168.1.1"), (none, " dev enp0s31f6 lladdr "), ("mac", "70:b5:e8:2d:91:4c"), (none, " "), ("ok", "REACHABLE")),
-  ((none, "192.168.1.11 dev enp0s31f6 lladdr e4:3b:71:0c:9a:52 "), ("stale", "STALE")),
-  ((none, "192.168.1.12 dev enp0s31f6 "), ("failed", "FAILED")),
-)
-
-#slide[
-  == Neighbors
-  the MAC addresses this computer found, on Ana's computer
-
-  #let steps = (
-    (2, ("ip", "mac", "ok"), explain(
-      [`ip neigh`: the *neighbor table* (the _ARP cache_)],
-      ([`192.168.1.1`], [the gateway (the router) has the MAC address `70:b5:e8:2d:91:4c`]),
-      ([`REACHABLE`], [used just now, it answers]),
-    )),
-    (3, ("stale",), explain(
-      [Bogdan, found some time ago],
-      ([`STALE`], [an old entry: Ana asks again for the MAC address the next time she needs it]),
-    )),
-    (4, ("failed",), explain(
-      [`192.168.1.12`: nobody answered, there is no such computer],
-      ([`FAILED`], [`ping` shows `Destination Host Unreachable`]),
-    )),
-    (4, (), explain(
-      [💡 Carla `192.168.2.20` is *not* in the table: she is in another network],
-      ([why], [for another network Ana needs only the MAC address of the *gateway*]),
-      ([`arp -n`], [the older command (_net-tools_), the same table]),
-    )),
-  )
-  #for (i, (n, keys, body)) in steps.enumerate() {
-    only(i + 1)[
-      #parts-terminal(neigh-lines.slice(0, n), hl: ((keys, ip-peach),), size: 0.95em)
-      #body
-    ]
-  }
-]
-
 #slide[
   == The Internet
   a network of routers
@@ -225,6 +188,123 @@
   )))
 ]
 
+// two homes with the same private network, talking to the same server
+#slide[
+  == Why NAT?
+  two homes, the same private addresses
+
+  #drawing(height: 172pt)[
+    #let homes = (
+      (y: 42pt, name: "Ana", who: [Ana's home], public: "203.0.113.42"),
+      (y: 130pt, name: "Bogdan", who: [Bogdan's home], public: "198.51.100.7"),
+    )
+    #let (cx, cy) = (300pt, 86pt)
+    #let server = (430pt, 86pt)
+    // the wires are dotted inside the cloud: the way through the Internet is not known
+    #let dotted = (paint: luma(90), thickness: 1.2pt, dash: "dotted")
+    // where the wire from (x, y) to the center enters the cloud (an ellipse)
+    #let edge(x, y) = {
+      let (dx, dy) = ((x - cx).pt(), (y - cy).pt())
+      let t = 1 / calc.sqrt(calc.pow(dx / 39, 2) + calc.pow(dy / 20, 2))
+      (cx + dx * t * 1pt, cy + dy * t * 1pt)
+    }
+    #for h in homes {
+      area(5pt, h.y - 38pt, 190pt, 78pt, [#h.who: `192.168.1.0/24`])
+      wire((45pt, h.y), (150pt, h.y))
+      wire((150pt, h.y), edge(150pt, h.y))
+      wire(edge(150pt, h.y), (cx, cy), stroke: dotted)
+    }
+    #wire((cx, cy), edge(..server), stroke: dotted)
+    #wire(edge(..server), server)
+    // an arrow next to the wire from p to q, moved `off` to its left
+    #let along(p, q, off, color: hl) = {
+      let (dx, dy) = ((q.at(0) - p.at(0)).pt(), (q.at(1) - p.at(1)).pt())
+      let len = calc.sqrt(dx * dx + dy * dy)
+      let (nx, ny) = (dy / len * off, -dx / len * off)
+      let at-t(t) = (p.at(0) + dx * t * 1pt + nx, p.at(1) + dy * t * 1pt + ny)
+      draw-arrow(at-t(0.4), at-t(0.92), color: color, thickness: 2pt, head: 6pt)
+    }
+    #for h in homes {
+      host(45pt, h.y, h.name, addr: "192.168.1.105", size: 24pt)
+      netdev(150pt, h.y, "router", name: "router", sub: if h.public != none { uncover("4-", h.public) }, size: 22pt)
+    }
+    #pin(cx, cy, pic("cloud", size: 50pt))
+    #host(..server, "server", kind: "server", addr: "141.85.220.33", size: 28pt)
+
+    // step 2: both packets have the same source
+    #only(2)[
+      #along((150pt, 42pt), edge(150pt, 42pt), -9pt)
+      #along((150pt, 130pt), edge(150pt, 130pt), 9pt)
+      #frame(232pt, 44pt)[from `192.168.1.105`]
+      #frame(232pt, 130pt)[from `192.168.1.105`]
+    ]
+    // step 3: the answer: to which of them?
+    #only(3)[
+      #along(server, edge(..server), 9pt, color: bad-color)
+      #frame(380pt, 66pt, color: bad-color)[to `192.168.1.105`]
+      #pin(cx, cy - 34pt, icon("❓", size: 16pt))
+      #pin(196pt, 64pt, icon("❌", size: 11pt))
+      #pin(196pt, 108pt, icon("❌", size: 11pt))
+    ]
+  ]
+
+  #place(bottom + left, block(width: 100%, text(size: 11pt)[
+    #only(1, fact("🏠", [both homes use `192.168.1.0/24`: *private* addresses are free for everyone, so the two PCs have the *same* address]))
+    #only(2, fact("📦", [Ana and Bogdan send a packet to the server: both come *from* `192.168.1.105`]))
+    #only(3, fact("❓", [the answer goes *to* `192.168.1.105`, but *which one*? millions of homes have it, so Internet routers *drop* packets for private addresses], c: (fill: bad-color.lighten(92%), stroke: bad-color)))
+    #only(4, fact("🌍", [why not a *public* address for every device? IPv4 has only $2^32 approx 4.3$ billion addresses, and there are many more devices: each home gets *one* public address, for its router]))
+  ]))
+]
+
+// NAT: the router changes the private address of a packet into its public
+// address, and back for the answer
+#slide[
+  == NAT
+  _Network Address Translation_
+
+  #drawing(height: 150pt)[
+    #let pc = (50pt, 75pt)
+    #let r = (230pt, 75pt)
+    #let cl = (335pt, 75pt)
+    #let server = (440pt, 75pt)
+    #area(5pt, 5pt, 255pt, 140pt, [Ana's home (private): `192.168.1.0/24`])
+    #wire(pc, r)
+    // the wire is dotted inside the cloud: the way through the Internet is not known
+    #let (c1, c2) = ((cl.at(0) - 36pt, cl.at(1)), (cl.at(0) + 36pt, cl.at(1)))
+    #wire(r, c1)
+    #wire(c1, c2, stroke: (paint: luma(90), thickness: 1.2pt, dash: "dotted"))
+    #wire(c2, server)
+    #host(..pc, "Ana", addr: "192.168.1.105", size: 26pt)
+    #netdev(..r, "router", name: "router", sub: "203.0.113.42", size: 28pt, highlight: true)
+    #pin(..cl, pic("cloud", size: 46pt))
+    #host(..server, "server", kind: "server", addr: "141.85.220.33", size: 28pt)
+    // a packet next to the wire, with an arrow showing where it goes
+    #let go(p, q, body, color: hl, back: false) = {
+      // above the wire going out, below coming back, clear of the cloud
+      let dy = if back { 1 } else { -1 }
+      let (x1, x2) = (p.at(0) + 0.25 * (q.at(0) - p.at(0)), p.at(0) + 0.75 * (q.at(0) - p.at(0)))
+      draw-arrow((x1, p.at(1) + dy * 26pt), (x2, p.at(1) + dy * 26pt), color: color, thickness: 2pt, head: 6pt)
+      frame((p.at(0) + q.at(0)) / 2, p.at(1) + dy * 44pt, body, color: color)
+    }
+    #let changed(it) = text(fill: bad-color, weight: "bold", it)
+    #only(2)[#go(pc, r)[from `192.168.1.105` \ to `141.85.220.33`]]
+    #only(3)[#go(r, server)[from #changed(`203.0.113.42`) \ to `141.85.220.33`]]
+    #only(4)[#go(server, r, color: ok-color, back: true)[from `141.85.220.33` \ to `203.0.113.42`]]
+    #only(5)[
+      #go(r, pc, color: ok-color, back: true)[from `141.85.220.33` \ to #changed(`192.168.1.105`)]
+      #ok-mark(pc, dx: -30pt)
+    ]
+  ]
+
+  #place(bottom + left, block(width: 100%, text(size: 11pt)[
+    #only(1, fact("💡", [the router has to *translate* the private addresses into its public address: *NAT* (_Network Address Translation_)], c: (fill: hl-bg, stroke: hl)))
+    #only(2, fact("📤", [Ana sends a packet to the server, *from* her private address]))
+    #only(3, fact("🔁", [the router *replaces the source* with its public address and remembers the change]))
+    #only(4, fact("📥", [the server answers *to* the public address of the router]))
+    #only(5, fact("🔁", [the router *replaces the destination* with Ana's address: private addresses never leave home], c: (fill: ok-color.lighten(90%), stroke: ok-color)))
+  ]))
+]
+
 #slide[
   == Hub, Switch, AP, Router
 
@@ -255,89 +335,66 @@
   #v(0pt)
 ]
 
-// the steps of a shell: (lines shown, highlighted parts, explanation)
-#let test-steps(lines, steps, size: 0.9em) = for (i, (n, keys, body)) in steps.enumerate() {
-  only(i + 1)[
-    #parts-terminal(lines.slice(0, n), hl: ((keys, ip-peach),), size: size)
-    #body
-  ]
-}
-
-// ---------------------------------------------------------------------------
-// traceroute
-// ---------------------------------------------------------------------------
-
-#let trace = (
-  "$ traceroute -n 141.85.220.33",
-  ((none, "traceroute to 141.85.220.33 (141.85.220.33), "), ("max", "30 hops max"), (none, ", 60 byte packets")),
-  ((none, " "), ("hop", "1"), (none, "  "), ("router", "192.168.1.1"), (none, "    "), ("time", "1.912 ms  1.874 ms  1.851 ms")),
-  ((none, " "), ("hop", "2"), (none, "  "), ("router", "10.20.0.1"), (none, "      "), ("time", "3.420 ms  3.402 ms  3.389 ms")),
-  ((none, " "), ("hop", "3"), (none, "  "), ("star", "* * *")),
-  ((none, " "), ("hop", "4"), (none, "  "), ("router", "37.128.225.9"), (none, "   "), ("time", "4.103 ms  4.087 ms  4.152 ms")),
-  ((none, " "), ("hop", "5"), (none, "  "), ("dest", "141.85.220.33"), (none, "  "), ("time", "4.210 ms  4.198 ms  4.176 ms")),
+// the routing table of the laptop, with `ip route`
+#let route-lines = (
+  "$ ip -br addr show enp0s31f6",
+  ((none, "enp0s31f6        UP             "), ("addr", "192.168.1.105/24"), (none, " 2a02:2f0e:d10c::105/64 fe80::8e16:45ff:fea2:3b91/64")),
+  "$ ip route",
+  (
+    ("def", "default"), (none, " "), ("via", "via 192.168.1.1"), (none, " "), ("dev", "dev enp0s31f6"), (none, " "),
+    ("proto-d", "proto dhcp"), (none, " "), ("src", "src 192.168.1.105"), (none, " "), ("metric", "metric 100"),
+  ),
+  (
+    ("net", "192.168.1.0/24"), (none, " "), ("dev", "dev enp0s31f6"), (none, " "), ("proto-k", "proto kernel"), (none, " "),
+    ("link", "scope link"), (none, " "), ("src", "src 192.168.1.105"), (none, " "), ("metric", "metric 100"),
+  ),
+  "$ ip route get 192.168.2.20",
+  ((none, "192.168.2.20 "), ("got", "via 192.168.1.1 dev enp0s31f6"), (none, " src 192.168.1.105 uid 1000")),
+  "    cache",
 )
 
 #slide[
-  == traceroute
-  which routers are on the way?
+  == Routing Table
+  where each packet goes: one line for each *route*
 
-  #test-steps(trace, (
-    (2, ("max",), explain(
-      [`traceroute`: the *routers* between this computer and the destination],
-      ([`-n`], [show the routers by their IP addresses only (faster)]),
-      ([`30 hops max`], [it gives up after 30 routers]),
+  #let steps = (
+    (5, ("addr", "net", "dev", "link"), explain(
+      [`ip route`: the *routing table*; this line is for the *local network*],
+      ([`192.168.1.105/24`], [the address of the laptop, so its network is `192.168.1.0/24`]),
+      ([`192.168.1.0/24`], [the local network: Bogdan `192.168.1.11` is here]),
+      ([`dev enp0s31f6`], [the card the packets leave on]),
+      ([`scope link`], [no gateway: the packet goes *directly* to the computer]),
     )),
-    (4, ("hop", "router", "time"), explain(
-      [one line for every router (*hop*), in order],
-      ([`1`], [the first router is the *gateway*, `192.168.1.1`]),
-      ([`ms`], [three tries, three round trip times]),
+    (5, ("proto-k", "src"), explain(
+      [who added the route, and with which address],
+      ([`proto kernel`], [added by the kernel when the card got its address `192.168.1.105/24`]),
+      ([`src`], [the source address of the packets sent on this route]),
     )),
-    (5, ("star",), explain(
-      [`* * *`: this router did *not* answer],
-      ([💡], [many routers do not answer, but they still *forward* the packets]),
+    (5, ("def", "via"), explain(
+      [the *default route*: for every other address],
+      ([`default`], [the same as `0.0.0.0/0`: any address, Carla or the Internet]),
+      ([`via 192.168.1.1`], [send it to the *gateway*, the router]),
     )),
-    (7, ("dest",), explain(
-      [the last line is the *destination*: it was reached],
-      ([install], [`sudo dnf install traceroute` (Fedora), `sudo apt install traceroute` (Ubuntu)]),
-      ([`tracepath`], [usually installed already, it does almost the same]),
+    (5, ("proto-d", "metric"), explain(
+      [how the route got here, and its priority],
+      ([`proto dhcp`], [received from the router, together with the address (_DHCP_)]),
+      ([`metric 100`], [the *cost* of the route: if two routes match, the *smaller* one wins (Ethernet usually gets `100`, Wi-Fi `600`, so the cable is preferred)]),
     )),
-  ), size: 0.85em)
-]
-
-// how traceroute finds the routers: packets with TTL 1, 2, 3, ...
-#let trace-drawing(k) = drawing(width: 470pt, height: 104pt)[
-  #let y = 42pt
-  #let xs = (35pt, 160pt, 285pt, 420pt)
-  #for i in range(3) { wire((xs.at(i), y), (xs.at(i + 1), y)) }
-  #host(xs.at(0), y, "my laptop", size: 26pt)
-  #netdev(xs.at(1), y, "router", name: "gateway", size: 22pt)
-  #netdev(xs.at(2), y, "router", name: "router", size: 22pt)
-  #host(xs.at(3), y, "server", kind: "server", size: 26pt)
-  // the packet goes k hops; every router subtracts 1 from its TTL
-  #for i in range(k) {
-    let (a, b) = (xs.at(i), xs.at(i + 1))
-    draw-arrow((a + 20pt, y - 14pt), (b - 20pt, y - 14pt), color: hl, thickness: 1.8pt)
-    tag((a + b) / 2, y - 25pt, [TTL #(k - i)], fill: hl-bg, stroke: 0.8pt + hl)
+    (8, ("got",), explain(
+      [`ip route get`: which route is used for an address],
+      ([`192.168.2.20`], [Carla is not in `192.168.1.0/24`, so the *default* route is used]),
+      ([💡], [if more routes match, the one with the *longest mask* wins: it is the most precise]),
+    )),
+    (8, (), explain(
+      [💡 the same table],
+      ([`route -n`], [the older command (_net-tools_)]),
+      ([`ip -6 route`], [the routing table for IPv6]),
+    )),
+  )
+  #for (i, (n, keys, body)) in steps.enumerate() {
+    only(i + 1)[
+      #parts-terminal(route-lines.slice(0, n), hl: ((keys, ip-peach),), size: 0.8em)
+      #body
+    ]
   }
-  // the answer comes back to the laptop
-  #let reached = k == 3
-  #let c = if reached { ok-color } else { luma(110) }
-  #draw-arrow((xs.at(k), y + 42pt), (xs.at(0), y + 42pt), color: c, thickness: 1.4pt, dash: if reached { none } else { "dashed" })
-  #label((xs.at(0) + xs.at(k)) / 2, y + 52pt, text(size: 7.5pt, fill: c, if reached [✅ echo reply: the destination] else [⏱️ TTL 0: dropped, _"time exceeded"_ comes back]))
-  #wire((xs.at(k), y + 34pt), (xs.at(k), y + 42pt), stroke: (paint: c, thickness: 1.4pt, dash: if reached { none } else { "dashed" }))
-  #if not reached { pin(xs.at(k), y - 26pt, text(size: 12pt, "💥")) }
-]
-
-#slide[
-  == How traceroute Works
-  with the TTL of the IP packets
-
-  #for k in range(1, 4) {
-    only(k, trace-drawing(k))
-  }
-
-  #set text(size: 10pt)
-  #only(1, fact("1️⃣", [*TTL 1*: the gateway subtracts 1, gets `0`, drops the packet and tells the sender: now we know *router 1*]))
-  #only(2, fact("2️⃣", [*TTL 2*: the packet passes the gateway, the next router drops it: now we know *router 2*]))
-  #only(3, fact("✅", [*TTL 3*: the packet reaches the destination, which answers: done], c: (fill: ok-color.lighten(90%), stroke: ok-color)))
 ]

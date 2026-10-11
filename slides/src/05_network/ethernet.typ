@@ -8,7 +8,7 @@
 
   + #ward
     - Chapter 9 - _Understanding Your Network and Its Configuration_
-      - Section 9.8 - _The Physical Layer and Ethernet_
+      - Section 9.9 - _The Physical Layer and Ethernet_
   + #tanenbaum
     - Chapter 4 - _The Medium Access Control Sublayer_
       - Section 4.3 - _Ethernet_
@@ -23,23 +23,38 @@
 
   #let steps = (
     (none, none),
-    (("dst", "src"), explain(
-      [the *addresses*, like on an envelope],
-      ([📬 *Destination*], [who should receive the frame: one card, or `ff:ff:ff:ff:ff:ff` for every card (_broadcast_)]),
-      ([📤 *Source*], [who sent the frame, so the receiver can answer]),
-      ([💡], [a network card *ignores* the frames that are not for it]),
-    )),
-    (("type", "data"), explain(
-      [🏷️ *Type*: what is inside the frame],
-      ([`0x0800`], [an IPv4 packet]),
-      ([`0x86DD`], [an IPv6 packet]),
-      ([`0x0806`], [an ARP message (find the MAC address of an IP address)]),
-    )),
-    (("data", "crc"), explain(
-      [the *data* and the *trailer*],
-      ([📦 *Payload*], [46 to 1500 bytes, usually a packet of the layer above; shorter data is padded]),
-      ([✅ *CRC*], [a checksum of the whole frame; the receiver computes it again, if it is different the frame was damaged and is *dropped*]),
-    )),
+    (
+      ("dst", "src"),
+      explain(
+        [the *addresses*, like on an envelope],
+        (
+          [📬 *Destination*],
+          [who should receive the frame: one card, or `ff:ff:ff:ff:ff:ff` for every card (_broadcast_)],
+        ),
+        ([📤 *Source*], [who sent the frame, so the receiver can answer]),
+        ([💡], [a network card *ignores* the frames that are not for it]),
+      ),
+    ),
+    (
+      ("type", "data"),
+      explain(
+        [🏷️ *Type*: what is inside the frame],
+        ([`0x0800`], [an IPv4 packet]),
+        ([`0x86DD`], [an IPv6 packet]),
+        ([`0x0806`], [an ARP message (find the MAC address of an IP address)]),
+      ),
+    ),
+    (
+      ("data", "crc"),
+      explain(
+        [the *data* and the *trailer*],
+        ([📦 *Payload*], [46 to 1500 bytes, usually a packet of the layer above; shorter data is padded]),
+        (
+          [✅ *CRC*],
+          [a checksum of the whole frame; the receiver computes it again, if it is different the frame was damaged and is *dropped*],
+        ),
+      ),
+    ),
   )
   #for (i, (keys, body)) in steps.enumerate() {
     only(i + 1)[
@@ -67,8 +82,7 @@
     columns: 2,
     column-gutter: 5pt,
     align: horizon,
-    icon("✉️", size: 14pt),
-    text(size: 7pt)[*to:* #raw(to) \ *from:* #raw(from)],
+    icon("✉️", size: 14pt), text(size: 7pt)[*to:* #raw(to) \ *from:* #raw(from)],
   ),
 ))
 
@@ -125,13 +139,22 @@
     fill: ip-peach.bg,
     stroke: (left: 3pt + ip-peach.bar),
     radius: (right: 4pt),
-    grid(columns: (auto, 1fr), column-gutter: 10pt, align: horizon, icon(e, size: 20pt), body),
+    grid(
+      columns: (auto, 1fr),
+      column-gutter: 10pt,
+      align: horizon,
+      icon(e, size: 20pt), body,
+    ),
   )
   #place(bottom + left, block(width: 100%, text(size: 11pt)[
     #only(1, note("🔌")[a cable has *two ends*: it connects *exactly two* devices, there is no place for a third one])
-    #only(2, note("✉️")[A sends a *frame*: the destination is the MAC address of *B*, the source is the MAC address of *A*])
+    #only(2, note(
+      "✉️",
+    )[A sends a *frame*: the destination is the MAC address of *B*, the source is the MAC address of *A*])
     #only(3, note("✅")[B finds *its own* MAC address on the frame, so it keeps it])
-    #only(4, note("🛣️")[*full duplex*: like a road with two lanes, the cable has separate wires for each direction, both computers can send at the same time])
+    #only(4, note(
+      "🛣️",
+    )[*full duplex*: like a road with two lanes, the cable has separate wires for each direction, both computers can send at the same time])
   ]))
 
 ]
@@ -162,7 +185,15 @@
       #uncover("2-")[
         #for i in range(5) {
           for j in range(5) {
-            if i != j { pin(..toward(i, j, 16pt), box(width: 6pt, height: 6pt, radius: 1pt, fill: rgb("eb6a38"), stroke: 0.6pt + white)) }
+            if i != j {
+              pin(..toward(i, j, 16pt), box(
+                width: 6pt,
+                height: 6pt,
+                radius: 1pt,
+                fill: rgb("eb6a38"),
+                stroke: 0.6pt + white,
+              ))
+            }
           }
         }
       ]
@@ -170,7 +201,9 @@
   ][
     #set text(size: 10.5pt)
     #uncover("2-")[
-      #block[- 5 computers: *10 cables*, \ *4 network cards* #box(width: 6pt, height: 6pt, radius: 1pt, fill: rgb("eb6a38")) in each]
+      #block[
+        - 5 computers: *10 cables*, \ *4 network cards* #box(width: 6pt, height: 6pt, radius: 1pt, fill: rgb("eb6a38")) in each
+      ]
     ]
     #uncover("3-")[
       #block[- 100 computers: *4950 cables*, \ *99 network cards* in each #icon("😱", size: 11pt)]
@@ -314,6 +347,8 @@
 #slide[
   == Hub Broadcast
 
+  send the same message to everyone
+
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1em)[
     #drawing(width: star-w, height: 195pt)[
       #star("HUB", sub: "Layer 1")
@@ -359,14 +394,51 @@
 
 #slide[
   == Why Hubs are Bad
+  one wire for everyone
 
-  - only *one computer* can send at a time
-  - *half duplex*: send or receive, not both
-  - the bandwidth is *shared* by everyone
-  - *no privacy*: everyone receives all the frames
+  // an emoji next to host i, on the outer side, like `host-mark`
+  #let badge(i, e) = {
+    let (x, y) = star-hosts.at(i).p
+    pin(x + (if x < 145pt { -26pt } else { 26pt }), y, icon(e, size: 12pt))
+  }
+  // a small label on the wire of host i
+  #let speed(i, body) = pin(..on-wire(i, 0.45), box(
+    fill: hl-bg,
+    stroke: 0.8pt + hl,
+    radius: 3pt,
+    inset: (x: 3pt, y: 2pt),
+    text(size: 7.5pt, weight: "bold", fill: hl, body),
+  ))
 
-  #uncover(2)[
-    #note-box[💡 hubs were replaced by *switches*]
+  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1em)[
+    #drawing(width: star-w, height: 195pt)[
+      #star("HUB", sub: "Layer 1")
+      // step 1: Ana talks, everyone else waits, Carla too
+      #only(1)[
+        #flow(0, others(0), 2)
+        #for i in others(0) { badge(i, "⏳") }
+      ]
+      // step 2: the same 100 Mb/s split between everyone
+      #only(2)[
+        #label(center-pt.at(0), center-pt.at(1) - 30pt, text(size: 8pt, weight: "bold", fill: hl)[100 Mb/s in total])
+        #for i in range(4) { speed(i)[≈ 25 Mb/s] }
+      ]
+      // step 3-: the frame for Carla is seen by Bogdan and Dan
+      #only("3-")[
+        #flow(0, others(0), 2)
+        #badge(1, "👀")
+        #host-mark(2, true)
+        #badge(3, "👀")
+      ]
+    ]
+  ][
+    #set text(size: 10.5pt)
+    #fact("🚦", [*one sender at a time*: \ the others wait, even Carla can not answer while she receives (*half duplex*)])
+    #uncover("2-", fact("🍕", [the bandwidth is *shared*: \ more computers, less speed for each]))
+    #uncover("3-", fact("👀", [*no privacy*: \ everyone receives all the frames], c: (fill: bad-color.lighten(92%), stroke: bad-color)))
+    #uncover("4-")[
+      #note-box[💡 hubs were replaced by *switches*]
+    ]
   ]
 ]
 
@@ -419,6 +491,7 @@
 
 #slide[
   == Switch Broadcast
+  send the same message to everyone
 
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1em)[
     #drawing(width: star-w, height: 195pt)[
@@ -440,13 +513,66 @@
 ]
 
 #slide[
-  == Switch Queues
+  == No Collision
+  two frames at once, on different ports
 
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1em)[
     #drawing(width: star-w, height: 195pt)[
       #star("SWITCH", layer: "link", sub: "Layer 2", ports: true)
-      // the queue (buffer) of port 3
-      #let slot(i, full: false) = at(196pt + i * 18pt, 90pt, box(
+      #only(2)[
+        #flow(0, (), 2)
+        #flow(1, (), 3, color: accent)
+      ]
+      #only("3-")[
+        #flow(0, (2,), 2)
+        #flow(1, (3,), 3, color: accent)
+        #host-mark(2, true)
+        #host-mark(3, true)
+      ]
+    ]
+  ][
+    #set text(size: 11pt)
+    #uncover("2-")[#block[- Ana → Carla and \ Bogdan → Dan *at the same time*]]
+    #uncover("3-")[#block[- different ports: both frames arrive, *no collision*]]
+  ]
+]
+
+#slide[
+  == Switch Collision
+  a switch without a queue
+
+  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1em)[
+    #drawing(width: star-w, height: 195pt)[
+      #star("SWITCH", layer: "link", sub: "Layer 2", ports: true)
+      #only(1)[
+        #flow(0, (), 2)
+        #flow(1, (), 2, color: accent)
+      ]
+      #only("2-")[
+        #flow-in(0)
+        #flow-in(1, color: accent)
+        #flow-out(2, color: bad-color)
+        #pin(..on-wire(2, 0.38), icon("💥", size: 20pt))
+        #host-mark(2, false)
+      ]
+    ]
+  ][
+    #set text(size: 11pt)
+    #block[- Ana *and* Bogdan send to Carla]
+    #uncover("2-")[#block[- both frames need *port 3* at the same time: a *collision*]]
+    #uncover("3-")[#note-box[💡 the switch needs a place where a frame can *wait*]]
+  ]
+]
+
+#slide[
+  == Switch Queues
+  only in some switches
+
+  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1em)[
+    #drawing(width: star-w, height: 195pt)[
+      #star("SWITCH", layer: "link", sub: "Layer 2", ports: true)
+      // the queue (buffer) of the switch, shared by all the ports
+      #let slot(i, full: false) = at(118pt + i * 18pt, 26pt, box(
         width: 16pt,
         height: 14pt,
         radius: 2pt,
@@ -454,31 +580,39 @@
         stroke: 1pt + if full { accent } else { luma(150) },
         if full { align(center + horizon, icon("✉️", size: 8pt)) },
       ))
+      #wire((145pt, 40pt), (145pt, 80pt), stroke: (paint: luma(150), thickness: 1pt, dash: "dashed"))
       #for i in range(3) { slot(i) }
-      #label(222pt, 82pt, text(size: 7pt, weight: "bold", fill: luma(80))[queue of port 3])
+      #label(145pt, 18pt, text(size: 7pt, weight: "bold", fill: luma(80))[queue of the switch])
       #only(1)[
-        #flow(0, (2,), 2)
-        #flow(1, (3,), 3, color: accent)
-      ]
-      #only(2)[
         #flow(0, (), 2)
         #flow(1, (), 2, color: accent)
       ]
-      #only(3)[
+      #only(2)[
         #flow(0, (2,), 2)
         #slot(0, full: true)
       ]
-      #only(4)[
+      #only(3)[
         #flow-out(2, color: accent)
         #flow-frame(2, 2, color: accent)
+        #host-mark(2, true)
+      ]
+      // the queue is full: one more frame has no place
+      #only("5-")[
+        #for i in range(3) { slot(i, full: true) }
+        #flow(3, (), 2, color: bad-color)
+        #pin(181pt, 33pt, icon("❌", size: 12pt))
       ]
     ]
   ][
     #set text(size: 11pt)
-    #block[- each port is separate: *no collisions*]
-    #uncover("2-")[#block[- Ana *and* Bogdan send to Carla]]
-    #uncover("3-")[#block[- Bogdan's frame waits in a *queue*]]
+    #block[- Ana *and* Bogdan send to Carla]
+    #uncover("2-")[#block[- Ana's frame goes out, \ Bogdan's frame waits in a *queue*]]
+    #uncover("3-")[#block[- then port 3 is free: \ Bogdan's frame goes out]]
+    #uncover("4-")[#block[- one queue for the *whole switch*, shared by all the ports]]
     #uncover("5-")[#block[- queue full: the frame is *dropped*]]
+    #uncover("6-")[
+      #note-box[⚠️ only *some* switches have a queue, \ and it is always *small*]
+    ]
   ]
 ]
 
@@ -486,19 +620,19 @@
   == Hub vs Switch
 
   #text(size: 12pt)[
-  #align(center, table(
-    columns: (auto, 1fr, 1fr),
-    inset: 6pt,
-    stroke: 0.6pt + luma(150),
-    table.header([], [*Hub*], [*Switch*]),
-    [*Layer*], [1 (Physical): bits], [2 (Data Link): frames],
-    [*Understands MAC*], [no], [yes, has a MAC address table],
-    [*Sends a frame to*], [all ports], [only the destination port],
-    [*Collisions*], [yes], [no, frames wait in a queue],
-    [*Duplex*], [half], [full],
-    [*Bandwidth*], [shared by all], [for each port],
-    [*Privacy*], [everyone sees everything], [each one sees its own frames],
-  ))
+    #align(center, table(
+      columns: (auto, 1fr, 1fr),
+      inset: 6pt,
+      stroke: 0.6pt + luma(150),
+      table.header([], [*Hub*], [*Switch*]),
+      [*Layer*], [1 (Physical): bits], [2 (Data Link): frames],
+      [*Understands MAC*], [no], [yes, has a MAC address table],
+      [*Sends a frame to*], [all ports], [only the destination port],
+      [*Collisions*], [yes], [no, frames wait in a queue \ (if the switch has one)],
+      [*Duplex*], [half], [full],
+      [*Bandwidth*], [shared by all], [for each port],
+      [*Privacy*], [everyone sees everything], [each one sees its own frames],
+    ))
   ]
   #v(0pt)
 ]

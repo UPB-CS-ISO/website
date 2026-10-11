@@ -6,18 +6,21 @@
   == Bibliography
   for this section
 
+  #set text(size: 0.9em)
   + #ward
     - Chapter 9 - _Understanding Your Network and Its Configuration_
-      - Sections 9.1 - 9.3
-      - Section 9.6 - _IPv6 Addresses and Networks_
-      - Section 9.7 - _Basic ICMP and DNS Tools_
-      - Section 9.22 - _Network Address Translation (IP Masquerading)_
+      - Sections 9.1 - 9.4
+      - Section 9.7 - _IPv6 Addresses and Networks_
+      - Section 9.10 - _Understanding Kernel Network Interfaces_
+      - Section 9.26 - _Ethernet, IP, ARP, and NDP_
   + #tanenbaum
     - Section 1.4 - _Reference Models_
     - Section 5.6 - _The Network Layer in the Internet_
   + #uso-book
     - Section 11.2.1 - _Internet Protocol (IP)_
     - Section 11.4 - _Adresarea IP. Stiva TCP/IP_
+    - Section 11.5.1 - _Interfețe de rețea. Investigația configurației_
+    - Section 11.6.7 - _Configurarea temporară. Comanda ip_
 ]
 
 // ---------------------------------------------------------------------------
@@ -307,7 +310,7 @@
         selected: if keys == none { () } else { keys },
         fields: ip-fields,
         groups: (("ttl", "dst", [*header*: 20 bytes (simplified)]), ("data", "data", [*data*])),
-        packet: [*TCP segment* \ #text(size: 6.5pt)[from the Transport layer]],
+        packet: [*Data* \ #text(size: 6.5pt)[TCP, UDP, ICMP, ...]],
         name-size: 7.5pt,
         color: layer-colors.network,
         inner: layer-colors.transport,
@@ -319,142 +322,6 @@
       #if body != none { body }
     ]
   }
-]
-
-// ---------------------------------------------------------------------------
-// Testing the connection: ping
-// ---------------------------------------------------------------------------
-
-// the steps of a shell: (lines shown, highlighted parts, explanation)
-#let test-steps(lines, steps, size: 0.9em) = for (i, (n, keys, body)) in steps.enumerate() {
-  only(i + 1)[
-    #parts-terminal(lines.slice(0, n), hl: ((keys, ip-peach),), size: size)
-    #body
-  ]
-}
-
-// ---------------------------------------------------------------------------
-// ping
-// ---------------------------------------------------------------------------
-
-#let ping-ok = (
-  "$ ping -c 4 141.85.220.33",
-  ((none, "PING "), ("ip", "141.85.220.33"), (none, " (141.85.220.33) 56(84) bytes of data.")),
-  ..range(1, 5).map(i => (
-    (none, "64 bytes from 141.85.220.33: "),
-    ("seq", "icmp_seq=" + str(i)),
-    (none, " "),
-    ("ttl", "ttl=57"),
-    (none, " "),
-    ("time", "time=" + ("4.21", "3.98", "4.05", "4.11").at(i - 1) + " ms"),
-  )),
-  "",
-  "--- 141.85.220.33 ping statistics ---",
-  ((none, "4 packets transmitted, 4 received, "), ("loss", "0% packet loss"), (none, ", time 3005ms")),
-  ((none, "rtt "), ("rtt", "min/avg/max"), (none, "/mdev = "), ("rtt", "3.980/4.087/4.210"), (none, "/0.087 ms")),
-)
-
-#slide[
-  == ping
-  is that computer there? does it answer?
-
-  #test-steps(ping-ok, (
-    (2, ("ip",), explain(
-      [`ping` sends an ICMP *echo request*, the computer answers with an *echo reply*],
-      ([`-c 4`], [only 4 times; without it, `ping` runs until #box[`Ctrl+C`]]),
-      ([`141.85.220.33`], [the IP address of the computer we test]),
-    )),
-    (6, ("seq", "ttl", "time"), explain(
-      [one line for every answer],
-      ([`icmp_seq`], [the number of the request: a missing number is a *lost* packet]),
-      ([`ttl`], [the TTL left in the answer: it started at 64, so it passed 7 routers]),
-      ([`time`], [the round trip: there and back]),
-    )),
-    (10, ("loss", "rtt"), explain(
-      [the *statistics*, at the end],
-      ([`packet loss`], [`0%` is good; a few lost packets: a bad Wi-Fi or a busy network]),
-      ([`min/avg/max`], [the shortest, the average and the longest round trip, in ms]),
-    )),
-  ), size: 0.82em)
-]
-
-// four ways for `ping` to fail, and what each one means
-#let ping-fails = (
-  (
-    (
-      "$ ping -c 1 8.8.8.8",
-      ((none, "ping: connect: "), ("err", "Network is unreachable")),
-    ),
-    explain(
-      [no *route* to that network: usually no *default gateway*],
-      ([check], [`ip route`: is there a `default via ...` line?]),
-    ),
-  ),
-  (
-    (
-      "$ ping -c 1 192.168.1.20",
-      "PING 192.168.1.20 (192.168.1.20) 56(84) bytes of data.",
-      ((none, "From 192.168.1.105 icmp_seq=1 "), ("err", "Destination Host Unreachable")),
-    ),
-    explain(
-      [a computer in *my network*, but nobody answered with a *MAC address*],
-      ([why], [the computer is off, or the IP address is wrong]),
-    ),
-  ),
-  (
-    (
-      "$ ping -c 2 141.85.220.250",
-      "PING 141.85.220.250 (141.85.220.250) 56(84) bytes of data.",
-      "",
-      "--- 141.85.220.250 ping statistics ---",
-      ((none, "2 packets transmitted, 0 received, "), ("err", "100% packet loss"), (none, ", time 1031ms")),
-    ),
-    explain(
-      [the packets leave, *no answer* comes back],
-      ([why], [the computer is down, or a *firewall* drops `ping` (many servers do)]),
-      ([💡], [no answer to `ping` does not always mean the computer is down]),
-    ),
-  ),
-)
-
-#slide[
-  == When ping Fails
-  the error tells where the problem is
-
-  #let bad = (hl: bad-color.lighten(75%), bg: bad-color.lighten(93%), bar: bad-color)
-  #for (i, (lines, body)) in ping-fails.enumerate() {
-    only(i + 1)[
-      #parts-terminal(lines, hl: ((("err",), bad),), size: 0.9em)
-      #body
-    ]
-  }
-]
-
-// NAT: the private addresses of a home behind the one public address of the router
-#slide[
-  == NAT
-  many private addresses behind one public address
-
-  #drawing(height: 150pt)[
-    #area(5pt, 5pt, 250pt, 140pt, [LAN (private)])
-    #wire((50pt, 75pt), (230pt, 75pt))
-    #wire((230pt, 75pt), (400pt, 75pt))
-    #host(50pt, 75pt, "PC", addr: "192.168.1.105", size: 26pt)
-    #netdev(230pt, 75pt, "router", name: "router", sub: "203.0.113.42", size: 28pt, highlight: true)
-    #pin(420pt, 75pt, pic("cloud", size: 50pt))
-    #only(2)[#frame(140pt, 45pt)[from `192.168.1.105` \ to `141.85.220.33`]]
-    #only(3)[#frame(330pt, 45pt)[from #text(fill: bad-color)[`203.0.113.42`] \ to `141.85.220.33`]]
-    #only(4)[
-      #frame(330pt, 110pt, color: ok-color)[from `141.85.220.33` \ to `203.0.113.42`]
-      #frame(140pt, 110pt, color: ok-color)[from `141.85.220.33` \ to #text(fill: bad-color)[`192.168.1.105`]]
-    ]
-  ]
-
-  #place(bottom + left, block(width: 100%, text(size: 11pt)[
-    #only("1-2")[- the PC sends a packet to `141.85.220.33`, from its private address]
-    #only(3)[- the router *replaces* the source with its public address and remembers the connection]
-    #only(4)[- the answer comes back to the router, which sends it to the PC: *private addresses are not visible on the Internet*]
-  ]))
 ]
 
 // an IPv6 address in 8 groups of 16 bits (4 hexadecimal digits);
@@ -522,32 +389,152 @@
   #v(0pt)
 ]
 
-#let ping6 = (
-  "$ ping -c 2 2a00:1450:4017:80e::200e",
-  ((none, "PING "), ("ip", "2a00:1450:4017:80e::200e"), (none, " (2a00:1450:4017:80e::200e) 56 data bytes")),
-  ((none, "64 bytes from 2a00:1450:4017:80e::200e: icmp_seq=1 "), ("ttl", "ttl=117"), (none, " time=12.4 ms")),
-  ((none, "64 bytes from 2a00:1450:4017:80e::200e: icmp_seq=2 "), ("ttl", "ttl=117"), (none, " time=12.1 ms")),
-  "$ ping -c 1 ::1",
-  ((none, "PING "), ("lo", "::1"), (none, " (::1) 56 data bytes")),
-  "64 bytes from ::1: icmp_seq=1 ttl=64 time=0.041 ms",
-  "$ ping -c 1 fe80::1%wlp2s0",
-  ((none, "PING fe80::1"), ("zone", "%wlp2s0"), (none, " (fe80::1%wlp2s0) 56 data bytes")),
-  "64 bytes from fe80::1%wlp2s0: icmp_seq=1 ttl=64 time=2.31 ms",
+// ---------------------------------------------------------------------------
+// The addresses of the network cards: ip addr
+// ---------------------------------------------------------------------------
+
+// the steps of a shell: (lines shown, highlighted parts, explanation)
+#let addr-steps(lines, steps, size: 0.9em) = for (i, (n, keys, body)) in steps.enumerate() {
+  only(i + 1)[
+    #parts-terminal(lines.slice(0, n), hl: ((keys, ip-peach),), size: size)
+    #body
+  ]
+}
+
+// the same laptop as `ip -br link`, now with a cable: the Ethernet card is connected, the Wi-Fi card is not
+#let addr-br = (
+  "$ ip -br addr    # -br means brief - show one line for each network card",
+  (("name", "lo"), (none, "               "), ("state", "UNKNOWN"), (none, "        "), ("v4", "127.0.0.1/8"), (none, " "), ("v6", "::1/128")),
+  (
+    ("name", "enp0s31f6"), (none, "        "), ("state", "UP"), (none, "             "), ("v4", "192.168.1.105/24"), (none, " "),
+    ("v6", "2a02:2f0e:d10c::105/64"), (none, " "), ("v6", "fe80::8e16:45ff:fea2:3b91/64"),
+  ),
+  (("name", "wlp2s0"), (none, "           "), ("down", "DOWN")),
 )
 
 #slide[
-  == ping with IPv6
-  the same command, longer addresses
+  == IP Addresses
+  the IP addresses of every card
 
-  #test-steps(ping6, (
-    (4, ("ip", "ttl"), explain(
-      [`ping` works with IPv6 too: it sees an IPv6 address and uses IPv6],
-      ([`ttl`], [in IPv6 it is called _hop limit_, the same idea]),
+  #addr-steps(addr-br, (
+    (4, ("name", "state"), explain(
+      [`ip addr` (or `ip a`): like `ip link`, plus the *IP addresses*],
+      ([`enp0s31f6`], [the name of the card and its state, the same as in `ip -br link`]),
     )),
-    (7, ("lo",), explain[`::1`: the loopback, this computer, like `127.0.0.1`]),
-    (10, ("zone",), explain(
-      [a _link local_ address needs the *card*: every card has an `fe80::` network],
-      ([`%wlp2s0`], [send it on the Wi-Fi card]),
+    (4, ("v4",), explain(
+      [the *IPv4* addresses, with the *mask*],
+      ([`192.168.1.105/24`], [the address of the Ethernet card, in the network `192.168.1.0/24`]),
+      ([`127.0.0.1/8`], [the loopback: this computer]),
     )),
-  ), size: 0.85em)
+    (4, ("v6",), explain(
+      [the *IPv6* addresses: a card can have *more* of them],
+      ([`2a02:...`], [a *global* address, it can be used on the Internet]),
+      ([`fe80::...`], [the _link local_ address, every card has one]),
+    )),
+    (4, ("down",), explain(
+      [`wlp2s0` has *no address*],
+      ([`DOWN`], [the Wi-Fi card is not connected to any network: it does not get an address]),
+    )),
+  ), size: 0.76em)
+]
+
+#let addr-show = (
+  "$ ip addr show enp0s31f6",
+  (
+    (none, "2: enp0s31f6: <BROADCAST,MULTICAST,UP,LOWER_UP> "), ("mtu", "mtu 1500"),
+    (none, " qdisc fq_codel state UP group default qlen 1000"),
+  ),
+  ((none, "    "), ("mac", "link/ether 8c:16:45:a2:3b:91"), (none, " "), ("brd-mac", "brd ff:ff:ff:ff:ff:ff")),
+  (
+    (none, "    "), ("v4", "inet 192.168.1.105/24"), (none, " "), ("brd", "brd 192.168.1.255"), (none, " "),
+    ("scope", "scope global"), (none, " "), ("dyn", "dynamic"), (none, " noprefixroute enp0s31f6"),
+  ),
+  ((none, "       "), ("lft", "valid_lft 85912sec preferred_lft 85912sec")),
+  ((none, "    "), ("v6", "inet6 2a02:2f0e:d10c::105/64"), (none, " "), ("scope6", "scope global"), (none, " dynamic noprefixroute")),
+  "       valid_lft 86234sec preferred_lft 14234sec",
+  ((none, "    "), ("v6", "inet6 fe80::8e16:45ff:fea2:3b91/64"), (none, " "), ("scope6", "scope link"), (none, " noprefixroute")),
+  "       valid_lft forever preferred_lft forever",
+)
+
+#slide[
+  == Card Details
+  `ip addr show` and the name of the card
+
+  #addr-steps(addr-show, (
+    (2, ("mtu",), explain(
+      [the first line is the same as in `ip link`],
+      ([`mtu 1500`], [_Maximum Transmission Unit_: the largest payload of a frame, 1500 bytes for Ethernet and Wi-Fi]),
+    )),
+    (3, ("mac", "brd-mac"), explain(
+      [the *link layer*],
+      ([`link/ether`], [the MAC address of the card]),
+      ([`brd`], [the broadcast MAC address: every card in the network]),
+    )),
+    (4, ("v4", "brd", "scope"), explain(
+      [the *IPv4 address* (`inet`)],
+      ([`brd 192.168.1.255`], [the *broadcast* address: the last address of the network, for every computer in it]),
+      ([`scope global`], [a normal address, it can be used to talk to other networks]),
+    )),
+    (5, ("dyn", "lft"), explain(
+      [where the address comes from],
+      ([`dynamic`], [received automatically from the router (_DHCP_), for a limited time]),
+      ([`valid_lft`], [the address can be used for 85912 more seconds (almost a day), then it is renewed]),
+    )),
+    (9, ("v6", "scope6"), explain(
+      [the *IPv6 addresses* (`inet6`)],
+      ([`scope global`], [can be used on the Internet]),
+      ([`scope link`], [only inside this network: the _link local_ `fe80::` address]),
+    )),
+  ), size: 0.78em)
+]
+
+// the neighbor table of the laptop, with `ip neigh`
+#let neigh-lines = (
+  "$ ip neigh",
+  (("ip", "192.168.1.1"), (none, " dev enp0s31f6 lladdr "), ("mac", "70:b5:e8:2d:91:4c"), (none, " "), ("ok", "REACHABLE")),
+  ((none, "192.168.1.11 dev enp0s31f6 lladdr e4:3b:71:0c:9a:52 "), ("stale", "STALE")),
+  ((none, "192.168.1.12 dev enp0s31f6 "), ("failed", "FAILED")),
+  // the same table with the older command
+  "$ arp -n    # deprecated, from net-tools",
+  "Address          HWtype  HWaddress          Flags Mask  Iface",
+  ((none, "192.168.1.1      ether   70:b5:e8:2d:91:4c  "), ("flag", "C"), (none, "           enp0s31f6")),
+  ((none, "192.168.1.11     ether   e4:3b:71:0c:9a:52  "), ("flag", "C"), (none, "           enp0s31f6")),
+  ((none, "192.168.1.12             "), ("inc", "(incomplete)"), (none, "                   enp0s31f6")),
+)
+
+#slide[
+  == Neighbors
+  the MAC addresses this computer found
+
+  #let steps = (
+    (2, ("ip", "mac", "ok"), explain(
+      [`ip neigh`: the *neighbor table* (the _ARP cache_)],
+      ([`192.168.1.1`], [the router of the network has the MAC address `70:b5:e8:2d:91:4c`]),
+      ([`REACHABLE`], [used just now, it answers]),
+    )),
+    (3, ("stale",), explain(
+      [`192.168.1.11`, found some time ago],
+      ([`STALE`], [an old entry: the computer asks again for the MAC address the next time it needs it]),
+    )),
+    (4, ("failed",), explain(
+      [`192.168.1.12`: nobody answered, there is no such computer],
+      ([`FAILED`], [`ping` shows `Destination Host Unreachable`]),
+    )),
+    (4, (), explain(
+      [💡 only computers of *the same network* (`192.168.1.0/24`) are in the table],
+      ([why], [MAC addresses are used only inside a network; the next section shows how packets leave it]),
+    )),
+    (9, ("flag", "inc"), explain(
+      [`arp -n`: the *deprecated* command (_net-tools_), the same table],
+      ([`-n`], [show the IP addresses as numbers, do not look up their names]),
+      ([`C`], [_complete_: the MAC address is known]),
+      ([`(incomplete)`], [nobody answered, like `FAILED`]),
+    )),
+  )
+  #for (i, (n, keys, body)) in steps.enumerate() {
+    only(i + 1)[
+      #parts-terminal(neigh-lines.slice(0, n), hl: ((keys, ip-peach),), size: if n > 4 { 0.85em } else { 0.95em })
+      #body
+    ]
+  }
 ]

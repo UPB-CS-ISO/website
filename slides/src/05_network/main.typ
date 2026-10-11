@@ -12,9 +12,12 @@
       - Chapter 9 - _Understanding Your Network and Its Configuration_
     + #tanenbaum
       - Chapter 1 - _Introduction_
+      - Chapter 3 - _The Data Link Layer_
       - Chapter 4 - _The Medium Access Control Sublayer_
       - Chapter 5 - _The Network Layer_
-    + #uso-book
+    #colbreak()
+    3. #uso-book
+      - Chapter 8 - _Componente hardware_
       - Chapter 11 - _Rețelistică și Internet_
   ]
   ]
@@ -48,9 +51,11 @@
       - frames, access points
     #colbreak()
     - Network Layer
-      - IP addresses, `ping`, NAT
+      - IP addresses, IPv6, `ip addr`, `ip neigh`
     - Routing
-      - routers, `traceroute`
+      - routers, `ip route`, NAT
+    - Testing the Network
+      - `ping`, `traceroute`
     - Capturing Packets
       - `tcpdump`, Wireshark
   ]
@@ -64,6 +69,7 @@
 #include "wifi.typ"
 #include "network.typ"
 #include "routing.typ"
+#include "ping.typ"
 #include "capture.typ"
 
 #slide[
@@ -73,7 +79,8 @@
   - Link Layer: network cards, MAC addresses
   - Ethernet: frames, hubs and switches
   - Wi-Fi: frames, access points, connecting with `nmcli`
-  - Network Layer: IPv4 addresses, masks, `ping`, NAT, IPv6
-  - Routing: routers, `traceroute`
+  - Network Layer: IPv4 addresses, masks, IPv6, `ip addr`, `ip neigh`
+  - Routing: routers, the routing table, NAT
+  - Testing the network: `ping`, `traceroute`
   - Capturing packets: `tcpdump`, Wireshark
 ]

@@ -8,10 +8,12 @@
 
   + #ward
     - Chapter 9 - _Understanding Your Network and Its Configuration_
-      - Section 9.26 - _Wireless Ethernet_
+      - Section 9.27 - _Wireless Ethernet_
   + #tanenbaum
     - Chapter 4 - _The Medium Access Control Sublayer_
       - Section 4.4 - _Wireless LANs_
+  + #uso-book
+    - Section 11.6.2 - _Configurarea grafică. NetworkManager_
 ]
 
 // radio waves around a point: dashed circles
@@ -276,7 +278,7 @@
     column-gutter: 6pt,
     align: horizon,
     part(layer-colors.link, 26pt, 5pt)[*Type* \ `0x0800`],
-    part(layer-colors.network, 60pt, 6.5pt)[*IPv4* \ packet],
+    part(layer-colors.network, 60pt, 6.5pt)[*Packet* \ (IPv4)],
   ))
 }
 
@@ -320,7 +322,7 @@
         name-size: 7.5pt,
         height: 106pt,
         extra: if keys == ("data",) {
-          hint-arrow(310pt, 359pt, [🏷️ a hint: what the data means], label-at: left, y1: 57pt)
+          hint-arrow(310pt, 359pt, [🏷️ a hint: what the data means], label-at: bottom, y1: 57pt)
         } else if keys == ("data", "crc") {
           hint-arrow(432pt, (396pt, 130pt), [✅ checks the header and the data], label-x: 262pt)
         },
@@ -393,7 +395,7 @@
   == Wi-Fi Networks Around
 
   #let steps = (
-    ((), explain[`ifname wlp2s0`: which Wi-Fi card to use; without it, nmcli shows the networks seen by *all* the Wi-Fi cards]),
+    ((), explain[`ifname wlp2s0`: which Wi-Fi card to use; without it, `nmcli` shows the networks seen by *all* the Wi-Fi cards]),
     (("in-use", "ssid-used"), explain[*IN-USE*: the `*` shows the network the card is connected to *now*: `HomeWiFi`]),
     (("bssid", "ssid", "ssid-used"), explain(
       [*who* is the network],
@@ -429,7 +431,7 @@
     keys: ("dev", "uuid"),
     body: explain(
       [*connect* the card `wlp2s0` to the `HomeWiFi` network],
-      ([`ifname wlp2s0`], [which Wi-Fi card to use; without it, nmcli picks the Wi-Fi card for you]),
+      ([`ifname wlp2s0`], [which Wi-Fi card to use; without it, `nmcli` picks the Wi-Fi card for you]),
       ([`6e2c8d5b-...`], [a *connection* is saved, with this ID: next time the card connects by itself]),
     ),
   ),
@@ -485,7 +487,7 @@
     body: explain(
       [*pick* a saved connection],
       ([`up CafeFree`], [connect with the saved connection `CafeFree`; `down` disconnects it]),
-      ([`ifname wlp2s0`], [which Wi-Fi card to use; without it, nmcli picks the Wi-Fi card for you]),
+      ([`ifname wlp2s0`], [which Wi-Fi card to use; without it, `nmcli` picks the Wi-Fi card for you]),
     ),
   ),
   (

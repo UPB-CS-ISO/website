@@ -1,6 +1,6 @@
 #import "common.typ": *
 
-#section-cover([Capturing Packets], [see what goes through the card], layers: ("link", "network"), note: [tcpdump, \ Wireshark])
+#section-cover([Capturing Packets], [see what goes through the card], layers: ("link", "network"), note: [`tcpdump`, \ Wireshark])
 
 #slide[
   == Bibliography
@@ -23,9 +23,9 @@
 // ---------------------------------------------------------------------------
 
 #let cap-icmp = (
-  "$ sudo tcpdump -i wlp2s0 -n -t icmp",
+  "$ sudo tcpdump -i enp0s31f6 -n -t icmp",
   "tcpdump: verbose output suppressed, use -v[v]... for full protocol decode",
-  "listening on wlp2s0, link-type EN10MB (Ethernet), snapshot length 262144 bytes",
+  "listening on enp0s31f6, link-type EN10MB (Ethernet), snapshot length 262144 bytes",
   ((none, "IP "), ("ip", "192.168.1.105 > 141.85.220.33"), (none, ": "), ("icmp", "ICMP echo request"), (none, ", id 7, seq 1, length 64")),
   ((none, "IP "), ("ip", "141.85.220.33 > 192.168.1.105"), (none, ": "), ("icmp", "ICMP echo reply"), (none, ", id 7, seq 1, length 64")),
   "^C",
@@ -40,7 +40,7 @@
     (3, (), explain(
       [`tcpdump` waits and shows the packets, one per line],
       ([`sudo`], [only `root` may read all the packets of a card]),
-      ([`-i wlp2s0`], [the card to listen on]),
+      ([`-i enp0s31f6`], [the card to listen on]),
       ([`-n -t`], [numbers, not names; no time on each line]),
       ([`icmp`], [a *filter*: only the ICMP packets (`ping`)]),
     )),
@@ -58,11 +58,11 @@
 ]
 
 #let cap-arp = (
-  "$ sudo tcpdump -i wlp2s0 -n -t -e arp",
-  ((none, ""), ("mac", "3c:a9:f4:5e:21:7b > ff:ff:ff:ff:ff:ff"), (none, ", ethertype "), ("type", "ARP (0x0806)"), (none, ", length 42:")),
+  "$ sudo tcpdump -i enp0s31f6 -n -t -e arp",
+  ((none, ""), ("mac", "8c:16:45:a2:3b:91 > ff:ff:ff:ff:ff:ff"), (none, ", ethertype "), ("type", "ARP (0x0806)"), (none, ", length 42:")),
   ((none, "    "), ("ask", "Request who-has 192.168.1.1 tell 192.168.1.105"), (none, ", length 28")),
-  ((none, ""), ("mac2", "a4:2b:b0:1c:9e:44 > 3c:a9:f4:5e:21:7b"), (none, ", ethertype ARP (0x0806), length 42:")),
-  ((none, "    "), ("answer", "Reply 192.168.1.1 is-at a4:2b:b0:1c:9e:44"), (none, ", length 28")),
+  ((none, ""), ("mac2", "70:b5:e8:2d:91:4c > 8c:16:45:a2:3b:91"), (none, ", ethertype ARP (0x0806), length 42:")),
+  ((none, "    "), ("answer", "Reply 192.168.1.1 is-at 70:b5:e8:2d:91:4c"), (none, ", length 28")),
 )
 
 #slide[
@@ -78,7 +78,7 @@
     )),
     (5, ("mac2", "answer"), explain(
       [the gateway answers *only to the laptop*, with its MAC address],
-      ([💡], [`ip neigh` shows what the laptop found: `192.168.1.1` is `a4:2b:b0:1c:9e:44`]),
+      ([💡], [`ip neigh` shows what the laptop found: `192.168.1.1` is `70:b5:e8:2d:91:4c`]),
     )),
   ), size: 0.82em)
 ]
@@ -93,7 +93,7 @@
     column-gutter: 8pt,
     row-gutter: 6pt,
     fact("🦈", [*Wireshark* captures like `tcpdump`, and splits every packet into its *layers*: the frame, the IP packet, the data]),
-    fact("💾", [`sudo tcpdump -i wlp2s0 -w cap.pcap` on any computer, then open `cap.pcap` in Wireshark]),
+    fact("💾", [`sudo tcpdump -i enp0s31f6 -w cap.pcap` on any computer, then open `cap.pcap` in Wireshark]),
     uncover("2-", fact("🔍", [*filters*: `icmp`, `arp`, `ip.addr == 192.168.1.1`, `eth.addr == ff:ff:ff:ff:ff:ff`])),
     uncover("2-", fact("⌨️", [`tshark`: Wireshark in the terminal; install: `sudo dnf install wireshark`])),
     uncover("3-", fact("🔒", [capture only *your own* network: other people's traffic is private], c: (fill: bad-color.lighten(92%), stroke: bad-color))),
