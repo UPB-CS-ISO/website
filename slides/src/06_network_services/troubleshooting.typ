@@ -8,8 +8,8 @@
 
   + #ward
     - Chapter 9 - _Understanding Your Network and Its Configuration_
-      - Section 9.7 - _Basic ICMP and DNS Tools_
-      - Section 9.14 - _Resolving Hostnames_
+      - Section 9.8 - _Basic ICMP and DNS Tools_
+      - Section 9.15 - _Resolving Hostnames_
   + #uso-book
     - Section 11.5 - _Configurări de rețea_
 ]
@@ -108,21 +108,21 @@
 ))
 
 #check-slide(2, [Do I Have an Address?], [the network layer: the IP address and the mask], (
-  "$ ip -br address show wlp2s0",
-  tab((17, 15), (none, "wlp2s0"), (none, "UP")) + (("bad", "fe80::3ea9:f4ff:fe5e:217b/64"),),
+  "$ ip -br address show enp0s31f6",
+  tab((17, 15), (none, "enp0s31f6"), (none, "UP")) + (("bad", "fe80::8e16:45ff:fea2:3b91/64"),),
 ), (
   [❌ only an IPv6 _link local_ address: *no IPv4 address*],
-  ([why], [nobody answered the DHCP request (DHCP server down, wrong Wi-Fi password)]),
+  ([why], [nobody answered the DHCP request (DHCP server down, or the card is in the wrong network)]),
   ([`169.254.x.x`], [the same problem: the computer picked an address by itself]),
 ), (
   [🔧 ask again, or configure it by hand],
-  ([DHCP], [`nmcli device disconnect wlp2s0`, then `nmcli device connect wlp2s0`]),
-  ([static], [`sudo ip address add 192.168.1.50/24 dev wlp2s0`]),
+  ([DHCP], [`nmcli device disconnect enp0s31f6`, then `nmcli device connect enp0s31f6`]),
+  ([static], [`sudo ip address add 192.168.1.50/24 dev enp0s31f6`]),
 ))
 
 #check-slide(3, [Do I Have a Gateway?], [the network layer: the route to the other networks], (
   "$ ip route",
-  "192.168.1.0/24 dev wlp2s0 proto kernel scope link src 192.168.1.105 metric 600",
+  "192.168.1.0/24 dev enp0s31f6 proto kernel scope link src 192.168.1.105 metric 100",
   "$ ping -c 1 8.8.8.8",
   ((none, "ping: connect: "), ("bad", "Network is unreachable")),
 ), (
@@ -158,7 +158,7 @@
   ((none, "ping: upb.ro: "), ("bad", "Temporary failure in name resolution")),
   "$ resolvectl dns",
   "Global:",
-  ((none, "Link 3 (wlp2s0): "), ("bad", "")),
+  ((none, "Link 2 (enp0s31f6): "), ("bad", "")),
   "$ host upb.ro 1.1.1.1",
   ((none, "upb.ro has address "), ("ok", "141.85.220.33")),
 ), (
@@ -167,7 +167,7 @@
   ([`host ... 1.1.1.1`], [asking another DNS server directly works]),
 ), (
   [🔧 set a DNS server],
-  ([now], [`sudo resolvectl dns wlp2s0 1.1.1.1`]),
+  ([now], [`sudo resolvectl dns enp0s31f6 1.1.1.1`]),
   ([permanent], [`nmcli connection modify ... ipv4.dns 1.1.1.1`]),
 ))
 
@@ -206,7 +206,7 @@
     fill: (x, y) => if y == 0 { accent } else { none },
     table.header(..([layer], [command], [it answers]).map(h => text(fill: white, weight: "bold", h))),
     ..row("link", "ip neigh", [which MAC addresses did this computer find? (_ARP_)]),
-    ..row("link", "sudo tcpdump -i wlp2s0", [which packets go in and out of the card?]),
+    ..row("link", "sudo tcpdump -i enp0s31f6", [which packets go in and out of the card?]),
     ..row("network", "ping 192.168.1.1", [does the computer answer?]),
     ..row("network", "traceroute -n upb.ro", [which routers are on the way?]),
     ..row("transport", "nc -zv upb.ro 443", [does a program wait on this port? (`succeeded!`)]),

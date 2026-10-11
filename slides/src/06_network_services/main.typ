@@ -1,7 +1,7 @@
 #import "/src/slides.typ": *
-#import "common.typ": ward, tanenbaum, uso-book
+#import "common.typ": tanenbaum, uso-book, ward
 // the layers and the network in the OS, from 05 - Network Infrastructure
-#import "/src/05_network/internet.typ": highway-slide, osi-slide, os-slide
+#import "/src/05_network/internet.typ": highway-slide, os-slide, osi-slide
 
 #show: uso_slides.with(title: "6. Network Services")
 
@@ -9,16 +9,16 @@
   == Bibliography
 
   #text(size: 11pt)[
-  #columns(2)[
-    + #ward
-      - Chapter 9 - _Understanding Your Network and Its Configuration_
-    + #tanenbaum
-      - Chapter 5 - _The Network Layer_
-      - Chapter 6 - _The Transport Layer_
-      - Section 7.1 - _DNS, the Domain Name System_
-    + #uso-book
-      - Chapter 11 - _Rețelistică și Internet_
-  ]
+    #columns(2)[
+      + #ward
+        - Chapter 9 - _Understanding Your Network and Its Configuration_
+      + #tanenbaum
+        - Chapter 5 - _The Network Layer_
+        - Chapter 6 - _The Transport Layer_
+        - Section 7.1 - _DNS, the Domain Name System_
+      + #uso-book
+        - Chapter 11 - _Rețelistică și Internet_
+    ]
   ]
   #v(0pt)
 ]
@@ -32,20 +32,22 @@
   == Outline
 
   #text(size: 12pt)[
-  #columns(2)[
-    - Transport Layer
-      - ports, TCP, UDP
-    - DNS
-      - names and IP addresses
-    - DHCP
-    #colbreak()
-    - Network Configuration
-      - temporary and permanent
-    - Troubleshooting
-      - no Internet? from the bottom up
-    - Home Gateway
-      - DHCP, DNS, NAT
-  ]
+    #columns(2)[
+      - Transport Layer
+        - ports, TCP, UDP
+      - DNS
+        - names and IP addresses
+      - DHCP
+      - Network Configuration
+        - temporary and permanent
+      #colbreak()
+      - Home Gateway
+        - DHCP, DNS, NAT
+      - Following a Packet
+        - DNS, DHCP, `ping` on layers
+      - Troubleshooting
+        - no Internet? from the bottom up
+    ]
   ]
   #v(0pt)
 ]
@@ -55,8 +57,9 @@
 #include "dns.typ"
 #include "dhcp.typ"
 #include "netconfig.typ"
-#include "troubleshooting.typ"
 #include "gateway.typ"
+#include "packets.typ"
+#include "troubleshooting.typ"
 
 #slide[
   == We talked about
@@ -65,6 +68,9 @@
   - DNS: names instead of IP addresses
   - DHCP
   - Network configuration: temporary and permanent, static and dynamic
-  - Troubleshooting: no Internet? check from the bottom up
   - The home gateway: switch, access point, router; DHCP, DNS and NAT
+  - Following a packet: DNS, DHCP and `ping`, through all the layers
+  - Troubleshooting: no Internet? check from the bottom up
 ]
+
+#include "extra.typ"

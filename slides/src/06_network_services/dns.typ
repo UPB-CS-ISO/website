@@ -8,7 +8,7 @@
 
   + #ward
     - Chapter 9 - _Understanding Your Network and Its Configuration_
-      - Section 9.14 - _Resolving Hostnames_
+      - Section 9.15 - _Resolving Hostnames_
   + #tanenbaum
     - Section 7.1 - _DNS, the Domain Name System_
   + #uso-book
@@ -16,7 +16,7 @@
 ]
 
 // a question from a to b (above the line) and its answer from b to a (below it)
-#let ask(a, b, q, ans, gap: 22pt, off: 5pt) = {
+#let ask(a, b, q, ans, gap: 22pt, off: 5pt, ans-off: 10pt) = {
   let (dx, dy) = ((b.at(0) - a.at(0)).pt(), (b.at(1) - a.at(1)).pt())
   let len = calc.sqrt(dx * dx + dy * dy)
   let (ux, uy) = (dx / len, dy / len)
@@ -26,7 +26,7 @@
   pin(..move(mid, 0pt, -off - 10pt), box(fill: white, inset: 1.5pt, text(size: 7pt, fill: hl, q)))
   if ans != none {
     draw-arrow(move(b, -gap, off), move(a, gap, off), color: ok-color, thickness: 1.4pt)
-    pin(..move(mid, 0pt, off + 10pt), box(fill: white, inset: 1.5pt, text(size: 7pt, fill: ok-color, ans)))
+    pin(..move(mid, 0pt, off + ans-off), box(fill: white, inset: 1.5pt, text(size: 7pt, fill: ok-color, ans)))
   }
 }
 #let ring(p, size: 34pt) = pin(..p, box(width: size, height: size, radius: 50%, stroke: 1.5pt + hl))
@@ -54,6 +54,49 @@
     #only(3, fact("📖", [the DNS server answers with the address]))
     #only("4-", fact("🔌", [only now the laptop connects, to the *IP address*]))
   ]))
+]
+
+#slide[
+  == What DNS Knows
+  more than addresses: each name has *records*
+
+  #let records = (
+    ("A", [the *IPv4 address* of the name], [`upb.ro` → `141.85.220.33`],
+      [the browser asks for it, then connects to `141.85.220.33`]),
+    ("AAAA", [the *IPv6 address* of the name], [`google.com` → `2a00:1450:4007:817::200e`],
+      [the same, for IPv6; a name can have both, `upb.ro` has only `A`]),
+    ("MX", [the *mail server* of the domain], [`upb.ro` → `ironport.upb.ro`],
+      [an e-mail to `someone@upb.ro` is sent to this server]),
+    ("NS", [the *DNS servers* of the domain], [`upb.ro` → `pub.pub.ro`, `pub2.pub.ro`],
+      [the servers that know all the records of `upb.ro`: the `ro` server sends you to them]),
+    ("CNAME", [another name for the same thing (_alias_)], [`www.github.com` → `github.com`],
+      [_"ask for_ `github.com` _instead"_: the resolver asks again, for the real name]),
+    ("TXT", [any text: e-mail rules, proof of owning the domain], [`upb.ro` → `"v=spf1 ..."`],
+      [_SPF_: which servers may send e-mail as `@upb.ro`, against spam]),
+    ("PTR", [the *name* of an address (backwards)], [`8.8.8.8` → `dns.google`],
+      [from an address to a name: used in logs, by mail servers, by `traceroute`]),
+  )
+  #let rec-table(on) = text(size: 9.5pt, table(
+    columns: (auto, 1fr, auto),
+    inset: (x: 7pt, y: 3.5pt),
+    align: left + horizon,
+    stroke: (x, y) => if y == 0 { none } else { (bottom: 0.5pt + luma(210)) },
+    fill: (x, y) => if y == 0 { accent } else if y - 1 == on { hl-bg } else if calc.even(y) { luma(246) } else { white },
+    table.header(..([record], [what it says], [example]).map(h => text(fill: white, weight: "bold", h))),
+    ..records.map(((t, what, ex, why)) => (text(weight: "bold", raw(t)), what, ex)).flatten(),
+  ))
+  #for (i, (t, what, ex, why)) in records.enumerate() {
+    only(i + 1)[
+      #rec-table(i)
+      #v(2pt)
+      #fact("💡", [#raw(t): #why])
+    ]
+  }
+  #only(records.len() + 1)[
+    #rec-table(none)
+    #v(2pt)
+    #fact("⏳", [every record also has a *TTL*: how long others may remember it])
+  ]
 ]
 
 // Finding a name: the resolver asks three servers, from the right of the name
@@ -94,9 +137,9 @@
   #at(10pt, 38pt, text(size: 7.5pt, fill: luma(80))[read from the *right*: first `.` (the root), \ then `ro`, then `upb.ro`])
 
   // the three servers, one for each part of the name
-  #dns-card(ys.at(0), level-colors.root, [🌍 a root server `.`], (("ro", [ask the `ro` server]), ("com", [ask the `com` server])), on: step == 3, used: if step == 3 { 0 })
-  #dns-card(ys.at(1), level-colors.ro, [🇷🇴 a `ro` server], (("upb.ro", [ask the `upb.ro` server]), ("gov.ro", [ask the `gov.ro` server])), on: step == 4, used: if step == 4 { 0 })
-  #dns-card(ys.at(2), level-colors.upb, [🏫 a `upb.ro` server], (("upb.ro", [`141.85.220.33`]), ("www.upb.ro", [`141.85.220.33`])), on: step == 5, used: if step == 5 { 0 })
+  #dns-card(ys.at(0), level-colors.root, [🌍 a root DNS server `.` #h(1fr) `198.41.0.4`], (("ro", [ask the `ro` DNS server `192.162.16.18`]), ("com", [ask the `com` DNS server `192.5.6.30`])), on: step == 3, used: if step == 3 { 0 })
+  #dns-card(ys.at(1), level-colors.ro, [🇷🇴 a `ro` DNS server #h(1fr) `192.162.16.18`], (("upb.ro", [ask the `upb.ro` DNS server `141.85.128.1`]), ("gov.ro", [ask the `gov.ro` DNS server `193.151.29.206`])), on: step == 4, used: if step == 4 { 0 })
+  #dns-card(ys.at(2), level-colors.upb, [🏫 a `upb.ro` DNS server #h(1fr) `141.85.128.1`], (("upb.ro", [`141.85.220.33`, TTL `8640` s]), ("www.upb.ro", [`141.85.220.33`, TTL `8640` s])), on: step == 5, used: if step == 5 { 0 })
 
   #host(..pc, "laptop", size: 26pt)
   #host(..res, "DNS server", kind: "dns-server", addr: "the resolver", size: 26pt)
@@ -104,12 +147,12 @@
   // the questions and the answers
   #let at-card(i) = (262pt, ys.at(i) + 23pt)
   #if step == 2 { ask(pc, res, [`upb.ro`?], none) }
-  #if step == 3 { ask(res, at-card(0), [`upb.ro`?], [ask the `ro` server], gap: 18pt) }
-  #if step == 4 { ask(res, at-card(1), [`upb.ro`?], [ask the `upb.ro` server], gap: 18pt) }
+  #if step == 3 { ask(res, at-card(0), [`upb.ro`?], [ask the `ro` DNS server \ `192.162.16.18`], gap: 18pt) }
+  #if step == 4 { ask(res, at-card(1), [`upb.ro`?], [ask the `upb.ro` DNS server \ `141.85.128.1`], gap: 18pt, ans-off: 20pt) }
   #if step == 5 { ask(res, at-card(2), [`upb.ro`?], [`141.85.220.33`], gap: 18pt) }
   #if step >= 6 {
     ask(pc, res, [`upb.ro`?], [`141.85.220.33`])
-    pin(res.at(0), res.at(1) - 28pt, text(size: 8pt, fill: ok-color)[💾 remembered])
+    pin(res.at(0), res.at(1) - 28pt, text(size: 8pt, fill: ok-color)[💾 remembered for `8640` s])
   }
 ]
 
@@ -123,200 +166,107 @@
   #place(bottom + left, block(width: 100%, text(size: 10.5pt)[
     #only(1, fact("🌳", [the names are a *tree*: the root `.` knows `ro`, `ro` knows `upb.ro`, `upb.ro` knows its addresses]))
     #only(2, fact("❓", [the laptop asks *its* DNS server, the _resolver_; the resolver does not know `upb.ro` yet]))
-    #only(3, fact("🌍", [the resolver asks a *root* server, from the right of the name: it only knows who answers for `ro`]))
-    #only(4, fact("🇷🇴", [the `ro` server only knows who answers for `upb.ro`]))
-    #only(5, fact("🏫", [the `upb.ro` server knows the address: `141.85.220.33`]))
-    #only("6-", fact("💾", [the resolver answers and *remembers* the answer: the next question is answered at once]))
+    #only(3, fact("🌍", [the *root servers* are the top of the tree: 13 names (`a` to `m.root-servers.net`), with copies all over the world; every resolver knows them, they only know who answers for `ro`, `com`, ...]))
+    #only(4, fact("🇷🇴", [the `ro` server only knows who answers for `upb.ro`: it gives its *IP address*, not its name (a name would need one more question)]))
+    #only(5, fact("🏫", [the `upb.ro` server knows the address, `141.85.220.33`, and how long others may remember it: the *TTL*]))
+    #only("6-", fact("💾", [the resolver *remembers* the answer for its *TTL* (_time to live_), set by the `upb.ro` server: `8640` s, 2.4 hours; then it asks again]))
   ]))
 ]
+
+#let dns-linux = (
+  "$ host upb.ro",
+  ((none, "upb.ro has address "), ("addr", "141.85.220.33")),
+  ((none, "upb.ro mail is handled by 0 "), ("mx", "ironport.upb.ro.")),
+  "$ resolvectl dns",
+  (("global", "Global:"),),
+  ((none, ""), ("link", "Link 2 (enp0s31f6)"), (none, ": "), ("srv", "192.168.1.1")),
+)
 
 #slide[
   == DNS in Linux
-
-  #reveal-terminal(before: none, lines: (3, 6), full: false)[```terminal
-  $ host upb.ro
-  upb.ro has address 141.85.220.33
-  upb.ro mail is handled by 0 ironport.upb.ro.
-  $ resolvectl dns
-  Global:
-  Link 3 (wlp2s0): 192.168.1.1
-  ```]
-
-  #uncover("1-")[#block[- `host` asks the DNS server for the address of a name]]
-  #uncover("2-")[#block[- the DNS server comes from DHCP, Fedora keeps it in `systemd-resolved`]]
-]
-
-#let name-files = (
-  "$ cat /etc/resolv.conf",
-  "# This is /run/systemd/resolve/stub-resolv.conf managed by man:systemd-resolved(8).",
-  "# Do not edit.",
-  ((none, "nameserver "), ("ns", "127.0.0.53")),
-  "options edns0 trust-ad",
-  "search .",
-  "$ cat /etc/hosts",
-  "# Loopback entries; do not change.",
-  "# For historical reasons, localhost precedes localhost.localdomain:",
-  (("host", "127.0.0.1"), (none, "   localhost localhost.localdomain localhost4 localhost4.localdomain4")),
-  (("host", "::1"), (none, "         localhost localhost.localdomain localhost6 localhost6.localdomain6")),
-  "# See hosts(5) for proper format and other examples:",
-  "# 192.168.1.10 foo.example.org foo",
-  "# 192.168.1.13 bar.example.org bar",
-)
-
-#slide[
-  == Where Do Names Come From?
-
-  #only(1)[
-    #parts-terminal(name-files.slice(0, 6), hl: ((("ns",), ip-peach),), size: 0.78em)
-    #explain(
-      [`/etc/resolv.conf`: the DNS server the programs ask],
-      ([`127.0.0.53`], [the local `systemd-resolved`, which asks the real DNS server]),
-      ([`#`], [a comment: the file is written by `systemd-resolved`, do not edit it]),
-    )
-  ]
-  #only("2-")[
-    #parts-terminal(name-files, hl: ((("host",), ip-peach),), size: 0.78em)
-    #explain(
-      [`/etc/hosts`: names written by hand, checked *before* DNS],
-      ([add], [a line `192.168.1.20 printer`, then `ping printer` works]),
-    )
-  ]
-]
-
-// who answers a name: the program, /etc/hosts, systemd-resolved, the DNS server;
-// under each one, where it is configured
-#let resolve-box(x, e, name, sub, cfg, c: layer-colors.application) = {
-  at(x, 20pt, box(width: 100pt, height: 46pt, radius: 5pt, fill: c.fill, stroke: 1pt + c.stroke, align(center + horizon, stack(
-    spacing: 3pt,
-    text(size: 9pt, weight: "bold")[#icon(e, size: 11pt) #name],
-    text(size: 7.5pt, sub),
-  ))))
-  at(x, 74pt, box(width: 100pt, text(size: 7.5pt, fill: luma(60), cfg)))
-}
-#let resolve-drawing(n) = drawing(width: 470pt, height: 150pt)[
-  #let xs = (0pt, 123pt, 246pt, 369pt)
-  #let boxes = (
-    ("🦊", [program], [`ping`, Firefox, `ssh`], [asks with `getaddrinfo()`; the order: `/etc/nsswitch.conf`]),
-    ("📒", [`/etc/hosts`], [names written by hand], [checked *first*; edit it with `sudo`]),
-    ("🧭", [`systemd-resolved`], [`127.0.0.53`, remembers answers], [`/etc/resolv.conf` sends the programs here]),
-    ("📖", [DNS server], [`192.168.1.1`, the router], [from *DHCP*, or set by hand with `nmcli`]),
-  )
-  #label(235pt, 8pt, text(size: 8pt, fill: luma(90))[🔎 `upb.ro`? each one asks the next, until one knows the answer])
-  #for (i, (e, name, sub, cfg)) in boxes.enumerate() {
-    if i < n {
-      resolve-box(xs.at(i), e, name, sub, cfg)
-      if i > 0 { draw-arrow((xs.at(i) - 21pt, 43pt), (xs.at(i) - 2pt, 43pt), color: hl, thickness: 1.4pt) }
-    }
-  }
-  #if n >= 4 {
-    draw-arrow((419pt, 120pt), (50pt, 120pt), color: ok-color, thickness: 1.4pt)
-    label(235pt, 131pt, text(size: 8pt, fill: ok-color)[`141.85.220.33` comes back to the program])
-  }
-]
-
-#slide[
-  == Who Answers a Name?
-  four places, and where each one is configured
-
-  #for n in range(1, 4) { only(n, resolve-drawing(n)) }
-  #only("4-", resolve-drawing(4))
-
-  #place(bottom + left, block(width: 100%, text(size: 10pt)[
-    #only(1, fact("🦊", [a program does not talk to DNS itself: it asks the C library (`getaddrinfo()`)]))
-    #only(2, fact("📒", [`/etc/hosts` first: a name written there never reaches DNS]))
-    #only(3, fact("🧭", [then `systemd-resolved`, a local service: it remembers the answers (a *cache*)]))
-    #only("4-", fact("📖", [it asks the *DNS server* of the card: usually the home router, received with DHCP]))
-  ]))
-]
-
-#let dns-cfg = (
-  "$ resolvectl status wlp2s0",
-  "Link 3 (wlp2s0)",
-  "    Current Scopes: DNS",
-  ((none, "Current DNS Server: "), ("cur", "192.168.1.1")),
-  ((none, "       DNS Servers: "), ("cur", "192.168.1.1")),
-  "$ sudo nmcli connection modify HomeWiFi \\",
-  ((none, "    "), ("dns", "ipv4.dns \"1.1.1.1 8.8.8.8\""), (none, " \\")),
-  ((none, "    "), ("auto", "ipv4.ignore-auto-dns yes")),
-  "$ sudo nmcli connection up HomeWiFi",
-  "$ resolvectl dns wlp2s0",
-  ((none, "Link 3 (wlp2s0): "), ("new", "1.1.1.1 8.8.8.8")),
-  "$ sudo resolvectl dns wlp2s0 9.9.9.9",
-)
-
-#slide[
-  == Configuring DNS
-  see it with `resolvectl`, change it with `nmcli`
+  ask for a name, see which DNS server is used
 
   #let steps = (
-    (5, ("cur",), explain(
-      [`resolvectl status`: the DNS server of each card],
-      ([`192.168.1.1`], [the home router: it came with *DHCP*, together with the IP address]),
+    (3, ("addr", "mx"), explain(
+      [`host`: asks the DNS server for a name, shows the answer in short],
+      ([`141.85.220.33`], [the address (the `A` record)]),
+      ([`ironport.upb.ro.`], [the mail server (the `MX` record)]),
     )),
-    (9, ("dns", "auto"), explain(
-      [💾 *permanent*: in the NetworkManager connection],
-      ([`ipv4.dns`], [one or more DNS servers, in order]),
-      ([`ignore-auto-dns`], [do not use the DNS server from DHCP]),
-      ([`connection up`], [use the new configuration now]),
-    )),
-    (11, ("new",), explain[`resolvectl dns`: the card uses the new DNS servers]),
-    (12, (), explain(
-      [⏳ *temporary*: `resolvectl dns` with an address changes it now, until the card reconnects],
-      ([Ubuntu], [_netplan_: `nameservers: addresses: [1.1.1.1]`]),
+    (6, ("global", "link", "srv"), explain(
+      [`resolvectl` talks to `systemd-resolved`, the local service that asks DNS for the programs],
+      ([`dns`], [show the DNS server that *each network card* uses]),
+      ([`Global:`], [a DNS server for all the cards: none here]),
+      ([`Link 2 (enp0s31f6)`], [the Ethernet card asks `192.168.1.1`, the router; it came with *DHCP*]),
     )),
   )
   #for (i, (n, keys, body)) in steps.enumerate() {
     only(i + 1)[
-      #parts-terminal(dns-cfg.slice(0, n), hl: ((keys, ip-peach),), size: 0.8em)
+      #parts-terminal(dns-linux.slice(0, n), hl: ((keys, ip-peach),), size: 0.95em)
       #body
     ]
   }
 ]
 
-#let resolv-edit = (
-  "$ ls -l /etc/resolv.conf",
-  ((none, "lrwxrwxrwx. 1 root root 39 Oct  6 09:12 /etc/resolv.conf -> "), ("link", "../run/systemd/resolve/stub-resolv.conf")),
-  "$ echo \"nameserver 1.1.1.1\" | sudo tee /etc/resolv.conf",
-  ((none, "nameserver "), ("new", "1.1.1.1")),
-  "$ ping -c 1 upb.ro",
-  ((none, "PING upb.ro ("), ("ok", "141.85.220.33"), (none, ") 56(84) bytes of data.")),
-  "$ sudo nmcli connection up HomeWiFi",
-  "Connection successfully activated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/7)",
-  "$ tail -n 3 /etc/resolv.conf",
-  ((none, "nameserver "), ("old", "127.0.0.53")),
-  "options edns0 trust-ad",
-  "search .",
+// `dig`: the answer of a DNS server, only the important lines
+#let dig-local = (
+  "$ dig upb.ro    # only the important lines are shown",
+  ((none, ";; ->>HEADER<<- opcode: QUERY, "), ("status", "status: NOERROR"), (none, ", id: 48510")),
+  ";; QUESTION SECTION:",
+  ((none, ";"), ("q", "upb.ro.            IN  A")),
+  ";; ANSWER SECTION:",
+  (("name", "upb.ro."), (none, "         "), ("ttl", "6858"), (none, "  IN  "), ("type", "A"), (none, "   "), ("addr", "141.85.220.33")),
+  ((none, ";; "), ("time", "Query time: 0 msec")),
+  ((none, ";; "), ("server", "SERVER: 127.0.0.53#53(127.0.0.53) (UDP)")),
+)
+#let dig-other = (
+  "$ dig @1.1.1.1 upb.ro    # only the important lines are shown",
+  ";; ANSWER SECTION:",
+  ((none, "upb.ro.         "), ("ttl2", "8640"), (none, "  IN  A   141.85.220.33")),
+  ((none, ";; "), ("time2", "Query time: 48 msec")),
+  ((none, ";; "), ("server2", "SERVER: 1.1.1.1#53(1.1.1.1) (UDP)")),
+  "$ dig +short upb.ro MX",
+  (("mx", "0 ironport.upb.ro."),),
 )
 
 #slide[
-  == Editing /etc/resolv.conf
-  it works, until a service writes it again
+  == `dig`
+  ask a DNS server, see its answer
 
-  #let bad = (hl: bad-color.lighten(75%), bg: bad-color.lighten(93%), bar: bad-color)
   #let steps = (
-    (2, ("link",), explain(
-      [`/etc/resolv.conf` is a *link* to a file of `systemd-resolved`],
-      ([`->`], [the service writes the real file, in `/run` (lost at reboot)]),
+    (dig-local, ("status",), explain(
+      [`dig` asks for a name and shows what the DNS server answered],
+      ([`NOERROR`], [the name exists; a name that does not exist gives `NXDOMAIN`]),
     )),
-    (6, ("new", "ok"), explain(
-      [you *can* edit it (as `root`): the change is used *now*],
-      ([`1.1.1.1`], [the programs ask this DNS server directly, without `systemd-resolved`]),
+    (dig-local, ("q",), explain(
+      [the *question*],
+      ([`upb.ro.`], [the name; the `.` at the end is the root of the tree]),
+      ([`A`], [the kind of record: an IPv4 address]),
     )),
-    (12, ("old",), explain(
-      colors: bad,
-      [❌ after a reconnect (or a reboot) the file is *written again*],
-      ([`127.0.0.53`], [`systemd-resolved` and NetworkManager own this file]),
+    (dig-local, ("ttl", "type", "addr"), explain(
+      [the *answer*],
+      ([`141.85.220.33`], [the address of `upb.ro`]),
+      ([`6858`], [the TTL: seconds left in the cache (it started at `8640`)]),
     )),
-    (12, (), explain(
-      [🔧 to keep a DNS server: configure the service that writes the file],
-      ([NetworkManager], [`nmcli connection modify ... ipv4.dns 1.1.1.1` (the slide before)]),
-      ([`dns=none`], [in `/etc/NetworkManager/conf.d/`: NetworkManager leaves the file alone]),
-      ([others], [`dhclient`, netplan, VPN clients may write it too]),
+    (dig-local, ("server", "time"), explain(
+      [who answered, and how fast],
+      ([`127.0.0.53#53`], [`systemd-resolved`, on port `53`, over UDP]),
+      ([`0 msec`], [it was already in the cache: no question went on the network]),
+    )),
+    (dig-other.slice(0, 5), ("server2", "time2", "ttl2"), explain(
+      [`@` chooses the DNS server to ask],
+      ([`@1.1.1.1`], [ask Cloudflare's DNS server directly, not `systemd-resolved`]),
+      ([`48 msec`], [the question went on the Internet]),
+      ([`8640`], [a fresh answer: the whole TTL]),
+    )),
+    (dig-other, ("mx",), explain(
+      [another kind of record, only the answer],
+      ([`MX`], [the mail server of `upb.ro`: `ironport.upb.ro`]),
+      ([`+short`], [no sections, only the answer]),
     )),
   )
-  #for (i, (n, keys, body)) in steps.enumerate() {
+  #for (i, (lines, keys, body)) in steps.enumerate() {
     only(i + 1)[
-      #parts-terminal(resolv-edit.slice(0, n), hl: ((("old",), bad), (keys, ip-peach)), size: 0.74em)
+      #parts-terminal(lines, hl: ((keys, ip-peach),), size: 0.95em)
       #body
     ]
   }

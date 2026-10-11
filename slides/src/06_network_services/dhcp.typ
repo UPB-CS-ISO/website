@@ -1,8 +1,6 @@
 #import "common.typ": *
 
-#slide[
-  = DHCP #text(size: 10pt, weight: "regular")[\ _automatic network configuration_]
-]
+#section-cover([DHCP], [automatic network configuration], layers: ("application",), note: [DHCP])
 
 #slide[
   == Bibliography
@@ -10,8 +8,8 @@
 
   + #ward
     - Chapter 9 - _Understanding Your Network and Its Configuration_
-      - Section 9.13 - _Network Configuration Managers_
-      - Section 9.18 - _Understanding DHCP_
+      - Section 9.14 - _Network Configuration Managers_
+      - Section 9.19 - _Understanding DHCP_
   + #uso-book
     - Section 11.5.2 - _DHCP_
     - Section 11.6 - _Configurarea rețelei în Linux_
@@ -241,11 +239,11 @@
   Fedora uses NetworkManager
 
   #text(size: 0.9em)[```terminal
-  $ nmcli device show wlp2s0 | grep IP4
+  $ nmcli device show enp0s31f6 | grep IP4
   IP4.ADDRESS[1]:                         192.168.1.105/24
   IP4.GATEWAY:                            192.168.1.1
-  IP4.ROUTE[1]:                           dst = 192.168.1.0/24, nh = 0.0.0.0, mt = 600
-  IP4.ROUTE[2]:                           dst = 0.0.0.0/0, nh = 192.168.1.1, mt = 600
+  IP4.ROUTE[1]:                           dst = 192.168.1.0/24, nh = 0.0.0.0, mt = 100
+  IP4.ROUTE[2]:                           dst = 0.0.0.0/0, nh = 192.168.1.1, mt = 100
   IP4.DNS[1]:                             192.168.1.1
   ```]
 

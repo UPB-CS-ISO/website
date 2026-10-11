@@ -10,8 +10,8 @@
 
   + #ward
     - Chapter 9 - _Understanding Your Network and Its Configuration_
-      - Section 9.21 - _Private Networks (IPv4)_
-      - Section 9.22 - _Network Address Translation (IP Masquerading)_
+      - Section 9.22 - _Private Networks (IPv4)_
+      - Section 9.23 - _Network Address Translation (IP Masquerading)_
   + #uso-book
     - Section 11.4.3 - _Limita de adrese IP_
 ]

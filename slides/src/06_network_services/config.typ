@@ -10,8 +10,8 @@
 
   + #ward
     - Chapter 9 - _Understanding Your Network and Its Configuration_
-      - Section 9.5 - _The Default Gateway_
-      - Section 9.14 - _Resolving Hostnames_
+      - Section 9.6 - _The Default Gateway_
+      - Section 9.15 - _Resolving Hostnames_
   + #tanenbaum
     - Section 7.1 - _DNS, the Domain Name System_
   + #uso-book

@@ -8,7 +8,7 @@
 
   + #ward
     - Chapter 9 - _Understanding Your Network and Its Configuration_
-      - Section 9.16 - _The Transport Layer_
+      - Section 9.17 - _The Transport Layer_
   + #tanenbaum
     - Chapter 6 - _The Transport Layer_
       - Section 6.4 - _The Internet Transport Protocols: UDP_
@@ -248,35 +248,43 @@
   #let base = ((22, [`sshd`], "LISTEN"), (53, [DNS server], "LISTEN"))
   #let ng = (443, [`nginx`], "LISTEN")
   #let br = (51034, [browser], "ESTAB")
-  // a request (to the right) and the answer (back, below it)
-  #let ask(y, q, a, color: ok-color) = {
+  // a request (to the right) and, if given, the answer (back, below it)
+  #let ask(y, q, a: none, color: ok-color) = {
     draw-arrow((112pt, y), (262pt, y), color: hl, thickness: 1.5pt)
     label(187pt, y - 8pt, text(size: 8pt, fill: hl, q))
-    draw-arrow((262pt, y + 12pt), (112pt, y + 12pt), color: color, thickness: 1.5pt)
-    label(187pt, y + 22pt, text(size: 8pt, fill: color, a))
+    if a != none {
+      draw-arrow((262pt, y + 12pt), (112pt, y + 12pt), color: color, thickness: 1.5pt)
+      label(187pt, y + 22pt, text(size: 8pt, fill: color, a))
+    }
   }
   #drawing(width: 470pt, height: 160pt)[
     #layer-box(0pt, 10pt, 105pt, 26pt, [`nginx`], "application")
-    #uncover("2-")[#layer-box(0pt, 62pt, 105pt, 26pt, [a second `nginx`], "application")]
-    #uncover("3-")[#layer-box(0pt, 114pt, 105pt, 26pt, [browser], "application")]
-    // the operating system, with its port table
+    #uncover("3-")[#layer-box(0pt, 62pt, 105pt, 26pt, [a second `nginx`], "application")]
+    #uncover("4-")[#layer-box(0pt, 114pt, 105pt, 26pt, [browser], "application")]
+    // the operating system, with its port table: a row is added when the
+    // operating system answers, and it is highlighted on that step
     #at(268pt, 0pt, box(width: 202pt, height: 158pt, radius: 6pt, fill: luma(245), stroke: 1pt + luma(150)))
     #place(top + left, dx: 276pt, dy: 4pt, text(size: 8pt, weight: "bold")[operating system: the ports])
     #place(top + left, dx: 278pt, dy: 20pt, {
-      only(1, port-table(base + (ng,), new: 443))
-      only(2, port-table(base + (ng,)))
-      only("3-", port-table(base + (ng, br), new: 51034))
+      only(1, port-table(base))
+      only(2, port-table(base + (ng,), new: 443))
+      only("3-4", port-table(base + (ng,)))
+      only("5-", port-table(base + (ng, br), new: 51034))
     })
-    #only(1)[#ask(17pt, [I want to listen to port `443`], [✅ it is yours])]
-    #only(2)[#ask(69pt, [I want to listen to port `443`], [❌ already taken], color: bad-color)]
-    #only("3-")[#ask(121pt, [I want to talk to `141.85.220.33:443`], [✅ you get port `51034`])]
+    #only(1)[#ask(17pt, [I want to listen to port `443`])]
+    #only(2)[#ask(17pt, [I want to listen to port `443`], a: [✅ it is yours])]
+    #only(3)[#ask(69pt, [I want to listen to port `443`], a: [❌ already taken], color: bad-color)]
+    #only(4)[#ask(121pt, [I want to talk to `141.85.220.33:443`])]
+    #only("5-")[#ask(121pt, [I want to talk to `141.85.220.33:443`], a: [✅ you get port `51034`])]
   ]
 
   #let bad-c = (fill: bad-color.lighten(90%), stroke: bad-color)
   #place(bottom + left, block(width: 100%, text(size: 10.5pt)[
-    #only(1, fact("🚪", [a *server* asks for its port and waits there; ports below `1024` only for `root`]))
-    #only(2, fact("❌", [a second program asks for the *same* port: refused, one port has *one* program], c: bad-c))
-    #only("3-", fact("🎲", [a *client* does not choose: the operating system gives it a *free* port, here `51034`]))
+    #only(1, fact("🚪", [a *server* asks the operating system for a port; ports below `1024` only for `root`]))
+    #only(2, fact("📝", [the port is free: the operating system *writes it in the table*, `nginx` waits there]))
+    #only(3, fact("❌", [a second program asks for the *same* port: it is in the table, refused, one port has *one* program], c: bad-c))
+    #only(4, fact("🎲", [a *client* does not choose a port: it only says where it wants to go]))
+    #only("5-", fact("📝", [the operating system picks a *free* port, `51034`, and *writes it in the table*]))
   ]))
 ]
 
@@ -363,6 +371,63 @@
   }
 ]
 
+// packets in time: the sender and the receiver, each with a line going down
+// (time), and the packets between them as sloped arrows
+#let (seq-l, seq-r) = (95pt, 375pt)
+#let seq-ends(l-name, r-name, h) = {
+  for (x, body) in ((seq-l, l-name), (seq-r, r-name)) {
+    place(top + left, line(start: (x, 26pt), end: (x, h), stroke: (paint: luma(160), thickness: 1pt, dash: "dashed")))
+    pin(x, 12pt, box(fill: layer-colors.application.fill, stroke: 0.8pt + layer-colors.application.stroke, radius: 3pt, inset: (x: 8pt, y: 5pt), text(size: 9pt, weight: "bold", body)))
+  }
+  label(seq-l - 58pt, 40pt, text(size: 7pt, fill: luma(120))[time ↓])
+}
+// a numbered packet
+#let pkt-chip(n, color: hl) = box(width: 15pt, height: 15pt, radius: 2pt, fill: color.lighten(85%), stroke: 1pt + color, align(
+  center + horizon,
+  text(size: 8.5pt, weight: "bold", fill: color, str(n)),
+))
+// packet n leaves the sender at y1 and arrives at the receiver at y2
+// (or gets lost on the way)
+#let fly(y1, y2, n, color: hl, lost: false) = {
+  let (mx, my) = ((seq-l + seq-r) / 2, (y1 + y2) / 2)
+  let end = if lost { (mx, my) } else { (seq-r, y2) }
+  draw-arrow((seq-l, y1), end, color: color, thickness: 1.4pt, head: 6pt, dash: if lost { "dashed" } else { none })
+  if lost { pin(mx + 10pt, my, icon("❌", size: 12pt)) }
+  // the number of the packet, on the sender's side, when it leaves
+  pin(seq-l - 14pt, y1, pkt-chip(n, color: color))
+}
+// what the program on the receiver gets, next to its line
+#let got(y, ..ns, color: ok-color) = pin(seq-r + 14pt + ns.pos().len() * 9pt, y, stack(
+  dir: ltr,
+  spacing: 3pt,
+  ..ns.pos().map(n => pkt-chip(n, color: color)),
+))
+
+#slide[
+  == UDP Example
+  send and hope: _best effort_
+
+  #drawing(width: 470pt, height: 175pt)[
+    #seq-ends([sender], [receiver], 172pt)
+    #fly(44pt, 74pt, 1)
+    #fly(64pt, 134pt, 2)
+    #fly(84pt, 104pt, 3)
+    #fly(104pt, 134pt, 4, color: bad-color, lost: true)
+    #uncover("2-")[
+      #got(74pt, 1)
+      #got(104pt, 3)
+      #got(134pt, 2)
+      #label(seq-r + 40pt, 158pt, text(size: 8pt, fill: bad-color)[`4` never comes])
+    ]
+  ]
+
+  #let bad-c = (fill: bad-color.lighten(90%), stroke: bad-color)
+  #place(bottom + left, block(width: 100%, text(size: 10.5pt)[
+    #only(1, fact("📮", [the sender sends 4 packets, one after the other, like *postcards*: no connection, no _"got it"_]))
+    #only(2, fact("🤷", [the receiver gets `1` `3` `2`: packet `2` came *late*, packet `4` is *lost*, and nobody sends it again], c: bad-c))
+  ]))
+]
+
 #let tcp-fields = (
   ("src", [Source Port], [2 bytes], 60pt, "📤", "51034"),
   ("dst", [Dest. Port], [2 bytes], 56pt, "📬", "443"),
@@ -413,6 +478,56 @@
   }
 ]
 
+#slide[
+  == TCP Example
+  a channel: everything arrives, in order
+
+  #drawing(width: 470pt, height: 175pt)[
+    #seq-ends([sender], [receiver], 172pt)
+    #fly(44pt, 74pt, 1)
+    #fly(60pt, 90pt, 2)
+    #fly(76pt, 106pt, 3, color: bad-color, lost: true)
+    #fly(92pt, 122pt, 4)
+    // the cache of the receiver: the packets wait here, in their place,
+    // until the ones before them have arrived
+    #let cache(slots, title-color: accent) = {
+      at(seq-r + 10pt, 50pt, box(width: 84pt, inset: 5pt, radius: 4pt, fill: luma(246), stroke: 1pt + luma(160), stack(
+        spacing: 5pt,
+        text(size: 7.5pt, weight: "bold", fill: luma(80))[receiver's cache],
+        stack(dir: ltr, spacing: 3pt, ..slots.map(((n, c)) => if n == none {
+          box(width: 15pt, height: 15pt, radius: 2pt, stroke: (paint: bad-color, thickness: 1pt, dash: "dashed"), align(
+            center + horizon,
+            text(size: 8pt, fill: bad-color)[?],
+          ))
+        } else { pkt-chip(n, color: c) })),
+      )))
+    }
+    // what the program reads from the cache: only the packets in order
+    #let reads(..ns) = {
+      label(seq-r + 52pt, 104pt, text(size: 7.5pt, fill: luma(80))[the program reads])
+      at(seq-r + 13pt, 112pt, stack(dir: ltr, spacing: 3pt, ..ns.pos().map(n => pkt-chip(n, color: ok-color))))
+    }
+    #only(1)[
+      #cache(((1, ok-color), (2, ok-color), (none, none), (4, luma(140))))
+      #reads(1, 2)
+      #label(seq-r + 52pt, 140pt, text(size: 7.5pt, fill: luma(110))[`4` waits for `3`])
+    ]
+    #only("2-")[
+      #label(seq-l - 52pt, 120pt, text(size: 7.5pt, fill: luma(90))[⏱ no _"got it"_ \ for `3`])
+      #fly(136pt, 160pt, 3, color: accent)
+      #label(seq-l - 40pt, 136pt, text(size: 8pt, fill: accent)[again])
+      #cache(((1, ok-color), (2, ok-color), (3, accent), (4, ok-color)))
+      #reads(1, 2, 3, 4)
+    ]
+  ]
+
+  #let good-c = (fill: ok-color.lighten(90%), stroke: ok-color)
+  #place(bottom + left, block(width: 100%, text(size: 10.5pt)[
+    #only(1, fact("📞", [`3` is lost: `4` *waits* in the cache, the program reads only `1` `2`]))
+    #only(2, fact("🔁", [no _"got it"_ for `3`: the sender *sends it again*, now the program reads `3` `4`, in order], c: good-c))
+  ]))
+]
+
 #let port-list(rows) = text(size: 10.5pt, table(
   columns: (auto, auto, 1fr),
   inset: (x: 7pt, y: 3.5pt),
@@ -453,7 +568,7 @@
     columns: (1fr, 1fr),
     column-gutter: 14pt,
     uncover("2-", fact("📖", [`/etc/services`: the names of the ports, shown by `ss` and `netstat` without `-n`])),
-    uncover("3-", fact("🔢", [`0`–`1023`: well known, only `root` may use them; above: any program, and clients])),
+    uncover("3-", fact("🔢", [`0` - `1023`: well known, only `root` may use them; above: any program, and clients])),
   )
 ]
 
