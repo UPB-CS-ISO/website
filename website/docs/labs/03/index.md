@@ -44,11 +44,11 @@ Operare, Printech 2021](https://github.com/systems-cs-pub-ro/carte-uso/releases/
 Every running command has a list of the files it has open, the **File Descriptor Table**. The **index** in this table is
 the **file descriptor**, and the first three are always there:
 
-| File descriptor | Name | In a terminal |
-|-|-|-|
-| `0` | `stdin`, the standard input | the keyboard |
-| `1` | `stdout`, the standard output | the display |
-| `2` | `stderr`, the standard error | the display |
+| File descriptor | Name | The command uses it to | Redirect | By default, in a terminal |
+|-|-|-|-|-|
+| `0` | `stdin`, the standard input | read its input | `<` | comes from the **keyboard** |
+| `1` | `stdout`, the standard output | write its results | `>` | goes to the **display** |
+| `2` | `stderr`, the standard error | write its error messages | `2>` | goes to the **display** |
 
 A command reads its input from `0`, writes its results to `1` and its error messages to `2`. It does not know what is
 behind them. Before it starts the command, the shell can connect any of them to a **file**: this is a **redirect**.
@@ -175,7 +175,8 @@ between:
 |-|-|
 | `sort` | Sorts the lines in alphabetical order |
 | `wc -l` | Counts the lines |
-| `head -n <N>` | Keeps the first `N` lines (`head -c <N>` the first `N` bytes) |
+| `head -n <N>` | Keeps the first `N` lines |
+| `head -c <N>` | Keeps the first `N` bytes |
 | `tail -n <N>` | Keeps the last `N` lines |
 | `grep <text>` | Keeps the lines that contain `text` |
 | `less` | Shows it one screen at a time, like `man` (quit with <kbd>q</kbd>) |
@@ -214,8 +215,8 @@ student:x:1000:
 | `-i` | Ignores upper and lower case |
 | `-c` | Prints only how many lines contain the text |
 | `-v` | Prints the lines that do **not** contain the text |
-| `-n` | Prints the number of every line in front of it |
-| `-r` | Searches in all the files of a directory |
+| `-n` | Prints the line number in front of every line it finds |
+| `-r` | Searches in all the files of a directory, and of its subdirectories |
 
 :::tip
 
@@ -269,7 +270,7 @@ end, and they put it back when you decompress it.
 | Option | Means (the same for all three) |
 |-|-|
 | `-k` | **keep** the original file |
-| `-c` | write the result to the standard output, to use with `>` or `\|` |
+| `-c` | write the result to the standard output, to use with `>` or `\|`: the original is kept |
 | `-v` | **verbose**: print how much smaller the file got |
 | `-1` ... `-9` | from the fastest (`-1`) to the best compression (`-9`) |
 
@@ -310,19 +311,19 @@ A compressor works on **one** file. It cannot put a directory or several files t
 `tar` (*tape archive*) puts files and directories together into a single file, usually called `.tar`. Its options are
 letters, written together, and the most used ones are:
 
-| Letter | Means |
-|-|-|
-| `c` | **create** an archive |
-| `t` | lis**t** the content of an archive |
-| `x` | e**x**tract an archive |
-| `r` | add files at the end of an archive |
-| `v` | **verbose**: print the name of every file |
-| `f <archive>` | the name of the archive **file**, always the **last** letter |
-| `-C <directory>` | change to this directory first: extract the archive there |
+| Letter | Long form | Means |
+|-|-|-|
+| `c` | `--create` | **create** an archive |
+| `t` | `--list` | lis**t** the content of an archive |
+| `x` | `--extract` | e**x**tract an archive |
+| `r` | `--append` | add files at the end of an archive (not for compressed archives) |
+| `v` | `--verbose` | **verbose**: print the name of every file |
+| `f <archive>` | `--file <archive>` | the name of the archive **file** |
+| `-C <directory>` | `--directory <directory>` | change to `directory` first: extract the archive there, or take the files from there |
 
 | Command | What it does |
 |-|-|
-| `tar cvf music.tar Music fruits.txt` | Creates `music.tar` with the directory `Music` and the file `fruits.txt` |
+| `tar cvf music.tar Music fruits.txt` | Creates `music.tar` with the directory `Music`, everything inside it, and the file `fruits.txt` |
 | `tar tf music.tar` | Lists the content of `music.tar` |
 | `tar tvf music.tar` | Lists the content with the details: permissions, owner, size and date |
 | `tar xvf music.tar` | Extracts `music.tar` in the current directory |
@@ -461,9 +462,9 @@ Archive:  music.zip
         0  10-06-2026 10:12   Music/jazz.mp3
         0  10-06-2026 10:12   Music/pop.mp3
         0  10-06-2026 10:12   Music/rock.mp3
-       45  10-06-2026 10:12   fruits.txt
+       44  10-06-2026 10:12   fruits.txt
 ---------                     -------
-       45                     5 files
+       44                     5 files
 ```
 
 `zip` printed how much it compressed every file: the empty `.mp3` files were stored as they are, and `fruits.txt`
@@ -504,6 +505,7 @@ the process that started it, its **parent**: the **PPID** (*Parent Process ID*).
 | `echo $$` | The PID of the current shell |
 | `ps` | The processes of the current terminal |
 | `ps -f` | The same processes, with more columns: `UID`, `PID`, `PPID`, the start time and the full command |
+| `ps -e` | **All** the processes of the system (**e**very process) |
 | `ps -ef` | **All** the processes of the system, with the columns of `-f` |
 | `ps -p <PID>` | Only the process with this PID |
 | `ps -o <columns>` | Only the columns you choose, for example `ps -o pid,ppid,stat,cmd` |
@@ -591,7 +593,7 @@ The letter in the `State` line (and in the `STAT` column of `ps`) is the **state
 | File | What it shows |
 |-|-|
 | `/proc/cpuinfo` | The processors, one block for each of them |
-| `/proc/meminfo` | The memory: `MemTotal`, `MemFree`, `MemAvailable`, ... |
+| `/proc/meminfo` | The memory, in kB: `MemTotal`, `MemFree`, `MemAvailable`, ... |
 | `/proc/uptime` | Two numbers: the seconds since the system started, then the seconds the processors were idle (added up for all of them) |
 | `/proc/loadavg` | How busy the system was in the last 1, 5 and 15 minutes |
 | `/proc/version` | The version of the kernel, and the compiler that built it |
