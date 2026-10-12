@@ -455,6 +455,12 @@ macOS.
 | `unzip music.zip -d /tmp/unzipped` | Extracts it in `/tmp/unzipped` (the directory is created) |
 | `unzip music.zip fruits.txt` | Extracts only one file |
 
+:::info
+
+When `zip` is given an archive name, it creates the archive if it doesn’t exist. If the archive already exists, `zip` updates it: files not yet in the archive are added, files with the same path are replaced, and all other existing entries are left unchanged.
+
+:::
+
 ```shell-session
 [student@fedora lab03]$ zip -r music.zip Music fruits.txt
   adding: Music/ (stored 0%)
