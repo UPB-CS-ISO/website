@@ -90,5 +90,3 @@
   - Redirects
   - How Linux starts
 ]
-
-#include "geek.typ"
