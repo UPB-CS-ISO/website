@@ -13,8 +13,11 @@
       - Chapter 2 - _Basic Commands and Directory Hierarchy_
         - Section 2.14 - _Shell Input and Output_
         - Section 2.16 - _Listing and Manipulating Processes_
+        - Section 2.17.2 - _Working with Symbolic Links_
       - Chapter 3 - _Devices_
         - Section 3.1 - _Device Files_
+      - Chapter 4 - _Disks and Filesystems_
+        - Section 4.2.12 - _Special-Purpose Filesystems_
       - Chapter 6 - _How User Space Starts_
         - Sections 6.1 - 6.6
       - Chapter 8 - _A Closer Look at Processes and Resource Utilization_
@@ -22,6 +25,7 @@
   ][
     2. *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
       - Chapter 2 - _Utilizarea sistemului de fișiere_
+        - Section 2.3.4.1 - _Crearea legăturilor simbolice_
         - Section 2.4 - _Redirectarea intrării sau ieșirii_
       - Chapter 4 - _Procese_
         - Sections 4.1 - 4.5, 4.8 - 4.9
@@ -40,7 +44,10 @@
   - Process Loading
   - Process States
   - `fork` and `exec`
-  - File descriptors and redirects
+  - File descriptors
+  - Soft links
+  - The `/proc` folder
+  - Redirects
   - How Linux starts
 ]
 
@@ -65,6 +72,8 @@
 
 #include "process.typ"
 #include "fd.typ"
+#include "links.typ"
+#include "proc.typ"
 #include "redirects.typ"
 
 #slide[
@@ -75,7 +84,11 @@
   - Process Loading
   - Process States
   - `fork` and `exec`
-  - File descriptors and redirects
-  - How signals work
+  - File descriptors
+  - Soft links
+  - The `/proc` folder
+  - Redirects
   - How Linux starts
 ]
+
+#include "geek.typ"

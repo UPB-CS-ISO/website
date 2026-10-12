@@ -130,7 +130,7 @@
       ]
     ]
     // from step 2, the parts of the executable file used by each step
-    #only(2)[#small-executable(("load"))]
+    #only(2)[#small-executable("load")]
     #only(3)[#small-executable(("links",))]
     #only(4)[#small-executable(("code", "links"))]
     #only("5-")[#small-executable(("code",))]
@@ -141,7 +141,9 @@
   #only(2)[💡 *program loading*: the loader reads the executable and copies its code and data into memory]
   #only(3)[💡 *library loading*: it finds the libraries the program needs (`libc.so.6`, ...) and loads them too]
   #only(4)[💡 *runtime dynamic linking*: it connects the program's calls to the functions inside the libraries]
-  #only("5-")[💡 *execution*: the processor jumps to the start of the program, the code of the program and of the libraries runs]
+  #only(
+    "5-",
+  )[💡 *execution*: the processor jumps to the start of the program, the code of the program and of the libraries runs]
 ]
 
 #slide[
@@ -191,12 +193,12 @@
 
 #let linux-boot = (
   ```
-  [PID 0]  swapper / sched
+  [kernel]  interrupt handler / scheduler
   │   # The kernel’s first process (part of the kernel itself)
   │   # Manages CPU scheduling and idling
   ```,
   ```
-  [PID 0]  swapper / sched
+  [kernel]  interrupt handler / scheduler
   │   # The kernel’s first process (part of the kernel itself)
   │   # Manages CPU scheduling and idling
   │
@@ -206,7 +208,7 @@
         # Mounts filesystems, starts targets, and manages services
   ```,
   ```
-  [PID 0]  swapper / sched
+  [kernel]  interrupt handler / scheduler
   │   # The kernel’s first process (part of the kernel itself)
   │   # Manages CPU scheduling and idling
   │
@@ -216,7 +218,7 @@
         # These run in the background as part of the kernel itself
   ```,
   ```
-  [PID 0]  swapper / sched
+  [kernel]  interrupt handler / scheduler
   │   # The kernel’s first process (part of the kernel itself)
   │   # Manages CPU scheduling and idling
   │
@@ -227,7 +229,7 @@
   └── [PID ...]  kernel threads (kthreadd, kworker, ksoftirqd, etc.)
   ```,
   ```
-  [PID 0]  swapper / sched
+  [kernel]  interrupt handler / scheduler
   │   # The kernel’s first process (part of the kernel itself)
   │   # Manages CPU scheduling and idling
   │
@@ -239,7 +241,7 @@
   └── [PID ...]  kernel threads (kthreadd, kworker, ksoftirqd, etc.)
   ```,
   ```
-  [PID 0]  swapper / sched
+  [kernel]  interrupt handler / scheduler
   │   # The kernel’s first process (part of the kernel itself)
   │   # Manages CPU scheduling and idling
   │
@@ -252,7 +254,7 @@
   └── [PID ...]  kernel threads (kthreadd, kworker, ksoftirqd, etc.)
   ```,
   ```
-  [PID 0]  swapper / sched
+  [kernel]  interrupt handler / scheduler
   │   # The kernel’s first process (part of the kernel itself)
   │   # Manages CPU scheduling and idling
   │
@@ -266,7 +268,7 @@
   └── [PID ...]  kernel threads (kthreadd, kworker, ksoftirqd, etc.)
   ```,
   ```
-  [PID 0]  swapper / sched
+  [kernel]  interrupt handler / scheduler
   │   # The kernel’s first process (part of the kernel itself)
   │   # Manages CPU scheduling and idling
   │
@@ -280,7 +282,7 @@
   └── [PID ...]  kernel threads (kthreadd, kworker, ksoftirqd, etc.)
   ```,
   ```
-  [PID 0]  swapper / sched
+  [kernel]  interrupt handler / scheduler
   │   # The kernel’s first process (part of the kernel itself)
   │   # Manages CPU scheduling and idling
   │
@@ -295,7 +297,7 @@
   └── [PID ...]  kernel threads (kthreadd, kworker, ksoftirqd, etc.)
   ```,
   ```
-  [PID 0]  swapper / sched
+  [kernel]  interrupt handler / scheduler
   │   # The kernel’s first process (part of the kernel itself)
   │   # Manages CPU scheduling and idling
   │
@@ -387,12 +389,16 @@
   == 🧟 Zombie Process
   And this is why `init` cannot stop
 
-  #uncover("2-")[#block[- the process will stay in `Done` and will *wait for the parent* to _read its return code_ (`wait`)]]
+  #uncover("2-")[#block[
+    - the process will stay in `Done` and will *wait for the parent* to _read its return code_ (`wait`)
+  ]]
   #uncover("3-")[#block[- the system will *keep all the process' resources allocated* while in `Done`]]
 
   #align(center)[#diagram("img/process/process-states.pdf", height: 50%)]
 
-  #uncover("4-")[#block[- until the parent reads the return code of the child, *resources* stay *allocated*, *but not used*: 🧟 zombie]]
+  #uncover("4-")[#block[
+    - until the parent reads the return code of the child, *resources* stay *allocated*, *but not used*: 🧟 zombie
+  ]]
 ]
 
 #slide[
@@ -411,7 +417,7 @@
   #heading(level: 2, outlined: false)[]
 
   #text(size: 50pt)[
-    #align(center+horizon)[
-  🐧 + 🧟 = 🛑 #text(size: 10pt, weight: "regular")[\ _Linux does not like *permanent* zombies, so it just panics when `init` stops._]
+    #align(center + horizon)[
+      🐧 + 🧟 = 🛑 #text(size: 10pt, weight: "regular")[\ _Linux does not like *permanent* zombies, so it just panics when `init` stops._]
     ]
   ]]

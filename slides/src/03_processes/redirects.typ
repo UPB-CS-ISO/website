@@ -1,6 +1,5 @@
 #import "/src/slides.typ": *
 #import "streams.typ": *
-#import "forkexec.typ": fork-exec
 
 #slide[
   = Redirects #text(size: 10pt, weight: "regular")[\ _Change where a process reads and writes_]
@@ -228,8 +227,6 @@
     ]
   ]
 ]
-
-#fork-exec(redirect: true)
 
 // A regular file and a character device side by side: both are read with
 // `read`, but the bytes of a file come from the disk, the bytes of a
