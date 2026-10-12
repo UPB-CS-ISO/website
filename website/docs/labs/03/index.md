@@ -321,6 +321,14 @@ letters, written together, and the most used ones are:
 | `f <archive>` | `--file <archive>` | the name of the archive **file** |
 | `-C <directory>` | `--directory <directory>` | change to `directory` first: extract the archive there, or take the files from there |
 
+:::tip
+
+Every `tar` command has **exactly one** of `c`, `t`, `x` and `r`: what to do. The other letters change how it is done.
+The letters are written together, without a `-` (`tar cvf`, the old style, or `tar -cvf`). Put `f` **last**: the word
+right after the letters is the name of the archive. `-C` is written apart, with its own `-`.
+
+:::
+
 | Command | What it does |
 |-|-|
 | `tar cvf music.tar Music fruits.txt` | Creates `music.tar` with the directory `Music`, everything inside it, and the file `fruits.txt` |
