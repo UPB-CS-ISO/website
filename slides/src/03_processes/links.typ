@@ -139,12 +139,80 @@
   raw(src, block: true)
 }
 
-// `link-terminal` revealed step by step: `steps` are the visible lines
-#let link-terminal-steps(src, steps, marks: none) = {
+// `link-terminal` revealed step by step: `steps` are the visible lines,
+// the first step is shown on subslide `start`
+#let link-terminal-steps(src, steps, marks: none, start: 1) = {
   for (i, n) in steps.enumerate() {
-    let when = if i == steps.len() - 1 { (beginning: i + 1) } else { i + 1 }
+    let when = if i == steps.len() - 1 { (beginning: start + i) } else { start + i }
     only(when, link-terminal(src, n, marks: if i == 0 { marks } else { none }))
   }
+}
+
+// a file at the end of a link, on one line
+#let found-file(name) = endpoint[📄 #text(font: stream-mono, size: 0.85em, name)]
+
+// one link and where the kernel ends up when it follows it;
+// `missing` - the path leads to a file that does not exist
+#let link-row(name, path, target, changed: false, missing: false) = follow(
+  link-box(name, path, changed: changed, width: 18em),
+  if missing { missing-file(target) } else { found-file(target) },
+  color: if missing { stream-unused } else if changed { stream-changed } else { luma(120) },
+)
+
+// the links of a slide, one under the other
+// (the rows start at the same place, so the links line up)
+#let links(..rows) = box({
+  set text(size: 0.75em)
+  set align(left)
+  stack(spacing: 0.6em, ..rows.pos())
+})
+
+// colors for the files in a tree: added (made or moved here) and removed
+#let tree-added = rgb("2e7d32")
+#let tree-removed = rgb("c62828")
+
+// A tree of files, as text. A line can end with a tag that says how
+// it is drawn:
+// - `%new`   - just made: green
+// - `%moved` - moved here: green, with a `<- moved here` label
+// - `%old`   - the place it was moved from: red, crossed out
+// - `%dim`   - not important on this step: gray
+// - `%hide`  - not there yet, but its place is kept
+#let file-tree(body) = {
+  show raw.line: it => {
+    let t = it.text
+    let tag = t.find(regex(" %[a-z]+$"))
+    let line = if tag == none { t } else { t.slice(0, t.len() - tag.len()) }
+    let tag = if tag == none { none } else { tag.slice(2) }
+    if tag == "new" {
+      text(fill: tree-added, weight: "bold", line)
+    } else if tag == "moved" {
+      text(fill: tree-added, weight: "bold", line)
+      text(fill: tree-added, style: "italic", "  <- moved here")
+    } else if tag == "old" {
+      text(fill: tree-removed, strike(line))
+    } else if tag == "dim" {
+      text(fill: stream-unused, line)
+    } else if tag == "hide" {
+      hide(line)
+    } else {
+      line
+    }
+  }
+  set text(size: 0.85em)
+  body
+}
+
+// The layout of the slides about relative and absolute paths:
+//   terminal    | tree of files
+//   links       | note
+#let paths-slide(terminal, tree, links, note) = {
+  toolbox.side-by-side(columns: (2fr, 1fr), gutter: 1.5em, terminal, tree)
+  v(0.3em)
+  toolbox.side-by-side(columns: (2fr, 1fr), gutter: 1.5em, links, {
+    set text(size: 0.85em)
+    note
+  })
 }
 
 #slide[
@@ -282,18 +350,18 @@ call mom",
   ]
 ]
 
+
 #slide[
   == Broken Links
   The target is gone, the link stays
 
   #link-terminal-steps(
     "$ rm notes.txt                   # delete the target
-$ ls -l
-lrwxrwxrwx 1 alice alice 12 Oct 12 09:12 link.txt -> shortcut.txt
+$ ls -l shortcut.txt
 lrwxrwxrwx 1 alice alice  9 Oct 12 09:12 shortcut.txt -> notes.txt
 $ cat shortcut.txt
 cat: shortcut.txt: No such file or directory",
-    (1, 4, 6),
+    (1, 3, 5),
   )
 
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
@@ -305,10 +373,181 @@ cat: shortcut.txt: No such file or directory",
   ][
     #set text(size: 0.9em)
     #only(1)[💡 deleting the target does *not* delete the links to it]
-    #only(2)[💡 the links still hold their paths, but `notes.txt` does not exist: the link is *broken*]
+    #only(2)[💡 the link still holds its path, but `notes.txt` does not exist: the link is *broken*]
     #only("3-")[
       💡 following a broken link fails\
       ⚠️ `ln -s` does not check that the target exists
     ]
   ]
+]
+
+#slide[
+  == Relative Paths
+  They start from the folder *of the link*, not from the folder you are in
+
+  #paths-slide(
+    link-terminal-steps(
+      "$ cd /home/alice
+$ ln -s notes.txt backup/wrong.txt     # from backup/
+$ cat backup/wrong.txt
+cat: backup/wrong.txt: No such file or directory
+$ ln -s ../notes.txt backup/right.txt  # go up
+$ cat backup/right.txt
+buy milk",
+      (4, 7),
+    ),
+    [
+      #only(1)[#file-tree[```
+      /home/alice
+      ├── notes.txt
+      └── backup
+          └── wrong.txt %new
+      ```]]
+      #only("2-")[#file-tree[```
+      /home/alice
+      ├── notes.txt
+      └── backup
+          ├── wrong.txt
+          └── right.txt %new
+      ```]]
+    ],
+    [
+      #only(1)[#links(link-row("backup/wrong.txt", "notes.txt", "backup/notes.txt", changed: true, missing: true))]
+      #only("2-")[#links(link-row("backup/wrong.txt", "notes.txt", "backup/notes.txt", changed: false, missing: true), link-row("backup/right.txt", "../notes.txt", "/home/alice/notes.txt", changed: true))]
+    ],
+    [
+      #only(1)[💡 `wrong.txt` is in `backup/`, so the kernel looks for `notes.txt` *in `backup/`*: the link is broken from the start]
+      #only("2-")[
+        💡 `../notes.txt` goes up from `backup/` to `/home/alice`: the file is found\
+        ⚠️ write a relative path as if you were in the *folder of the link*
+      ]
+    ],
+  )
+]
+
+#slide[
+  == Moving a Link
+  The path stays the same, the folder it starts from changes
+
+  #paths-slide(
+    link-terminal-steps(
+      "$ ln -s /home/alice/notes.txt backup/abs.txt
+$ mv backup/right.txt backup/abs.txt .
+$ cat right.txt
+cat: right.txt: No such file or directory
+$ cat abs.txt
+buy milk
+call mom",
+      (1, 4, 7),
+    ),
+    [
+      #only(1)[#file-tree[```
+      /home/alice
+      ├── notes.txt
+      └── backup
+          ├── right.txt
+          └── abs.txt %new
+      ```]]
+      #only("2-")[
+      #file-tree[```
+      /home/alice
+      ├── notes.txt
+      ├── right.txt %moved
+      ├── abs.txt %moved
+      └── backup
+          ├── right.txt %old
+          └── abs.txt %old
+      ```]
+      ]
+    ],
+    [
+      #only(1)[#links(link-row("backup/right.txt", "../notes.txt", "/home/alice/notes.txt"), link-row("backup/abs.txt", "/home/alice/notes.txt", "/home/alice/notes.txt", changed: true))]
+      #only(2)[#links(link-row("right.txt", "../notes.txt", "/home/notes.txt", changed: true, missing: true), link-row("abs.txt", "/home/alice/notes.txt", "/home/alice/notes.txt", changed: false))]
+      #only("3-")[#links(link-row("right.txt", "../notes.txt", "/home/notes.txt", changed: false, missing: true), link-row("abs.txt", "/home/alice/notes.txt", "/home/alice/notes.txt", changed: true))]
+    ],
+    [
+      #only(1)[💡 two links in `backup/` to the same file: one with a _relative_ path, one with an _absolute_ path]
+      #only(2)[💡 `mv` moves both links up; `right.txt` still holds `../notes.txt`, but now it starts from `/home/alice`: the link is *broken*]
+      #only("3-")[💡 an _absolute_ path starts from `/`: it does not matter where the link is]
+    ],
+  )
+]
+
+#slide[
+  == Moving the Folder
+  The link and its target move together
+
+  #paths-slide(
+    link-terminal-steps(
+      "$ mv project /tmp/project     # the whole folder
+$ cat /tmp/project/rel.txt
+buy milk
+call mom
+$ cat /tmp/project/abs.txt
+cat: /tmp/project/abs.txt: No such file or directory",
+      (4, 6),
+      start: 2,
+    ),
+    [
+      #only(1)[#file-tree[```
+      /
+      ├── home/alice
+      │   └── project
+      │       ├── notes.txt
+      │       ├── rel.txt
+      │       └── abs.txt
+      └── tmp
+      ```]]
+      #only("2-")[#file-tree[```
+      /
+      ├── home/alice
+      │   └── project %old
+      └── tmp
+          └── project %moved
+              ├── notes.txt
+              ├── rel.txt
+              └── abs.txt
+      ```]]
+    ],
+    [
+      #only(1)[#links(
+        link-row("project/rel.txt", "notes.txt", "/home/alice/project/notes.txt"),
+        link-row("project/abs.txt", "/home/alice/project/notes.txt", "/home/alice/project/notes.txt"),
+      )]
+      #only(2)[#links(
+        link-row("/tmp/project/rel.txt", "notes.txt", "/tmp/project/notes.txt", changed: true),
+        link-row("/tmp/project/abs.txt", "/home/alice/project/notes.txt", "/home/alice/project/notes.txt", missing: true),
+      )]
+      #only("3-")[#links(
+        link-row("/tmp/project/rel.txt", "notes.txt", "/tmp/project/notes.txt"),
+        link-row("/tmp/project/abs.txt", "/home/alice/project/notes.txt", "/home/alice/project/notes.txt", changed: true, missing: true),
+      )]
+    ],
+    [
+      #only(1)[💡 `project/` holds a file and two links to it]
+      #only(2)[💡 `rel.txt` starts from its own folder, which moved together with `notes.txt`: it still works]
+      #only("3-")[💡 `abs.txt` still points to the old place of the file: the link is *broken*]
+    ],
+  )
+]
+
+#slide[
+  == Relative or Absolute?
+  Choose the path by what will move
+
+  #v(1em)
+  #set text(size: 0.95em)
+  #align(center)[#table(
+    columns: (auto, auto, auto),
+    inset: (x: 0.8em, y: 0.6em),
+    align: (left, center, center),
+    table.header([], [*relative* path], [*absolute* path]),
+    [the path starts from], [the folder of the link], [`/`],
+    [only the *link* is moved], text(fill: stream-changed, weight: "bold")[broken], [works],
+    [the link and the target are moved *together*], [works], text(fill: stream-changed, weight: "bold")[broken],
+    [the *target* is moved or deleted], text(fill: stream-changed, weight: "bold")[broken], text(fill: stream-changed, weight: "bold")[broken],
+  )]
+
+  #v(1em)
+  💡 _relative_ links for files that travel together (a project, an archive), _absolute_ links for files that stay in place (`/usr/share/doc`, `/etc/...`)
 ]

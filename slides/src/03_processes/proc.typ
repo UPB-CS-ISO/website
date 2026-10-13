@@ -182,7 +182,7 @@
   #only("3-")[
     💡 `lsof -p <PID>` lists the same information: it reads `/proc/<PID>/fd`\
     ⚠️ only the *owner* of the process (or `root`) can look inside its `fd/`\
-    ➡️ next: *redirects* change where `0`, `1` and `2` point
+    💡 a redirect changes these links: with `> out.txt`, `1` points to `out.txt`
   ]
 ]
 

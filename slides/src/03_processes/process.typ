@@ -170,6 +170,122 @@
   ]
 ]
 
+// the colors of the states in the process states diagram
+#let state(name, color) = text(fill: color, weight: "bold", name)
+#let ready = state("Ready", rgb("7cb342"))
+#let running = state("Running", rgb("26a6b8"))
+#let waiting = state("Waiting", rgb("e0a800"))
+#let done = state("Done", rgb("2c4a7a"))
+
+// where each state box is in the diagram, as fractions of the image:
+// (x, y, width, height) of the box, and its color
+#let state-boxes = (
+  ready: ((0.273, 0.093, 0.200, 0.122), rgb("7cb342")),
+  waiting: ((0.769, 0.093, 0.199, 0.122), rgb("e0a800")),
+  running: ((0.516, 0.479, 0.199, 0.122), rgb("26a6b8")),
+  done: ((0.516, 0.849, 0.199, 0.122), rgb("2c4a7a")),
+)
+
+// the process states diagram, with the box of the state `current`
+// ("ready", "running", "waiting", "done") filled with its color
+#let states-diagram(current) = box(fill: white, inset: 5pt, radius: 0.3em, layout(size => {
+  let width = size.width
+  let height = width * 760 / 1313 // the size of the image, in pixels
+  image("img/process/process-states.pdf", width: width)
+  if current != none {
+    let ((x, y, w, h), color) = state-boxes.at(current)
+    // see-through, so the name of the state stays readable
+    place(top + left, dx: x * width, dy: y * height, rect(
+      width: w * width,
+      height: h * height,
+      radius: 0.012 * width,
+      fill: color.transparentize(55%),
+    ))
+  }
+}))
+
+// A `ps` listing where the processes in one state are highlighted with
+// the color of that state: only the state (the first letter of `STAT`)
+// and the command, the other letters of `STAT` stay plain;
+// `hl` is the letter of the state ("S", "R", "Z")
+#let ps-listing(hl, body) = {
+  let colors = (R: rgb("26a6b8"), S: rgb("e0a800"), Z: rgb("2c4a7a"))
+  // where the STAT column starts, taken from the header line
+  let at = body.text.split("\n").find(l => l.contains("STAT")).position("STAT")
+  show raw.line: it => {
+    let t = it.text
+    if t.starts-with("$ ") {
+      return render-terminal-line(t)
+    }
+    if t.contains("STAT") or t.trim() == "..." or t.len() <= at {
+      return text(fill: luma(100), t)
+    }
+    let letter = t.slice(at).first()
+    if hl == letter and letter in colors {
+      let c = colors.at(letter)
+      // PID | state letter | the other letters of STAT | command
+      let (pid, rest) = (t.slice(0, at), t.slice(at + 1))
+      let (flags, command) = (rest.slice(0, 4), rest.slice(4))
+      text(fill: c, weight: "bold", pid + letter)
+      text(fill: luma(150), flags)
+      text(fill: c, weight: "bold", command)
+    } else {
+      text(fill: luma(150), t)
+    }
+  }
+  body
+}
+
+#let ps-example = ```
+$ ps -e -o pid,stat,comm
+    PID STAT COMMAND
+      1 Ss   systemd
+    ...
+   4100 Ss   bash
+   4210 S    sleep
+   4211 R    yes
+   4213 Sl   myapp
+   4214 Z    myapp-worker <defunct>
+   4220 R+   ps
+```
+
+#slide[
+  == Process States
+
+  #toolbox.side-by-side(columns: (11fr, 9fr), gutter: 1em)[
+    #align(center + horizon)[
+      #only(1)[#states-diagram("ready")]
+      #only(2)[#states-diagram("running")]
+      #only(3)[#states-diagram("waiting")]
+      #only("4-")[#states-diagram("done")]
+    ]
+  ][
+    #set text(size: 1em)
+    #only("1-2")[#ps-listing("R", ps-example)]
+    #only(3)[#ps-listing("S", ps-example)]
+    #only("4-")[#ps-listing("Z", ps-example)]
+  ]
+
+  #v(0.5em)
+  #only(1)[
+    #ready - has everything it needs, waits for a free *processor* \
+    in `ps` it is `R`, like #running: `ps` cannot tell them apart
+  ]
+  #only(2)[
+    #running - its code runs on a processor; when its _time slice_ expires, it goes back to #ready \
+    `R` in `ps`: `yes` computes all the time, `ps` runs while it makes the list
+  ]
+  #only(3)[
+    #waiting - waits for an *event*: data from the disk, a key press, a network packet; it does not use the processor \
+    `S` (_sleeping_) in `ps`: `bash` waits for you to type, `sleep` waits for its timer
+  ]
+  #only("4-")[
+    #done - it has finished (`exit`), it waits for the parent to read its _exit code_ \
+    `Z` (_zombie_#footnote[_zombie_ processes are explained later, in _Zombie Process_]) in `ps`: `myapp-worker` has finished, but its parent, `myapp`, has not read its exit code yet
+  ]
+]
+
+
 #slide[
   == Creating a Process
   Forking a parent and loading an executable
@@ -330,12 +446,6 @@
   ]
 ]
 
-#slide[
-  == Process States
-
-  #align(center)[#diagram("img/process/process-states.pdf", height: 78%)]
-]
-
 #let orphan = (
   ```
   [PID 1]  systemd (init)
@@ -394,7 +504,11 @@
   ]]
   #uncover("3-")[#block[- the system will *keep all the process' resources allocated* while in `Done`]]
 
-  #align(center)[#diagram("img/process/process-states.pdf", height: 50%)]
+  // the same size as before: half of the height, the width follows the image
+  #align(center)[#layout(size => box(width: size.height * 0.5 * 1313 / 760)[
+    #only(1)[#states-diagram(none)]
+    #only("2-")[#states-diagram("done")]
+  ])]
 
   #uncover("4-")[#block[
     - until the parent reads the return code of the child, *resources* stay *allocated*, *but not used*: 🧟 zombie
