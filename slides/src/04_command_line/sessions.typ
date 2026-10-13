@@ -175,28 +175,61 @@
   ])))
 }
 
+// The terminal of `Sessions and the Terminal`: only the first `shown`
+// lines are visible (the others keep their space, like `reveal-terminal`).
+// `flag` boxes one letter of `STAT` in the `ps` output: "+" (the
+// foreground group) on the line of `ps`, "s" (the session leader) on the
+// line of `bash`, none for no box.
+#let session-terminal-src = "$ echo $$
+3000
+$ sleep 100 | cat &
+[1] 4243
+$ nohup sleep 200 > /dev/null &
+[2] 4244
+nohup: ignoring input
+$ ps -o pid,pgid,sid,stat,comm
+    PID    PGID     SID STAT COMMAND
+   3000    3000    3000 Ss   bash
+   4242    4242    3000 S    sleep
+   4243    4242    3000 S    cat
+   4244    4244    3000 S    sleep
+   4250    4250    3000 R+   ps"
+#let session-terminal(shown, flag: none) = {
+  let lines = session-terminal-src.split("\n")
+  // the second letter of STAT
+  let at = lines.find(l => l.contains("STAT")).position("STAT") + 1
+  // the line that has the flag: `bash` for "s", `ps` for "+"
+  let target = if flag == "s" { "bash" } else if flag == "+" { " ps" } else { none }
+  show raw.line: it => {
+    let t = it.text
+    if it.number > shown {
+      hide(t)
+    } else if t.starts-with("$ ") {
+      render-terminal-line(t)
+    } else if target != none and t.ends-with(target) and t.len() > at {
+      text(fill: luma(100), t.slice(0, at))
+      box(fill: changed, outset: (x: 1pt, y: 2pt), radius: 1pt, text(fill: white, weight: "bold", t.slice(at, at + 1)))
+      text(fill: luma(100), t.slice(at + 1))
+    } else {
+      text(fill: luma(100), t)
+    }
+  }
+  raw(session-terminal-src, block: true)
+}
+
 #slide[
   == Sessions and the Terminal
   How the kernel groups the processes of a terminal
 
   #toolbox.side-by-side(columns: (5fr, 7fr), gutter: 1em)[
     #set text(size: 0.8em)
-    #reveal-terminal(before: none, lines: (2, 4, 7, 14), full: false)[```terminal
-    $ echo $$
-    3000
-    $ sleep 100 | cat &
-    [1] 4243
-    $ nohup sleep 200 > /dev/null &
-    [2] 4244
-    nohup: ignoring input
-    $ ps -o pid,pgid,sid,stat,comm
-        PID    PGID     SID STAT COMMAND
-       3000    3000    3000 Ss   bash
-       4242    4242    3000 S    sleep
-       4243    4242    3000 S    cat
-       4244    4244    3000 S    sleep
-       4250    4250    3000 R+   ps
-    ```]
+    // step 4: `+` on `ps` (the foreground), step 5: `s` on `bash` (the session leader)
+    #only(1, session-terminal(2))
+    #only(2, session-terminal(4))
+    #only(3, session-terminal(7))
+    #only(4, session-terminal(14, flag: "+"))
+    #only(5, session-terminal(14, flag: "s"))
+    #only("6-", session-terminal(14))
   ][
     #for (i, when) in ("1", "2", "3", "4", "5", "6-").enumerate() {
       only(when, session-schematic(i + 1))
@@ -210,9 +243,9 @@
     💡 a signal (#kbd("Ctrl") + #kbd("C")) reaches the whole group]
   #only(3)[🛡️ `nohup` makes the program *ignore* `SIGHUP`: a shield against it]
   #only(4)[💡 a *session*: all the groups of one terminal, the same `SID`\
-    ⌨️ only the *foreground* (`+`) reads the input, a background job that reads gets `SIGTTIN` (stopped)]
+    ⌨️ only the *foreground* reads the input, `+` in `STAT`; a background job that reads gets `SIGTTIN` (stopped)]
   #only(5)[⭐ the *group leader*: the first process of the group, its PID is the `PGID`\
-    👑 the *session leader*: the process that started the session, its PID is the `SID`]
+    👑 the *session leader*: the process that started the session, its PID is the `SID`, `s` in `STAT`]
   #only("6-")[🐧 when the terminal closes, the *terminal driver* sends `SIGHUP` to the session leader, `bash`\
     💡 `bash` sends it to its jobs: ❌ job `[1]` ends, 🛡️ job `[2]` ignores it and keeps running]
 ]
@@ -311,7 +344,9 @@
     stroke: if fg { 2pt + accent } else { 1pt + luma(150) },
     fill: rgb("eef3f5"),
     {
-      align(center, text(size: 0.68em)[group *#id* \ #text(fill: if fg { accent } else { luma(100) }, weight: if fg { "bold" } else { "regular" }, what)])
+      // a fixed height: a label with code (`[1]`) is a bit taller, the
+      // drawing must not move between the steps
+      align(center, box(height: 1.75em, text(size: 0.68em)[group *#id* \ #text(fill: if fg { accent } else { luma(100) }, weight: if fg { "bold" } else { "regular" }, what)]))
       v(0.05em)
       grid(columns: procs.pos().len(), column-gutter: 0.25em, ..procs.pos())
     },
