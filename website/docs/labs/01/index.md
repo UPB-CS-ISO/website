@@ -687,122 +687,124 @@ them, use `localhost` as the host name and `2222` as the port.
 
 ## Exercises
 
-The exercises are marked for the two types of lab:
+The exercises cover the main parts of the lab: Sway, the terminal, virtual machines and remote access. Each one is
+marked with where to do it:
 
-* 🌱 **basic** (1 hour - **AC**): do only the exercises marked with 🌱;
-* 🌳 **full** (2 hours - **CD**): do all the exercises, both 🌱 and 🌳.
+- 🧪 **in the lab**: the exercises that need the lab computers (Sway, VirtualBox and the `.iso` images) or the help
+  of a teaching assistant;
+- 🏠 **at home**: more practice with the same tools. You need Sway: install
+  [Fedora Sway](https://fedoraproject.org/spins/sway/) in a virtual machine, or install Sway on your Linux.
 
-Both types of exercises cover the main parts: Sway, the terminal, virtual machines and remote access. If you
-finish early, continue with the other exercises and then with the [Extra](#extra) section.
+If you finish the 🧪 exercises early, continue with the 🏠 ones, and then with the [Extra](#extra) section.
 
 ### Getting Used to Sway
 
 Do these exercises in order. Try to use **only the keyboard**.
 
-1. 🌱 **Look around**: Log in to Sway. Look at the bar: can you find the workspace number and the clock? Is there
+1. 🧪 **Look around**: Log in to Sway. Look at the bar: can you find the workspace number and the clock? Is there
    anything else on the screen? <small>→ [Welcome to the Tiles of Sway](#welcome-to-the-tiles-of-sway)</small>
-2. 🌱 **Your first terminal**: Open a terminal with <kbd>$mod</kbd> + <kbd>Enter</kbd>. Type `whoami`, then `hostname`,
+2. 🧪 **Your first terminal**: Open a terminal with <kbd>$mod</kbd> + <kbd>Enter</kbd>. Type `whoami`, then `hostname`,
    then `ls`. Close the terminal with <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>q</kbd>. <small>→ [The Essentials](#the-essentials) · [Running Commands](#running-commands)</small>
-3. 🌱 **Tiling**: Open one terminal, then a second one, then a third one. What happens to the size of the windows each
+3. 🧪 **Tiling**: Open one terminal, then a second one, then a third one. What happens to the size of the windows each
    time you open a new one? Now close them one by one and watch again. <small>→ [Welcome to the Tiles of Sway](#welcome-to-the-tiles-of-sway)</small>
-4. 🌱 **Focus**: Open three terminals. Move the focus between them with <kbd>$mod</kbd> + arrow keys. In each terminal,
+4. 🧪 **Focus**: Open three terminals. Move the focus between them with <kbd>$mod</kbd> + arrow keys. In each terminal,
    type a different word (for example `one`, `two`, `three`) to be sure you know which window has the focus. <small>→ [Focus](#focus)</small>
-5. 🌳 **The vi keys**: Do the previous exercise again, but use <kbd>$mod</kbd> + <kbd>h</kbd> and <kbd>$mod</kbd> +
+5. 🏠 **The vi keys**: Do the previous exercise again, but use <kbd>$mod</kbd> + <kbd>h</kbd> and <kbd>$mod</kbd> +
    <kbd>l</kbd> instead of the arrow keys. <small>→ [Default Keybindings](#default-keybindings)</small>
-6. 🌱 **Moving windows**: With three terminals open, move the focused one to the far left, then to the far right, using
+6. 🧪 **Moving windows**: With three terminals open, move the focused one to the far left, then to the far right, using
    <kbd>$mod</kbd> + <kbd>Shift</kbd> + arrow keys. <small>→ [Default Keybindings](#default-keybindings)</small>
-7. 🌱 **The launcher**: Press <kbd>$mod</kbd> + <kbd>d</kbd>, type the first letters of `firefox` and press
+7. 🧪 **The launcher**: Press <kbd>$mod</kbd> + <kbd>d</kbd>, type the first letters of `firefox` and press
    <kbd>Enter</kbd>. Use the launcher again to open the file manager, **Thunar** (type `thunar`). <small>→ [The Essentials](#the-essentials)</small>
-8. 🌳 **Fullscreen**: Focus the browser and press <kbd>$mod</kbd> + <kbd>f</kbd>. Press it again to go back. <small>→ [Default Keybindings](#default-keybindings)</small>
-9. 🌱 **Workspaces**: Go to workspace 2 with <kbd>$mod</kbd> + <kbd>2</kbd> and open a terminal there. Go to workspace 3
+8. 🏠 **Fullscreen**: Focus the browser and press <kbd>$mod</kbd> + <kbd>f</kbd>. Press it again to go back. <small>→ [Default Keybindings](#default-keybindings)</small>
+9. 🧪 **Workspaces**: Go to workspace 2 with <kbd>$mod</kbd> + <kbd>2</kbd> and open a terminal there. Go to workspace 3
    and open another one. Jump between workspaces 1, 2 and 3. Look at the bar each time. <small>→ [Workspaces](#workspaces)</small>
-10. 🌱 **Moving to another workspace**: Focus the browser and send it to workspace 4 with <kbd>$mod</kbd> +
+10. 🧪 **Moving to another workspace**: Focus the browser and send it to workspace 4 with <kbd>$mod</kbd> +
     <kbd>Shift</kbd> + <kbd>4</kbd>. Where are you now: on workspace 4 or still on the old one? Go to workspace 4 and
     check that the browser is there. <small>→ [Workspaces](#workspaces)</small>
-11. 🌳 **Empty workspaces**: Move the only window from workspace 3 to workspace 1. Look at the bar: what happened to
+11. 🏠 **Empty workspaces**: Move the only window from workspace 3 to workspace 1. Look at the bar: what happened to
     workspace 3? <small>→ [Workspaces](#workspaces)</small>
-12. 🌱 **Splitting**: On an empty workspace, open one terminal. Press <kbd>$mod</kbd> + <kbd>v</kbd> and open a second
+12. 🧪 **Splitting**: On an empty workspace, open one terminal. Press <kbd>$mod</kbd> + <kbd>v</kbd> and open a second
     terminal. Where did it appear? Now press <kbd>$mod</kbd> + <kbd>b</kbd> and open a third one. Where did that one
     appear? <small>→ [Layouts](#layouts)</small>
-13. 🌳 **Build a layout**: On an empty workspace, build this: one terminal on the **left half** of the screen, and two
+13. 🏠 **Build a layout**: On an empty workspace, build this: one terminal on the **left half** of the screen, and two
     terminals **one above the other** on the **right half**. (Hint: open two terminals, focus the right one, press
     <kbd>$mod</kbd> + <kbd>v</kbd>, then open the third.) <small>→ [Layouts](#layouts)</small>
-14. 🌱 **Tabs and stacks**: Open three terminals on an empty workspace. Press <kbd>$mod</kbd> + <kbd>w</kbd> for tabs and
+14. 🏠 **Tabs and stacks**: Open three terminals on an empty workspace. Press <kbd>$mod</kbd> + <kbd>w</kbd> for tabs and
     move between them with <kbd>$mod</kbd> + arrow keys. Then try <kbd>$mod</kbd> + <kbd>s</kbd>. Go back to the
     normal layout with <kbd>$mod</kbd> + <kbd>e</kbd>. <small>→ [Layouts](#layouts)</small>
-15. 🌱 **Resizing**: With two terminals side by side, press <kbd>$mod</kbd> + <kbd>r</kbd> and make the left one bigger
+15. 🏠 **Resizing**: With two terminals side by side, press <kbd>$mod</kbd> + <kbd>r</kbd> and make the left one bigger
     with the arrow keys. Press <kbd>Esc</kbd> when you are done. <small>→ [Resize Mode](#resize-mode)</small>
-16. 🌱 **Floating**: Make a terminal floating with <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd>. Move it by
+16. 🏠 **Floating**: Make a terminal floating with <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd>. Move it by
     holding <kbd>$mod</kbd> and dragging with the left mouse button, and resize it by dragging with the right button.
     Put it back into the tiles with the same keys. <small>→ [Floating Windows](#floating-windows)</small>
-17. 🌳 **The scratchpad**: Hide a terminal in the scratchpad with <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>-</kbd>. Go
+17. 🏠 **The scratchpad**: Hide a terminal in the scratchpad with <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>-</kbd>. Go
     to another workspace and bring it back with <kbd>$mod</kbd> + <kbd>-</kbd>. Press <kbd>$mod</kbd> +
     <kbd>-</kbd> again to hide it. <small>→ [The Scratchpad](#the-scratchpad)</small>
-18. 🌳 **Challenge - your desk**: Without using the mouse, set up this:
+18. 🏠 **Challenge - your desk**: Without using the mouse, set up this:
     * workspace 1: the browser, in fullscreen;
     * workspace 2: two terminals side by side;
     * workspace 3: three terminals in tabs.
 
     Then jump between the three workspaces a few times. <small>→ [Workspaces](#workspaces) · [Layouts](#layouts)</small>
-19. 🌳 **Log out and in**: Exit Sway with <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>e</kbd> and log in again. Are your
+19. 🏠 **Log out and in**: Exit Sway with <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>e</kbd> and log in again. Are your
     windows and workspaces still there? <small>→ [The Essentials](#the-essentials)</small>
 
 ### The Terminal
 
-20. 🌱 **Clean screen**: Open a terminal and run `whoami`, `hostname`, `ls` and `ip a`. Now run `clear`. What happened
+20. 🧪 **Clean screen**: Open a terminal and run `whoami`, `hostname`, `ls` and `ip a`. Now run `clear`. What happened
     to the screen? Run the commands again and press <kbd>Ctrl</kbd> + <kbd>L</kbd> this time. Scroll up with
     <kbd>Shift</kbd> + <kbd>Page Up</kbd> after each of them: can you still see the old output? <small>→ [Running Commands](#running-commands)</small>
-21. 🌱 **From the terminal to the browser**: Run `hostname`. Select its output with the mouse and copy it with
+21. 🧪 **From the terminal to the browser**: Run `hostname`. Select its output with the mouse and copy it with
     <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>. Open the browser, click in the search bar and paste it with
     <kbd>Ctrl</kbd> + <kbd>V</kbd>. Now select some text on a web page and press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> +
     <kbd>C</kbd> in the browser: did it copy the text, or did something else happen? (Close what opened with the
     same keys.) <small>→ [Copy and Paste](#copy-and-paste)</small>
-22. 🌱 **From the browser to the terminal**: In the browser, open this page, select the command `ip a` from the
+22. 🧪 **From the browser to the terminal**: In the browser, open this page, select the command `ip a` from the
     [Running Commands](#running-commands) table and copy it with <kbd>Ctrl</kbd> + <kbd>C</kbd>. Go to the terminal and
     paste it with <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>, then press <kbd>Enter</kbd>. Try
     <kbd>Ctrl</kbd> + <kbd>V</kbd> in the terminal as well: what happens? <small>→ [Copy and Paste](#copy-and-paste)</small>
-23. 🌳 **From a terminal to another terminal**: Open two terminals side by side. In the first one, run `whoami` and copy
+23. 🏠 **From a terminal to another terminal**: Open two terminals side by side. In the first one, run `whoami` and copy
     the output. In the second one, type `echo Hello, `, paste the user name and press <kbd>Enter</kbd>. <small>→ [Copy and Paste](#copy-and-paste)</small>
-24. 🌱 **Ctrl+C is not copy**: Run `sleep 10` and watch the prompt: when does the `$` come back? Now run `sleep 100`
+24. 🧪 **Ctrl+C is not copy**: Run `sleep 10` and watch the prompt: when does the `$` come back? Now run `sleep 100`
     (a command that just waits 100 seconds). Can you see a `$`? While it runs, press <kbd>Ctrl</kbd> +
     <kbd>C</kbd>. What happened to the command and to the `$`? Explain why the terminal uses <kbd>Ctrl</kbd> +
     <kbd>Shift</kbd> + <kbd>C</kbd> for copy. <small>→ [Running Commands](#running-commands) · [Copy and Paste](#copy-and-paste)</small>
-25. 🌳 **The middle button**: Run `ls`, select one of the file names with the mouse (a double click selects a whole
+25. 🏠 **The middle button**: Run `ls`, select one of the file names with the mouse (a double click selects a whole
     word) and paste it with the **middle mouse button** after `ls -l `. Then paste it in the browser search bar with
     the middle button too. Did you need any key? <small>→ [Copy and Paste](#copy-and-paste)</small>
 
 ### Sway Tools
 
-26. 🌳 **Lock the screen**: In a terminal, run `swaylock`. What do you see? Unlock the screen by typing your password and
+26. 🏠 **Lock the screen**: In a terminal, run `swaylock`. What do you see? Unlock the screen by typing your password and
     pressing <kbd>Enter</kbd>. Then run `swaylock -c 000000` and `swaylock -c 0000ff`: what does the `-c` option
     change? (Hint: `man swaylock`.) <small>→ [Locking the Screen](#locking-the-screen)</small>
-27. 🌳 **Take a screenshot**: Run `grim ~/Pictures/full.png` to capture the whole screen. Now run
+27. 🏠 **Take a screenshot**: Run `grim ~/Pictures/full.png` to capture the whole screen. Now run
     `sleep 5; grim ~/Pictures/later.png` and, in those 5 seconds, go to another workspace. Open **Thunar**, go to the `Pictures` folder and look at both screenshots: what does each of them
     show? <small>→ [Screenshots](#screenshots)</small>
 
 ### Virtual Machines
 
-28. 🌱 **Install another distribution**: Create a VM following [Creating a VM in VirtualBox](#creating-a-vm-in-virtualbox)
+28. 🧪 **Install another distribution**: Create a VM following [Creating a VM in VirtualBox](#creating-a-vm-in-virtualbox)
     and attach the `.iso` file of a distribution (you can find several in the `Downloads/` directory). Boot the VM,
     run the installer, create a user and set a password. <small>→ [Creating a VM in VirtualBox](#creating-a-vm-in-virtualbox)</small>
-29. 🌱 **Explore the guest**: Log in to the VM, open a terminal and run `whoami`, `hostname` and `ip a`. Run the same
+29. 🧪 **Explore the guest**: Log in to the VM, open a terminal and run `whoami`, `hostname` and `ip a`. Run the same
     commands in a terminal on the host. What is different? Can you guess why the VM's IP address starts with `10.0.2`? <small>→ [Virtual Machines](#virtual-machines) · [Remote Access](#remote-access)</small>
-30. 🌳 **Keyboard capture**: Click inside the VM window and press <kbd>Super</kbd>. Then press the **Host key** and press
+30. 🧪 **Keyboard capture**: Click inside the VM window and press <kbd>Super</kbd>. Then press the **Host key** and press
     <kbd>Super</kbd> again. Which system reacted each time: the VM or the host? Watch the keyboard icon at the bottom
     right of the VM window. <small>→ [Keyboard and Mouse Capture](#keyboard-and-mouse-capture)</small>
-31. 🌳 **Take a snapshot**: Shut down the VM and take a snapshot called `fresh-install`. <small>→ [Snapshots](#snapshots)</small>
-32. 🌳 **Break and restore**: Start the VM and create a file with `nano ~/test.txt`. Shut down the VM and restore the
+31. 🏠 **Take a snapshot**: Shut down the VM and take a snapshot called `fresh-install`. <small>→ [Snapshots](#snapshots)</small>
+32. 🏠 **Break and restore**: Start the VM and create a file with `nano ~/test.txt`. Shut down the VM and restore the
     `fresh-install` snapshot. Start the VM again: is `test.txt` still there? Why? <small>→ [Snapshots](#snapshots)</small>
 
 ### Remote Access
 
-33. 🌱 **Connect via SSH**: Make sure the VM network adapter is **NAT** and add the port forwarding rule (see
+33. 🧪 **Connect via SSH**: Make sure the VM network adapter is **NAT** and add the port forwarding rule (see
     [Port Forwarding](#port-forwarding)). In the VM, start the SSH server and open the firewall (see
     [Connecting to a VM](#connecting-to-a-vm)). From a terminal on the **host**, connect with
     `ssh -p 2222 <user>@localhost`. Run `hostname` to check that you are on the VM, then type `exit`. <small>→ [Port Forwarding](#port-forwarding) · [Connecting to a VM](#connecting-to-a-vm)</small>
-34. 🌳 **Wrong door**: From the host, run `ssh <user>@localhost` **without** `-p 2222`. What happens? Where would you be
+34. 🧪 **Wrong door**: From the host, run `ssh <user>@localhost` **without** `-p 2222`. What happens? Where would you be
     if it worked? Use `hostname` to check. <small>→ [Port Forwarding](#port-forwarding)</small>
-35. 🌳 **Two sides**: Put the VM window and a host terminal next to each other. Over SSH, create a file with
+35. 🧪 **Two sides**: Put the VM window and a host terminal next to each other. Over SSH, create a file with
     `nano hello.txt` and write something in it. Then, in a terminal **inside the VM window**, run `ls` and
     `cat hello.txt`. Is it the same file? <small>→ [Connecting to a VM](#connecting-to-a-vm)</small>
 
