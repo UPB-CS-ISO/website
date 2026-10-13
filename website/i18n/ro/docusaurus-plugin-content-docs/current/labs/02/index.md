@@ -1083,16 +1083,9 @@ Pentru a copia un fișier din `~/Downloads` în `~/Movies`: deschideți `~/Downl
 
 Exercițiile devin din ce în ce mai dificile pe măsură ce avansați:
 
-* [Primii pași](#first-steps) (exercițiile 1 - 34) parcurg o dată **tot** conținutul acestui laborator, cu exerciții ușoare;
-* [Mai departe](#going-further) (exercițiile 35 - 53) conține exerciții mai dificile;
-* [Provocări](#challenges) (exercițiile 54 - 62) conține cele mai dificile exerciții.
-
-Exercițiile sunt, de asemenea, marcate pentru cele două tipuri de laborator:
-
-* 🌱 **de bază** (1 oră - **AC**): faceți doar exercițiile marcate cu 🌱 (exercițiile 1 - 34);
-* 🌳 **complet** (2 ore - **CD**): faceți toate exercițiile, atât cele marcate cu 🌱, cât și cele marcate cu 🌳, cu excepția
-  celor marcate cu 🏠;
-* 🏠 **acasă**: cele mai dificile exerciții, de rezolvat acasă, după laborator.
+* 🧪 [Primii pași](#first-steps) (exercițiile 1 - 34) parcurg o dată **tot** conținutul acestui laborator, cu exerciții ușoare;
+* 🏠 [Mai departe](#going-further) (exercițiile 35 - 53) conține exerciții mai dificile;
+* 📝 [Provocări](#challenges) (exercițiile 54 - 62) conține cele mai dificile exerciții.
 
 Faceți exercițiile **în ordine**: fiecare folosește fișierele lăsate de cele dinainte.
 
@@ -1119,7 +1112,7 @@ calculatorului.
 
 :::
 
-### Primii pași {/* #first-steps */}
+### 🧪 Primii pași {/* #first-steps */}
 
 :::info 
 
@@ -1139,7 +1132,7 @@ ca să reactivați culorile, deschideți un terminal nou.
 
 :::
 
-1. 🌱 **Arborele de exersare**:
+1. **Arborele de exersare**:
    1. Dezactivați culorile în **ambele** terminale, așa cum este explicat mai sus.
    2. Rulați aceste comenzi ca să creați directoarele și fișierele folosite în exerciții (copiați-le din browser cu
       <kbd>Ctrl</kbd>+<kbd>C</kbd> și lipiți-le în terminal cu <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>):
@@ -1181,113 +1174,113 @@ directorul în care vă aflați, apoi urmăriți calea din comanda voastră, câ
 
 :::
 
-2. 🌱 **Unde sunt**: Mergeți în directorul `Games` folosind o cale **absolută**, apoi în `puzzles` folosind o cale
+2. **Unde sunt**: Mergeți în directorul `Games` folosind o cale **absolută**, apoi în `puzzles` folosind o cale
    **relativă**, apoi înapoi în `~/lab02` cu o **singură** comandă `cd` care folosește doar `..`. Afișați directorul
    curent după fiecare pas.
 
    **Verificare:** ajungeți în `/home/student/lab02`. <small>→ [Directorul curent](#the-current-directory) · [Căi absolute](#absolute-paths)</small>
-3. 🌱 **Căi absolute**: Din directorul utilizatorului, afișați detaliile lui `cat.jpg`, ale lui `sudoku.txt` și ale
+3. **Căi absolute**: Din directorul utilizatorului, afișați detaliile lui `cat.jpg`, ale lui `sudoku.txt` și ale
    directorului `Recipes` **însuși** (nu ale conținutului său) cu o **singură** comandă `ls` și căi **absolute**. Căutați
    în `man ls` opțiunea care listează directorul însuși (🔍 căutați `contents`).
 
    **Verificare:** obțineți exact trei linii, iar cea a lui `Recipes` începe cu `d`. <small>→ [Căi absolute](#absolute-paths) · [Citirea manualului](#reading-the-manual)</small>
-4. 🌱 **Căi relative**: Faceți același lucru din `~/lab02`, de data aceasta cu căi **relative**. Apoi, din
+4. **Căi relative**: Faceți același lucru din `~/lab02`, de data aceasta cu căi **relative**. Apoi, din
    `~/lab02/Games`, listați conținutul lui `Photos` și al lui `Recipes` cu o **singură** comandă `ls` și căi relative.
 
    **Verificare:** ultima comandă afișează cele două poze și un director `Recipes` gol. <small>→ [Căi relative](#relative-paths)</small>
-5. 🌱 **În sus și în jos**: Din `~/lab02/Games/2026/puzzles`, afișați detaliile lui `books.txt` și ale lui `dog.jpg` cu o
+5. **În sus și în jos**: Din `~/lab02/Games/2026/puzzles`, afișați detaliile lui `books.txt` și ale lui `dog.jpg` cu o
    **singură** comandă `ls` și căi relative. Apoi mergeți în `Photos` cu o **singură** comandă `cd`, iar de acolo înapoi
    în `puzzles` cu o altă **singură** comandă `cd`, ambele cu căi relative.
 
    **Verificare:** ajungeți în `/home/student/lab02/Games/2026/puzzles`. <small>→ [`.` și `..`](#-and-)</small>
-6. 🌱 **Același fișier, multe căi**: Din `~/lab02/Games/2026`, afișați detaliile lui `books.txt` cu **cinci** căi
+6. **Același fișier, multe căi**: Din `~/lab02/Games/2026`, afișați detaliile lui `books.txt` cu **cinci** căi
    diferite: una absolută, una cu `~`, una relativă doar cu `..`, una relativă care trece prin `Photos` și una relativă
    care trece **atât** prin `Photos`, cât și prin `Recipes`.
 
    **Verificare:** toate cele cinci comenzi afișează detalii despre aceelași fișier. <small>→ [Fiecare fișier este o cale](#every-file-is-a-path)</small>
-7. 🌱 **Plimbare**: Din directorul utilizatorului, mergeți în `~/lab02/Games/2026/puzzles` cu o **singură** comandă `cd`
+7. **Plimbare**: Din directorul utilizatorului, mergeți în `~/lab02/Games/2026/puzzles` cu o **singură** comandă `cd`
    și o cale absolută, apoi în `~/lab02/Recipes` cu o **singură** comandă `cd` și o cale relativă. Reveniți în `puzzles`
    cu `cd -`, apoi în directorul utilizatorului cu cea mai scurtă comandă posibilă.
 
    **Verificare:** `cd -` afișează `/home/student/lab02/Games/2026/puzzles`, iar la final ajungeți în `/home/student`. <small>→ [Navigare](#navigation)</small>
-8. 🌱 **Dus-întors**: Mergeți în `/etc`, apoi în `~/lab02/Photos`. Folosind doar `cd -`, săriți de două ori între ele,
+8. **Dus-întors**: Mergeți în `/etc`, apoi în `~/lab02/Photos`. Folosind doar `cd -`, săriți de două ori între ele,
    dus și întors. Apoi, din `Photos`, listați `/etc`; săriți în `/etc` cu `cd -` și, de acolo, listați `Photos` cu o
    cale relativă.
 
    **Verificare:** fiecare `cd -` afișează directorul în care a mers, iar ultimul `pwd` afișează `/etc`. <small>→ [Directorul anterior: `cd -`](#the-previous-directory-cd--)</small>
-9. 🌱 **Listare**: Cu o **singură** comandă `ls`, listați `~/lab02` și `/` astfel încât să vedeți fișierul ascuns, să puteți
+9. **Listare**: Cu o **singură** comandă `ls`, listați `~/lab02` și `/` astfel încât să vedeți fișierul ascuns, să puteți
    deosebi fișierele de directoare și să citiți dimensiunile în `K` / `M` (căutați în `man ls`, 🔍 căutați `sizes`
    și citiți fiecare potrivire).
 
    **Verificare:** ați găsit `.secret` și trei directoare. <small>→ [Navigare](#navigation) · [Citirea manualului](#reading-the-manual)</small>
-10. 🌱 **ls cu un director**: Din directorul utilizatorului, listați `~/lab02/Photos`, `~/lab02/Games/2026/puzzles` și `/`
+10. **ls cu un director**: Din directorul utilizatorului, listați `~/lab02/Photos`, `~/lab02/Games/2026/puzzles` și `/`
     cu o **singură** comandă `ls`, **fără** să schimbați directorul curent.
 
     **Verificare:** rezultatul are trei părți, câte una pentru fiecare director, iar `pwd` afișează în continuare directorul utilizatorului. <small>→ [Fiecare fișier este o cale](#every-file-is-a-path)</small>
-11. 🌱 **Prima privire cu tree**: Afișați arborele lui `~/lab02` doar pe **un** nivel, apoi întregul arbore cu un `/`
+11. **Prima privire cu tree**: Afișați arborele lui `~/lab02` doar pe **un** nivel, apoi întregul arbore cu un `/`
     după numele fiecărui director (căutați în `man tree`, 🔍 căutați `Append`).
 
     **Verificare:** prima comandă afișează `Games`, `Photos` și `Recipes`, dar nu și `chess.txt`; în a doua, fiecare
     director se termină cu `/`. <small>→ [Navigare](#navigation) · [Citirea manualului](#reading-the-manual)</small>
-12. 🌱 **Tastați mai puțin**: Apăsați <kbd>Tab</kbd> după ce tastați **cel mult trei litere** din fiecare nume:
+12. **Tastați mai puțin**: Apăsați <kbd>Tab</kbd> după ce tastați **cel mult trei litere** din fiecare nume:
     * mergeți în `/usr/share/doc`;
     * de acolo, afișați detaliile lui `~/lab02/Games/2026/puzzles/sudoku.txt`;
     * aflați ce nume din `/etc` încep cu `pass`, fără să rulați nicio comandă.
 
     **Verificare:** `pwd` afișează `/usr/share/doc`, `ls -l` afișează `sudoku.txt`, iar <kbd>Tab</kbd> <kbd>Tab</kbd>
     afișează `passwd` și `passwd-`. <small>→ [Completarea cu TAB](#tab-completion)</small>
-13. 🌱 **Căutare după nume**: Găsiți `sudoku.txt` de două ori: o dată căutând din `~/lab02` cu un punct de pornire
+13. **Căutare după nume**: Găsiți `sudoku.txt` de două ori: o dată căutând din `~/lab02` cu un punct de pornire
     relativ, o dată din directorul utilizatorului cu un punct de pornire absolut.
 
     **Verificare:** prima comandă afișează `./Games/2026/puzzles/sudoku.txt`, iar a doua
     `/home/student/lab02/Games/2026/puzzles/sudoku.txt`. <small>→ [Găsirea fișierelor](#finding-files-find)</small>
-14. 🌱 **Căutare după extensie**: Cu o **singură** comandă `find`, găsiți toate pozele (`.jpg`) din `~/lab02`. Apoi toate
+14. **Căutare după extensie**: Cu o **singură** comandă `find`, găsiți toate pozele (`.jpg`) din `~/lab02`. Apoi toate
     fișierele `.txt`.
 
     **Verificare:** obțineți `cat.jpg` și `dog.jpg`, apoi `books.txt`, `chess.txt` și `sudoku.txt`. <small>→ [Găsirea fișierelor](#finding-files-find)</small>
-15. 🌱 **Fișiere sau directoare**: Găsiți doar directoarele din `~/lab02`, apoi doar fișierele.
+15. **Fișiere sau directoare**: Găsiți doar directoarele din `~/lab02`, apoi doar fișierele.
 
     **Verificare:** directoarele sunt `.`, `Games`, `2026`, `puzzles`, `Photos` și `Recipes`; printre fișiere se află și
     fișierul ascuns `.secret`. <small>→ [Găsirea fișierelor](#finding-files-find)</small>
-16. 🌱 **Folosiți ce ați găsit**: Din `~/lab02/Recipes`, găsiți `chess.txt` căutând din `..`, apoi copiați-l în `/tmp`
+16. **Folosiți ce ați găsit**: Din `~/lab02/Recipes`, găsiți `chess.txt` căutând din `..`, apoi copiați-l în `/tmp`
     folosind calea afișată de `find`.
 
     **Verificare:** `ls /tmp` afișează `chess.txt`. <small>→ [Găsirea fișierelor](#finding-files-find) · [Fiecare fișier este o cale](#every-file-is-a-path)</small>
-17. 🌱 **Ce Linux**: Afișați conținutul lui `/etc/os-release` cu `cat`, cu **numărul** fiecărei linii în fața ei
+17. **Ce Linux**: Afișați conținutul lui `/etc/os-release` cu `cat`, cu **numărul** fiecărei linii în fața ei
     (căutați în `man cat`, 🔍 căutați `number`). Apoi deschideți-l în `nano` în modul de vizualizare și căutați `VERSION`
     cu <kbd>Ctrl</kbd>+<kbd>W</kbd>.
 
     **Verificare:** liniile `NAME=` și `VERSION_ID=` arată `Fedora` și `44`, iar fiecare linie începe cu numărul ei. <small>→ [Vizualizarea fișierelor text](#viewing-text-files-cat-and-nano) · [Citirea manualului](#reading-the-manual)</small>
-18. 🌱 **Identitatea calculatorului**: Afișați conținutul lui `/etc/machine-id`, numărul care identifică această
+18. **Identitatea calculatorului**: Afișați conținutul lui `/etc/machine-id`, numărul care identifică această
     instalare de Linux. Apoi rulați `hostnamectl`, care afișează informații despre calculator.
 
     **Verificare:** linia `Machine ID` din `hostnamectl` arată același număr ca fișierul. <small>→ [Vizualizarea fișierelor text](#viewing-text-files-cat-and-nano)</small>
-19. 🌱 **Utilizatorii**: Afișați `/etc/passwd`, lista utilizatorilor sistemului, și găsiți linia utilizatorului vostru (ea
+19. **Utilizatorii**: Afișați `/etc/passwd`, lista utilizatorilor sistemului, și găsiți linia utilizatorului vostru (ea
     începe cu numele vostru de utilizator). Copiați fișierul în `/tmp/users.txt` și modificați copia cu `nano`.
 
     **Verificare:** `ls -l /etc/passwd /tmp/users.txt` arată că doar copia a fost modificată (uitați-vă la date). <small>→ [Vizualizarea fișierelor text](#viewing-text-files-cat-and-nano) · [Gestionarea fișierelor](#managing-files)</small>
-20. 🌱 **Shell-urile**: Afișați `/etc/shells`, lista shell-urilor instalate. Apoi afișați detaliile lui
+20. **Shell-urile**: Afișați `/etc/shells`, lista shell-urilor instalate. Apoi afișați detaliile lui
     `/usr/bin/bash`, shell-ul care rulează în terminalul vostru
 
     **Verificare:** `/usr/bin/bash` se află în listă, iar `ls -l` arată un fișier (prima literă `-`) de aproximativ 1 MB. <small>→ [Vizualizarea fișierelor text](#viewing-text-files-cat-and-nano) · [Fiecare fișier este o cale](#every-file-is-a-path)</small>
-21. 🌱 **Programele sunt fișiere**: Afișați detaliile programului `ls` însuși, `/usr/bin/ls`. Apoi găsiți toate
+21. **Programele sunt fișiere**: Afișați detaliile programului `ls` însuși, `/usr/bin/ls`. Apoi găsiți toate
     programele din `/usr/bin` al căror nume începe cu `mk`.
 
     **Verificare:** `mkdir` este unul dintre ele. <small>→ [Găsirea fișierelor](#finding-files-find)</small>
-22. 🌱 **Ce fișier este acesta**: Cu o **singură** comandă `file`, aflați tipul lui `/etc/hosts`, `/usr/bin/ls`,
+22. **Ce fișier este acesta**: Cu o **singură** comandă `file`, aflați tipul lui `/etc/hosts`, `/usr/bin/ls`,
     `/boot` și `~/lab02/Photos/cat.jpg`.
 
     **Verificare:** `/etc/hosts` este text, `/usr/bin/ls` este un executabil `ELF`, `/boot` este un director, iar
     `cat.jpg` este `empty`, chiar dacă numele lui se termină cu `.jpg`. <small>→ [Ce tip de fișier](#what-kind-of-file-file)</small>
-23. 🌱 **Creați fișiere**: Creați un fișier **gol** `groceries.txt` și un fișier `plan.txt` care conține două linii de
+23. **Creați fișiere**: Creați un fișier **gol** `groceries.txt` și un fișier `plan.txt` care conține două linii de
     text. Apoi creați `soup.txt`, `pizza.txt` și `cake.txt` în `Recipes` cu o **singură** comandă, fără să intrați în
     `Recipes`.
 
     **Verificare:** `ls -l` arată dimensiunea `0` pentru `groceries.txt`, dar nu și pentru `plan.txt`; `Recipes` conține cele trei fișiere noi. <small>→ [Gestionarea fișierelor](#managing-files)</small>
-24. 🌱 **Creați directoare**: Creați `Albums/2024/summer` și `Albums/2025/winter` cu o **singură** comandă.
+24. **Creați directoare**: Creați `Albums/2024/summer` și `Albums/2025/winter` cu o **singură** comandă.
 
     **Verificare:** `tree` afișează ambele directoare. <small>→ [Gestionarea fișierelor](#managing-files)</small>
-25. 🌱 **Copiați fișiere**: Copiați `books.txt` în `Albums`. Copiați `cat.jpg` și `dog.jpg` din `Photos` în `Games` cu o
+25. **Copiați fișiere**: Copiați `books.txt` în `Albums`. Copiați `cat.jpg` și `dog.jpg` din `Photos` în `Games` cu o
     **singură** comandă și faceți-l pe `cp` să afișeze numele fiecărui fișier pe care îl copiază (căutați în
     `man cp`, 🔍 căutați `explain`). Copiați `dog.jpg` în `Albums/2025/winter` sub numele `snow_dog.jpg`.
     La final, copiați `books.txt` în `Albums` **încă o dată**, dar faceți-l pe `cp` să **vă întrebe** înainte să
@@ -1296,52 +1289,52 @@ directorul în care vă aflați, apoi urmăriți calea din comanda voastră, câ
     **Verificare:** `cp` a afișat o linie de forma `'Photos/cat.jpg' -> 'Games/cat.jpg'` pentru fiecare poză; cele două
     poze se află atât în `Photos`, cât și în `Games`, iar `snow_dog.jpg` se află în `winter`; ultima comandă `cp` a întrebat
     `cp: overwrite 'Albums/books.txt'?`. <small>→ [Gestionarea fișierelor](#managing-files) · [Citirea manualului](#reading-the-manual)</small>
-26. 🌱 **Copiați un director**: Copiați întregul director `Games` în `/tmp/Games_backup`. Apoi rulați **exact aceeași**
+26. **Copiați un director**: Copiați întregul director `Games` în `/tmp/Games_backup`. Apoi rulați **exact aceeași**
     comandă a doua oară și aflați unde a ajuns a doua copie. Ștergeți **doar** a doua copie.
 
     **Verificare:** `tree /tmp/Games_backup` afișează aceleași fișiere ca `tree ~/lab02/Games`, și nimic în plus. <small>→ [Gestionarea fișierelor](#managing-files)</small>
-27. 🌱 **Redenumiți și mutați**: Redenumiți `groceries.txt` în `shopping.txt` și mutați-l în `Recipes` cu o **singură**
+27. **Redenumiți și mutați**: Redenumiți `groceries.txt` în `shopping.txt` și mutați-l în `Recipes` cu o **singură**
     comandă `mv`. Mutați `plan.txt` și `books.txt` în `Albums` cu o **singură** comandă.
 
     **Verificare:** `Recipes` conține `shopping.txt`; `Albums` conține `books.txt` și `plan.txt`; niciun fișier `.txt` nu
     a mai rămas direct în `~/lab02`. <small>→ [Gestionarea fișierelor](#managing-files)</small>
-28. 🌱 **Ștergeți**: Ștergeți `/tmp/Games_backup/chess.txt`. Mutați `sudoku.txt` din `puzzles` un nivel mai sus, în
+28. **Ștergeți**: Ștergeți `/tmp/Games_backup/chess.txt`. Mutați `sudoku.txt` din `puzzles` un nivel mai sus, în
     `Games/2026`, apoi ștergeți directorul gol `puzzles`. Apoi ștergeți `Albums/2024` și
     tot ce se află în `Albums/2025` folosind **doar** `rmdir` și `rm` (fără `-r`). Faceți-l pe `rm` să **vă întrebe**
     înainte să șteargă fiecare fișier (căutați în `man rm`, 🔍 căutați `prompt`).
 
     **Verificare:** `rm` a întrebat `remove regular empty file ...?` înainte de fiecare fișier; `Albums` conține doar
     `books.txt` și `plan.txt`, iar `Games/2026` conține doar `sudoku.txt`. <small>→ [Gestionarea fișierelor](#managing-files) · [Citirea manualului](#reading-the-manual)</small>
-29. 🌱 **Spații în nume**: În `~/lab02/Recipes`, creați directorul `Shopping Lists` și, în el, fișierele
+29. **Spații în nume**: În `~/lab02/Recipes`, creați directorul `Shopping Lists` și, în el, fișierele
     `week 1.txt` și `week 2.txt` cu o **singură** comandă. Copiați `week 1.txt` în `/tmp` și redenumiți `week 2.txt` în
     `last week.txt`. La final, ștergeți întregul director `Shopping Lists`.
 
     **Verificare:** `ls /tmp` afișează `'week 1.txt'`; înainte de ultimul pas, `Shopping Lists` conține `week 1.txt` și
     `last week.txt`, iar după el `Recipes` nu mai conține `Shopping Lists`. <small>→ [Nume cu spații și caractere speciale](#names-with-spaces-and-special-characters)</small>
-30. 🌱 **Instalați Yazi**: Instalați Yazi.
+30. **Instalați Yazi**: Instalați Yazi.
 
     **Verificare:** `yazi --version` afișează un număr de versiune. <small>→ [Instalarea Yazi pe Fedora 44](#installing-yazi-on-fedora-44)</small>
-31. 🌱 **Uitați-vă în jur**: Deschideți `~/lab02` în Yazi. Coborâți în `Albums` și urcați înapoi în `~/lab02`, mai întâi
+31. **Uitați-vă în jur**: Deschideți `~/lab02` în Yazi. Coborâți în `Albums` și urcați înapoi în `~/lab02`, mai întâi
     cu tastele săgeată, apoi fără ele. Faceți să apară fișierul ascuns, apoi ascundeți-l din nou.
 
     **Verificare:** `.secret` apare și dispare. <small>→ [Utilizarea Yazi](#using-yazi)</small>
-32. 🌱 **Creați și redenumiți**: Doar cu Yazi, în `~/lab02`, creați un fișier `menu.txt` și un director gol `Drafts`.
+32. **Creați și redenumiți**: Doar cu Yazi, în `~/lab02`, creați un fișier `menu.txt` și un director gol `Drafts`.
     Redenumiți `menu.txt` în `dinner.txt` și redenumiți `soup.txt` din `Recipes` în `tomato_soup.txt`.
 
     **Verificare:** `tree` afișează `dinner.txt`, `Drafts` și `Recipes/tomato_soup.txt`. <small>→ [Utilizarea Yazi](#using-yazi)</small>
-33. 🌱 **Copiați și mutați**: Doar cu Yazi, copiați `dinner.txt` în `Recipes`. Mutați `dog.jpg` din `Photos` în `Drafts`.
+33. **Copiați și mutați**: Doar cu Yazi, copiați `dinner.txt` în `Recipes`. Mutați `dog.jpg` din `Photos` în `Drafts`.
 
     **Verificare:** `dinner.txt` se află atât în `~/lab02`, cât și în `Recipes`; `dog.jpg` se află în `Drafts` și nu mai
     este în `Photos`. <small>→ [Utilizarea Yazi](#using-yazi)</small>
-34. 🌱 **Taburi**: Doar cu Yazi, deschideți `Albums`, `Recipes` și `Drafts` în trei taburi diferite. Fără să părăsiți
+34. **Taburi**: Doar cu Yazi, deschideți `Albums`, `Recipes` și `Drafts` în trei taburi diferite. Fără să părăsiți
     vreunul dintre cele trei directoare:
     * copiați `plan.txt` în `Recipes`;
     * mutați `shopping.txt` în `Albums`.
 
     **Verificare:** `plan.txt` se află atât în `Albums`, cât și în `Recipes`; `shopping.txt` se află în `Albums` și nu mai este în `Recipes`. <small>→ [Tab-uri](#tabs)</small>
-### Mai departe {/* #going-further */}
+### 🏠 Mai departe {/* #going-further */}
 
-35. 🌳 **Calculați**: Mergeți în `~/lab02/Games`. Creați fișierul `~/lab02/answers.txt` cu `nano`, **fără să ieșiți** din
+35. **Calculați**: Mergeți în `~/lab02/Games`. Creați fișierul `~/lab02/answers.txt` cu `nano`, **fără să ieșiți** din
     `Games`. Scrieți în el calea absolută a fiecăreia dintre aceste căi relative:
     * `../Photos/cat.jpg`
     * `./2026/../chess.txt`
@@ -1351,17 +1344,17 @@ directorul în care vă aflați, apoi urmăriți calea din comanda voastră, câ
     * `../../../../..`
 
     **Verificare:** `realpath` afișează aceleași căi absolute ca cele pe care le-ați scris. <small>→ [De la relativ la absolut](#from-relative-to-absolute)</small>
-36. 🌳 **Deasupra rădăcinii**: Mergeți în `/` și încercați să urcați și mai sus. Aflați, cu `realpath` și `ls`, unde duce
+36. **Deasupra rădăcinii**: Mergeți în `/` și încercați să urcați și mai sus. Aflați, cu `realpath` și `ls`, unde duce
     `/../../..`. Din `/`, ajungeți în `~/lab02` cu o cale relativă care începe cu `../..`.
 
     **Verificare:** `pwd` afișează `/` oricât de des ați încerca să urcați, iar ultimul `cd` funcționează. <small>→ [`.` și `..`](#-and-)</small>
-37. 🌳 **Acasă de oriunde**: Listați `~/lab02` din `/usr/bin`, din `/tmp` și din `/usr/share/doc`, de fiecare dată cu o
+37. **Acasă de oriunde**: Listați `~/lab02` din `/usr/bin`, din `/tmp` și din `/usr/share/doc`, de fiecare dată cu o
     cale **relativă**. Scrieți în `answers.txt` de câte `..` ați avut nevoie de fiecare dată. Apoi lăsați `realpath` să
     calculeze, pentru fiecare dintre cele trei directoare, calea relativă de la el la `~/lab02` (uitați-vă în `man realpath`,
     🔍 căutați `relative`).
 
     **Verificare:** cele trei comenzi afișează aceleași fișiere, iar `realpath` afișează aceleași căi relative ca ale voastre. <small>→ [Directorul utilizatorului: `~`](#the-home-directory-) · [Citirea manualului](#reading-the-manual)</small>
-38. 🌳 **Reparați calea**: Fiecare dintre aceste comenzi eșuează. Aflați de ce și reparați-o:
+38. **Reparați calea**: Fiecare dintre aceste comenzi eșuează. Aflați de ce și reparați-o:
     * `ls ~/lab02/games/2026`
     * `cd ~/lab02/Games/chess.txt`
     * `ls ~/lab2`
@@ -1369,7 +1362,7 @@ directorul în care vă aflați, apoi urmăriți calea din comanda voastră, câ
     * `cd ../lab02/Games` (rulați-o din `~/lab02/Photos`)
 
     **Verificare:** comenzile nu afișează nicio eroare. <small>→ [Depanare](#troubleshooting)</small>
-39. 🌳 **Mai mult tree**: Afișați arborele lui `~/lab02` (căutați opțiunile în `man tree`):
+39. **Mai mult tree**: Afișați arborele lui `~/lab02` (căutați opțiunile în `man tree`):
     * doar directoarele, dar și pe cele ascunse (🔍 căutați `only` și `hidden`);
     * cu fișierele ascunse, pe două niveluri;
     * cu dimensiunea fiecărui fișier, în `K` / `M`, și cu directoarele listate **înaintea** fișierelor (🔍 căutați
@@ -1379,85 +1372,85 @@ directorul în care vă aflați, apoi urmăriți calea din comanda voastră, câ
 
     **Verificare:** doar a doua comandă afișează `.secret`; în a treia, fiecare nume are în fața lui dimensiunea între
     paranteze drepte, de exemplu `[4.0K]`, iar în fiecare director subdirectoarele apar primele. <small>→ [Navigare](#navigation) · [Citirea manualului](#reading-the-manual)</small>
-40. 🌳 **Nu prea adânc**: Găsiți fișierele `.txt` din `~/lab02` aflate la cel mult **două** niveluri adâncime (uitați-vă în
+40. **Nu prea adânc**: Găsiți fișierele `.txt` din `~/lab02` aflate la cel mult **două** niveluri adâncime (uitați-vă în
     `man find`, 🔍 căutați `levels`). Apoi găsiți toate fișierele **goale** din `~/lab02` (🔍 căutați `empty`).
 
     **Verificare:** apar `chess.txt` și fișierele din `Albums` și `Recipes`, dar nu și `sudoku.txt`; printre fișierele
     goale se află `chess.txt` și `cat.jpg`, dar nu și `plan.txt`. <small>→ [Găsirea fișierelor](#finding-files-find) · [Citirea manualului](#reading-the-manual)</small>
-41. 🌳 **Undeva în sistem**: Găsiți fișierul numit `hosts` din `/etc` și toate fișierele al căror nume începe cu
+41. **Undeva în sistem**: Găsiți fișierul numit `hosts` din `/etc` și toate fișierele al căror nume începe cu
     `passwd` din `/etc`. Ignorați mesajele `Permission denied`. Apoi găsiți, în `/usr/share/doc`, fișierele numite
     `readme`, scrise cu **orice** combinație de litere mari și mici: `README`, `Readme`, ... (uitați-vă în `man find`,
     🔍 căutați `insensitive`).
 
     **Verificare:** rezultatele includ `/etc/hosts` și `/etc/passwd`, iar ultima comandă găsește multe fișiere numite
     `README`. <small>→ [Găsirea fișierelor](#finding-files-find) · [Citirea manualului](#reading-the-manual)</small>
-42. 🌳 **Setările managerului de pachete**: Găsiți, undeva în `/etc`, fișierul numit `dnf.conf` (setările lui `dnf`,
+42. **Setările managerului de pachete**: Găsiți, undeva în `/etc`, fișierul numit `dnf.conf` (setările lui `dnf`,
     programul care instalează pachete). Afișați-l folosind calea pe care a afișat-o `find`.
 
     **Verificare:** fișierul este `/etc/dnf/dnf.conf` și are o linie `[main]`. <small>→ [Găsirea fișierelor](#finding-files-find) · [Vizualizarea fișierelor text](#viewing-text-files-cat-and-nano)</small>
-43. 🌳 **Numele calculatoarelor**: Afișați `/etc/hosts`, fișierul care dă nume adreselor de rețea, și găsiți linia cu
+43. **Numele calculatoarelor**: Afișați `/etc/hosts`, fișierul care dă nume adreselor de rețea, și găsiți linia cu
     `localhost`. Apoi deschideți-l cu `nano -v` și căutați `localhost` cu <kbd>Ctrl</kbd>+<kbd>W</kbd>.
 
     **Verificare:** linia începe cu `127.0.0.1`, adresa propriului calculator. <small>→ [Vizualizarea fișierelor text](#viewing-text-files-cat-and-nano)</small>
-44. 🌳 **Nucleul**: Găsiți fișierele nucleului în `/boot` (numele lor încep cu `vmlinuz`), apoi afișați-le detaliile, cu
+44. **Nucleul**: Găsiți fișierele nucleului în `/boot` (numele lor încep cu `vmlinuz`), apoi afișați-le detaliile, cu
     dimensiunile în `M` (uitați-vă în `man ls`, 🔍 căutați `sizes`).
 
     **Verificare:** găsiți cel puțin un fișier `vmlinuz-...`, de câțiva MB. <small>→ [Găsirea fișierelor](#finding-files-find) · [Navigare](#navigation) · [Citirea manualului](#reading-the-manual)</small>
-45. 🌳 **Jurnale**: Listați detaliile lui `/var/log`, directorul în care sistemul își păstrează jurnalele, cu fișierele
+45. **Jurnale**: Listați detaliile lui `/var/log`, directorul în care sistemul își păstrează jurnalele, cu fișierele
     modificate **cel mai recent** primele (uitați-vă în `man ls`, 🔍 căutați `newest`). Încercați să afișați câteva dintre
     fișierele text de acolo (verificați-le mai întâi cu `file`): găsiți unul pe care aveți voie să îl citiți și unul pe
     care nu aveți voie.
 
     **Verificare:** datele merg de la cea mai nouă la cea mai veche, iar pentru unul dintre fișiere primiți `Permission denied`. <small>→ [Vizualizarea fișierelor text](#viewing-text-files-cat-and-nano) · [Citirea manualului](#reading-the-manual)</small>
-46. 🌳 **Priviți, nu atingeți**: Încercați să creați `/etc/test.txt`, să salvați `/etc/hosts` din `nano` după ce adăugați
+46. **Priviți, nu atingeți**: Încercați să creați `/etc/test.txt`, să salvați `/etc/hosts` din `nano` după ce adăugați
     o literă (ieșiți **fără** să salvați după eroare) și să ștergeți `/etc/hosts` (dacă `rm` întreabă
     `remove write-protected regular file?`, răspundeți `y`).
 
     **Verificare:** fiecare încercare afișează `Permission denied`, iar `/etc/hosts` rămâne neschimbat. <small>→ [Depanare](#troubleshooting)</small>
-47. 🌳 **Plimbare prin sistem**: Din `/usr/share/doc`, mergeți în `/etc` cu cea mai **scurtă** cale relativă, apoi în
+47. **Plimbare prin sistem**: Din `/usr/share/doc`, mergeți în `/etc` cu cea mai **scurtă** cale relativă, apoi în
     `/var/log` cu o altă cale relativă și înapoi în `/usr/share/doc` cu o a treia. Săriți în `/var/log` cu
     `cd -`.
 
     **Verificare:** după fiecare `cd`, `pwd` afișează directorul în care ați vrut să ajungeți. <small>→ [Căi relative](#relative-paths) · [Directorul anterior: `cd -`](#the-previous-directory-cd--)</small>
-48. 🌳 **Extensia minte**: Copiați `/usr/bin/ls` în `/tmp/song.mp3` și `/etc/hosts` în `/tmp/program` și aflați ce sunt
+48. **Extensia minte**: Copiați `/usr/bin/ls` în `/tmp/song.mp3` și `/etc/hosts` în `/tmp/program` și aflați ce sunt
     ele de fapt. Apoi rulați `/tmp/song.mp3 ~/lab02`. La final, ștergeți ambele copii.
 
     **Verificare:** `song.mp3` este un executabil `ELF`, iar `program` este text; `/tmp/song.mp3 ~/lab02` listează
     `~/lab02`, exact ca `ls ~/lab02`. <small>→ [Ce tip de fișier](#what-kind-of-file-file)</small>
-49. 🌳 **Căi peste tot**: Din `~/lab02/Games/2026`, fără să schimbați directorul curent, copiați `cat.jpg` din `Photos`
+49. **Căi peste tot**: Din `~/lab02/Games/2026`, fără să schimbați directorul curent, copiați `cat.jpg` din `Photos`
     în `Recipes` folosind **doar căi relative**. Ștergeți copia, apoi copiați-l din nou folosind **doar căi
     absolute**. Copiați-l a treia oară, cu căi relative, astfel încât `cp` să întrebe înainte de a-l suprascrie, și
     răspundeți `y`.
 
     **Verificare:** `Recipes` conține `cat.jpg`, iar al treilea `cp` a întrebat `cp: overwrite '../../Recipes/cat.jpg'?`. <small>→ [Fiecare fișier este o cale](#every-file-is-a-path) · [Citirea manualului](#reading-the-manual)</small>
-50. 🌳 **Ștergeți un director**: Ștergeți `/tmp/Games_backup` cu tot conținutul lui printr-o **singură** comandă și
+50. **Ștergeți un director**: Ștergeți `/tmp/Games_backup` cu tot conținutul lui printr-o **singură** comandă și
     faceți-l pe `rm` să afișeze tot ce șterge (uitați-vă în `man rm`, 🔍 căutați `explain`).
 
     **Verificare:** ultima linie afișată de `rm` este `removed directory '/tmp/Games_backup'`, iar `ls /tmp` nu îl mai
     afișează. <small>→ [Gestionarea fișierelor](#managing-files) · [Citirea manualului](#reading-the-manual)</small>
-51. 🌳 **Nume ciudate**: În `/tmp`, creați fișierele `rock & roll.txt`, `price $5.txt`, `it's here.txt` și
+51. **Nume ciudate**: În `/tmp`, creați fișierele `rock & roll.txt`, `price $5.txt`, `it's here.txt` și
     `-help.txt`. Verificați numele cu `ls -l`, apoi ștergeți cele patru fișiere, cu câte un `rm` pentru fiecare.
 
     **Verificare:** `ls -l /tmp` afișează cele patru nume exact ca mai sus, iar la final niciunul dintre ele. <small>→ [Nume cu spații și caractere speciale](#names-with-spaces-and-special-characters)</small>
-52. 🌳 **Mai multe fișiere**: Doar cu Yazi, copiați ambele imagini din `Games` în `Albums` cu o **singură** lipire. Apoi
+52. **Mai multe fișiere**: Doar cu Yazi, copiați ambele imagini din `Games` în `Albums` cu o **singură** lipire. Apoi
     mutați `tomato_soup.txt`, `pizza.txt` și `cake.txt` din `Recipes` în `Drafts` cu o **singură** lipire, și mutați
     `pizza.txt` și `cake.txt` înapoi în `Recipes` cu încă o **singură** lipire.
 
     **Verificare:** `Albums` conține `cat.jpg` și `dog.jpg`; `Drafts` conține `dog.jpg` și `tomato_soup.txt`; `Recipes`
     conține `pizza.txt` și `cake.txt`. <small>→ [Utilizarea Yazi](#using-yazi)</small>
-53. 🌳 **Coș de gunoi sau ștergere**: Doar cu Yazi, trimiteți `dinner.txt` (cel din `~/lab02`) la coșul de gunoi și
+53. **Coș de gunoi sau ștergere**: Doar cu Yazi, trimiteți `dinner.txt` (cel din `~/lab02`) la coșul de gunoi și
     ștergeți definitiv `Drafts`. Apoi, din terminal, găsiți `dinner.txt` în coșul de gunoi și mutați-l înapoi în `~/lab02`.
 
     **Verificare:** `dinner.txt` este din nou în `~/lab02`, iar `Drafts` nu mai există. <small>→ [Utilizarea Yazi](#using-yazi)</small>
 
-### Provocări {/* #challenges */}
+### 📝 Provocări {/* #challenges */}
 
-54. 🏠 **Căi înșelătoare**: Din `~/lab02/Photos`, calculați unde duce `../Games/2026/./../../Photos/../Recipes` și scrieți
+54. **Căi înșelătoare**: Din `~/lab02/Photos`, calculați unde duce `../Games/2026/./../../Photos/../Recipes` și scrieți
     fiecare pas al calculului în `answers.txt`. Mergeți acolo cu un **singur** `cd`. Apoi întoarceți-vă în `Photos` cu o
     cale care conține **exact două** `..`.
 
     **Verificare:** sunteți din nou în `/home/student/lab02/Photos`. <small>→ [De la relativ la absolut](#from-relative-to-absolute)</small>
-55. 🏠 **Reorganizați**: Folosind terminalul pentru jumătate din muncă și Yazi pentru cealaltă jumătate, modificați
+55. **Reorganizați**: Folosind terminalul pentru jumătate din muncă și Yazi pentru cealaltă jumătate, modificați
     `~/lab02` astfel încât `tree ~/lab02` să afișeze exact acest arbore (ștergeți tot ce nu se află în el):
 
     ```
@@ -1486,36 +1479,36 @@ Exercițiile 56 - 62 pornesc de la arborele din exercițiul 55: faceți-le doar 
 exact acel arbore.
 :::
 
-56. 🏠 **Exact cinci**: Din `~/lab02/Recipes/desserts`, scrieți o cale relativă către `sudoku.txt` care conține
+56. **Exact cinci**: Din `~/lab02/Recipes/desserts`, scrieți o cale relativă către `sudoku.txt` care conține
     **exact cinci** `..` și niciun `.`. Folosiți-o cu `ls -l`.
 
     **Verificare:** `ls -l` afișează `sudoku.txt`, iar `realpath` pentru calea voastră afișează `/home/student/lab02/Games/2026/sudoku.txt`. <small>→ [De la relativ la absolut](#from-relative-to-absolute)</small>
-57. 🏠 **Cea mai scurtă cale**: Găsiți cea mai **scurtă** cale relativă de la `/usr/share/doc` la `~/lab02/Notes` și cea
+57. **Cea mai scurtă cale**: Găsiți cea mai **scurtă** cale relativă de la `/usr/share/doc` la `~/lab02/Notes` și cea
     mai scurtă de la `~/lab02/Notes` înapoi la `/usr/share/doc`. Folosiți-le pe fiecare cu un singur `cd`, apoi săriți
     între cele două directoare încă de două ori doar cu `cd -`.
 
     **Verificare:** după fiecare `cd`, `pwd` afișează directorul în care ați vrut să ajungeți. <small>→ [Căi relative](#relative-paths)</small>
-58. 🏠 **Curățați o cale**: Scrieți cea mai **scurtă** cale absolută echivalentă cu
+58. **Curățați o cale**: Scrieți cea mai **scurtă** cale absolută echivalentă cu
     `/home/../../../home/student/lab02/./Notes/../Games/2026/../../Recipes/desserts/..`, întâi pe hârtie, apoi verificați-o.
 
     **Verificare:** `realpath` afișează calea pe care ați scris-o. <small>→ [De la relativ la absolut](#from-relative-to-absolute)</small>
-59. 🏠 **Schimb**: Interschimbați numele lui `Notes/books.txt` și `Notes/plan.txt` folosind **doar** `mv`.
+59. **Schimb**: Interschimbați numele lui `Notes/books.txt` și `Notes/plan.txt` folosind **doar** `mv`.
 
     **Verificare:** `ls -l ~/lab02/Notes` arată că `books.txt` are acum dimensiunea pe care o avea înainte `plan.txt`, iar
     `plan.txt` este gol. <small>→ [Gestionarea fișierelor](#managing-files)</small>
-60. 🏠 **Oglindă**: Creați în `/tmp/mirror` aceeași structură de **directoare** ca `~/lab02` (doar directoarele, fără
+60. **Oglindă**: Creați în `/tmp/mirror` aceeași structură de **directoare** ca `~/lab02` (doar directoarele, fără
     fișiere), cu o **singură** comandă `mkdir` care afișează fiecare director pe care îl creează (uitați-vă în `man mkdir`,
     🔍 căutați `message`).
 
     **Verificare:** `mkdir` a afișat o linie `created directory` pentru fiecare director, iar arborii lui `/tmp/mirror`
     și `~/lab02` au aceleași directoare. <small>→ [Gestionarea fișierelor](#managing-files) · [Citirea manualului](#reading-the-manual)</small>
-61. 🏠 **De departe**: Mergeți în `/tmp`. Cu o **singură** comandă `mv` și **doar căi relative**, mutați `chess.txt`
+61. **De departe**: Mergeți în `/tmp`. Cu o **singură** comandă `mv` și **doar căi relative**, mutați `chess.txt`
     și `cat.jpg` din `Games` în `Recipes/desserts`. Apoi mutați-le înapoi cu un singur `mv`, de data aceasta din
     `~/lab02/Notes`.
 
     **Verificare:** după primul `mv`, `desserts` conține trei fișiere; după al doilea, `tree ~/lab02` afișează din nou
     arborele din exercițiul 55 (cu numele din exercițiul 59). <small>→ [Fiecare fișier este o cale](#every-file-is-a-path)</small>
-62. 🏠 **Copie de rezervă cu tab-uri**: Doar cu Yazi, creați directorul `~/lab02/Backup`, apoi copiați în el directoarele
+62. **Copie de rezervă cu tab-uri**: Doar cu Yazi, creați directorul `~/lab02/Backup`, apoi copiați în el directoarele
     `Games`, `Notes` și `Recipes` folosind **două** tab-uri și o **singură** lipire. La final, ștergeți definitiv `Backup`.
 
     **Verificare:** înainte de a-l șterge, `tree ~/lab02/Backup` afișează cele trei directoare cu toate fișierele lor. <small>→ [Tab-uri](#tabs) · [Utilizarea Yazi](#using-yazi)</small>

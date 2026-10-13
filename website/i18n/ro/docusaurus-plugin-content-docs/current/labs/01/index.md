@@ -695,132 +695,134 @@ precum [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html) �
 
 ## Exerciții {/* #exercises */}
 
-Exercițiile sunt marcate pentru cele două tipuri de laborator:
+Exercițiile acoperă părțile principale ale laboratorului: Sway, terminalul, mașinile virtuale și accesul la distanță.
+Fiecare este marcat cu locul în care îl faceți:
 
-* 🌱 **de bază** (1 oră - **AC**): faceți doar exercițiile marcate cu 🌱;
-* 🌳 **complet** (2 ore - **CD**): faceți toate exercițiile, atât 🌱, cât și 🌳.
+- 🧪 **în laborator**: exercițiile care au nevoie de calculatoarele din laborator (Sway, VirtualBox și imaginile
+  `.iso`) sau de ajutorul unui asistent;
+- 🏠 **acasă**: mai mult exercițiu cu aceleași unelte. Aveți nevoie de Sway: instalați
+  [Fedora Sway](https://fedoraproject.org/spins/sway/) într-o mașină virtuală sau instalați Sway pe Linux-ul vostru.
 
-Ambele tipuri de exerciții acoperă părțile principale ale laboratorului: Sway, terminalul, mașinile virtuale și accesul la distanță.
-Dacă terminați mai devreme, continuați cu celelalte exerciții și apoi cu secțiunea [Extra](#extra).
+Dacă terminați mai devreme exercițiile 🧪, continuați cu cele 🏠 și apoi cu secțiunea [Extra](#extra).
 
 ### Să ne obișnuim cu Sway {/* #getting-used-to-sway */}
 
 Faceți exercițiile în ordine. Încercați să folosiți **doar tastatura**.
 
-1. 🌱 **Uitați-vă în jur**: Autentificați-vă în Sway. Uitați-vă la bară: găsiți numărul spațiului de lucru și ceasul?
+1. 🧪 **Uitați-vă în jur**: Autentificați-vă în Sway. Uitați-vă la bară: găsiți numărul spațiului de lucru și ceasul?
    Mai este ceva pe ecran? <small>→ [Bun venit printre panourile Sway](#welcome-to-the-tiles-of-sway)</small>
-2. 🌱 **Primul terminal**: Deschideți un terminal cu <kbd>$mod</kbd> + <kbd>Enter</kbd>. Scrieți `whoami`, apoi
+2. 🧪 **Primul terminal**: Deschideți un terminal cu <kbd>$mod</kbd> + <kbd>Enter</kbd>. Scrieți `whoami`, apoi
    `hostname`, apoi `ls`. Închideți terminalul cu <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>q</kbd>. <small>→ [Esențialul](#the-essentials) · [Rularea comenzilor](#running-commands)</small>
-3. 🌱 **Panourile**: Deschideți un terminal, apoi încă unul, apoi încă unul. Ce se întâmplă cu dimensiunea
+3. 🧪 **Panourile**: Deschideți un terminal, apoi încă unul, apoi încă unul. Ce se întâmplă cu dimensiunea
    panourilor de fiecare dată când deschideți unul nou? Acum închideți-le unul câte unul și uitați-vă din nou. <small>→ [Bun venit printre panourile Sway](#welcome-to-the-tiles-of-sway)</small>
-4. 🌱 **Focusul**: Deschideți trei terminale. Mutați focusul între ele cu <kbd>$mod</kbd> + săgeți. În fiecare
+4. 🧪 **Focusul**: Deschideți trei terminale. Mutați focusul între ele cu <kbd>$mod</kbd> + săgeți. În fiecare
    terminal, scrieți un cuvânt diferit (de exemplu `unu`, `doi`, `trei`) ca să fiți siguri că știți ce fereastră are
    focusul. <small>→ [Focusul](#focus)</small>
-5. 🌳 **Tastele vi**: Faceți din nou exercițiul anterior, dar folosiți <kbd>$mod</kbd> + <kbd>h</kbd> și
+5. 🏠 **Tastele vi**: Faceți din nou exercițiul anterior, dar folosiți <kbd>$mod</kbd> + <kbd>h</kbd> și
    <kbd>$mod</kbd> + <kbd>l</kbd> în loc de săgeți. <small>→ [Combinațiile de taste implicite](#default-keybindings)</small>
-6. 🌱 **Mutarea ferestrelor**: Cu trei terminale deschise, mutați-l pe cel care are focusul complet în stânga, apoi
+6. 🧪 **Mutarea ferestrelor**: Cu trei terminale deschise, mutați-l pe cel care are focusul complet în stânga, apoi
    complet în dreapta, folosind <kbd>$mod</kbd> + <kbd>Shift</kbd> + săgeți. <small>→ [Combinațiile de taste implicite](#default-keybindings)</small>
-7. 🌱 **Lansatorul**: Apăsați <kbd>$mod</kbd> + <kbd>d</kbd>, scrieți primele litere din `firefox` și apăsați
+7. 🧪 **Lansatorul**: Apăsați <kbd>$mod</kbd> + <kbd>d</kbd>, scrieți primele litere din `firefox` și apăsați
    <kbd>Enter</kbd>. Folosiți din nou lansatorul ca să deschideți managerul de fișiere, **Thunar** (scrieți
    `thunar`). <small>→ [Esențialul](#the-essentials)</small>
-8. 🌳 **Fullscreen**: Puneți focusul pe browser și apăsați <kbd>$mod</kbd> + <kbd>f</kbd>. Apăsați din nou ca să
+8. 🏠 **Fullscreen**: Puneți focusul pe browser și apăsați <kbd>$mod</kbd> + <kbd>f</kbd>. Apăsați din nou ca să
    reveniți. <small>→ [Combinațiile de taste implicite](#default-keybindings)</small>
-9. 🌱 **Spațiile de lucru**: Treceți pe spațiul de lucru 2 cu <kbd>$mod</kbd> + <kbd>2</kbd> și deschideți acolo un
+9. 🧪 **Spațiile de lucru**: Treceți pe spațiul de lucru 2 cu <kbd>$mod</kbd> + <kbd>2</kbd> și deschideți acolo un
    terminal. Treceți pe spațiul de lucru 3 și deschideți încă unul. Treceți de câteva ori între spațiile de lucru 1,
    2 și 3. Uitați-vă de fiecare dată la bară. <small>→ [Spațiile de lucru](#workspaces)</small>
-10. 🌱 **Mutarea pe alt spațiu de lucru**: Puneți focusul pe browser și trimiteți-l pe spațiul de lucru 4 cu
+10. 🧪 **Mutarea pe alt spațiu de lucru**: Puneți focusul pe browser și trimiteți-l pe spațiul de lucru 4 cu
     <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>4</kbd>. Unde sunteți acum: pe spațiul de lucru 4 sau tot pe cel vechi?
     Treceți pe spațiul de lucru 4 și verificați dacă browserul este acolo. <small>→ [Spațiile de lucru](#workspaces)</small>
-11. 🌳 **Spații de lucru goale**: Mutați singura fereastră de pe spațiul de lucru 3 pe spațiul de lucru 1. Uitați-vă
+11. 🏠 **Spații de lucru goale**: Mutați singura fereastră de pe spațiul de lucru 3 pe spațiul de lucru 1. Uitați-vă
     la bară: ce s-a întâmplat cu spațiul de lucru 3? <small>→ [Spațiile de lucru](#workspaces)</small>
-12. 🌱 **Împărțirea**: Pe un spațiu de lucru gol, deschideți un terminal. Apăsați <kbd>$mod</kbd> + <kbd>v</kbd> și
+12. 🧪 **Împărțirea**: Pe un spațiu de lucru gol, deschideți un terminal. Apăsați <kbd>$mod</kbd> + <kbd>v</kbd> și
     deschideți al doilea terminal. Unde a apărut? Acum apăsați <kbd>$mod</kbd> + <kbd>b</kbd> și deschideți al
     treilea. Unde a apărut acesta? <small>→ [Aranjările](#layouts)</small>
-13. 🌳 **Construiți o aranjare**: Pe un spațiu de lucru gol, construiți asta: un terminal pe **jumătatea stângă** a
+13. 🏠 **Construiți o aranjare**: Pe un spațiu de lucru gol, construiți asta: un terminal pe **jumătatea stângă** a
     ecranului și două terminale **unul deasupra celuilalt** pe **jumătatea dreaptă**. (Indiciu: deschideți două
     terminale, puneți focusul pe cel din dreapta, apăsați <kbd>$mod</kbd> + <kbd>v</kbd>, apoi deschideți al
     treilea.) <small>→ [Aranjările](#layouts)</small>
-14. 🌱 **Taburi și stive**: Deschideți trei terminale pe un spațiu de lucru gol. Apăsați <kbd>$mod</kbd> +
+14. 🏠 **Taburi și stive**: Deschideți trei terminale pe un spațiu de lucru gol. Apăsați <kbd>$mod</kbd> +
     <kbd>w</kbd> pentru taburi și treceți de la unul la altul cu <kbd>$mod</kbd> + săgeți. Apoi încercați
     <kbd>$mod</kbd> + <kbd>s</kbd>. Reveniți la aranjarea normală cu <kbd>$mod</kbd> + <kbd>e</kbd>. <small>→ [Aranjările](#layouts)</small>
-15. 🌱 **Redimensionarea**: Cu două terminale unul lângă altul, apăsați <kbd>$mod</kbd> + <kbd>r</kbd> și măriți-l pe
+15. 🏠 **Redimensionarea**: Cu două terminale unul lângă altul, apăsați <kbd>$mod</kbd> + <kbd>r</kbd> și măriți-l pe
     cel din stânga cu săgețile. Apăsați <kbd>Esc</kbd> când ați terminat. <small>→ [Modul de redimensionare](#resize-mode)</small>
-16. 🌱 **Ferestre plutitoare**: Faceți un terminal plutitor cu <kbd>$mod</kbd> + <kbd>Shift</kbd> +
+16. 🏠 **Ferestre plutitoare**: Faceți un terminal plutitor cu <kbd>$mod</kbd> + <kbd>Shift</kbd> +
     <kbd>Space</kbd>. Mutați-l ținând apăsat <kbd>$mod</kbd> și trăgând cu butonul stâng al mouse-ului, și
     redimensionați-l trăgând cu butonul drept. Puneți-l înapoi în panouri cu aceleași taste. <small>→ [Ferestrele plutitoare](#floating-windows)</small>
-17. 🌳 **Scratchpadul**: Ascundeți un terminal în scratchpad cu <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>-</kbd>.
+17. 🏠 **Scratchpadul**: Ascundeți un terminal în scratchpad cu <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>-</kbd>.
     Treceți pe alt spațiu de lucru și aduceți-l înapoi cu <kbd>$mod</kbd> + <kbd>-</kbd>. Apăsați din nou
     <kbd>$mod</kbd> + <kbd>-</kbd> ca să îl ascundeți. <small>→ [Scratchpadul](#the-scratchpad)</small>
-18. 🌳 **Provocare - biroul dumneavoastră**: Fără să folosiți mouse-ul, pregătiți următoarele:
+18. 🏠 **Provocare - biroul dumneavoastră**: Fără să folosiți mouse-ul, pregătiți următoarele:
     * spațiul de lucru 1: browserul, în fullscreen;
     * spațiul de lucru 2: două terminale unul lângă altul;
     * spațiul de lucru 3: trei terminale în taburi.
 
     Apoi treceți de câteva ori între cele trei spații de lucru. <small>→ [Spațiile de lucru](#workspaces) · [Aranjările](#layouts)</small>
-19. 🌳 **Ieșiți și intrați din nou**: Ieșiți din Sway cu <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>e</kbd> și
+19. 🏠 **Ieșiți și intrați din nou**: Ieșiți din Sway cu <kbd>$mod</kbd> + <kbd>Shift</kbd> + <kbd>e</kbd> și
     autentificați-vă din nou. Mai sunt acolo ferestrele și spațiile de lucru? <small>→ [Esențialul](#the-essentials)</small>
 
 ### Terminalul {/* #the-terminal-1 */}
 
-20. 🌱 **Ecran curat**: Deschideți un terminal și rulați `whoami`, `hostname`, `ls` și `ip a`. Acum rulați `clear`.
+20. 🧪 **Ecran curat**: Deschideți un terminal și rulați `whoami`, `hostname`, `ls` și `ip a`. Acum rulați `clear`.
     Ce s-a întâmplat cu ecranul? Rulați din nou comenzile și de data aceasta apăsați <kbd>Ctrl</kbd> + <kbd>L</kbd>.
     Derulați în sus cu <kbd>Shift</kbd> + <kbd>Page Up</kbd> după fiecare dintre ele: mai vedeți rezultatele vechi? <small>→ [Rularea comenzilor](#running-commands)</small>
-21. 🌱 **Din terminal în browser**: Rulați `hostname`. Selectați rezultatul cu mouse-ul și copiați-l cu
+21. 🧪 **Din terminal în browser**: Rulați `hostname`. Selectați rezultatul cu mouse-ul și copiați-l cu
     <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>. Deschideți browserul, dați click în bara de căutare și
     lipiți-l cu <kbd>Ctrl</kbd> + <kbd>V</kbd>. Acum selectați un text de pe o pagină web și apăsați <kbd>Ctrl</kbd> +
     <kbd>Shift</kbd> + <kbd>C</kbd> în browser: s-a copiat textul sau s-a întâmplat altceva? (Închideți ce s-a
     deschis cu aceleași taste.) <small>→ [Copiere și lipire](#copy-and-paste)</small>
-22. 🌱 **Din browser în terminal**: În browser, deschideți această pagină, selectați comanda `ip a` din tabelul de la
+22. 🧪 **Din browser în terminal**: În browser, deschideți această pagină, selectați comanda `ip a` din tabelul de la
     [Rularea comenzilor](#running-commands) și copiați-o cu <kbd>Ctrl</kbd> + <kbd>C</kbd>. Treceți în terminal și
     lipiți-o cu <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>, apoi apăsați <kbd>Enter</kbd>. Încercați și
     <kbd>Ctrl</kbd> + <kbd>V</kbd> în terminal: ce se întâmplă? <small>→ [Copiere și lipire](#copy-and-paste)</small>
-23. 🌳 **Dintr-un terminal în altul**: Deschideți două terminale unul lângă altul. În primul, rulați `whoami` și
+23. 🏠 **Dintr-un terminal în altul**: Deschideți două terminale unul lângă altul. În primul, rulați `whoami` și
     copiați rezultatul. În al doilea, scrieți `echo Salut, `, lipiți numele de utilizator și apăsați
     <kbd>Enter</kbd>. <small>→ [Copiere și lipire](#copy-and-paste)</small>
-24. 🌱 **Ctrl+C nu copiază**: Rulați `sleep 10` și urmăriți promptul: când apare din nou `$`? Acum rulați `sleep 100`
+24. 🧪 **Ctrl+C nu copiază**: Rulați `sleep 10` și urmăriți promptul: când apare din nou `$`? Acum rulați `sleep 100`
     (o comandă care doar așteaptă 100 de secunde). Vedeți vreun `$`? Cât timp rulează, apăsați <kbd>Ctrl</kbd> +
     <kbd>C</kbd>. Ce s-a întâmplat cu comanda și cu `$`? Explicați de ce terminalul folosește <kbd>Ctrl</kbd> +
     <kbd>Shift</kbd> + <kbd>C</kbd> pentru copiere. <small>→ [Rularea comenzilor](#running-commands) · [Copiere și lipire](#copy-and-paste)</small>
-25. 🌳 **Butonul din mijloc**: Rulați `ls`, selectați cu mouse-ul unul dintre numele de fișiere (un dublu click
+25. 🏠 **Butonul din mijloc**: Rulați `ls`, selectați cu mouse-ul unul dintre numele de fișiere (un dublu click
     selectează un cuvânt întreg) și lipiți-l cu **butonul din mijloc** al mouse-ului după `ls -l `. Apoi lipiți-l și
     în bara de căutare a browserului, tot cu butonul din mijloc. Ați avut nevoie de vreo tastă? <small>→ [Copiere și lipire](#copy-and-paste)</small>
 
 ### Uneltele Sway {/* #sway-tools */}
 
-26. 🌳 **Blocați ecranul**: Într-un terminal, rulați `swaylock`. Ce vedeți? Deblocați ecranul scriind parola și
+26. 🏠 **Blocați ecranul**: Într-un terminal, rulați `swaylock`. Ce vedeți? Deblocați ecranul scriind parola și
     apăsând <kbd>Enter</kbd>. Apoi rulați `swaylock -c 000000` și `swaylock -c 0000ff`: ce schimbă opțiunea `-c`?
     (Indiciu: `man swaylock`.) <small>→ [Blocarea ecranului](#locking-the-screen)</small>
-27. 🌳 **Faceți o captură de ecran**: Rulați `grim ~/Pictures/full.png` ca să capturați tot ecranul. Acum rulați
+27. 🏠 **Faceți o captură de ecran**: Rulați `grim ~/Pictures/full.png` ca să capturați tot ecranul. Acum rulați
     `sleep 5; grim ~/Pictures/later.png` și, în cele 5 secunde, treceți pe alt spațiu de lucru. Deschideți
     **Thunar**, intrați în directorul `Pictures` și uitați-vă la ambele capturi: ce arată fiecare? <small>→ [Capturi de ecran](#screenshots)</small>
 
 ### Mașini virtuale {/* #virtual-machines-1 */}
 
-28. 🌱 **Instalați altă distribuție**: Creați o mașină virtuală urmând pașii din
+28. 🧪 **Instalați altă distribuție**: Creați o mașină virtuală urmând pașii din
     [Crearea unei mașini virtuale în VirtualBox](#creating-a-vm-in-virtualbox) și atașați fișierul `.iso` al unei
     distribuții (găsiți câteva în directorul `Downloads/`). Porniți mașina virtuală, rulați programul de instalare,
     creați un utilizator și setați o parolă. <small>→ [Crearea unei mașini virtuale în VirtualBox](#creating-a-vm-in-virtualbox)</small>
-29. 🌱 **Explorați oaspetele**: Autentificați-vă în mașina virtuală, deschideți un terminal și rulați `whoami`,
+29. 🧪 **Explorați oaspetele**: Autentificați-vă în mașina virtuală, deschideți un terminal și rulați `whoami`,
     `hostname` și `ip a`. Rulați aceleași comenzi într-un terminal pe gazdă. Ce este diferit? Puteți ghici de ce adresa
     IP a mașinii virtuale începe cu `10.0.2`? <small>→ [Mașini virtuale](#virtual-machines) · [Acces la distanță](#remote-access)</small>
-30. 🌳 **Capturarea tastaturii**: Dați click în fereastra mașinii virtuale și apăsați <kbd>Super</kbd>. Apoi apăsați
+30. 🧪 **Capturarea tastaturii**: Dați click în fereastra mașinii virtuale și apăsați <kbd>Super</kbd>. Apoi apăsați
     **tasta Host** și apăsați din nou <kbd>Super</kbd>. Ce sistem a reacționat de fiecare dată: mașina virtuală sau
     gazda? Urmăriți iconița de tastatură din colțul din dreapta jos al ferestrei mașinii virtuale. <small>→ [Capturarea tastaturii și a mouse-ului](#keyboard-and-mouse-capture)</small>
-31. 🌳 **Faceți un snapshot**: Opriți mașina virtuală și faceți un snapshot numit `fresh-install`. <small>→ [Snapshoturi](#snapshots)</small>
-32. 🌳 **Stricați și restaurați**: Porniți mașina virtuală și creați un fișier cu `nano ~/test.txt`. Opriți mașina
+31. 🏠 **Faceți un snapshot**: Opriți mașina virtuală și faceți un snapshot numit `fresh-install`. <small>→ [Snapshoturi](#snapshots)</small>
+32. 🏠 **Stricați și restaurați**: Porniți mașina virtuală și creați un fișier cu `nano ~/test.txt`. Opriți mașina
     virtuală și restaurați snapshotul `fresh-install`. Porniți din nou mașina virtuală: mai este acolo `test.txt`?
     De ce? <small>→ [Snapshoturi](#snapshots)</small>
 
 ### Acces la distanță {/* #remote-access-1 */}
 
-33. 🌱 **Conectați-vă prin SSH**: Asigurați-vă că adaptorul de rețea al mașinii virtuale este **NAT** și adăugați
+33. 🧪 **Conectați-vă prin SSH**: Asigurați-vă că adaptorul de rețea al mașinii virtuale este **NAT** și adăugați
     regula de redirectare a porturilor (vedeți [Redirectarea porturilor](#port-forwarding)). În mașina virtuală,
     porniți serverul SSH și deschideți firewallul (vedeți [Conectarea la o mașină virtuală](#connecting-to-a-vm)).
     Dintr-un terminal de pe **gazdă**, conectați-vă cu `ssh -p 2222 <utilizator>@localhost`. Rulați `hostname` ca să
     verificați că sunteți pe mașina virtuală, apoi scrieți `exit`. <small>→ [Redirectarea porturilor](#port-forwarding) · [Conectarea la o mașină virtuală](#connecting-to-a-vm)</small>
-34. 🌳 **Ușa greșită**: De pe gazdă, rulați `ssh <utilizator>@localhost` **fără** `-p 2222`. Ce se întâmplă? Unde
+34. 🧪 **Ușa greșită**: De pe gazdă, rulați `ssh <utilizator>@localhost` **fără** `-p 2222`. Ce se întâmplă? Unde
     ați fi dacă ar funcționa? Folosiți `hostname` ca să verificați. <small>→ [Redirectarea porturilor](#port-forwarding)</small>
-35. 🌳 **Două părți**: Puneți fereastra mașinii virtuale și un terminal al gazdei unul lângă altul. Prin SSH, creați
+35. 🧪 **Două părți**: Puneți fereastra mașinii virtuale și un terminal al gazdei unul lângă altul. Prin SSH, creați
     un fișier cu `nano hello.txt` și scrieți ceva în el. Apoi, într-un terminal **din fereastra mașinii virtuale**,
     rulați `ls` și `cat hello.txt`. Este același fișier? <small>→ [Conectarea la o mașină virtuală](#connecting-to-a-vm)</small>
 
