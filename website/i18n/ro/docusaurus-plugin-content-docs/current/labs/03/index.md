@@ -865,9 +865,9 @@ Exercițiile devin tot mai grele pe parcurs:
 - 🏠 [Mai departe](#going-further) (exercițiile 33 - 47) are exerciții mai grele;
 - 📝 [Provocări](#challenges) (exercițiile 48 - 54) le are pe cele mai grele.
 
-Fiecare exercițiu are nevoie doar de **arborele de exersare** din exercițiul 1 și își creează singur toate celelalte
-fișiere pe care le folosește. Rulați comenzile în `~/lab03`, dacă exercițiul nu spune altceva. Dacă modificați sau
-ștergeți un fișier din arborele de exersare, rulați din nou comenzile din exercițiul 1 ca să-l refaceți.
+Exercițiul 1 creează fișierele și directoarele de la care pornesc toate celelalte exerciții; orice alt fișier de care are nevoie un exercițiu
+este creat automat. Executați comenzile din `~/lab03`, cu excepția cazului în care exercițiul specifică altfel. Dacă modificați sau
+ștergeți unul dintre fișierele din exercițiul 1, executați din nou comenzile acestuia pentru a-l recupera.
 
 Unele exerciții cer lucruri pe care laboratorul nu vi le arată, de exemplu o opțiune care nu apare în tabelele de mai
 sus. Căutați-o în **pagina de manual** a comenzii (`man <command>`), cum ați văzut în
@@ -946,7 +946,8 @@ să le modificați.
    poate citi. <small>→ [Erorile](#errors-2-and-2)</small>
 
 6. **Utilizatorii și grupurile**:
-   1. copiați `/etc/passwd` (lista utilizatorilor) în `Reports/users.txt`, folosind `cat` și o redirectare, nu `cp`;
+   1. copiați fișierul `/etc/passwd` (lista utilizatorilor) în fișierul `Reports/users.txt` fără a folosi comanda `cp`: afișați-l cu comanda `cat` și
+      redirecționați ieșirea către noul fișier;
    2. copiați în același fel `/etc/group` (lista grupurilor) în `Reports/groups.txt`;
    3. numărați cu `wc -l` liniile celor două copii și ale celor două originale.
 
@@ -1350,11 +1351,11 @@ să le modificați.
     **Verificare:** `find` afișează o cale ca `/proc/3402/fd/4`, iar `ps -p 3402` afișează `less`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
 51. **Copie de rezervă a configurației**:
-    1. creați `/tmp/etc.tar.gz` cu întregul director `/etc` (configurația sistemului), **mai puțin** `/etc/pki`
-       (certificatele), și salvați erorile lui `tar` în `Reports/etc-errors.txt` (căutați în `man tar` opțiunea care
-       lasă fișiere în afara arhivei);
-    2. numărați fișierele din arhivă;
-    3. numărați erorile din `Reports/etc-errors.txt`.
+    1. creați fișierul `/tmp/etc.tar.gz` conținând întregul director `/etc` (configurația sistemului), **cu excepția** directorului `/etc/pki`, care conține certificatele pe care sistemul le utilizează pentru a verifica conexiunile securizate, cum ar fi site-urile web de tip
+       `https://` (consultați `man tar` pentru opțiunea care exclude anumite fișiere din arhivă);
+    2. în aceeași comandă, salvați erorile comenzii `tar` în fișierul `Reports/etc-errors.txt`;
+    3. numărați fișierele din arhivă, folosind lista afișată de comanda `tar` și comanda `wc -l`;
+    4. numărați erorile din fișierul `Reports/etc-errors.txt`.
 
     **Verificare:** `tar tf /tmp/etc.tar.gz` listează `etc/passwd` și `etc/os-release`, dar nimic din `etc/pki`;
     `Reports/etc-errors.txt` conține câte un `Permission denied` pentru fiecare fișier pe care doar `root` îl poate
@@ -1375,7 +1376,7 @@ să le modificați.
     `tar` nu îl extrage (la fel se întâmplă cu numele `Music/` și `Photos/`). <small>→ [Arhive](#archives-tar)</small>
 
 53. **Arhive printr-un pipe**:
-    1. creați `/tmp/music.tar.gz` cu directorul `Music`, într-o singură linie de comandă: `tar` scrie arhiva,
+    1. creați `/tmp/music.tar.gz` cu directorul `Music`, într-o singură linie de comandă, astfel încât `tar` scrie arhiva,
        **necomprimată**, la ieșirea standard (un fișier arhivă numit `-` înseamnă ieșirea standard), `gzip` o comprimă
        într-un pipe, iar o redirectare o salvează;
     2. creați directorul `/tmp/piped`;
