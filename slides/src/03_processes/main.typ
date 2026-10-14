@@ -27,6 +27,8 @@
       - Chapter 2 - _Utilizarea sistemului de fișiere_
         - Section 2.3.4.1 - _Crearea legăturilor simbolice_
         - Section 2.4 - _Redirectarea intrării sau ieșirii_
+      - Chapter 3 - _Pachete software_
+        - Sections 3.1 - 3.3
       - Chapter 4 - _Procese_
         - Sections 4.1 - 4.5, 4.8 - 4.9
       - Chapter 8 - _Componente hardware_
@@ -34,21 +36,6 @@
       - Chapter 9 - _Pornirea sistemului_
         - Section 9.6 - _Pornirea init și a serviciilor de startup în Linux_
   ]
-]
-
-#slide[
-  == Processes
-
-  - Process
-  - PID
-  - Process Loading
-  - Process States
-  - `fork` and `exec`
-  - File descriptors
-  - Soft links
-  - The `/proc` folder
-  - Redirects
-  - How Linux starts
 ]
 
 #slide[
@@ -70,23 +57,26 @@
   ]
 ]
 
+#include "packages.typ"
 #include "process.typ"
 #include "fd.typ"
+#include "redirects.typ"
 #include "links.typ"
 #include "proc.typ"
-#include "redirects.typ"
 
 #slide[
   == We talked about
 
+  - Installing applications
   - Process
   - PID
   - Process Loading
   - Process States
   - `fork` and `exec`
+  - How Linux starts
+  - Orphan and zombie processes
   - File descriptors
+  - Redirects
   - Soft links
   - The `/proc` folder
-  - Redirects
-  - How Linux starts
 ]
