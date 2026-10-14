@@ -78,6 +78,7 @@
 #let good = (hl: ok-color.lighten(70%), bg: ok-color.lighten(93%), bar: ok-color)
 #let check-slide(n, title, sub, lines, meaning, fix, size: 0.85em) = slide[
   #heading(level: 2)[#n. #title]
+  #sub
   #check-progress(n)
 
   #parts-terminal(lines, hl: ((("bad",), bad), (("ok",), good)), size: size)
@@ -98,13 +99,13 @@
   "$ nmcli radio wifi",
   (("bad", "disabled"),),
 ), (
-  [❌ no card is `UP` with `LOWER_UP`: no link],
+  [❌ no card, except `lo`, is `UP` with `LOWER_UP`: no link],
   ([`NO-CARRIER`], [the cable is not plugged in, or broken]),
   ([`disabled`], [the Wi-Fi radio is off]),
 ), (
   [🔧 connect the card],
   ([cable], [plug it in (both ends), try another cable]),
-  ([Wi-Fi], [`nmcli radio wifi on`, then `nmcli device wifi connect "Home WiFi" --ask`]),
+  ([Wi-Fi], [`nmcli radio wifi on`, then `nmcli device wifi connect HomeWiFi --ask`]),
 ))
 
 #check-slide(2, [Do I Have an Address?], [the network layer: the IP address and the mask], (
@@ -127,11 +128,11 @@
   ((none, "ping: connect: "), ("bad", "Network is unreachable")),
 ), (
   [❌ no `default via ...` line: only the local network works],
-  ([why], [the gateway was not given by DHCP, or a static configuration without it]),
+  ([why], [the gateway was not given by DHCP, or the static configuration has none]),
 ), (
   [🔧 add the gateway],
   ([now], [`sudo ip route add default via 192.168.1.1`]),
-  ([permanent], [`nmcli connection modify ... ipv4.gateway 192.168.1.1`]),
+  ([permanent], [_Settings_ → IPv4 → Gateway, or `routes:` in _netplan_]),
 ))
 
 #check-slide(4, [Does the Internet Answer?], [the network layer: the gateway, then beyond it], (
@@ -141,12 +142,9 @@
   "$ ping -c 2 -q 8.8.8.8",
   "--- 8.8.8.8 ping statistics ---",
   ((none, "2 packets transmitted, 0 received, "), ("bad", "100% packet loss"), (none, ", time 1031ms")),
-  "$ traceroute -n 8.8.8.8",
-  ((none, " 1  "), ("ok", "192.168.1.1"), (none, "  1.912 ms  1.874 ms  1.851 ms")),
-  ((none, " 2  "), ("bad", "* * *")),
 ), (
   [❌ the gateway answers, the Internet does not: the problem is *after* the home router],
-  ([`traceroute`], [the packets stop after the router]),
+  ([`100% packet loss`], [the packets get to the router, but no further]),
 ), (
   [🔧 not your computer],
   ([router], [restart the home router, check its WAN connection]),
@@ -168,7 +166,7 @@
 ), (
   [🔧 set a DNS server],
   ([now], [`sudo resolvectl dns enp0s31f6 1.1.1.1`]),
-  ([permanent], [`nmcli connection modify ... ipv4.dns 1.1.1.1`]),
+  ([permanent], [_Settings_ → IPv4 → DNS, or `nameservers:` in _netplan_]),
 ))
 
 #check-slide(6, [Does the Server Answer?], [the transport and the application layers], (
@@ -205,12 +203,9 @@
     stroke: (x, y) => if y == 0 { none } else { (bottom: 0.5pt + luma(210)) },
     fill: (x, y) => if y == 0 { accent } else { none },
     table.header(..([layer], [command], [it answers]).map(h => text(fill: white, weight: "bold", h))),
-    ..row("link", "ip neigh", [which MAC addresses did this computer find? (_ARP_)]),
-    ..row("link", "sudo tcpdump -i enp0s31f6", [which packets go in and out of the card?]),
     ..row("network", "ping 192.168.1.1", [does the computer answer?]),
-    ..row("network", "traceroute -n upb.ro", [which routers are on the way?]),
-    ..row("transport", "nc -zv upb.ro 443", [does a program wait on this port? (`succeeded!`)]),
-    ..row("application", "host upb.ro", [which IP address has this name? (DNS)]),
+    ..row("transport", "nc -zv upb.ro 443", [does a program wait on this port? (`Connected`)]),
+    ..row("application", "host upb.ro", [which IP address does this name have? (DNS)]),
     ..row("application", "curl -I https://upb.ro", [does the web server answer?]),
   ))
   #v(0pt)

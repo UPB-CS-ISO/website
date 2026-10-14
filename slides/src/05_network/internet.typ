@@ -457,7 +457,7 @@
     // 2. the drivers: one for each card
     #uncover("2-")[
       #sep(124pt)[kernel][hardware]
-      #for (i, (drv, iface)) in (("e1000e", "enp0s31f6"), ("iwlwifi", "wlp2s0"), ("qmi_wwan", "wwan0")).enumerate() {
+      #for (i, (drv, iface)) in (("e1000e", "enp0s31f6"), ("iwlwifi", "wlp2s0"), ("qmi_wwan", "wwp0s20f0u3i12")).enumerate() {
         layer-box(x0 + col * i + 4pt, 90pt, col - 8pt, 28pt, raw(drv), "link", sub: [interface #raw(iface)])
       }
       #layer-name(104pt)[Data Link]

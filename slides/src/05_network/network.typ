@@ -28,16 +28,25 @@
 // ---------------------------------------------------------------------------
 
 // the bits of an address written with dots, as a string of 32 `0` / `1`
-#let addr-bits(addr) = addr.split(".").map(b => {
-  let v = int(b)
-  range(7, -1, step: -1).map(i => str(calc.rem(calc.quo(v, calc.pow(2, i)), 2))).join()
-}).join()
+#let addr-bits(addr) = (
+  addr
+    .split(".")
+    .map(b => {
+      let v = int(b)
+      range(7, -1, step: -1).map(i => str(calc.rem(calc.quo(v, calc.pow(2, i)), 2))).join()
+    })
+    .join()
+)
 
 // a string of 32 bits, written back as an address with dots
-#let bits-addr(bits) = range(4).map(k => {
-  let byte = bits.slice(k * 8, k * 8 + 8)
-  str(byte.clusters().fold(0, (acc, b) => acc * 2 + int(b)))
-}).join(".")
+#let bits-addr(bits) = (
+  range(4)
+    .map(k => {
+      let byte = bits.slice(k * 8, k * 8 + 8)
+      str(byte.clusters().fold(0, (acc, b) => acc * 2 + int(b)))
+    })
+    .join(".")
+)
 
 // The 32 bits of an IP address, with the bytes in decimal above them.
 // With `n`, the first `n` bits are the network (in the color of the network
@@ -95,8 +104,10 @@
     row-gutter: 6pt,
     fact("📏", [*32 bits* = 4 bytes, each byte written as a decimal number, from `0` to `255`]),
     fact("🌍", [$2^32 approx$ *4.3 billion* addresses for the whole Internet]),
+
     uncover("2-", fact("🛣️", [*network*: the street, the same for all the devices in the network], c: net)),
     uncover("2-", fact("🏠", [*host*: the house number, different for every device in the network], c: host)),
+
     uncover("3-", fact("✂️", [the network part is *not* always 24 bits: here it is *16*])),
     uncover("4-", fact("📐", [it can end *inside a byte*: here it is *20*])),
   )
@@ -127,7 +138,12 @@
           height: rh,
           fill: if dim { luma(245) } else { c.fill },
           stroke: 0.5pt + if dim { luma(210) } else { c.stroke },
-          align(center + horizon, text(size: 7.5pt, font: "DejaVu Sans Mono", fill: if dim { luma(170) } else { black }, b)),
+          align(center + horizon, text(
+            size: 7.5pt,
+            font: "DejaVu Sans Mono",
+            fill: if dim { luma(170) } else { black },
+            b,
+          )),
         ))
       }
       at(bit-x(32) + 4pt, y + 2pt, text(size: 8.5pt, font: "DejaVu Sans Mono", weight: "bold", dec))
@@ -208,7 +224,9 @@
       #v(-2pt)
       #mask-bits(24)
       #v(-8pt)
-      #text(size: 9pt)[#text(fill: layer-colors.network.stroke.darken(20%), weight: "bold")[24 bits of `1`]: the *network*,
+      #text(
+        size: 9pt,
+      )[#text(fill: layer-colors.network.stroke.darken(20%), weight: "bold")[24 bits of `1`]: the *network*,
         #text(fill: layer-colors.application.stroke.darken(20%), weight: "bold")[8 bits of `0`]: the *host*]
     ]
   ]
@@ -275,54 +293,54 @@
   ("data", [Data], [any], 84pt, "📦", none),
 )
 
-#slide[
-  == IPv4 Packet
-  simplified: only the important fields
+// #slide[
+//   == IPv4 Packet
+//   simplified: only the important fields
 
-  #let steps = (
-    (none, none),
-    (("src", "dst"), explain(
-      [the *IP addresses*: which computer sends, which computer receives],
-      ([📬 *Destination*], [the routers look at it to find the way]),
-      ([📤 *Source*], [the computer that sent it, so the answer comes back]),
-      ([💡], [usually the *same* on the whole way; the MACs change at every router]),
-    )),
-    (("ttl",), explain(
-      [⏳ *TTL*: _time to live_],
-      ([`-1`], [every router subtracts 1; at `0` the packet is *dropped*]),
-      ([🔁], [so a packet does not go around in circles forever (`ping` shows it: `ttl=117`)]),
-    )),
-    (("proto", "data"), explain(
-      [🏷️ *Protocol*: what is inside the packet],
-      ([`6`], [a TCP segment]),
-      ([`17`], [a UDP datagram]),
-      ([`1`], [an ICMP message (`ping`)]),
-    )),
-    (("sum", "data"), explain(
-      [the *check* and the *data*],
-      ([✅ *Checksum*], [of the header only; a damaged packet is dropped]),
-      ([➕], [a few more fields, not shown here: the header has at least 20 bytes]),
-    )),
-  )
-  #for (i, (keys, body)) in steps.enumerate() {
-    only(i + 1)[
-      #frame-drawing(
-        selected: if keys == none { () } else { keys },
-        fields: ip-fields,
-        groups: (("ttl", "dst", [*header*: 20 bytes (simplified)]), ("data", "data", [*data*])),
-        packet: [*Data* \ #text(size: 6.5pt)[TCP, UDP, ICMP, ...]],
-        name-size: 7.5pt,
-        color: layer-colors.network,
-        inner: layer-colors.transport,
-        height: 106pt,
-        extra: if keys != none and "proto" in keys {
-          hint-arrow(96pt, 366pt, [🏷️ a hint: what the data means])
-        },
-      )
-      #if body != none { body }
-    ]
-  }
-]
+//   #let steps = (
+//     (none, none),
+//     (("src", "dst"), explain(
+//       [the *IP addresses*: which computer sends, which computer receives],
+//       ([📬 *Destination*], [the routers look at it to find the way]),
+//       ([📤 *Source*], [the computer that sent it, so the answer comes back]),
+//       ([💡], [usually the *same* on the whole way; the MACs change at every router]),
+//     )),
+//     (("ttl",), explain(
+//       [⏳ *TTL*: _time to live_],
+//       ([`-1`], [every router subtracts 1; at `0` the packet is *dropped*]),
+//       ([🔁], [so a packet does not go around in circles forever (`ping` shows it: `ttl=117`)]),
+//     )),
+//     (("proto", "data"), explain(
+//       [🏷️ *Protocol*: what is inside the packet],
+//       ([`6`], [a TCP segment]),
+//       ([`17`], [a UDP datagram]),
+//       ([`1`], [an ICMP message (`ping`)]),
+//     )),
+//     (("sum", "data"), explain(
+//       [the *check* and the *data*],
+//       ([✅ *Checksum*], [of the header only; a damaged packet is dropped]),
+//       ([➕], [a few more fields, not shown here: the header has at least 20 bytes]),
+//     )),
+//   )
+//   #for (i, (keys, body)) in steps.enumerate() {
+//     only(i + 1)[
+//       #frame-drawing(
+//         selected: if keys == none { () } else { keys },
+//         fields: ip-fields,
+//         groups: (("ttl", "dst", [*header*: 20 bytes (simplified)]), ("data", "data", [*data*])),
+//         packet: [*Data* \ #text(size: 6.5pt)[TCP, UDP, ICMP, ...]],
+//         name-size: 7.5pt,
+//         color: layer-colors.network,
+//         inner: layer-colors.transport,
+//         height: 106pt,
+//         extra: if keys != none and "proto" in keys {
+//           hint-arrow(96pt, 366pt, [🏷️ a hint: what the data means])
+//         },
+//       )
+//       #if body != none { body }
+//     ]
+//   }
+// ]
 
 // an IPv6 address in 8 groups of 16 bits (4 hexadecimal digits);
 // `step` 2 dims the leading zeros, step 3 also marks the run of zero groups
@@ -382,6 +400,7 @@
     fact("📏", [*128 bits*: 8 groups of 16 bits, in *hexadecimal*]),
     fact("🌍", [$2^128 approx 3.4 dot 10^38$ addresses; IPv4 *ran out* in 2011]),
     uncover("5-", fact("🤝", [*dual stack*: next to IPv4, most computers have both])),
+
     uncover("4-", fact("🔁", [`::1`: this computer (_loopback_), like `127.0.0.1`])),
     uncover("4-", fact("🔗", [`fe80::...`: _link local_, every card has one])),
     uncover("5-", fact("💡", [in this lecture we use *IPv4*])),
@@ -404,10 +423,25 @@
 // the same laptop as `ip -br link`, now with a cable: the Ethernet card is connected, the Wi-Fi card is not
 #let addr-br = (
   "$ ip -br addr    # -br means brief - show one line for each network card",
-  (("name", "lo"), (none, "               "), ("state", "UNKNOWN"), (none, "        "), ("v4", "127.0.0.1/8"), (none, " "), ("v6", "::1/128")),
   (
-    ("name", "enp0s31f6"), (none, "        "), ("state", "UP"), (none, "             "), ("v4", "192.168.1.105/24"), (none, " "),
-    ("v6", "2a02:2f0e:d10c::105/64"), (none, " "), ("v6", "fe80::8e16:45ff:fea2:3b91/64"),
+    ("name", "lo"),
+    (none, "               "),
+    ("state", "UNKNOWN"),
+    (none, "        "),
+    ("v4", "127.0.0.1/8"),
+    (none, " "),
+    ("v6", "::1/128"),
+  ),
+  (
+    ("name", "enp0s31f6"),
+    (none, "        "),
+    ("state", "UP"),
+    (none, "             "),
+    ("v4", "192.168.1.105/24"),
+    (none, " "),
+    ("v6", "2a02:2f0e:d10c::105/128"),
+    (none, " "),
+    ("v6", "fe80::8e16:45ff:fea2:3b91/64"),
   ),
   (("name", "wlp2s0"), (none, "           "), ("down", "DOWN")),
 )
@@ -416,43 +450,83 @@
   == IP Addresses
   the IP addresses of every card
 
-  #addr-steps(addr-br, (
-    (4, ("name", "state"), explain(
-      [`ip addr` (or `ip a`): like `ip link`, plus the *IP addresses*],
-      ([`enp0s31f6`], [the name of the card and its state, the same as in `ip -br link`]),
-    )),
-    (4, ("v4",), explain(
-      [the *IPv4* addresses, with the *mask*],
-      ([`192.168.1.105/24`], [the address of the Ethernet card, in the network `192.168.1.0/24`]),
-      ([`127.0.0.1/8`], [the loopback: this computer]),
-    )),
-    (4, ("v6",), explain(
-      [the *IPv6* addresses: a card can have *more* of them],
-      ([`2a02:...`], [a *global* address, it can be used on the Internet]),
-      ([`fe80::...`], [the _link local_ address, every card has one]),
-    )),
-    (4, ("down",), explain(
-      [`wlp2s0` has *no address*],
-      ([`DOWN`], [the Wi-Fi card is not connected to any network: it does not get an address]),
-    )),
-  ), size: 0.76em)
+  #addr-steps(
+    addr-br,
+    (
+      (
+        4,
+        ("name", "state"),
+        explain(
+          [`ip addr` (or `ip a`): like `ip link`, plus the *IP addresses*],
+          ([`enp0s31f6`], [the name of the card and its state: now with a cable, so it is `UP`, and the Wi-Fi card is `DOWN`]),
+        ),
+      ),
+      (
+        4,
+        ("v4",),
+        explain(
+          [the *IPv4* addresses, with the *mask*],
+          ([`192.168.1.105/24`], [the address of the Ethernet card, in the network `192.168.1.0/24`]),
+          ([`127.0.0.1/8`], [the loopback: this computer]),
+        ),
+      ),
+      (
+        4,
+        ("v6",),
+        explain(
+          [the *IPv6* addresses: a card can have *more* of them],
+          ([`2a02:...`], [a *global* address, it can be used on the Internet]),
+          ([`fe80::...`], [the _link local_ address, every card has one]),
+        ),
+      ),
+      (
+        4,
+        ("down",),
+        explain(
+          [`wlp2s0` has *no address*],
+          ([`DOWN`], [the Wi-Fi card is not connected to any network: it does not get an address]),
+        ),
+      ),
+    ),
+    size: 0.76em,
+  )
 ]
 
 #let addr-show = (
   "$ ip addr show enp0s31f6",
   (
-    (none, "2: enp0s31f6: <BROADCAST,MULTICAST,UP,LOWER_UP> "), ("mtu", "mtu 1500"),
+    (none, "2: enp0s31f6: <BROADCAST,MULTICAST,UP,LOWER_UP> "),
+    ("mtu", "mtu 1500"),
     (none, " qdisc fq_codel state UP group default qlen 1000"),
   ),
   ((none, "    "), ("mac", "link/ether 8c:16:45:a2:3b:91"), (none, " "), ("brd-mac", "brd ff:ff:ff:ff:ff:ff")),
   (
-    (none, "    "), ("v4", "inet 192.168.1.105/24"), (none, " "), ("brd", "brd 192.168.1.255"), (none, " "),
-    ("scope", "scope global"), (none, " "), ("dyn", "dynamic"), (none, " noprefixroute enp0s31f6"),
+    (none, "    "),
+    ("v4", "inet 192.168.1.105/24"),
+    (none, " "),
+    ("brd", "brd 192.168.1.255"),
+    (none, " "),
+    ("scope", "scope global"),
+    (none, " "),
+    ("dyn", "dynamic"),
+    (none, " noprefixroute enp0s31f6"),
   ),
   ((none, "       "), ("lft", "valid_lft 85912sec preferred_lft 85912sec")),
-  ((none, "    "), ("v6", "inet6 2a02:2f0e:d10c::105/64"), (none, " "), ("scope6", "scope global"), (none, " dynamic noprefixroute")),
+  (
+    (none, "    "),
+    ("v6", "inet6 2a02:2f0e:d10c::105/128"),
+    (none, " "),
+    ("scope6", "scope global"),
+    (none, " dynamic noprefixroute"),
+  ),
   "       valid_lft 86234sec preferred_lft 14234sec",
-  ((none, "    "), ("v6", "inet6 fe80::8e16:45ff:fea2:3b91/64"), (none, " "), ("scope6", "scope link"), (none, " noprefixroute")),
+  (
+    (none, "    "),
+    ("v6", "inet6 fe80::8e16:45ff:fea2:3b91/64"),
+    (none, " "),
+    ("scope6", "scope link"),
+    (none, " noprefixroute"),
+  ),
   "       valid_lft forever preferred_lft forever",
 )
 
@@ -460,81 +534,134 @@
   == Card Details
   `ip addr show` and the name of the card
 
-  #addr-steps(addr-show, (
-    (2, ("mtu",), explain(
-      [the first line is the same as in `ip link`],
-      ([`mtu 1500`], [_Maximum Transmission Unit_: the largest payload of a frame, 1500 bytes for Ethernet and Wi-Fi]),
-    )),
-    (3, ("mac", "brd-mac"), explain(
-      [the *link layer*],
-      ([`link/ether`], [the MAC address of the card]),
-      ([`brd`], [the broadcast MAC address: every card in the network]),
-    )),
-    (4, ("v4", "brd", "scope"), explain(
-      [the *IPv4 address* (`inet`)],
-      ([`brd 192.168.1.255`], [the *broadcast* address: the last address of the network, for every computer in it]),
-      ([`scope global`], [a normal address, it can be used to talk to other networks]),
-    )),
-    (5, ("dyn", "lft"), explain(
-      [where the address comes from],
-      ([`dynamic`], [received automatically from the router (_DHCP_), for a limited time]),
-      ([`valid_lft`], [the address can be used for 85912 more seconds (almost a day), then it is renewed]),
-    )),
-    (9, ("v6", "scope6"), explain(
-      [the *IPv6 addresses* (`inet6`)],
-      ([`scope global`], [can be used on the Internet]),
-      ([`scope link`], [only inside this network: the _link local_ `fe80::` address]),
-    )),
-  ), size: 0.78em)
-]
-
-// the neighbor table of the laptop, with `ip neigh`
-#let neigh-lines = (
-  "$ ip neigh",
-  (("ip", "192.168.1.1"), (none, " dev enp0s31f6 lladdr "), ("mac", "70:b5:e8:2d:91:4c"), (none, " "), ("ok", "REACHABLE")),
-  ((none, "192.168.1.11 dev enp0s31f6 lladdr e4:3b:71:0c:9a:52 "), ("stale", "STALE")),
-  ((none, "192.168.1.12 dev enp0s31f6 "), ("failed", "FAILED")),
-  // the same table with the older command
-  "$ arp -n    # deprecated, from net-tools",
-  "Address          HWtype  HWaddress          Flags Mask  Iface",
-  ((none, "192.168.1.1      ether   70:b5:e8:2d:91:4c  "), ("flag", "C"), (none, "           enp0s31f6")),
-  ((none, "192.168.1.11     ether   e4:3b:71:0c:9a:52  "), ("flag", "C"), (none, "           enp0s31f6")),
-  ((none, "192.168.1.12             "), ("inc", "(incomplete)"), (none, "                   enp0s31f6")),
-)
-
-#slide[
-  == Neighbors
-  the MAC addresses this computer found
-
-  #let steps = (
-    (2, ("ip", "mac", "ok"), explain(
-      [`ip neigh`: the *neighbor table* (the _ARP cache_)],
-      ([`192.168.1.1`], [the router of the network has the MAC address `70:b5:e8:2d:91:4c`]),
-      ([`REACHABLE`], [used just now, it answers]),
-    )),
-    (3, ("stale",), explain(
-      [`192.168.1.11`, found some time ago],
-      ([`STALE`], [an old entry: the computer asks again for the MAC address the next time it needs it]),
-    )),
-    (4, ("failed",), explain(
-      [`192.168.1.12`: nobody answered, there is no such computer],
-      ([`FAILED`], [`ping` shows `Destination Host Unreachable`]),
-    )),
-    (4, (), explain(
-      [💡 only computers of *the same network* (`192.168.1.0/24`) are in the table],
-      ([why], [MAC addresses are used only inside a network; the next section shows how packets leave it]),
-    )),
-    (9, ("flag", "inc"), explain(
-      [`arp -n`: the *deprecated* command (_net-tools_), the same table],
-      ([`-n`], [show the IP addresses as numbers, do not look up their names]),
-      ([`C`], [_complete_: the MAC address is known]),
-      ([`(incomplete)`], [nobody answered, like `FAILED`]),
-    )),
+  #addr-steps(
+    addr-show,
+    (
+      (
+        2,
+        ("mtu",),
+        explain(
+          [the first line is the same as in `ip link`],
+          (
+            [`mtu 1500`],
+            [_Maximum Transmission Unit_: the largest payload of a frame, 1500 bytes for Ethernet and Wi-Fi],
+          ),
+        ),
+      ),
+      (
+        3,
+        ("mac", "brd-mac"),
+        explain(
+          [the *link layer*],
+          ([`link/ether`], [the MAC address of the card]),
+          ([`brd`], [the broadcast MAC address: every card in the network]),
+        ),
+      ),
+      (
+        4,
+        ("v4", "brd", "scope"),
+        explain(
+          [the *IPv4 address* (`inet`)],
+          ([`brd 192.168.1.255`], [the *broadcast* address: the last address of the network, for every computer in it]),
+          ([`scope global`], [a normal address, it can be used to talk to other networks]),
+        ),
+      ),
+      (
+        5,
+        ("dyn", "lft"),
+        explain(
+          [where the address comes from],
+          ([`dynamic`], [received automatically from the router (_DHCP_), for a limited time]),
+          ([`valid_lft`], [the address can be used for 85912 more seconds (almost a day), then it is renewed]),
+        ),
+      ),
+      (
+        9,
+        ("v6", "scope6"),
+        explain(
+          [the *IPv6 addresses* (`inet6`)],
+          ([`scope global`], [can be used on the Internet]),
+          ([`scope link`], [only inside this network: the _link local_ `fe80::` address]),
+        ),
+      ),
+    ),
+    size: 0.78em,
   )
-  #for (i, (n, keys, body)) in steps.enumerate() {
-    only(i + 1)[
-      #parts-terminal(neigh-lines.slice(0, n), hl: ((keys, ip-peach),), size: if n > 4 { 0.85em } else { 0.95em })
-      #body
-    ]
-  }
 ]
+
+// // the neighbor table of the laptop, with `ip neigh`
+// #let neigh-lines = (
+//   "$ ip neigh",
+//   (
+//     ("ip", "192.168.1.1"),
+//     (none, " dev enp0s31f6 lladdr "),
+//     ("mac", "70:b5:e8:2d:91:4c"),
+//     (none, " "),
+//     ("ok", "REACHABLE"),
+//   ),
+//   ((none, "192.168.1.11 dev enp0s31f6 lladdr e4:3b:71:0c:9a:52 "), ("stale", "STALE")),
+//   ((none, "192.168.1.12 dev enp0s31f6 "), ("failed", "FAILED")),
+//   // the same table with the older command
+//   "$ arp -n    # deprecated, from net-tools",
+//   "Address          HWtype  HWaddress          Flags Mask  Iface",
+//   ((none, "192.168.1.1      ether   70:b5:e8:2d:91:4c  "), ("flag", "C"), (none, "           enp0s31f6")),
+//   ((none, "192.168.1.11     ether   e4:3b:71:0c:9a:52  "), ("flag", "C"), (none, "           enp0s31f6")),
+//   ((none, "192.168.1.12             "), ("inc", "(incomplete)"), (none, "                   enp0s31f6")),
+// )
+
+// #slide[
+//   == Neighbors
+//   the MAC addresses this computer found
+
+//   #let steps = (
+//     (
+//       2,
+//       ("ip", "mac", "ok"),
+//       explain(
+//         [`ip neigh`: the *neighbor table* (the _ARP cache_)],
+//         ([`192.168.1.1`], [the router of the network has the MAC address `70:b5:e8:2d:91:4c`]),
+//         ([`REACHABLE`], [used just now, it answers]),
+//       ),
+//     ),
+//     (
+//       3,
+//       ("stale",),
+//       explain(
+//         [`192.168.1.11`, found some time ago],
+//         ([`STALE`], [an old entry: the computer asks again for the MAC address the next time it needs it]),
+//       ),
+//     ),
+//     (
+//       4,
+//       ("failed",),
+//       explain(
+//         [`192.168.1.12`: nobody answered, there is no such computer],
+//         ([`FAILED`], [`ping` shows `Destination Host Unreachable`]),
+//       ),
+//     ),
+//     (
+//       4,
+//       (),
+//       explain(
+//         [💡 only computers of *the same network* (`192.168.1.0/24`) are in the table],
+//         ([why], [MAC addresses are used only inside a network; the next section shows how packets leave it]),
+//       ),
+//     ),
+//     (
+//       9,
+//       ("flag", "inc"),
+//       explain(
+//         [`arp -n`: the *deprecated* command (_net-tools_), the same table],
+//         ([`-n`], [show the IP addresses as numbers, do not look up their names]),
+//         ([`C`], [_complete_: the MAC address is known]),
+//         ([`(incomplete)`], [nobody answered, like `FAILED`]),
+//       ),
+//     ),
+//   )
+//   #for (i, (n, keys, body)) in steps.enumerate() {
+//     only(i + 1)[
+//       #parts-terminal(neigh-lines.slice(0, n), hl: ((keys, ip-peach),), size: if n > 4 { 0.85em } else { 0.95em })
+//       #body
+//     ]
+//   }
+// ]

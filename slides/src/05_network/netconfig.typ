@@ -68,13 +68,13 @@
     uncover("2-", way-card(way-c.temp)[`ip address add` \ `ip route add default via`]),
     uncover("3-", way-card(
       way-c.perm,
-    )[#fedora-logo(height: 1.6em) `nmcli connection modify` or a file \ #ubuntu-logo(height: 1.2em) _netplan_: `addresses`]),
+    )[#fedora-logo(height: 1.6em) _Settings_ → IPv4: _Manual_ \ #ubuntu-logo(height: 1.2em) _netplan_: `addresses`]),
 
     text(size: 11pt)[*dynamic* 🔄 \ #text(size: 8.5pt, fill: luma(90))[from a DHCP server]],
     uncover("4-", way-card(way-c.temp)[a DHCP client: \ `dhclient`]),
     uncover("5-", way-card(
       way-c.perm,
-    )[#fedora-logo(height: 1.6em) `ipv4.method auto` \ #ubuntu-logo(height: 1.2em) _netplan_: `dhcp4: true`]),
+    )[#fedora-logo(height: 1.6em) _Settings_ → IPv4: _Automatic (DHCP)_ \ #ubuntu-logo(height: 1.2em) _netplan_: `dhcp4: true`]),
   )
   #v(0pt)
 ]
@@ -196,7 +196,7 @@
 )
 #let tmp-static-2 = (
   "$ ip -br address show enp0s31f6",
-  tab((17, 15), (none, "enp0s31f6"), (none, "UP")) + (("addr", "192.168.1.50/24"),),
+  tab((17, 15), (none, "enp0s31f6"), (none, "UP")) + (("addr", "192.168.1.50/24"), (none, " fe80::8e16:45ff:fea2:3b91/64")),
   "$ ip route",
   ((none, "default via "), ("gw", "192.168.1.1"), (none, " dev enp0s31f6")),
   ((none, "192.168.1.0/24 dev enp0s31f6 proto kernel scope link "), ("net", "src 192.168.1.50")),
@@ -351,80 +351,80 @@
 
 #who-configures(permanent: true)
 
-#slide[
-  == Permanent on Fedora
-  #place(top + right, dy: -12pt, fedora-logo(height: 22pt))
-  NetworkManager saves the configuration in the *connection*
+// #slide[
+//   == Permanent on Fedora
+//   #place(top + right, dy: -12pt, fedora-logo(height: 22pt))
+//   NetworkManager saves the configuration in the *connection*
 
-  #only(1)[
-    #parts-terminal(perm-static, size: 1em)
-    #explain(
-      [✍️ *static*: `ipv4.method manual`],
-      ([`ipv4.addresses`], [the IP address and the mask]),
-      ([`ipv4.gateway`], [the gateway]),
-      ([`ipv4.dns`], [the DNS server]),
-    )
-  ]
-  #only(2)[
-    #parts-terminal(perm-dhcp, size: 1em)
-    #explain(
-      [🔄 *dynamic*: `ipv4.method auto`, ask a DHCP server],
-      ([`""`], [delete the static values]),
-      ([`connection up`], [use the new configuration now]),
-    )
-  ]
-  #place(bottom + left, text(size: 10pt)[💾 saved in `/etc/NetworkManager/system-connections/`, used at every boot])
-]
+//   #only(1)[
+//     #parts-terminal(perm-static, size: 1em)
+//     #explain(
+//       [✍️ *static*: `ipv4.method manual`],
+//       ([`ipv4.addresses`], [the IP address and the mask]),
+//       ([`ipv4.gateway`], [the gateway]),
+//       ([`ipv4.dns`], [the DNS server]),
+//     )
+//   ]
+//   #only(2)[
+//     #parts-terminal(perm-dhcp, size: 1em)
+//     #explain(
+//       [🔄 *dynamic*: `ipv4.method auto`, ask a DHCP server],
+//       ([`""`], [delete the static values]),
+//       ([`connection up`], [use the new configuration now]),
+//     )
+//   ]
+//   #place(bottom + left, text(size: 10pt)[💾 saved in `/etc/NetworkManager/system-connections/`, used at every boot])
+// ]
 
-#let nm-file = ```ini
-[connection]
-id=lab
-type=ethernet
-interface-name=enp0s31f6
+// #let nm-file = ```ini
+// [connection]
+// id=lab
+// type=ethernet
+// interface-name=enp0s31f6
 
-[ipv4]
-method=manual
-address1=192.168.1.50/24
-gateway=192.168.1.1
-dns=1.1.1.1;
-```
-#let nm-file-lines = (
-  "$ cd /etc/NetworkManager/system-connections/",
-  "$ sudo nano lab.nmconnection",
-  "$ sudo chmod 600 lab.nmconnection",
-  "$ sudo nmcli connection reload",
-  "$ nmcli -f NAME,TYPE,DEVICE connection show",
-  tab((20, 10), (none, "NAME"), (none, "TYPE")) + ((none, "DEVICE"),),
-  tab((20, 10), (none, "Wired connection 1"), (none, "ethernet")) + ((none, "enp0s31f6"),),
-  tab((20, 10), ("new", "lab"), (none, "ethernet")) + ((none, "--"),),
-  "$ sudo nmcli connection up lab",
-)
+// [ipv4]
+// method=manual
+// address1=192.168.1.50/24
+// gateway=192.168.1.1
+// dns=1.1.1.1;
+// ```
+// #let nm-file-lines = (
+//   "$ cd /etc/NetworkManager/system-connections/",
+//   "$ sudo nano lab.nmconnection",
+//   "$ sudo chmod 600 lab.nmconnection",
+//   "$ sudo nmcli connection reload",
+//   "$ nmcli -f NAME,TYPE,DEVICE connection show",
+//   tab((20, 10), (none, "NAME"), (none, "TYPE")) + ((none, "DEVICE"),),
+//   tab((20, 10), (none, "Wired connection 1"), (none, "ethernet")) + ((none, "enp0s31f6"),),
+//   tab((20, 10), ("new", "lab"), (none, "ethernet")) + ((none, "--"),),
+//   "$ sudo nmcli connection up lab",
+// )
 
-#slide[
-  == Using a File
-  on Fedora: write the connection by hand
-  #place(top + right, dy: -12pt, fedora-logo(height: 22pt))
+// #slide[
+//   == Using a File
+//   on Fedora: write the connection by hand
+//   #place(top + right, dy: -12pt, fedora-logo(height: 22pt))
 
-  // each step shows more of the shell
-  #let steps = (
-    (2, (), [📝 write the file: any name that ends in `.nmconnection`, `id` is the name of the connection]),
-    (3, (), [🔒 only root may read it, NetworkManager *ignores* the file otherwise (it may hold a Wi-Fi password)]),
-    (8, ("new",), [🔄 `reload`: NetworkManager reads the files again, the new connection `lab` is in the list]),
-    (9, (), [▶️ use it now and at every boot; for DHCP: `method=auto`, without `address1`, `gateway` and `dns`]),
-  )
-  #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1em)[
-    #align(center, text(size: 9pt, weight: "bold")[`lab.nmconnection`])
-    #v(-4pt)
-    #text(size: 0.85em, nm-file)
-  ][
-    #for (i, (n, keys, body)) in steps.enumerate() {
-      only(i + 1, parts-terminal(nm-file-lines.slice(0, n), hl: ((keys, ip-peach),), size: 0.8em))
-    }
-  ]
-  #place(bottom + left, block(width: 100%, text(size: 10.5pt)[
-    #for (i, (n, keys, body)) in steps.enumerate() { only(i + 1, explain(body)) }
-  ]))
-]
+//   // each step shows more of the shell
+//   #let steps = (
+//     (2, (), [📝 write the file: any name that ends in `.nmconnection`, `id` is the name of the connection]),
+//     (3, (), [🔒 only root may read it, NetworkManager *ignores* the file otherwise (it may hold a Wi-Fi password)]),
+//     (8, ("new",), [🔄 `reload`: NetworkManager reads the files again, the new connection `lab` is in the list]),
+//     (9, (), [▶️ use it now and at every boot; for DHCP: `method=auto`, without `address1`, `gateway` and `dns`]),
+//   )
+//   #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1em)[
+//     #align(center, text(size: 9pt, weight: "bold")[`lab.nmconnection`])
+//     #v(-4pt)
+//     #text(size: 0.85em, nm-file)
+//   ][
+//     #for (i, (n, keys, body)) in steps.enumerate() {
+//       only(i + 1, parts-terminal(nm-file-lines.slice(0, n), hl: ((keys, ip-peach),), size: 0.8em))
+//     }
+//   ]
+//   #place(bottom + left, block(width: 100%, text(size: 10.5pt)[
+//     #for (i, (n, keys, body)) in steps.enumerate() { only(i + 1, explain(body)) }
+//   ]))
+// ]
 
 #let netplan-static = ```yaml
 network:
@@ -474,70 +474,70 @@ network:
 // DNS
 // ---------------------------------------------------------------------------
 
-#let resolv-edit = (
-  "$ ls -l /etc/resolv.conf",
-  (
-    (none, "lrwxrwxrwx. 1 root root 39 Oct  6 09:12 /etc/resolv.conf -> "),
-    ("link", "../run/systemd/resolve/stub-resolv.conf"),
-  ),
-  "$ echo \"nameserver 1.1.1.1\" | sudo tee /etc/resolv.conf",
-  ((none, "nameserver "), ("new", "1.1.1.1")),
-  "$ ping -c 1 upb.ro",
-  ((none, "PING upb.ro ("), ("ok", "141.85.220.33"), (none, ") 56(84) bytes of data.")),
-  "$ sudo nmcli connection up HomeWiFi",
-  "Connection successfully activated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/7)",
-  "$ tail -n 3 /etc/resolv.conf",
-  ((none, "nameserver "), ("old", "127.0.0.53")),
-  "options edns0 trust-ad",
-  "search .",
-)
+// #let resolv-edit = (
+//   "$ ls -l /etc/resolv.conf",
+//   (
+//     (none, "lrwxrwxrwx. 1 root root 39 Oct  6 09:12 /etc/resolv.conf -> "),
+//     ("link", "../run/systemd/resolve/stub-resolv.conf"),
+//   ),
+//   "$ echo \"nameserver 1.1.1.1\" | sudo tee /etc/resolv.conf",
+//   ((none, "nameserver "), ("new", "1.1.1.1")),
+//   "$ ping -c 1 upb.ro",
+//   ((none, "PING upb.ro ("), ("ok", "141.85.220.33"), (none, ") 56(84) bytes of data.")),
+//   "$ sudo nmcli connection up HomeWiFi",
+//   "Connection successfully activated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/7)",
+//   "$ tail -n 3 /etc/resolv.conf",
+//   ((none, "nameserver "), ("old", "127.0.0.53")),
+//   "options edns0 trust-ad",
+//   "search .",
+// )
 
-#slide[
-  == DNS `/etc/resolv.conf`
-  it works, until a service writes it again
+// #slide[
+//   == DNS `/etc/resolv.conf`
+//   it works, until a service writes it again
 
-  #let bad = (hl: bad-color.lighten(75%), bg: bad-color.lighten(93%), bar: bad-color)
-  #let steps = (
-    (
-      2,
-      ("link",),
-      explain(
-        [`/etc/resolv.conf` is a *link* to a file of `systemd-resolved`],
-        ([`->`], [the service writes the real file, in `/run` (lost at reboot)]),
-      ),
-    ),
-    (
-      6,
-      ("new", "ok"),
-      explain(
-        [you *can* edit it (as `root`): the change is used *now*],
-        ([`1.1.1.1`], [the programs ask this DNS server directly, without `systemd-resolved`]),
-      ),
-    ),
-    (
-      12,
-      ("old",),
-      explain(
-        colors: bad,
-        [❌ after a reconnect (or a reboot) the file is *written again*],
-        ([`127.0.0.53`], [`systemd-resolved` and NetworkManager own this file]),
-      ),
-    ),
-    (
-      12,
-      (),
-      explain(
-        [🔧 to keep a DNS server: configure the service that writes the file],
-        ([NetworkManager], [`nmcli connection modify ... ipv4.dns 1.1.1.1`]),
-        ([`dns=none`], [in `/etc/NetworkManager/conf.d/`: NetworkManager leaves the file alone]),
-        ([others], [`dhclient`, netplan, VPN clients may write it too]),
-      ),
-    ),
-  )
-  #for (i, (n, keys, body)) in steps.enumerate() {
-    only(i + 1)[
-      #parts-terminal(resolv-edit.slice(0, n), hl: ((("old",), bad), (keys, ip-peach)), size: 0.74em)
-      #body
-    ]
-  }
-]
+//   #let bad = (hl: bad-color.lighten(75%), bg: bad-color.lighten(93%), bar: bad-color)
+//   #let steps = (
+//     (
+//       2,
+//       ("link",),
+//       explain(
+//         [`/etc/resolv.conf` is a *link* to a file of `systemd-resolved`],
+//         ([`->`], [the service writes the real file, in `/run` (lost at reboot)]),
+//       ),
+//     ),
+//     (
+//       6,
+//       ("new", "ok"),
+//       explain(
+//         [you *can* edit it (as `root`): the change is used *now*],
+//         ([`1.1.1.1`], [the programs ask this DNS server directly, without `systemd-resolved`]),
+//       ),
+//     ),
+//     (
+//       12,
+//       ("old",),
+//       explain(
+//         colors: bad,
+//         [❌ after a reconnect (or a reboot) the file is *written again*],
+//         ([`127.0.0.53`], [`systemd-resolved` and NetworkManager own this file]),
+//       ),
+//     ),
+//     (
+//       12,
+//       (),
+//       explain(
+//         [🔧 to keep a DNS server: configure the service that writes the file],
+//         ([NetworkManager], [`nmcli connection modify ... ipv4.dns 1.1.1.1`]),
+//         ([`dns=none`], [in `/etc/NetworkManager/conf.d/`: NetworkManager leaves the file alone]),
+//         ([others], [`dhclient`, netplan, VPN clients may write it too]),
+//       ),
+//     ),
+//   )
+//   #for (i, (n, keys, body)) in steps.enumerate() {
+//     only(i + 1)[
+//       #parts-terminal(resolv-edit.slice(0, n), hl: ((("old",), bad), (keys, ip-peach)), size: 0.74em)
+//       #body
+//     ]
+//   }
+// ]

@@ -45,11 +45,20 @@
       #label(368pt, 8pt, text(size: 11pt, weight: "bold")[📶 Wi-Fi])
       #waves(440pt, y, radii: (24pt, 32pt, 40pt))
       // the "software cable": a dotted cable
-      #wire((326pt, y), (414pt, y), stroke: (paint: hl, thickness: 3.5pt, dash: (array: (0pt, 7pt), phase: 0pt), cap: "round"))
-      #tag(352pt, y + 54pt, [📶 `Home` #h(3pt) 🔑 `********`], fill: hl-bg, stroke: 1pt + hl, size: 7.5pt)
+      #wire((326pt, y), (414pt, y), stroke: (
+        paint: hl,
+        thickness: 3.5pt,
+        dash: (array: (0pt, 7pt), phase: 0pt),
+        cap: "round",
+      ))
+      #tag(352pt, y + 54pt, [📶 `HomeWiFi` #h(3pt) 🔑 `********`], fill: hl-bg, stroke: 1pt + hl, size: 7.5pt)
       #host(298pt, y, "laptop", size: 40pt)
       #netdev(440pt, y, "wifi-router", name: "Access Point", size: 30pt)
-      #label(352pt, y + 25pt, align(center, text(size: 8pt, fill: hl, weight: "bold")[connect to the AP \ = a *software cable*]))
+      #label(352pt, y + 25pt, align(center, text(
+        size: 8pt,
+        fill: hl,
+        weight: "bold",
+      )[connect to the AP \ = a *software cable*]))
     ]
 
     // the two are the same thing
@@ -63,11 +72,18 @@
     fill: ip-peach.bg,
     stroke: (left: 3pt + ip-peach.bar),
     radius: (right: 4pt),
-    grid(columns: (auto, 1fr), column-gutter: 10pt, align: horizon, icon(e, size: 20pt), body),
+    grid(
+      columns: (auto, 1fr),
+      column-gutter: 10pt,
+      align: horizon,
+      icon(e, size: 20pt), body,
+    ),
   )
   #place(bottom + left, block(width: 100%, text(size: 11pt)[
     #only(1, note("🔌")[*Ethernet*: you *plug the cable* into the switch, and the computer is *in the network*])
-    #only(2, note("📶")[*Wi-Fi*: no cable to plug in, you *choose the network* and type the *password*: connecting to the access point is a *software cable*, made by the programs of the laptop and of the AP; *disconnecting* is pulling the cable out])
+    #only(2, note(
+      "📶",
+    )[*Wi-Fi*: no cable to plug in, you *choose the network* and type the *password*: connecting to the access point is a *software cable*, made by the programs of the laptop and of the AP; *disconnecting* is pulling the cable out])
   ]))
 ]
 
@@ -135,6 +151,7 @@
     kind: "wpa",
     title: [🔒 WPA2 / WPA3],
     points: ([each device gets *its own key* when it joins], [phone 2 has another key: *it cannot read it*]),
+    warning: [⚠️ WPA2: with the password, a device that *sees the phone join* can find its key; WPA3 stops this],
     like: "switch",
   ),
 )
@@ -161,7 +178,9 @@
             stroke: 1pt + c,
             radius: 3pt,
             inset: (x: 3pt, y: 2pt),
-            text(size: 8pt)[#icon("✉️", size: 8pt) to *laptop*: #if sk.kind == "open" [hello] else [#icon("🔒", size: 7pt) `x7#q%`]],
+            text(
+              size: 8pt,
+            )[#icon("✉️", size: 8pt) to *laptop*: #if sk.kind == "open" [hello] else [#icon("🔒", size: 7pt) `x7#q%`]],
           ))
           // what phone 2 gets
           let reads = sk.kind != "wpa"
@@ -251,7 +270,11 @@
             ],
           ),
         ))
-        #align(center, text(size: 9.5pt, fill: luma(80), if hub [everyone can read everything] else [each one reads only its own frames]))
+        #align(center, text(
+          size: 9.5pt,
+          fill: luma(80),
+          if hub [everyone can read everything] else [each one reads only its own frames],
+        ))
       ]
     }
   ]
@@ -272,65 +295,71 @@
 
 // the data of a Wi-Fi frame: the type, then the packet, both encrypted
 #let wifi-data = {
-  let part(c, w, size, body) = box(width: w, fill: c.fill, stroke: 0.6pt + c.stroke, radius: 2pt, inset: (y: 2.5pt), align(center, text(size: size, body)))
+  let part(c, w, size, body) = box(
+    width: w,
+    fill: c.fill,
+    stroke: 0.6pt + c.stroke,
+    radius: 2pt,
+    inset: (y: 2.5pt),
+    align(center, text(size: size, body)),
+  )
   box(baseline: 40%, grid(
     columns: 2,
     column-gutter: 6pt,
     align: horizon,
-    part(layer-colors.link, 26pt, 5pt)[*Type* \ `0x0800`],
-    part(layer-colors.network, 60pt, 6.5pt)[*Packet* \ (IPv4)],
+    part(layer-colors.link, 26pt, 5pt)[*Type* \ `0x0800`], part(layer-colors.network, 60pt, 6.5pt)[*Packet* \ (IPv4)],
   ))
 }
 
-#slide[
-  == Wi-Fi Frame
-  the same idea, a few more fields
+// #slide[
+//   == Wi-Fi Frame
+//   the same idea, a few more fields
 
-  #let steps = (
-    (none, none),
-    (("a1", "a2", "a3"), explain(
-      [*three addresses*: on Wi-Fi the frame goes *through the access point*],
-      ([*Address 1*], [who receives it over the air: the *AP*]),
-      ([*Address 2*], [who sends it over the air: the *source*]),
-      ([*Address 3*], [the final *destination*, on the Ethernet side: the AP puts the data in an Ethernet frame for it]),
-    )),
-    (("fc", "dur", "seq"), explain(
-      [the radio needs *more control*],
-      ([*Control*], [the kind of frame (data, management like _beacons_, control like _ACK_), to or from the AP, encrypted or not]),
-      ([*Duration*], [how long the radio stays busy: the others wait (collision avoidance)]),
-      ([*Seq.*], [the number of the frame, to recognize a frame received twice]),
-    )),
-    (("data",), explain(
-      [🏷️ *Type*: what is inside the frame, like on Ethernet],
-      ([`0x0800`], [an IPv4 packet (the same numbers as Ethernet)]),
-      ([💡], [not in the header: it starts the data (a small _LLC/SNAP_ header, 8 bytes), so it is encrypted too]),
-    )),
-    (("data", "crc"), explain(
-      [the *data* and the *trailer*],
-      ([📦 *Payload*], [the data, *encrypted* if the network has a password (WPA2, WPA3), in clear on an open network]),
-      ([*FCS*], [the same CRC as Ethernet; the radio loses frames, so every frame is confirmed by an *ACK* and sent again if the ACK does not come]),
-    )),
-  )
-  #for (i, (keys, body)) in steps.enumerate() {
-    only(i + 1)[
-      #frame-drawing(
-        selected: if keys == none { () } else { keys },
-        fields: wifi-fields,
-        groups: (("fc", "seq", [*header*: 24 bytes]), ("data", "data", [*data*: 0 - 2304 bytes, 🔒 encrypted]), ("crc", "crc", [*trailer*])),
-        packet: wifi-data,
-        inner: (fill: luma(238), stroke: luma(110)),
-        name-size: 7.5pt,
-        height: 106pt,
-        extra: if keys == ("data",) {
-          hint-arrow(310pt, 359pt, [🏷️ a hint: what the data means], label-at: bottom, y1: 57pt)
-        } else if keys == ("data", "crc") {
-          hint-arrow(432pt, (396pt, 130pt), [✅ checks the header and the data], label-x: 262pt)
-        },
-      )
-      #if body != none { body }
-    ]
-  }
-]
+//   #let steps = (
+//     (none, none),
+//     (("a1", "a2", "a3"), explain(
+//       [*three addresses*: on Wi-Fi the frame goes *through the access point*],
+//       ([*Address 1*], [who receives it over the air: the *AP*]),
+//       ([*Address 2*], [who sends it over the air: the *source*]),
+//       ([*Address 3*], [the final *destination*, on the Ethernet side: the AP puts the data in an Ethernet frame for it]),
+//     )),
+//     (("fc", "dur", "seq"), explain(
+//       [the radio needs *more control*],
+//       ([*Control*], [the kind of frame (data, management like _beacons_, control like _ACK_), to or from the AP, encrypted or not]),
+//       ([*Duration*], [how long the radio stays busy: the others wait (collision avoidance)]),
+//       ([*Seq.*], [the number of the frame, to recognize a frame received twice]),
+//     )),
+//     (("data",), explain(
+//       [🏷️ *Type*: what is inside the frame, like on Ethernet],
+//       ([`0x0800`], [an IPv4 packet (the same numbers as Ethernet)]),
+//       ([💡], [not in the header: it starts the data (a small _LLC/SNAP_ header, 8 bytes), so it is encrypted too]),
+//     )),
+//     (("data", "crc"), explain(
+//       [the *data* and the *trailer*],
+//       ([📦 *Payload*], [the data, *encrypted* if the network has a password (WPA2, WPA3), in clear on an open network]),
+//       ([*FCS*], [the same CRC as Ethernet; the radio loses frames, so every frame is confirmed by an *ACK* and sent again if the ACK does not come]),
+//     )),
+//   )
+//   #for (i, (keys, body)) in steps.enumerate() {
+//     only(i + 1)[
+//       #frame-drawing(
+//         selected: if keys == none { () } else { keys },
+//         fields: wifi-fields,
+//         groups: (("fc", "seq", [*header*: 24 bytes]), ("data", "data", [*data*: 0 - 2304 bytes, 🔒 encrypted]), ("crc", "crc", [*trailer*])),
+//         packet: wifi-data,
+//         inner: (fill: luma(238), stroke: luma(110)),
+//         name-size: 7.5pt,
+//         height: 106pt,
+//         extra: if keys == ("data",) {
+//           hint-arrow(310pt, 359pt, [🏷️ a hint: what the data means], label-at: bottom, y1: 57pt)
+//         } else if keys == ("data", "crc") {
+//           hint-arrow(432pt, (396pt, 130pt), [✅ checks the header and the data], label-x: 262pt)
+//         },
+//       )
+//       #if body != none { body }
+//     ]
+//   }
+// ]
 
 // ---------------------------------------------------------------------------
 // nmcli
@@ -343,8 +372,8 @@
   "$ nmcli device status",
   dev-row("DEVICE", "TYPE", "STATE", "CONNECTION"),
   dev-row("wlp2s0", "wifi", "connected", "HomeWiFi"),
-  dev-row("enp0s31f6", "ethernet", "unavailable", "--"),
   dev-row("lo", "loopback", "connected (externally)", "lo"),
+  dev-row("enp0s31f6", "ethernet", "unavailable", "--"),
 )
 
 #slide[
@@ -355,17 +384,23 @@
     ((), none),
     (("dev",), explain[*device*: the name of the network card, the same as in `ip link`]),
     (("type",), explain[*type* of the card: `wifi`, `ethernet`, `loopback`]),
-    (("state",), explain(
-      [*state*: is the card connected?],
-      ([`connected`], [yes, NetworkManager set it up]),
-      ([`unavailable`], [cannot connect: the Ethernet card has no cable]),
-      ([`(externally)`], [set up by someone else: `lo` is set up by Linux]),
-    )),
-    (("conn",), explain(
-      [*connection*: the name of the saved settings the card uses],
-      ([`HomeWiFi`], [by default, the name of the Wi-Fi network]),
-      ([`--`], [none]),
-    )),
+    (
+      ("state",),
+      explain(
+        [*state*: is the card connected?],
+        ([`connected`], [yes, NetworkManager set it up]),
+        ([`unavailable`], [cannot connect: the Ethernet card has no cable]),
+        ([`(externally)`], [set up by someone else: `lo` is set up by Linux]),
+      ),
+    ),
+    (
+      ("conn",),
+      explain(
+        [*connection*: the name of the saved settings the card uses],
+        ([`HomeWiFi`], [by default, the name of the Wi-Fi network]),
+        ([`--`], [none]),
+      ),
+    ),
   )
   #for (i, (keys, body)) in steps.enumerate() {
     only(i + 1)[
@@ -377,7 +412,9 @@
 
 // `nmcli device wifi list`
 #let wl-w = (7, 19, 11, 7, 5, 11, 7, 5, 9)
-#let wl-row(..c) = tab(wl-w, ..("in-use", "bssid", "ssid", "mode", "chan", "rate", "signal", "bars", "sec").zip(c.pos()))
+#let wl-row(..c) = tab(wl-w, ..("in-use", "bssid", "ssid", "mode", "chan", "rate", "signal", "bars", "sec").zip(
+  c.pos(),
+))
 #let wl-lines = (
   "$ nmcli device wifi list ifname wlp2s0",
   wl-row("IN-USE", "BSSID", "SSID", "MODE", "CHAN", "RATE", "SIGNAL", "BARS", "SECURITY"),
@@ -395,24 +432,39 @@
   == Wi-Fi Networks Around
 
   #let steps = (
-    ((), explain[`ifname wlp2s0`: which Wi-Fi card to use; without it, `nmcli` shows the networks seen by *all* the Wi-Fi cards]),
+    (
+      (),
+      explain[`ifname wlp2s0`: which Wi-Fi card to use; without it, `nmcli` shows the networks seen by *all* the Wi-Fi cards],
+    ),
     (("in-use", "ssid-used"), explain[*IN-USE*: the `*` shows the network the card is connected to *now*: `HomeWiFi`]),
-    (("bssid", "ssid", "ssid-used"), explain(
-      [*who* is the network],
-      ([*SSID*], [the name of the network]),
-      ([*BSSID*], [the MAC address of the access point]),
-    )),
-    (("mode", "chan"), explain(
-      [*how* it works],
-      ([`Infra`], [_infrastructure_: everything goes through an access point]),
-      ([`Ad-Hoc`], [no access point: the devices talk *directly* to each other, \ e.g. two laptops in a lab, playing a game or copying files]),
-      ([*CHAN*], [the radio channel: `1` - `13` are 2.4 GHz, `36` and above 5 GHz]),
-    )),
-    (("sec",), explain(
-      [*security*],
-      ([`WPA2 WPA3`], [a key for each device, the access point accepts both]),
-      ([`--`], [open: no password, anyone can read]),
-    )),
+    (
+      ("bssid", "ssid", "ssid-used"),
+      explain(
+        [*who* is the network],
+        ([*SSID*], [the name of the network]),
+        ([*BSSID*], [the MAC address of the access point]),
+      ),
+    ),
+    (
+      ("mode", "chan"),
+      explain(
+        [*how* it works],
+        ([`Infra`], [_infrastructure_: everything goes through an access point]),
+        (
+          [`Ad-Hoc`],
+          [no access point: the devices talk *directly* to each other, \ e.g. two laptops in a lab, playing a game or copying files],
+        ),
+        ([*CHAN*], [the radio channel: `1` - `13` are 2.4 GHz, `36` and above 5 GHz]),
+      ),
+    ),
+    (
+      ("sec",),
+      explain(
+        [*security*],
+        ([`WPA2 WPA3`], [a key for each device, the access point accepts both]),
+        ([`--`], [open: no password, anyone can read]),
+      ),
+    ),
   )
   #for (i, (keys, body)) in steps.enumerate() {
     only(i + 1)[
@@ -424,7 +476,13 @@
 
 // `nmcli device wifi connect`, disconnect, connect back, radio off and on
 #let uuid = "6e2c8d5b-1f0a-4c3e-9b7d-2a51c0e8f913"
-#let activated = ((none, "Device '"), ("dev", "wlp2s0"), (none, "' successfully activated with '"), ("uuid", uuid), (none, "'."))
+#let activated = (
+  (none, "Device '"),
+  ("dev", "wlp2s0"),
+  (none, "' successfully activated with '"),
+  ("uuid", uuid),
+  (none, "'."),
+)
 #let con-steps = (
   (
     lines: ("$ nmcli device wifi connect HomeWiFi password 'my secret' ifname wlp2s0", activated),
@@ -508,7 +566,7 @@
       ((none, "Error: Connection activation failed: No suitable device"),),
       ((none, "found for this connection (device enp0s31f6 not available"),),
       ((none, "because profile is not compatible with device"),),
-      ((none, "("), ("bad", "mismatching connection type"), (none, "))."),),
+      ((none, "("), ("bad", "mismatching connection type"), (none, ")).")),
     ),
     keys: ("bad",),
     body: explain(
@@ -546,21 +604,21 @@
   #con-slide(con-steps.slice(0, 2))
 ]
 
-#slide[
-  == Reconnecting to Wi-Fi
-  to the previously connected network
+// #slide[
+//   == Reconnecting to Wi-Fi
+//   to the previously connected network
 
-  #con-slide(con-steps.slice(2, 3))
-]
+//   #con-slide(con-steps.slice(2, 3))
+// ]
 
-#slide[
-  == Listing Connections
+// #slide[
+//   == Listing Connections
 
-  #con-slide(con-steps.slice(3, 4))
-]
+//   #con-slide(con-steps.slice(3, 4))
+// ]
 
-#slide[
-  == Activating Connection
+// #slide[
+//   == Activating Connection
 
-  #con-slide(con-steps.slice(4))
-]
+//   #con-slide(con-steps.slice(4))
+// ]

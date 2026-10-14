@@ -17,60 +17,60 @@
     - Section 11.3 - _Echipamente de rețea_
 ]
 
-#slide[
-  == Ethernet Frame
-  what the network card sends: like a letter in an envelope
+// #slide[
+//   == Ethernet Frame
+//   what the network card sends: like a letter in an envelope
 
-  #let steps = (
-    (none, none),
-    (
-      ("dst", "src"),
-      explain(
-        [the *addresses*, like on an envelope],
-        (
-          [📬 *Destination*],
-          [who should receive the frame: one card, or `ff:ff:ff:ff:ff:ff` for every card (_broadcast_)],
-        ),
-        ([📤 *Source*], [who sent the frame, so the receiver can answer]),
-        ([💡], [a network card *ignores* the frames that are not for it]),
-      ),
-    ),
-    (
-      ("type", "data"),
-      explain(
-        [🏷️ *Type*: what is inside the frame],
-        ([`0x0800`], [an IPv4 packet]),
-        ([`0x86DD`], [an IPv6 packet]),
-        ([`0x0806`], [an ARP message (find the MAC address of an IP address)]),
-      ),
-    ),
-    (
-      ("data", "crc"),
-      explain(
-        [the *data* and the *trailer*],
-        ([📦 *Payload*], [46 to 1500 bytes, usually a packet of the layer above; shorter data is padded]),
-        (
-          [✅ *CRC*],
-          [a checksum of the whole frame; the receiver computes it again, if it is different the frame was damaged and is *dropped*],
-        ),
-      ),
-    ),
-  )
-  #for (i, (keys, body)) in steps.enumerate() {
-    only(i + 1)[
-      #frame-drawing(
-        selected: if keys == none { () } else { keys },
-        height: 106pt,
-        extra: if keys == ("type", "data") {
-          hint-arrow(232pt, 372pt, [🏷️ a hint: what the data means])
-        } else if keys == ("data", "crc") {
-          hint-arrow(432pt, (372pt, 96pt), [✅ checks the header and the data], label-x: 234pt)
-        },
-      )
-      #if body != none { body }
-    ]
-  }
-]
+//   #let steps = (
+//     (none, none),
+//     (
+//       ("dst", "src"),
+//       explain(
+//         [the *addresses*, like on an envelope],
+//         (
+//           [📬 *Destination*],
+//           [who should receive the frame: one card, or `ff:ff:ff:ff:ff:ff` for every card (_broadcast_)],
+//         ),
+//         ([📤 *Source*], [who sent the frame, so the receiver can answer]),
+//         ([💡], [a network card *ignores* the frames that are not for it]),
+//       ),
+//     ),
+//     (
+//       ("type", "data"),
+//       explain(
+//         [🏷️ *Type*: what is inside the frame],
+//         ([`0x0800`], [an IPv4 packet]),
+//         ([`0x86DD`], [an IPv6 packet]),
+//         ([`0x0806`], [an ARP message (find the MAC address of an IP address)]),
+//       ),
+//     ),
+//     (
+//       ("data", "crc"),
+//       explain(
+//         [the *data* and the *trailer*],
+//         ([📦 *Payload*], [46 to 1500 bytes, usually a packet of the layer above; shorter data is padded]),
+//         (
+//           [✅ *CRC*],
+//           [a checksum of the whole frame; the receiver computes it again, if it is different the frame was damaged and is *dropped*],
+//         ),
+//       ),
+//     ),
+//   )
+//   #for (i, (keys, body)) in steps.enumerate() {
+//     only(i + 1)[
+//       #frame-drawing(
+//         selected: if keys == none { () } else { keys },
+//         height: 106pt,
+//         extra: if keys == ("type", "data") {
+//           hint-arrow(232pt, 372pt, [🏷️ a hint: what the data means])
+//         } else if keys == ("data", "crc") {
+//           hint-arrow(432pt, (372pt, 96pt), [✅ checks the header and the data], label-x: 234pt)
+//         },
+//       )
+//       #if body != none { body }
+//     ]
+//   }
+// ]
 
 // an envelope: a frame with the addresses written on it
 #let envelope(x, y, to, from, color: hl) = pin(x, y, box(
@@ -96,7 +96,7 @@
     // the cable, with a plug at each end
     #wire((pa, y), (pb, y), stroke: (paint: luma(90), thickness: 4pt, cap: "round"))
     #for x in (pa - 4pt, pb - 4pt) { at(x, y - 6pt, box(width: 9pt, height: 12pt, radius: 1.5pt, fill: luma(55))) }
-    #host(xa, y, "A", addr: "3c:a9:f4:5e:21:7b", size: 42pt)
+    #host(xa, y, "A", addr: "a4:5e:60:c2:19:e8", size: 42pt)
     #host(xb, y, "B", addr: "8c:16:45:a2:3b:91", size: 42pt)
 
     // step 1: one cable, two ends
@@ -112,7 +112,7 @@
 
     // steps 2 - 3: the frame travels from A to B, leaving a trail behind
     #let to-b = "8c:16:45:a2:3b:91"
-    #let from-a = "3c:a9:f4:5e:21:7b"
+    #let from-a = "a4:5e:60:c2:19:e8"
     #for (i, x) in (180pt, 330pt).enumerate() {
       only(i + 2, {
         wire((pa + 8pt, y), (x, y), stroke: (paint: hl, thickness: 4pt, cap: "round"))
@@ -433,9 +433,15 @@
     ]
   ][
     #set text(size: 10.5pt)
-    #fact("🚦", [*one sender at a time*: \ the others wait, even Carla can not answer while she receives (*half duplex*)])
+    #fact(
+      "🚦",
+      [*one sender at a time*: \ the others wait, even Carla cannot answer while she receives (*half duplex*)],
+    )
     #uncover("2-", fact("🍕", [the bandwidth is *shared*: \ more computers, less speed for each]))
-    #uncover("3-", fact("👀", [*no privacy*: \ everyone receives all the frames], c: (fill: bad-color.lighten(92%), stroke: bad-color)))
+    #uncover("3-", fact("👀", [*no privacy*: \ everyone receives all the frames], c: (
+      fill: bad-color.lighten(92%),
+      stroke: bad-color,
+    )))
     #uncover("4-")[
       #note-box[💡 hubs were replaced by *switches*]
     ]
@@ -560,61 +566,61 @@
     #set text(size: 11pt)
     #block[- Ana *and* Bogdan send to Carla]
     #uncover("2-")[#block[- both frames need *port 3* at the same time: a *collision*]]
-    #uncover("3-")[#note-box[💡 the switch needs a place where a frame can *wait*]]
+    #uncover("3-")[#note-box[💡 so every switch has a *queue*: one frame *waits*, then goes out; if the queue is full, the frame is *dropped*]]
   ]
 ]
 
-#slide[
-  == Switch Queues
-  only in some switches
+// #slide[
+//   == Switch Queues
+//   only in some switches
 
-  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1em)[
-    #drawing(width: star-w, height: 195pt)[
-      #star("SWITCH", layer: "link", sub: "Layer 2", ports: true)
-      // the queue (buffer) of the switch, shared by all the ports
-      #let slot(i, full: false) = at(118pt + i * 18pt, 26pt, box(
-        width: 16pt,
-        height: 14pt,
-        radius: 2pt,
-        fill: if full { hl-bg } else { white },
-        stroke: 1pt + if full { accent } else { luma(150) },
-        if full { align(center + horizon, icon("✉️", size: 8pt)) },
-      ))
-      #wire((145pt, 40pt), (145pt, 80pt), stroke: (paint: luma(150), thickness: 1pt, dash: "dashed"))
-      #for i in range(3) { slot(i) }
-      #label(145pt, 18pt, text(size: 7pt, weight: "bold", fill: luma(80))[queue of the switch])
-      #only(1)[
-        #flow(0, (), 2)
-        #flow(1, (), 2, color: accent)
-      ]
-      #only(2)[
-        #flow(0, (2,), 2)
-        #slot(0, full: true)
-      ]
-      #only(3)[
-        #flow-out(2, color: accent)
-        #flow-frame(2, 2, color: accent)
-        #host-mark(2, true)
-      ]
-      // the queue is full: one more frame has no place
-      #only("5-")[
-        #for i in range(3) { slot(i, full: true) }
-        #flow(3, (), 2, color: bad-color)
-        #pin(181pt, 33pt, icon("❌", size: 12pt))
-      ]
-    ]
-  ][
-    #set text(size: 11pt)
-    #block[- Ana *and* Bogdan send to Carla]
-    #uncover("2-")[#block[- Ana's frame goes out, \ Bogdan's frame waits in a *queue*]]
-    #uncover("3-")[#block[- then port 3 is free: \ Bogdan's frame goes out]]
-    #uncover("4-")[#block[- one queue for the *whole switch*, shared by all the ports]]
-    #uncover("5-")[#block[- queue full: the frame is *dropped*]]
-    #uncover("6-")[
-      #note-box[⚠️ only *some* switches have a queue, \ and it is always *small*]
-    ]
-  ]
-]
+//   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1em)[
+//     #drawing(width: star-w, height: 195pt)[
+//       #star("SWITCH", layer: "link", sub: "Layer 2", ports: true)
+//       // the queue (buffer) of the switch, shared by all the ports
+//       #let slot(i, full: false) = at(118pt + i * 18pt, 26pt, box(
+//         width: 16pt,
+//         height: 14pt,
+//         radius: 2pt,
+//         fill: if full { hl-bg } else { white },
+//         stroke: 1pt + if full { accent } else { luma(150) },
+//         if full { align(center + horizon, icon("✉️", size: 8pt)) },
+//       ))
+//       #wire((145pt, 40pt), (145pt, 80pt), stroke: (paint: luma(150), thickness: 1pt, dash: "dashed"))
+//       #for i in range(3) { slot(i) }
+//       #label(145pt, 18pt, text(size: 7pt, weight: "bold", fill: luma(80))[queue of the switch])
+//       #only(1)[
+//         #flow(0, (), 2)
+//         #flow(1, (), 2, color: accent)
+//       ]
+//       #only(2)[
+//         #flow(0, (2,), 2)
+//         #slot(0, full: true)
+//       ]
+//       #only(3)[
+//         #flow-out(2, color: accent)
+//         #flow-frame(2, 2, color: accent)
+//         #host-mark(2, true)
+//       ]
+//       // the queue is full: one more frame has no place
+//       #only("5-")[
+//         #for i in range(3) { slot(i, full: true) }
+//         #flow(3, (), 2, color: bad-color)
+//         #pin(181pt, 33pt, icon("❌", size: 12pt))
+//       ]
+//     ]
+//   ][
+//     #set text(size: 11pt)
+//     #block[- Ana *and* Bogdan send to Carla]
+//     #uncover("2-")[#block[- Ana's frame goes out, \ Bogdan's frame waits in a *queue*]]
+//     #uncover("3-")[#block[- then port 3 is free: \ Bogdan's frame goes out]]
+//     #uncover("4-")[#block[- one queue for the *whole switch*, shared by all the ports]]
+//     #uncover("5-")[#block[- queue full: the frame is *dropped*]]
+//     #uncover("6-")[
+//       #note-box[⚠️ only *some* switches have a queue, \ and it is always *small*]
+//     ]
+//   ]
+// ]
 
 #slide[
   == Hub vs Switch
@@ -628,7 +634,7 @@
       [*Layer*], [1 (Physical): bits], [2 (Data Link): frames],
       [*Understands MAC*], [no], [yes, has a MAC address table],
       [*Sends a frame to*], [all ports], [only the destination port],
-      [*Collisions*], [yes], [no, frames wait in a queue \ (if the switch has one)],
+      [*Collisions*], [yes], [no, frames wait in a queue \ (dropped if it is full)],
       [*Duplex*], [half], [full],
       [*Bandwidth*], [shared by all], [for each port],
       [*Privacy*], [everyone sees everything], [each one sees its own frames],
