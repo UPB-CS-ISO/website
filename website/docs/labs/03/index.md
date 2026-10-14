@@ -932,7 +932,8 @@ change them.
    them. <small>→ [Errors](#errors-2-and-2)</small>
 
 6. **The users and the groups**:
-   1. copy `/etc/passwd` (the list of the users) into `Reports/users.txt`, using `cat` and a redirect, not `cp`;
+     1. copy `/etc/passwd` (the list of the users) into `Reports/users.txt` without `cp`: print it with `cat` and
+      redirect the output into the new file;
    2. copy `/etc/group` (the list of the groups) into `Reports/groups.txt` in the same way;
    3. count the lines of the two copies and of the two originals with `wc -l`.
 
