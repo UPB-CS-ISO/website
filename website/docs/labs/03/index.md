@@ -971,28 +971,60 @@ numbers.txt` prints `7` and `20000`. <small>→ [Navigation](/docs/labs/02#navig
 
     **Check:** the first line is only zeros; the second one is different every time you run the command. <small>→ [Special Files](#special-files)</small>
 
+**Processes**
+
+15. **My shell**: Print the PID of your shell, and list the processes of the terminal with all the columns of `-f`.
+    Then show the line of your shell from its `/proc/<PID>/status` file: its name, its state, its PID and its PPID.
+
+    **Check:** `ps` and `status` show the same PID and PPID for `bash`, and its state is `S`. <small>→ [Listing Processes](#listing-processes-ps) · [The `/proc` File System](#the-proc-file-system)</small>
+
+16. **Inspect a process**: In the second terminal, run `sleep 1000`. From the first terminal, find its PID, then show its
+    `status`, its command line, its program (`exe`) and its current directory (`cwd`) from `/proc`.
+
+    **Check:** the state is `S`, the command is `sleep 1000`, the program is `/usr/bin/sleep`, and the current directory
+    is the one of the second terminal. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
+
+17. **Open files**: List the File Descriptor Table of your shell, and the one of `sleep`. Then stop `sleep` with
+    <kbd>Ctrl</kbd>+<kbd>C</kbd> and try to list its table again.
+
+    **Check:** `0`, `1` and `2` point to a `/dev/pts/...` file, a different one for each terminal; after
+    <kbd>Ctrl</kbd>+<kbd>C</kbd>, `/proc/<PID>` no longer exists. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
+
+18. **The system**: Using the files in `/proc`, find the model of your processor, how many processors you have, the
+    total memory, for how many seconds the system has been running, and the version of the kernel (`/proc/version`).
+    Use `grep` to show only the lines you need from `/proc/cpuinfo` and `/proc/meminfo`.
+
+    **Check:** the number of `processor` lines in `/proc/cpuinfo` is the same as the number printed by `nproc`, the
+    time matches the `up` part of `uptime`, and the version of the kernel is the same as `uname -r`. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
+
+19. **top and htop**: Start `top`, sort the processes by memory, then by processor, and quit. Start `htop`, find your
+    `bash` with a search, and show the processes as a tree.
+
+    **Check:** `top` shows the `Tasks` line with the number of processes in every state; in the tree of `htop`, your
+    `bash` is under the terminal. <small>→ [top](#top) · [htop](#htop)</small>
+
 **Archives and compression**
 
-15. **Three compressors**: Compress `numbers.txt` with `gzip`, `bzip2` and `xz`, keeping the original file every time.
+20. **Three compressors**: Compress `numbers.txt` with `gzip`, `bzip2` and `xz`, keeping the original file every time.
     Compare the sizes with `ls -l`.
 
     **Check:** you have `numbers.txt`, `numbers.txt.gz`, `numbers.txt.bz2` and `numbers.txt.xz`, and the `.xz` file is
     the smallest. <small>→ [Compressing One File](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-16. **How much smaller**: Delete the three compressed files and compress `numbers.txt` again with each compressor, this
+21. **How much smaller**: Delete the three compressed files and compress `numbers.txt` again with each compressor, this
     time so that it prints **how much** smaller the file got.
 
     **Check:** `gzip` and `bzip2` printed how much they **saved**, as a percentage, and the one of `bzip2` is larger;
     `xz` printed a **ratio** instead (about `0.045`, the new size divided by the old one), so it saved about 95%, the
     most of the three. <small>→ [Compressing One File](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-17. **Decompress**: Delete `numbers.txt` and get it back from `numbers.txt.gz`. Delete it again and get it back from
+22. **Decompress**: Delete `numbers.txt` and get it back from `numbers.txt.gz`. Delete it again and get it back from
     `numbers.txt.bz2`, keeping the compressed file.
 
     **Check:** `wc -l numbers.txt` prints `20000` both times; `numbers.txt.gz` is gone (`gunzip` deleted it, like
     `gzip` deletes the original), but `numbers.txt.bz2` still exists. <small>→ [Compressing One File](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-18. **What kind of file**: With a **single** `file` command, find out the type of `numbers.txt` and of the two
+23. **What kind of file**: With a **single** `file` command, find out the type of `numbers.txt` and of the two
     compressed files that are left, `numbers.txt.bz2` and `numbers.txt.xz`. Then delete the compressed files. Find out
     the type of `/usr/share/man/man1/ls.1.gz`, the manual page of `ls`, too.
 
@@ -1000,80 +1032,48 @@ numbers.txt` prints `7` and `20000`. <small>→ [Navigation](/docs/labs/02#navig
     for `ls.1.gz`: the manual pages are stored compressed with `gzip`, and `man` decompresses them when you read
     them. <small>→ [Which One to Use](#which-one-to-use)</small>
 
-19. **A tar archive**: In `~/lab03`, create `Archives/music.tar` with the directories `Music` and `Photos` and the file
+24. **A tar archive**: In `~/lab03`, create `Archives/music.tar` with the directories `Music` and `Photos` and the file
     `fruits.txt`. List its content, then check its type with `file`.
 
     **Check:** the archive has `Music/`, `Photos/`, the five empty files and `fruits.txt`, and `file` says
     `POSIX tar archive`. <small>→ [Archives](#archives-tar)</small>
 
-20. **Extract**: Extract `Archives/music.tar` into `/tmp/extract`.
+25. **Extract**: Extract `Archives/music.tar` into `/tmp/extract`.
 
     **Check:** `tree /tmp/extract` shows `Music`, `Photos` and `fruits.txt`, with the same files as in `~/lab03`. <small>→ [Archives](#archives-tar)</small>
 
-21. **Only one file**: Create `/tmp/single` and extract only `Photos/dog.jpg` from `Archives/music.tar` into it.
+26. **Only one file**: Create `/tmp/single` and extract only `Photos/dog.jpg` from `Archives/music.tar` into it.
 
     **Check:** `tree /tmp/single` shows `Photos/dog.jpg`, and nothing else. <small>→ [Archives](#archives-tar)</small>
 
-22. **Add a file**: Add `numbers.txt` to `Archives/music.tar`, then list the archive with the details of every file.
+27. **Add a file**: Add `numbers.txt` to `Archives/music.tar`, then list the archive with the details of every file.
 
     **Check:** `numbers.txt` is the last file in the list, with the size `108894`. <small>→ [Archives](#archives-tar)</small>
 
-23. **Compressed archives**: From `~/lab03`, create `Archives/all.tar.gz`, `Archives/all.tar.bz2` and
+28. **Compressed archives**: From `~/lab03`, create `Archives/all.tar.gz`, `Archives/all.tar.bz2` and
     `Archives/all.tar.xz`, each with `Music`, `Photos` and `numbers.txt`. Compare their sizes with the size of a `.tar`
     archive of the same files.
 
     **Check:** the `.tar` is the largest and the `.tar.xz` the smallest. <small>→ [Compressed Archives](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-24. **List compressed archives**: List the content of the three compressed archives, **without** telling `tar` how they
+29. **List compressed archives**: List the content of the three compressed archives, **without** telling `tar` how they
     are compressed. Check their types with `file`.
 
     **Check:** all three lists are the same; `file` shows a different compression for each of them. <small>→ [Compressed Archives](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-25. **Extract compressed archives**: Extract each of the three compressed archives into its own directory:
+30. **Extract compressed archives**: Extract each of the three compressed archives into its own directory:
     `/tmp/gz`, `/tmp/bz2` and `/tmp/xz`.
 
     **Check:** the trees of the three directories are the same. <small>→ [Compressed Archives](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-26. **A zip archive**: Create `Archives/all.zip` with `Music`, `Photos` and `numbers.txt` (with everything inside the
+31. **A zip archive**: Create `Archives/all.zip` with `Music`, `Photos` and `numbers.txt` (with everything inside the
     directories). List it, then extract it into `/tmp/unzipped`.
 
     **Check:** `unzip -l` lists 8 entries, and `tree /tmp/unzipped` shows the same files as `/tmp/gz`. <small>→ [Zip Archives](#zip-archives-zip-and-unzip)</small>
 
-27. **Update a zip archive**: Add `fruits.txt` to `Archives/all.zip`, and extract only this file into `/tmp/single`.
+32. **Update a zip archive**: Add `fruits.txt` to `Archives/all.zip`, and extract only this file into `/tmp/single`.
 
     **Check:** `zip -sf Archives/all.zip` lists `fruits.txt`, and `/tmp/single` has `fruits.txt` and `Photos`. <small>→ [Zip Archives](#zip-archives-zip-and-unzip)</small>
-
-**Processes**
-
-28. **My shell**: Print the PID of your shell, and list the processes of the terminal with all the columns of `-f`.
-    Then show the line of your shell from its `/proc/<PID>/status` file: its name, its state, its PID and its PPID.
-
-    **Check:** `ps` and `status` show the same PID and PPID for `bash`, and its state is `S`. <small>→ [Listing Processes](#listing-processes-ps) · [The `/proc` File System](#the-proc-file-system)</small>
-
-29. **Inspect a process**: In the second terminal, run `sleep 1000`. From the first terminal, find its PID, then show its
-    `status`, its command line, its program (`exe`) and its current directory (`cwd`) from `/proc`.
-
-    **Check:** the state is `S`, the command is `sleep 1000`, the program is `/usr/bin/sleep`, and the current directory
-    is the one of the second terminal. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
-
-30. **Open files**: List the File Descriptor Table of your shell, and the one of `sleep`. Then stop `sleep` with
-    <kbd>Ctrl</kbd>+<kbd>C</kbd> and try to list its table again.
-
-    **Check:** `0`, `1` and `2` point to a `/dev/pts/...` file, a different one for each terminal; after
-    <kbd>Ctrl</kbd>+<kbd>C</kbd>, `/proc/<PID>` no longer exists. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
-
-31. **The system**: Using the files in `/proc`, find the model of your processor, how many processors you have, the
-    total memory, for how many seconds the system has been running, and the version of the kernel (`/proc/version`).
-    Use `grep` to show only the lines you need from `/proc/cpuinfo` and `/proc/meminfo`.
-
-    **Check:** the number of `processor` lines in `/proc/cpuinfo` is the same as the number printed by `nproc`, the
-    time matches the `up` part of `uptime`, and the version of the kernel is the same as `uname -r`. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
-
-32. **top and htop**: Start `top`, sort the processes by memory, then by processor, and quit. Start `htop`, find your
-    `bash` with a search, and show the processes as a tree.
-
-    **Check:** `top` shows the `Tasks` line with the number of processes in every state; in the tree of `htop`, your
-    `bash` is under the terminal. <small>→ [top](#top) · [htop](#htop)</small>
 
 ### 🏠 Going Further {/* #going-further */}
 
@@ -1111,19 +1111,43 @@ numbers.txt` prints `7` and `20000`. <small>→ [Navigation](/docs/labs/02#navig
 
     **Check:** `cwd` points to `/home/student/lab03/Music`, and `environ` has the line `HOME=/home/student`. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
 
-39. **Big files**: Create `Archives/zeros.bin` with 10 MB from `/dev/zero`, and `Archives/random.bin` with 10 MB from
+39. **Save top**: Save the list of `top` into `Reports/top.txt`, only once, and only its first 15 lines.
+
+    **Check:** `Reports/top.txt` has 15 lines, starting with the summary of `top`. <small>→ [top](#top) · [Pipes](#pipes-)</small>
+
+40. **htop in depth**: In `htop`, hide the threads, show only your processes, sort them by memory and show the open
+    files of your `bash`. Then add the `PPID` column with <kbd>F2</kbd>.
+
+    **Check:** the open files of `bash` are the same as in `ls -l /proc/$$/fd`, and the `PPID` of `bash` is the PID of
+    the terminal. <small>→ [htop](#htop)</small>
+
+41. **Whose processes**: Count the processes of `root` and your own processes, with `ps` and `wc -l` (look in
+    `man ps` for the option that selects the processes of a user). Use `--no-headers`, otherwise `wc -l` also counts
+    the first line of `ps`, the one with the names of the columns.
+
+    **Check:** `root` has many more processes than `student`: most of the system runs as `root`. Without
+    `--no-headers`, each number is larger by one. <small>→ [Listing Processes](#listing-processes-ps) · [Pipes](#pipes-)</small>
+
+42. **Who runs the processes**: With `ps`, `sort`, `uniq` and a pipe, print every user that runs processes, with
+    the number of its processes in front of it, the user with the most processes first. Print only the column of the
+    user, without the header line.
+
+    **Check:** the first line is `root`, with the same number as in the previous exercise, and `student` is among the
+    first lines; the numbers added up are the same as `ps -e --no-headers | wc -l`. <small>→ [Listing Processes](#listing-processes-ps) · [Repeated Lines](#repeated-lines-uniq)</small>
+
+43. **Big files**: Create `Archives/zeros.bin` with 10 MB from `/dev/zero`, and `Archives/random.bin` with 10 MB from
     `/dev/urandom` (look in `man head` for the option that prints a number of bytes instead of lines). Compress both
     with `xz`, keeping the originals, and compare the sizes.
 
     **Check:** `zeros.bin.xz` is a few KB, `random.bin.xz` is still about 10 MB: random data cannot be compressed. <small>→ [Special Files](#special-files) · [Compressing One File](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-40. **Compress into another file**: Compress `/etc/services` with each of `gzip`, `bzip2` and `xz` into
+44. **Compress into another file**: Compress `/etc/services` with each of `gzip`, `bzip2` and `xz` into
     `Archives/services.gz`, `Archives/services.bz2` and `Archives/services.xz`, **without** copying it first and without
     changing `/etc` (use `-c` and a redirect). Put `time` in front of each command and compare.
 
     **Check:** the three files exist, `/etc/services` is unchanged, `xz` makes the smallest file and takes the longest. <small>→ [Compressing One File](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-41. **Read without extracting**: Print the content of `Archives/services.gz` and count the lines of
+45. **Read without extracting**: Print the content of `Archives/services.gz` and count the lines of
     `Archives/services.xz`, without creating any new file (look in `man gzip` and `man xz` for the commands that print
     the content of a compressed file). Then print the first 20 lines of the compressed manual page
     `/usr/share/man/man1/ls.1.gz` in the same way.
@@ -1131,44 +1155,41 @@ numbers.txt` prints `7` and `20000`. <small>→ [Navigation](/docs/labs/02#navig
     **Check:** the count is the same as `wc -l < /etc/services`; the manual page is a text file with formatting
     commands, lines that start with `.`, like `.TH` and `.SH`. <small>→ [Compressing One File](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-42. **Compression from the name**: Create `Archives/photos.tar.bz2` with `Photos`, letting `tar` choose the compressor
+46. **Compression from the name**: Create `Archives/photos.tar.bz2` with `Photos`, letting `tar` choose the compressor
     from the extension (look in `man tar` for the option that chooses the compressor from the name of the archive).
 
     **Check:** `file Archives/photos.tar.bz2` says `bzip2 compressed data`. <small>→ [Compressed Archives](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-43. **Without the full path**: Create `/tmp/doc.tar.gz` with the directory `/usr/share/doc/bash`, so that the names in
+47. **Without the full path**: Create `/tmp/doc.tar.gz` with the directory `/usr/share/doc/bash`, so that the names in
     the archive start with `bash/` and not with `usr/share/doc/` (look in `man tar` for the option that changes the
     directory before adding the files).
 
     **Check:** `tar tf /tmp/doc.tar.gz` lists names that start with `bash/`. <small>→ [Archives](#archives-tar)</small>
 
-44. **Save top**: Save the list of `top` into `Reports/top.txt`, only once, and only its first 15 lines.
-
-    **Check:** `Reports/top.txt` has 15 lines, starting with the summary of `top`. <small>→ [top](#top) · [Pipes](#pipes-)</small>
-
-45. **htop in depth**: In `htop`, hide the threads, show only your processes, sort them by memory and show the open
-    files of your `bash`. Then add the `PPID` column with <kbd>F2</kbd>.
-
-    **Check:** the open files of `bash` are the same as in `ls -l /proc/$$/fd`, and the `PPID` of `bash` is the PID of
-    the terminal. <small>→ [htop](#htop)</small>
-
-46. **Whose processes**: Count the processes of `root` and your own processes, with `ps` and `wc -l` (look in
-    `man ps` for the option that selects the processes of a user). Use `--no-headers`, otherwise `wc -l` also counts
-    the first line of `ps`, the one with the names of the columns.
-
-    **Check:** `root` has many more processes than `student`: most of the system runs as `root`. Without
-    `--no-headers`, each number is larger by one. <small>→ [Listing Processes](#listing-processes-ps) · [Pipes](#pipes-)</small>
-
-47. **Who runs the processes**: With `ps`, `sort`, `uniq` and a pipe, print every user that runs processes, with
-    the number of its processes in front of it, the user with the most processes first. Print only the column of the
-    user, without the header line.
-
-    **Check:** the first line is `root`, with the same number as in the previous exercise, and `student` is among the
-    first lines; the numbers added up are the same as `ps -e --no-headers | wc -l`. <small>→ [Listing Processes](#listing-processes-ps) · [Repeated Lines](#repeated-lines-uniq)</small>
-
 ### 📝 Challenges {/* #challenges */}
 
-48. **Back up the configuration**: Create `/tmp/etc.tar.gz` with the whole `/etc` directory (the configuration of the
+48. **Count with /proc**: Count the directories in `/proc` whose name is a number, and compare with the number of
+    processes printed by `ps -e`.
+
+    **Check:** the two numbers are almost the same: every process is a directory in `/proc`. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
+
+49. **The shells of the users**: Every line of `/etc/passwd` ends with the shell of a user, after the last `:`.
+    Print every shell used in `/etc/passwd`, with the number of users that have it, the most used first (look in
+    `man cut` for the options that choose the separator and keep only one field of every line). Then print only the
+    shells that are used by more than one user.
+
+    **Check:** `/usr/sbin/nologin` is the first line, with most of the users; `/sbin/nologin` is the same program
+    (`/sbin` is a link to `usr/sbin`), but `uniq` compares only the text, so it counts it on its own line; `/bin/bash`
+    is used by `root` and `student`; the numbers added up are the same as `wc -l < /etc/passwd`. <small>→ [Repeated Lines](#repeated-lines-uniq) · [Pipes](#pipes-)</small>
+
+50. **Who has the file open**: In the second terminal, open `/etc/hosts` (the names of the computers that the system
+    knows without asking the network) with `less`. From the first terminal, find the PID of the process that has
+    `/etc/hosts` open, **without** using `pgrep` or `ps`: search the file descriptors of all the processes with `find`
+    (look in `man find` for the test that checks where a symbolic link points to). Quit `less`.
+
+    **Check:** `find` prints a path like `/proc/3402/fd/4`, and `3402` is the PID of `less`. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
+
+51. **Back up the configuration**: Create `/tmp/etc.tar.gz` with the whole `/etc` directory (the configuration of the
     system), **except** `/etc/pki` (the certificates), and save the errors of `tar` into `Reports/etc-errors.txt` (look
     in `man tar` for the option that leaves files out of the archive). Count the files in the archive and the errors.
 
@@ -1178,7 +1199,7 @@ numbers.txt` prints `7` and `20000`. <small>→ [Navigation](/docs/labs/02#navig
     that it saves `/etc/passwd` as `etc/passwd`, so that the archive can be extracted anywhere, not only over `/etc`.
     Do not count it with the errors. <small>→ [Compressed Archives](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-49. **Strip a directory**: Extract `Archives/all.tar.gz` into `/tmp/flat` so that the files of `Music` and `Photos`
+52. **Strip a directory**: Extract `Archives/all.tar.gz` into `/tmp/flat` so that the files of `Music` and `Photos`
     end up directly in `/tmp/flat`, without their directories (look in `man tar` for the option that removes directories
     from the beginning of the names).
 
@@ -1187,35 +1208,14 @@ numbers.txt` prints `7` and `20000`. <small>→ [Navigation](/docs/labs/02#navig
     `numbers.txt` is in the top directory of the archive, so nothing is left of its name, and `tar` does not extract
     it (the same happens to the names `Music/` and `Photos/`). <small>→ [Archives](#archives-tar)</small>
 
-50. **Archives through a pipe**: Create `/tmp/music.tar.gz` with `tar` writing the archive to its standard output and
+53. **Archives through a pipe**: Create `/tmp/music.tar.gz` with `tar` writing the archive to its standard output and
     `gzip` compressing it, in a pipe (an archive file named `-` means the standard output). Then extract it into
     `/tmp/piped` with `gunzip -c` and `tar` in another pipe.
 
     **Check:** `file /tmp/music.tar.gz` says `gzip compressed data`, and `tree /tmp/piped` shows `Music`. <small>→ [Pipes](#pipes-) · [Compressed Archives](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-51. **Count with /proc**: Count the directories in `/proc` whose name is a number, and compare with the number of
-    processes printed by `ps -e`.
-
-    **Check:** the two numbers are almost the same: every process is a directory in `/proc`. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
-
-52. **The shells of the users**: Every line of `/etc/passwd` ends with the shell of a user, after the last `:`.
-    Print every shell used in `/etc/passwd`, with the number of users that have it, the most used first (look in
-    `man cut` for the options that choose the separator and keep only one field of every line). Then print only the
-    shells that are used by more than one user.
-
-    **Check:** `/usr/sbin/nologin` is the first line, with most of the users; `/sbin/nologin` is the same program
-    (`/sbin` is a link to `usr/sbin`), but `uniq` compares only the text, so it counts it on its own line; `/bin/bash`
-    is used by `root` and `student`; the numbers added up are the same as `wc -l < /etc/passwd`. <small>→ [Repeated Lines](#repeated-lines-uniq) · [Pipes](#pipes-)</small>
-
-53. **Who has the file open**: In the second terminal, open `/etc/hosts` (the names of the computers that the system
-    knows without asking the network) with `less`. From the first terminal, find the PID of the process that has
-    `/etc/hosts` open, **without** using `pgrep` or `ps`: search the file descriptors of all the processes with `find`
-    (look in `man find` for the test that checks where a symbolic link points to). Quit `less`.
-
-    **Check:** `find` prints a path like `/proc/3402/fd/4`, and `3402` is the PID of `less`. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
-
 54. **Clean up**: Delete, with a **single** `rm` command, every directory and archive you created in `/tmp` and the
-    big files from exercise 39.
+    big files from exercise 43.
 
     **Check:** `ls /tmp` no longer shows them, and `ls -l ~/lab03/Archives` shows no `.bin` file. <small>→ [Managing Files](/docs/labs/02#managing-files)</small>
 
