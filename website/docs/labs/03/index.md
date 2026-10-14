@@ -852,9 +852,9 @@ The exercises get harder as you go:
 - 🏠 [Going Further](#going-further) (exercises 33 - 47) has harder exercises;
 - 📝 [Challenges](#challenges) (exercises 48 - 54) has the hardest ones.
 
-Every exercise needs only the **practice tree** from exercise 1, and creates by itself all the other files it uses.
-Run the commands in `~/lab03`, unless the exercise says otherwise. If you change or delete a file of the practice
-tree, run the commands from exercise 1 again to get it back.
+Exercise 1 creates the files and directories that all the other exercises start from; any other file an exercise
+needs, it creates by itself. Run the commands in `~/lab03`, unless the exercise says otherwise. If you change or
+delete one of the files from exercise 1, run its commands again to get it back.
 
 Some exercises ask for things that the lab does not show you, for example an option that is not in the tables
 above. Find it in the **manual page** of the command (`man <command>`), as explained in
