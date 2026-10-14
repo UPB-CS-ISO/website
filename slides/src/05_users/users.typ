@@ -17,36 +17,74 @@
     - Chapter 5 - _Utilizatori_
 ]
 
+// The schematic of "What Is a User?", in three layers: the users, the
+// processes that run under them (a child inherits the label of its parent)
+// and the kernel, that only sees the UIDs. One part per step of the slide.
+#let user-schematic = {
+  set text(size: 0.75em)
+  let gap = 1.6em
+  let layer(step, name) = uncover(step, align(right + horizon, text(size: 0.9em, fill: luma(130), style: "italic", name)))
+  let who(icon, name, uid, kind) = align(center)[
+    #text(size: 1.5em, icon) \
+    #text(size: 0.85em, fill: luma(130), kind) \
+    #user-tag(name, uid)
+    #v(0.2em)
+  ]
+  context {
+    // every process box as wide as the widest one
+    let w = measure(proc-box("nginx", "www-data", 33)).width
+    let proc(cmd, name, uid, ..args) = proc-box(cmd, name, uid, width: w, ..args)
+    let child = stack(
+      down-arrow(length: gap, color: hl, label: text(fill: hl, weight: "bold")[fork]),
+      proc("firefox", "alice", 1000, stroke: 1.5pt + hl, fill: hl-bg),
+    )
+    // bob and www-data have no child, their arrows go straight to the kernel
+    let skip = measure(child).height + gap
+    grid(
+      columns: (auto, auto, auto, auto),
+      column-gutter: (0.6em, 1fr, 1fr),
+      align: center + top,
+      // step 1 & 2: people and services
+      layer("1-", [users]),
+      who("🧑", "alice", 1000, [person]),
+      who("🧑", "bob", 1001, [person]),
+      uncover("2-", who("🤖", "www-data", 33, [service])),
+      // step 3: every process runs under a user
+      [], ..range(3).map(_ => uncover("3-", down-arrow(length: gap))),
+      layer("3-", [processes]),
+      uncover("3-", proc("bash", "alice", 1000)),
+      uncover("3-", proc("bash", "bob", 1001)),
+      uncover("3-", proc("nginx", "www-data", 33)),
+      // step 4: the child inherits the label
+      [], uncover("4-", child),
+      grid.cell(rowspan: 2, uncover("5-", down-arrow(length: skip))),
+      grid.cell(rowspan: 2, uncover("5-", down-arrow(length: skip))),
+      [], uncover("5-", down-arrow(length: gap)),
+      // step 5: the kernel decides using only the UID
+      layer("5-", [kernel]),
+      grid.cell(colspan: 3, uncover("5-", kernel-box(width: 100%)[
+        #v(0.1em)
+        sees only #uid-pill(1000) #uid-pill(1001) #uid-pill(33, color: luma(90)) \
+        #v(0.1em)
+        and decides what each process is *allowed* to do
+      ])),
+    )
+  }
+}
+
 #slide[
   == What Is a User?
-  👤 for the kernel, a user is just a *number*
+  👤 for the kernel, a user is just a *number*: the *UID*
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    - a person who uses the computer: `alice`, `bob`
-    #uncover("2-")[#block[- a program that runs in the background: `sshd`, `www-data`]]
-    #uncover("3-")[#block[- every *process* runs under a user: a *label* that it carries all its life]]
-    #uncover("4-")[#block[- the label is *inherited*: the children of a process get the same user]]
-    #uncover("5-")[#block[- the kernel uses the label to decide what the process is *allowed* to do]]
+  #toolbox.side-by-side(columns: (3fr, 5fr), gutter: 1em)[
+    #set text(size: 0.9em)
+    - a user has a *name* for humans, `alice`, and a *number* for the kernel, the *UID* (_User ID_), `1000`
+    #uncover("2-")[#block[- not only people: each service has its own user, `www-data` is UID `33`]]
+    #uncover("3-")[#block[- every *process* carries the *UID* of its user, as a *label*, all its life]]
+    #uncover("4-")[#block[- a child *inherits* the UID: `firefox`, started by `alice`'s `bash`, also has UID `1000`]]
+    #uncover("5-")[#block[- the kernel ignores names, it checks the *UID* to decide what the process is *allowed* to do]]
   ][
-    #uncover("3-")[
-      #set text(size: 0.8em)
-      ```terminal
-      $ ps -e -o user,uid,pid,comm
-      USER       UID     PID COMMAND
-      root         0       1 systemd
-      root         0     812 sshd
-      www-data    33     904 nginx
-      alice     1000    3000 bash
-      alice     1000    3120 firefox
-      bob       1001    3301 bash
-      ```
-    ]
-    #uncover("4-")[
-      #set text(size: 0.8em)
-      #align(center)[
-        #proc-box("bash", "alice", 1000) #h(0.3em) #draw-arrow(length: 1.5em) #h(0.3em) #proc-box("firefox", "alice", 1000)
-      ]
-    ]
+    #user-schematic
   ]
 ]
 
@@ -55,22 +93,8 @@
 #let requests = (
   ("cat", "alice", 1000, [`open("~/notes.txt")`], file-box("~/notes.txt", "alice", "alice", "-rw-------"), true, [`alice` owns the file]),
   ("cat", "alice", 1000, [`open("/etc/shadow")`], file-box("/etc/shadow", "root", "shadow", "-rw-r-----"), false, [`alice` may not read it]),
-  ("cat", "root", 0, [`open("/etc/shadow")`], file-box("/etc/shadow", "root", "shadow", "-rw-r-----"), true, [`root` may do anything]),
   ("bash", "alice", 1000, [`kill(812)`], proc-box("sshd", "root", 0), false, [not her process]),
 )
-
-#let request-drawing(cmd, name, uid, action, target, ok, why) = {
-  set text(size: 0.8em)
-  align(center)[
-    #proc-box(cmd, name, uid)
-    #down-arrow(length: 1.3em, label: action)
-    #kernel-box[is UID #uid allowed to do this?]
-    #down-arrow(length: 1.3em)
-    #target
-    #v(0.2em)
-    #verdict(ok, why)
-  ]
-}
 
 #slide[
   == A User Is a Label
@@ -78,13 +102,11 @@
 
   #toolbox.side-by-side(columns: (5fr, 4fr), gutter: 1.5em)[
     #set text(size: 0.8em)
-    #reveal-terminal(before: none, lines: (2, 4, 6, 8), full: false)[```terminal
+    #reveal-terminal(before: none, lines: (2, 4, 6), full: false)[```terminal
     $ cat ~/notes.txt
     buy milk
     $ cat /etc/shadow
     cat: /etc/shadow: Permission denied
-    $ sudo cat /etc/shadow
-    root:*:20737:0:99999:7:::
     $ kill 812
     bash: kill: (812) - Operation not permitted
     ```]
@@ -92,8 +114,7 @@
     #set text(size: 1.05em)
     #only(1)[📄 the process of `cat` runs under `alice`, the file belongs to `alice`]
     #only(2)[🔒 `/etc/shadow` can be read only by `root` and the group `shadow`]
-    #only(3)[👑 `sudo` runs `cat` under the user `root`, UID `0`]
-    #only("4-")[⚙️ not only files: signals, ports below 1024, the clock, mounting disks ... are all checked]
+    #only("3-")[⚙️ not only files: signals, ports below 1024, the clock, mounting disks ... are all checked]
   ][
     #for (i, r) in requests.enumerate() {
       only(if i == requests.len() - 1 { str(i + 1) + "-" } else { i + 1 }, request-drawing(..r))
@@ -125,15 +146,6 @@
       ]
     ]
     #uncover("3-")[
-      #set text(size: 0.8em)
-      ```terminal
-      $ ls -l notes.txt
-      -rw------- 1 alice alice 9 Oct 11 09:00 notes.txt
-      $ ls -n notes.txt   # numbers, not names
-      -rw------- 1 1000 1000 9 Oct 11 09:00 notes.txt
-      ```
-    ]
-    #uncover("4-")[
       #card(icon: "⚠️", title: [two names, one UID], color: hl)[
         two usernames with the *same UID* are the *same user* for the kernel
       ]
