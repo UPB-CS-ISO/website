@@ -1353,7 +1353,7 @@ change them.
     it (the same happens to the names `Music/` and `Photos/`). <small>→ [Archives](#archives-tar)</small>
 
 53. **Archives through a pipe**:
-    1. create `/tmp/music.tar.gz` with the directory `Music`, in a single command line: `tar` writes the archive, **not
+    1. create `/tmp/music.tar.gz` with the directory `Music`, in a single command line, so that `tar` writes the archive, **not
        compressed**, to its standard output (an archive file named `-` means the standard output), `gzip` compresses it
        in a pipe, and a redirect saves it;
     2. create the directory `/tmp/piped`;
