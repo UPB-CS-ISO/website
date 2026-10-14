@@ -967,7 +967,7 @@ change them.
 10. **Type a file**:
     1. run `cat` with a redirect, so that what you type goes into `Reports/todo.txt`;
     2. type three lines, then press <kbd>Ctrl</kbd>+<kbd>D</kbd> at the beginning of a new line to end the input;
-    3. print `Reports/todo.txt`.
+    3. print the content of `Reports/todo.txt`.
 
     **Check:** `cat Reports/todo.txt` prints the three lines you typed. <small>→ [Input](#input-)</small>
 
