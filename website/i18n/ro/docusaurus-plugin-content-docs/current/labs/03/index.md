@@ -982,7 +982,7 @@ să le modificați.
     1. rulați `cat` cu o redirectare, astfel încât ce tastați să ajungă în `Reports/todo.txt`;
     2. tastați trei linii, apoi apăsați <kbd>Ctrl</kbd>+<kbd>D</kbd> la începutul unei linii noi, ca să încheiați
        intrarea;
-    3. afișați `Reports/todo.txt`.
+    3. afișează conținutul fișierului `Reports/todo.txt`.
 
     **Verificare:** `cat Reports/todo.txt` afișează cele trei linii pe care le-ați tastat. <small>→ [Intrarea](#input-)</small>
 
