@@ -1329,10 +1329,11 @@ change them.
 
 51. **Back up the configuration**:
     1. create `/tmp/etc.tar.gz` with the whole `/etc` directory (the configuration of the system), **except**
-       `/etc/pki` (the certificates), and save the errors of `tar` into `Reports/etc-errors.txt` (look in `man tar` for
-       the option that leaves files out of the archive);
-    2. count the files in the archive;
-    3. count the errors in `Reports/etc-errors.txt`.
+       `/etc/pki`, the directory with the certificates that the system uses to check secure connections, like the
+       `https://` websites (look in `man tar` for the option that leaves files out of the archive);
+    2. in the same command, save the errors of `tar` into `Reports/etc-errors.txt`;
+    3. count the files in the archive, using the list that `tar` prints and `wc -l`;
+    4. count the errors in `Reports/etc-errors.txt`.
 
     **Check:** `tar tf /tmp/etc.tar.gz` lists `etc/passwd` and `etc/os-release`, but nothing from `etc/pki`;
     `Reports/etc-errors.txt` has a `Permission denied` for every file that only `root` can read, like `/etc/shadow`.
