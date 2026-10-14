@@ -986,28 +986,62 @@ numbers.txt` afișează `7` și `20000`. <small>→ [Navigarea](/docs/labs/02#na
 
     **Verificare:** prima linie are doar zerouri; a doua diferă la fiecare rulare a comenzii. <small>→ [Fișiere speciale](#special-files)</small>
 
+**Procese**
+
+15. **Shell-ul meu**: Afișați PID-ul shell-ului vostru și listați procesele terminalului cu toate coloanele lui
+    `-f`. Apoi afișați din fișierul `/proc/<PID>/status` al shell-ului liniile cu numele, starea, PID-ul și PPID-ul
+    lui.
+
+    **Verificare:** `ps` și `status` arată același PID și același PPID pentru `bash`, iar starea lui este `S`. <small>→ [Listarea proceselor](#listing-processes-ps) · [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
+
+16. **Inspectarea unui proces**: În al doilea terminal, rulați `sleep 1000`. Din primul terminal, aflați-i PID-ul,
+    apoi afișați din `/proc` fișierul `status`, linia de comandă, programul (`exe`) și directorul curent (`cwd`) ale
+    procesului.
+
+    **Verificare:** starea este `S`, comanda este `sleep 1000`, programul este `/usr/bin/sleep`, iar directorul curent
+    este cel al celui de-al doilea terminal. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
+
+17. **Fișiere deschise**: Listați tabela de descriptori de fișier a shell-ului vostru și pe cea a lui `sleep`. Apoi
+    opriți `sleep` cu <kbd>Ctrl</kbd>+<kbd>C</kbd> și încercați să-i listați din nou tabela.
+
+    **Verificare:** `0`, `1` și `2` indică un fișier `/dev/pts/...`, altul pentru fiecare terminal; după
+    <kbd>Ctrl</kbd>+<kbd>C</kbd>, `/proc/<PID>` nu mai există. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
+
+18. **Sistemul**: Folosind fișierele din `/proc`, aflați modelul procesorului, câte procesoare aveți, memoria
+    totală, de câte secunde rulează sistemul și versiunea kernelului (`/proc/version`). Folosiți `grep` ca să afișați
+    din `/proc/cpuinfo` și `/proc/meminfo` doar liniile de care aveți nevoie.
+
+    **Verificare:** numărul de linii `processor` din `/proc/cpuinfo` este același cu numărul afișat de `nproc`, timpul
+    se potrivește cu partea `up` din `uptime`, iar versiunea kernelului este aceeași cu cea afișată de `uname -r`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
+
+19. **top și htop**: Porniți `top`, sortați procesele după memorie, apoi după procesor, și ieșiți. Porniți `htop`,
+    găsiți-vă `bash`-ul printr-o căutare și afișați procesele sub formă de arbore.
+
+    **Verificare:** `top` afișează linia `Tasks`, cu numărul de procese din fiecare stare; în arborele din `htop`,
+    `bash`-ul vostru se află sub terminal. <small>→ [top](#top) · [htop](#htop)</small>
+
 **Arhive și compresie**
 
-15. **Trei programe de compresie**: Comprimați `numbers.txt` cu `gzip`, `bzip2` și `xz`, păstrând de fiecare dată
+20. **Trei programe de compresie**: Comprimați `numbers.txt` cu `gzip`, `bzip2` și `xz`, păstrând de fiecare dată
     fișierul original. Comparați dimensiunile cu `ls -l`.
 
     **Verificare:** aveți `numbers.txt`, `numbers.txt.gz`, `numbers.txt.bz2` și `numbers.txt.xz`, iar fișierul `.xz`
     este cel mai mic. <small>→ [Compresia unui singur fișier](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-16. **Cu cât mai mic**: Ștergeți cele trei fișiere comprimate și comprimați din nou `numbers.txt` cu fiecare
+21. **Cu cât mai mic**: Ștergeți cele trei fișiere comprimate și comprimați din nou `numbers.txt` cu fiecare
     program, de data aceasta astfel încât să afișeze **cu cât** s-a micșorat fișierul.
 
     **Verificare:** `gzip` și `bzip2` au afișat cât au **economisit**, ca procent, iar procentul lui `bzip2` este mai
     mare; `xz` a afișat în schimb un **raport** (aproximativ `0.045`, noua dimensiune împărțită la cea veche), deci a
     economisit în jur de 95%, cel mai mult dintre toate trei. <small>→ [Compresia unui singur fișier](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-17. **Decomprimare**: Ștergeți `numbers.txt` și refaceți-l din `numbers.txt.gz`. Ștergeți-l din nou și refaceți-l
+22. **Decomprimare**: Ștergeți `numbers.txt` și refaceți-l din `numbers.txt.gz`. Ștergeți-l din nou și refaceți-l
     din `numbers.txt.bz2`, de data aceasta păstrând fișierul comprimat.
 
     **Verificare:** `wc -l numbers.txt` afișează `20000` de ambele dăți; `numbers.txt.gz` a dispărut (`gunzip` l-a
     șters, la fel cum `gzip` șterge originalul), dar `numbers.txt.bz2` există în continuare. <small>→ [Compresia unui singur fișier](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-18. **Ce fel de fișier**: Cu o **singură** comandă `file`, aflați tipul lui `numbers.txt` și al celor două fișiere
+23. **Ce fel de fișier**: Cu o **singură** comandă `file`, aflați tipul lui `numbers.txt` și al celor două fișiere
     comprimate rămase, `numbers.txt.bz2` și `numbers.txt.xz`. Apoi ștergeți fișierele comprimate. Aflați și tipul lui
     `/usr/share/man/man1/ls.1.gz`, pagina de manual a lui `ls`.
 
@@ -1015,86 +1049,52 @@ numbers.txt` afișează `7` și `20000`. <small>→ [Navigarea](/docs/labs/02#na
     `ls.1.gz`, `gzip compressed data`: paginile de manual sunt stocate comprimate cu `gzip`, iar `man` le decomprimă
     când le citiți. <small>→ [Ce format alegeți](#which-one-to-use)</small>
 
-19. **O arhivă tar**: În `~/lab03`, creați `Archives/music.tar` cu directoarele `Music` și `Photos` și fișierul
+24. **O arhivă tar**: În `~/lab03`, creați `Archives/music.tar` cu directoarele `Music` și `Photos` și fișierul
     `fruits.txt`. Listați-i conținutul, apoi verificați-i tipul cu `file`.
 
     **Verificare:** arhiva conține `Music/`, `Photos/`, cele cinci fișiere goale și `fruits.txt`, iar `file` afișează
     `POSIX tar archive`. <small>→ [Arhive](#archives-tar)</small>
 
-20. **Extragere**: Extrageți `Archives/music.tar` în `/tmp/extract`.
+25. **Extragere**: Extrageți `Archives/music.tar` în `/tmp/extract`.
 
     **Verificare:** `tree /tmp/extract` afișează `Music`, `Photos` și `fruits.txt`, cu aceleași fișiere ca în
     `~/lab03`. <small>→ [Arhive](#archives-tar)</small>
 
-21. **Un singur fișier**: Creați `/tmp/single` și extrageți în el doar `Photos/dog.jpg` din `Archives/music.tar`.
+26. **Un singur fișier**: Creați `/tmp/single` și extrageți în el doar `Photos/dog.jpg` din `Archives/music.tar`.
 
     **Verificare:** `tree /tmp/single` afișează `Photos/dog.jpg` și nimic altceva. <small>→ [Arhive](#archives-tar)</small>
 
-22. **Încă un fișier în arhivă**: Adăugați `numbers.txt` în `Archives/music.tar`, apoi listați arhiva cu detaliile
+27. **Încă un fișier în arhivă**: Adăugați `numbers.txt` în `Archives/music.tar`, apoi listați arhiva cu detaliile
     fiecărui fișier.
 
     **Verificare:** `numbers.txt` este ultimul fișier din listă, cu dimensiunea `108894`. <small>→ [Arhive](#archives-tar)</small>
 
-23. **Arhive comprimate**: Din `~/lab03`, creați `Archives/all.tar.gz`, `Archives/all.tar.bz2` și
+28. **Arhive comprimate**: Din `~/lab03`, creați `Archives/all.tar.gz`, `Archives/all.tar.bz2` și
     `Archives/all.tar.xz`, fiecare cu `Music`, `Photos` și `numbers.txt`. Comparați-le dimensiunile cu dimensiunea
     unei arhive `.tar` cu aceleași fișiere.
 
     **Verificare:** arhiva `.tar` este cea mai mare, iar `.tar.xz` cea mai mică. <small>→ [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-24. **Listarea arhivelor comprimate**: Listați conținutul celor trei arhive comprimate **fără** să-i spuneți lui
+29. **Listarea arhivelor comprimate**: Listați conținutul celor trei arhive comprimate **fără** să-i spuneți lui
     `tar` cum sunt comprimate. Verificați-le tipul cu `file`.
 
     **Verificare:** toate trei listele sunt identice; `file` arată pentru fiecare altă compresie. <small>→ [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-25. **Extragerea arhivelor comprimate**: Extrageți fiecare dintre cele trei arhive comprimate în propriul director:
+30. **Extragerea arhivelor comprimate**: Extrageți fiecare dintre cele trei arhive comprimate în propriul director:
     `/tmp/gz`, `/tmp/bz2` și `/tmp/xz`.
 
     **Verificare:** arborii celor trei directoare sunt identici. <small>→ [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-26. **O arhivă zip**: Creați `Archives/all.zip` cu `Music`, `Photos` și `numbers.txt` (cu tot ce se află în
+31. **O arhivă zip**: Creați `Archives/all.zip` cu `Music`, `Photos` și `numbers.txt` (cu tot ce se află în
     directoare). Listați-o, apoi extrageți-o în `/tmp/unzipped`.
 
     **Verificare:** `unzip -l` listează 8 intrări, iar `tree /tmp/unzipped` afișează aceleași fișiere ca `/tmp/gz`. <small>→ [Arhive zip](#zip-archives-zip-and-unzip)</small>
 
-27. **Actualizarea unei arhive zip**: Adăugați `fruits.txt` în `Archives/all.zip` și extrageți doar acest fișier în
+32. **Actualizarea unei arhive zip**: Adăugați `fruits.txt` în `Archives/all.zip` și extrageți doar acest fișier în
     `/tmp/single`.
 
     **Verificare:** `zip -sf Archives/all.zip` listează `fruits.txt`, iar `/tmp/single` conține `fruits.txt` și
     `Photos`. <small>→ [Arhive zip](#zip-archives-zip-and-unzip)</small>
-
-**Procese**
-
-28. **Shell-ul meu**: Afișați PID-ul shell-ului vostru și listați procesele terminalului cu toate coloanele lui
-    `-f`. Apoi afișați din fișierul `/proc/<PID>/status` al shell-ului liniile cu numele, starea, PID-ul și PPID-ul
-    lui.
-
-    **Verificare:** `ps` și `status` arată același PID și același PPID pentru `bash`, iar starea lui este `S`. <small>→ [Listarea proceselor](#listing-processes-ps) · [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
-
-29. **Inspectarea unui proces**: În al doilea terminal, rulați `sleep 1000`. Din primul terminal, aflați-i PID-ul,
-    apoi afișați din `/proc` fișierul `status`, linia de comandă, programul (`exe`) și directorul curent (`cwd`) ale
-    procesului.
-
-    **Verificare:** starea este `S`, comanda este `sleep 1000`, programul este `/usr/bin/sleep`, iar directorul curent
-    este cel al celui de-al doilea terminal. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
-
-30. **Fișiere deschise**: Listați tabela de descriptori de fișier a shell-ului vostru și pe cea a lui `sleep`. Apoi
-    opriți `sleep` cu <kbd>Ctrl</kbd>+<kbd>C</kbd> și încercați să-i listați din nou tabela.
-
-    **Verificare:** `0`, `1` și `2` indică un fișier `/dev/pts/...`, altul pentru fiecare terminal; după
-    <kbd>Ctrl</kbd>+<kbd>C</kbd>, `/proc/<PID>` nu mai există. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
-
-31. **Sistemul**: Folosind fișierele din `/proc`, aflați modelul procesorului, câte procesoare aveți, memoria
-    totală, de câte secunde rulează sistemul și versiunea kernelului (`/proc/version`). Folosiți `grep` ca să afișați
-    din `/proc/cpuinfo` și `/proc/meminfo` doar liniile de care aveți nevoie.
-
-    **Verificare:** numărul de linii `processor` din `/proc/cpuinfo` este același cu numărul afișat de `nproc`, timpul
-    se potrivește cu partea `up` din `uptime`, iar versiunea kernelului este aceeași cu cea afișată de `uname -r`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
-
-32. **top și htop**: Porniți `top`, sortați procesele după memorie, apoi după procesor, și ieșiți. Porniți `htop`,
-    găsiți-vă `bash`-ul printr-o căutare și afișați procesele sub formă de arbore.
-
-    **Verificare:** `top` afișează linia `Tasks`, cu numărul de procese din fiecare stare; în arborele din `htop`,
-    `bash`-ul vostru se află sub terminal. <small>→ [top](#top) · [htop](#htop)</small>
 
 ### 🏠 Mai departe {/* #going-further */}
 
@@ -1134,21 +1134,45 @@ numbers.txt` afișează `7` și `20000`. <small>→ [Navigarea](/docs/labs/02#na
 
     **Verificare:** `cwd` indică `/home/student/lab03/Music`, iar `environ` conține linia `HOME=/home/student`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
-39. **Fișiere mari**: Creați `Archives/zeros.bin` cu 10 MB din `/dev/zero` și `Archives/random.bin` cu 10 MB din
+39. **Salvați top**: Salvați lista lui `top` în `Reports/top.txt`, o singură dată și doar primele ei 15 linii.
+
+    **Verificare:** `Reports/top.txt` are 15 linii și începe cu rezumatul lui `top`. <small>→ [top](#top) · [Pipe-uri](#pipes-)</small>
+
+40. **htop în detaliu**: În `htop`, ascundeți firele de execuție, afișați doar procesele voastre, sortați-le după
+    memorie și afișați fișierele deschise ale `bash`-ului vostru. Apoi adăugați coloana `PPID` cu <kbd>F2</kbd>.
+
+    **Verificare:** fișierele deschise ale lui `bash` sunt aceleași ca în `ls -l /proc/$$/fd`, iar `PPID`-ul lui
+    `bash` este PID-ul terminalului. <small>→ [htop](#htop)</small>
+
+41. **Ale cui sunt procesele**: Numărați procesele lui `root` și procesele voastre, cu `ps` și `wc -l` (căutați în
+    `man ps` opțiunea care selectează procesele unui utilizator). Folosiți `--no-headers`, altfel `wc -l` numără și
+    prima linie afișată de `ps`, cea cu numele coloanelor.
+
+    **Verificare:** `root` are mult mai multe procese decât `student`: cea mai mare parte a sistemului rulează ca
+    `root`. Fără `--no-headers`, fiecare număr este mai mare cu unu. <small>→ [Listarea proceselor](#listing-processes-ps) · [Pipe-uri](#pipes-)</small>
+
+42. **Cine rulează procesele**: Cu `ps`, `sort`, `uniq` și un pipe, afișați fiecare utilizator care rulează
+    procese, cu numărul proceselor lui în față, primul fiind utilizatorul cu cele mai multe procese. Afișați doar
+    coloana utilizatorului, fără linia de antet.
+
+    **Verificare:** prima linie este `root`, cu același număr ca în exercițiul anterior, iar `student` se află printre
+    primele linii; numerele adunate dau același rezultat ca `ps -e --no-headers | wc -l`. <small>→ [Listarea proceselor](#listing-processes-ps) · [Linii repetate](#repeated-lines-uniq)</small>
+
+43. **Fișiere mari**: Creați `Archives/zeros.bin` cu 10 MB din `/dev/zero` și `Archives/random.bin` cu 10 MB din
     `/dev/urandom` (căutați în `man head` opțiunea care afișează un număr de octeți în loc de linii). Comprimați-le pe
     amândouă cu `xz`, păstrând originalele, și comparați dimensiunile.
 
     **Verificare:** `zeros.bin.xz` are câțiva KB, iar `random.bin.xz` are tot în jur de 10 MB: datele aleatoare nu se
     pot comprima. <small>→ [Fișiere speciale](#special-files) · [Compresia unui singur fișier](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-40. **Compresie într-un alt fișier**: Comprimați `/etc/services` cu fiecare dintre `gzip`, `bzip2` și `xz` în
+44. **Compresie într-un alt fișier**: Comprimați `/etc/services` cu fiecare dintre `gzip`, `bzip2` și `xz` în
     `Archives/services.gz`, `Archives/services.bz2` și `Archives/services.xz`, **fără** să-l copiați mai întâi și fără
     să modificați `/etc` (folosiți `-c` și o redirectare). Puneți `time` în fața fiecărei comenzi și comparați.
 
     **Verificare:** cele trei fișiere există, `/etc/services` a rămas neschimbat, iar `xz` creează cel mai mic fișier
     și durează cel mai mult. <small>→ [Compresia unui singur fișier](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-41. **Citire fără extragere**: Afișați conținutul lui `Archives/services.gz` și numărați liniile lui
+45. **Citire fără extragere**: Afișați conținutul lui `Archives/services.gz` și numărați liniile lui
     `Archives/services.xz` fără să creați niciun fișier nou (căutați în `man gzip` și `man xz` comenzile care afișează
     conținutul unui fișier comprimat). Apoi afișați în același fel primele 20 de linii ale paginii de manual
     comprimate `/usr/share/man/man1/ls.1.gz`.
@@ -1156,75 +1180,26 @@ numbers.txt` afișează `7` și `20000`. <small>→ [Navigarea](/docs/labs/02#na
     **Verificare:** numărul de linii este același cu `wc -l < /etc/services`; pagina de manual este un fișier text cu
     comenzi de formatare, adică linii care încep cu `.`, ca `.TH` și `.SH`. <small>→ [Compresia unui singur fișier](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-42. **Compresia aleasă după nume**: Creați `Archives/photos.tar.bz2` cu `Photos`, lăsându-l pe `tar` să aleagă
+46. **Compresia aleasă după nume**: Creați `Archives/photos.tar.bz2` cu `Photos`, lăsându-l pe `tar` să aleagă
     programul de compresie după extensie (căutați în `man tar` opțiunea care alege programul de compresie după numele
     arhivei).
 
     **Verificare:** `file Archives/photos.tar.bz2` afișează `bzip2 compressed data`. <small>→ [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-43. **Fără calea completă**: Creați `/tmp/doc.tar.gz` cu directorul `/usr/share/doc/bash`, astfel încât numele din
+47. **Fără calea completă**: Creați `/tmp/doc.tar.gz` cu directorul `/usr/share/doc/bash`, astfel încât numele din
     arhivă să înceapă cu `bash/`, nu cu `usr/share/doc/` (căutați în `man tar` opțiunea care schimbă directorul
     înainte de adăugarea fișierelor).
 
     **Verificare:** `tar tf /tmp/doc.tar.gz` listează nume care încep cu `bash/`. <small>→ [Arhive](#archives-tar)</small>
 
-44. **Salvați top**: Salvați lista lui `top` în `Reports/top.txt`, o singură dată și doar primele ei 15 linii.
-
-    **Verificare:** `Reports/top.txt` are 15 linii și începe cu rezumatul lui `top`. <small>→ [top](#top) · [Pipe-uri](#pipes-)</small>
-
-45. **htop în detaliu**: În `htop`, ascundeți firele de execuție, afișați doar procesele voastre, sortați-le după
-    memorie și afișați fișierele deschise ale `bash`-ului vostru. Apoi adăugați coloana `PPID` cu <kbd>F2</kbd>.
-
-    **Verificare:** fișierele deschise ale lui `bash` sunt aceleași ca în `ls -l /proc/$$/fd`, iar `PPID`-ul lui
-    `bash` este PID-ul terminalului. <small>→ [htop](#htop)</small>
-
-46. **Ale cui sunt procesele**: Numărați procesele lui `root` și procesele voastre, cu `ps` și `wc -l` (căutați în
-    `man ps` opțiunea care selectează procesele unui utilizator). Folosiți `--no-headers`, altfel `wc -l` numără și
-    prima linie afișată de `ps`, cea cu numele coloanelor.
-
-    **Verificare:** `root` are mult mai multe procese decât `student`: cea mai mare parte a sistemului rulează ca
-    `root`. Fără `--no-headers`, fiecare număr este mai mare cu unu. <small>→ [Listarea proceselor](#listing-processes-ps) · [Pipe-uri](#pipes-)</small>
-
-47. **Cine rulează procesele**: Cu `ps`, `sort`, `uniq` și un pipe, afișați fiecare utilizator care rulează
-    procese, cu numărul proceselor lui în față, primul fiind utilizatorul cu cele mai multe procese. Afișați doar
-    coloana utilizatorului, fără linia de antet.
-
-    **Verificare:** prima linie este `root`, cu același număr ca în exercițiul anterior, iar `student` se află printre
-    primele linii; numerele adunate dau același rezultat ca `ps -e --no-headers | wc -l`. <small>→ [Listarea proceselor](#listing-processes-ps) · [Linii repetate](#repeated-lines-uniq)</small>
-
 ### 📝 Provocări {/* #challenges */}
 
-48. **Copie de rezervă a configurației**: Creați `/tmp/etc.tar.gz` cu întregul director `/etc` (configurația
-    sistemului), **mai puțin** `/etc/pki` (certificatele), și salvați erorile lui `tar` în `Reports/etc-errors.txt`
-    (căutați în `man tar` opțiunea care lasă fișiere în afara arhivei). Numărați fișierele din arhivă și erorile.
-
-    **Verificare:** `tar tf /tmp/etc.tar.gz` listează `etc/passwd` și `etc/os-release`, dar nimic din `etc/pki`;
-    `Reports/etc-errors.txt` conține câte un `Permission denied` pentru fiecare fișier pe care doar `root` îl poate
-    citi, cum este `/etc/shadow`. Prima lui linie este ``tar: Removing leading `/' from member names``: nu este o
-    eroare, `tar` doar vă anunță că salvează `/etc/passwd` ca `etc/passwd`, ca arhiva să poată fi extrasă oriunde, nu
-    doar peste `/etc`. Nu o numărați printre erori. <small>→ [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
-
-49. **Fără primul director**: Extrageți `Archives/all.tar.gz` în `/tmp/flat` astfel încât fișierele din `Music` și
-    `Photos` să ajungă direct în `/tmp/flat`, fără directoarele lor (căutați în `man tar` opțiunea care elimină
-    directoarele de la începutul numelor).
-
-    **Verificare:** `tree /tmp/flat` afișează cele cinci fișiere goale direct sub `/tmp/flat`, dar **nu** și
-    `numbers.txt`. `--strip-components=1` elimină prima parte a fiecărui nume: `Music/jazz.mp3` devine `jazz.mp3`,
-    însă `numbers.txt` se află în directorul de sus al arhivei, așa că din numele lui nu mai rămâne nimic și
-    `tar` nu îl extrage (la fel se întâmplă cu numele `Music/` și `Photos/`). <small>→ [Arhive](#archives-tar)</small>
-
-50. **Arhive printr-un pipe**: Creați `/tmp/music.tar.gz` printr-un pipe: `tar` scrie arhiva la ieșirea standard,
-    iar `gzip` o comprimă (un fișier arhivă numit `-` înseamnă ieșirea standard). Apoi extrageți-o în `/tmp/piped` cu
-    `gunzip -c` și `tar`, într-un alt pipe.
-
-    **Verificare:** `file /tmp/music.tar.gz` afișează `gzip compressed data`, iar `tree /tmp/piped` afișează `Music`. <small>→ [Pipe-uri](#pipes-) · [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
-
-51. **Numărare cu /proc**: Numărați directoarele din `/proc` al căror nume este un număr și comparați rezultatul cu
+48. **Numărare cu /proc**: Numărați directoarele din `/proc` al căror nume este un număr și comparați rezultatul cu
     numărul de procese afișate de `ps -e`.
 
     **Verificare:** cele două numere sunt aproape egale: fiecare proces este un director în `/proc`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
-52. **Shell-urile utilizatorilor**: Fiecare linie din `/etc/passwd` se termină cu shell-ul unui utilizator, după
+49. **Shell-urile utilizatorilor**: Fiecare linie din `/etc/passwd` se termină cu shell-ul unui utilizator, după
     ultimul `:`. Afișați fiecare shell folosit în `/etc/passwd`, cu numărul de utilizatori care îl au, cel mai folosit
     primul (căutați în `man cut` opțiunile care aleg separatorul și păstrează doar un câmp din fiecare linie). Apoi
     afișați doar shell-urile folosite de mai mult de un utilizator.
@@ -1234,7 +1209,7 @@ numbers.txt` afișează `7` și `20000`. <small>→ [Navigarea](/docs/labs/02#na
     separată; `/bin/bash` este folosit de `root` și `student`; numerele adunate dau același rezultat ca
     `wc -l < /etc/passwd`. <small>→ [Linii repetate](#repeated-lines-uniq) · [Pipe-uri](#pipes-)</small>
 
-53. **Cine ține fișierul deschis**: În al doilea terminal, deschideți cu `less` fișierul `/etc/hosts` (numele
+50. **Cine ține fișierul deschis**: În al doilea terminal, deschideți cu `less` fișierul `/etc/hosts` (numele
     calculatoarelor pe care sistemul le cunoaște fără să întrebe rețeaua). Din primul terminal, aflați PID-ul
     procesului care are deschis `/etc/hosts`, **fără** să folosiți `pgrep` sau `ps`: căutați cu `find` printre
     descriptorii de fișier ai tuturor proceselor (căutați în `man find` testul care verifică încotro indică o legătură
@@ -1242,8 +1217,33 @@ numbers.txt` afișează `7` și `20000`. <small>→ [Navigarea](/docs/labs/02#na
 
     **Verificare:** `find` afișează o cale ca `/proc/3402/fd/4`, iar `3402` este PID-ul lui `less`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
+51. **Copie de rezervă a configurației**: Creați `/tmp/etc.tar.gz` cu întregul director `/etc` (configurația
+    sistemului), **mai puțin** `/etc/pki` (certificatele), și salvați erorile lui `tar` în `Reports/etc-errors.txt`
+    (căutați în `man tar` opțiunea care lasă fișiere în afara arhivei). Numărați fișierele din arhivă și erorile.
+
+    **Verificare:** `tar tf /tmp/etc.tar.gz` listează `etc/passwd` și `etc/os-release`, dar nimic din `etc/pki`;
+    `Reports/etc-errors.txt` conține câte un `Permission denied` pentru fiecare fișier pe care doar `root` îl poate
+    citi, cum este `/etc/shadow`. Prima lui linie este ``tar: Removing leading `/' from member names``: nu este o
+    eroare, `tar` doar vă anunță că salvează `/etc/passwd` ca `etc/passwd`, ca arhiva să poată fi extrasă oriunde, nu
+    doar peste `/etc`. Nu o numărați printre erori. <small>→ [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
+
+52. **Fără primul director**: Extrageți `Archives/all.tar.gz` în `/tmp/flat` astfel încât fișierele din `Music` și
+    `Photos` să ajungă direct în `/tmp/flat`, fără directoarele lor (căutați în `man tar` opțiunea care elimină
+    directoarele de la începutul numelor).
+
+    **Verificare:** `tree /tmp/flat` afișează cele cinci fișiere goale direct sub `/tmp/flat`, dar **nu** și
+    `numbers.txt`. `--strip-components=1` elimină prima parte a fiecărui nume: `Music/jazz.mp3` devine `jazz.mp3`,
+    însă `numbers.txt` se află în directorul de sus al arhivei, așa că din numele lui nu mai rămâne nimic și
+    `tar` nu îl extrage (la fel se întâmplă cu numele `Music/` și `Photos/`). <small>→ [Arhive](#archives-tar)</small>
+
+53. **Arhive printr-un pipe**: Creați `/tmp/music.tar.gz` printr-un pipe: `tar` scrie arhiva la ieșirea standard,
+    iar `gzip` o comprimă (un fișier arhivă numit `-` înseamnă ieșirea standard). Apoi extrageți-o în `/tmp/piped` cu
+    `gunzip -c` și `tar`, într-un alt pipe.
+
+    **Verificare:** `file /tmp/music.tar.gz` afișează `gzip compressed data`, iar `tree /tmp/piped` afișează `Music`. <small>→ [Pipe-uri](#pipes-) · [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
+
 54. **Curățenie**: Ștergeți, cu o **singură** comandă `rm`, toate directoarele și arhivele pe care le-ați creat în
-    `/tmp` și fișierele mari din exercițiul 39.
+    `/tmp` și fișierele mari din exercițiul 43.
 
     **Verificare:** `ls /tmp` nu le mai afișează, iar `ls -l ~/lab03/Archives` nu afișează niciun fișier `.bin`. <small>→ [Gestionarea fișierelor](/docs/labs/02#managing-files)</small>
 
