@@ -29,13 +29,13 @@
   ][
     #uncover("2-")[
       #set text(size: 0.8em)
-      ```terminal
-      $ sudo cat /etc/shadow
-      root:*:20737:0:99999:7:::
+      #prompt-term[```
+      root@laptop:~# cat /etc/shadow
+      root:!:20737:0:99999:7:::
       ...
-      $ sudo kill 812
-      $ sudo rm -rf / # never do this
-      ```
+      root@laptop:~# kill 812
+      root@laptop:~# rm -rf /   # never do this
+      ```]
     ]
     #uncover("5-")[
       #card(icon: "⚠️", title: [work as a regular user], color: bad-color)[

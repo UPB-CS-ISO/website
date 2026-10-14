@@ -70,36 +70,13 @@
       ```terminal
       $ grep students /etc/group
       ```
-      🌍 everyone can read it, the passwords of the groups are in `/etc/gshadow`
+      🌍 everyone can read it
     ],
     (
       ("🏷️", [group name], [the name of the group]),
-      ("🔒", [password], [`x` - kept in `/etc/gshadow`, almost never used]),
+      ("🔒", [password], [`x` - almost never used]),
       ("🔢", [GID], [the group ID, the kernel only knows the GID]),
       ("👥", [members], [the users that have this group as a *supplementary* group, separated by `,`\ ⚠️ the users that have it as *primary* group are not listed here]),
     ),
   )
-]
-
-#slide[
-  == Groups Give Rights
-  🔑 some groups are special, joining them gives a right
-
-  #table(
-    columns: (auto, 1fr),
-    table.header([Group], [Its members can]),
-    [`sudo` / `wheel`], [become `root` with `sudo` (Debian, Ubuntu / Fedora, Arch)],
-    [`adm`], [read the logs from `/var/log`],
-    [`dialout`], [use the serial ports, `/dev/ttyUSB0` (Arduino, microcontrollers)],
-    [`audio`, `video`], [use the sound card and the camera directly],
-    [`docker`], [start containers, ⚠️ almost the same as being `root`],
-  )
-
-  #uncover("2-")[
-    #set text(size: 0.8em)
-    ```terminal
-    $ ls -l /dev/ttyUSB0
-    crw-rw---- 1 root dialout 188, 0 Oct 11 09:00 /dev/ttyUSB0
-    ```
-  ]
 ]

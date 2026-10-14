@@ -18,6 +18,57 @@
     - Chapter 5 - _Utilizatori_
 ]
 
+// the same request, without and with `sudo`
+#let shadow-file = file-box("/etc/shadow", "root", "shadow", "-rw-r-----")
+#let sudo-requests = (
+  ("cat", "alice", 1000, [`open("/etc/shadow")`], shadow-file, false, [`alice` may not read it]),
+)
+
+// with `sudo`: the `sudo` process runs as root and starts `cat` as root
+#let sudo-drawing = {
+  set text(size: 0.8em)
+  diagram(
+    spacing: (3em, 2.2em),
+    // like proc-box, with a note: who started it
+    thing((0, 0), box(
+      inset: (x: 0.6em, y: 0.45em),
+      radius: 0.3em,
+      stroke: 0.8pt + luma(150),
+      fill: white,
+      align(center)[⚙️ #text(font: mono, weight: "bold", "sudo") \ #v(0.1em) #user-tag("root", 0) \ #text(size: 0.8em, fill: luma(110))[started by `alice`]],
+    )),
+    thing((1, 0), proc-box("cat", "root", 0)),
+    step-arrow((0, 0), (1, 0), [starts]),
+    thing((1, 1), kernel-box[is UID 0 allowed to do this?]),
+    step-arrow((1, 0), (1, 1), [`open()`]),
+    thing((1, 2), shadow-file),
+    step-arrow((1, 1), (1, 2), none),
+    thing((1, 2.8), verdict(true, [`root` may do anything])),
+  )
+}
+
+#slide[
+  == `sudo` Changes the Label
+  👑 the same command, under another UID
+
+  #toolbox.side-by-side(columns: (5fr, 4fr), gutter: 1.5em)[
+    #set text(size: 0.8em)
+    #reveal-terminal(before: none, lines: (2, 4), full: false)[```terminal
+    $ cat /etc/shadow
+    cat: /etc/shadow: Permission denied
+    $ sudo cat /etc/shadow
+    root:*:20737:0:99999:7:::
+    ```]
+
+    #set text(size: 1.05em)
+    #only(1)[🔒 `cat` runs under `alice`, UID `1000`: `/etc/shadow` can be read only by `root` and the group `shadow`]
+    #only("2-")[👑 `sudo` runs as `root`, UID `0`, and starts `cat` under the same user: the kernel allows everything to UID `0`]
+  ][
+    #only(1, request-drawing(..sudo-requests.at(0)))
+    #only("2-", sudo-drawing)
+  ]
+]
+
 #slide[
   == `sudo` and `su`
   🔑 two ways to run commands as `root`
@@ -54,7 +105,7 @@
 #let sudo-notes = (
   ("🪄", [`sudo` is a _setuid_ program], [the `s` bit: it always runs as `root`, but it knows who started it]),
   ("📜", [is `alice` allowed?], [`sudo` reads `/etc/sudoers`: `alice` is in the group `sudo`, she may run *any* command]),
-  ("🔑", [who is at the keyboard?], [it asks for the password of *`alice`* (with PAM), not the one of `root`]),
+  ("🔑", [who is at the keyboard?], [it asks for the password of *`alice`*, not the one of `root`]),
   ("⏱️", [remembered for a while], [no password again for the next 5 minutes, in the same terminal]),
   ("🚫", [not allowed], [`bob` is not in `/etc/sudoers`: `sudo` refuses and writes the attempt in the log]),
   ("📒", [everything is written down], [the log shows *who* ran *what*, *where* and *as whom*]),
@@ -111,12 +162,6 @@
     cmd("sudo !!"), [runs the *previous* command again, with `sudo` (a `bash` trick)],
   )
 ]
-
-// an arrow with a small label above it
-#let labeled-arrow(label, color: luma(120), length: 6em) = box(width: length, align(center)[
-  #text(size: 0.8em, fill: color, label) \
-  #draw-arrow(length: length, color: color)
-])
 
 // a process that never starts
 #let ghost-box(body) = box(

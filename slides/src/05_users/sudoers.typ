@@ -535,27 +535,3 @@
 
   ]
 ]
-
-#slide[
-  == Who May Use `sudo`?
-  👥 usually you do not edit the file, you join the group
-
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.8em)
-    #reveal-terminal(before: none, lines: (1, 4), full: false)[```terminal
-    $ sudo usermod -aG sudo bob
-    $ sudo -l -U bob
-    User bob may run the following commands on laptop:
-        (ALL : ALL) ALL
-    ```]
-  ][
-    #only(1)[- `bob` joins `sudo` (`wheel` on Fedora): the rule `%sudo` gives him the rights]
-    #only("2-")[- `sudo -l` lists what *you* may run, `-U` asks for another user]
-
-    #uncover("3-")[
-      #card(icon: "💡", title: [log in again])[
-        `bob` must *log in again* before the new group takes effect
-      ]
-    ]
-  ]
-]

@@ -3,6 +3,9 @@
 
 #show: uso_slides.with(title: "Users")
 
+// every permission string, `-rw-r-----`, in the colors of u, g and o
+#show mode-pattern: it => mode-text(it.text)
+
 #slide[
   == Bibliography
 
@@ -46,38 +49,41 @@
 
   - Users
   - The Users Database
+  - Local Password Storage
+  - Groups
+  - Logging In
   - The `root` User
   - Becoming `root`
   - The `sudoers` File
   - The Prompt
-  - Groups
   - Managing Users and Groups
-  - Permissions
-  - Logging In
+  - File Permissions
 ]
 
 #include "users.typ"
 #include "database.typ"
+#include "passwords.typ"
+#include "groups.typ"
+#include "login.typ"
 #include "root.typ"
 #include "sudo.typ"
 #include "sudoers.typ"
 #include "prompt.typ"
-#include "groups.typ"
 #include "management.typ"
 #include "permissions.typ"
-#include "login.typ"
 
 #slide[
   == We talked about
 
   - Users
   - The Users Database
+  - Local Password Storage
+  - Groups
+  - Logging In
   - The `root` User
   - Becoming `root`
   - The `sudoers` File
   - The Prompt
-  - Groups
   - Managing Users and Groups
-  - Permissions
-  - Logging In
+  - File Permissions
 ]
