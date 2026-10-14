@@ -865,7 +865,9 @@ Exercițiile devin tot mai grele pe parcurs:
 - 🏠 [Mai departe](#going-further) (exercițiile 33 - 47) are exerciții mai grele;
 - 📝 [Provocări](#challenges) (exercițiile 48 - 54) le are pe cele mai grele.
 
-Faceți exercițiile **în ordine**: fiecare folosește fișierele rămase de la cele dinainte.
+Fiecare exercițiu are nevoie doar de **arborele de exersare** din exercițiul 1 și își creează singur toate celelalte
+fișiere pe care le folosește. Rulați comenzile în `~/lab03`, dacă exercițiul nu spune altceva. Dacă modificați sau
+ștergeți un fișier din arborele de exersare, rulați din nou comenzile din exercițiul 1 ca să-l refaceți.
 
 Unele exerciții cer lucruri pe care laboratorul nu vi le arată, de exemplu o opțiune care nu apare în tabelele de mai
 sus. Căutați-o în **pagina de manual** a comenzii (`man <command>`), cum ați văzut în
@@ -890,7 +892,7 @@ să le modificați.
 ### 🧪 Primii pași {/* #first-steps */}
 
 1. **Arborele de exersare**:
-   1. Rulați comenzile de mai jos ca să creați fișierele folosite în exerciții (copiați-le din browser cu
+   1. rulați comenzile de mai jos ca să creați fișierele folosite în exerciții (copiați-le din browser cu
       <kbd>Ctrl</kbd>+<kbd>C</kbd> și lipiți-le în terminal cu <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>):
 
       ```bash
@@ -901,325 +903,458 @@ să le modificați.
       seq 1 20000 > ~/lab03/numbers.txt
       ```
 
-   2. Mergeți în `~/lab03` și rulați `tree`.
+   2. mergeți în `~/lab03` și rulați `tree`;
+   3. numărați liniile din `fruits.txt` și din `numbers.txt` cu `wc -l`.
 
-   **Verificare:** vedeți cele patru directoare, cele cinci fișiere goale, `fruits.txt` și `numbers.txt`; `wc -l fruits.txt
-numbers.txt` afișează `7` și `20000`. <small>→ [Navigarea](/docs/labs/02#navigation)</small>
+   **Verificare:** vedeți cele patru directoare, cele cinci fișiere goale, `fruits.txt` și `numbers.txt`; `wc -l`
+   afișează `7` și `20000`. <small>→ [Navigarea](/docs/labs/02#navigation)</small>
 
 **Redirectări**
 
-2. **Rădăcina sistemului**: Din `~/lab03`, salvați în `Reports/system.txt` arborele lui `/`, cu un singur nivel de
-   adâncime (căutați în `man tree` opțiunea care limitează cât de adânc coboară `tree`). Afișați fișierul.
+2. **Rădăcina sistemului**:
+   1. salvați în `Reports/system.txt` arborele lui `/`, cu un singur nivel de adâncime (căutați în `man tree` opțiunea
+      care limitează cât de adânc coboară `tree`);
+   2. afișați `Reports/system.txt` cu `cat`.
 
    **Verificare:** `tree` nu a afișat nimic pe ecran, iar fișierul conține directoarele principale ale sistemului:
    `boot`, `dev`, `etc`, `home`, `proc`, `tmp`, `usr` și `var`; `bin` este o legătură către `usr/bin`. <small>→ [Ieșirea](#output--and-)</small>
 
-3. **Adăugare**: Adăugați la `Reports/system.txt` arborele lui `/usr`, cu un nivel de adâncime. Apoi **suprascrieți**
-   fișierul cu arborele lui `/var`, tot cu un nivel.
+3. **Adăugare și suprascriere**:
+   1. salvați în `Reports/tree.txt` arborele lui `/usr`, cu un nivel de adâncime;
+   2. **adăugați** la `Reports/tree.txt` arborele lui `/var`, cu un nivel de adâncime, și afișați fișierul;
+   3. **suprascrieți** `Reports/tree.txt` cu arborele lui `/home`, cu un nivel de adâncime, și afișați din nou fișierul.
 
-   **Verificare:** după adăugare, fișierul conține ambii arbori (`/usr` are `bin`, `lib`, `share`); după ultima
-   comandă, doar arborele lui `/var`, cu `cache`, `lib` și `log`. <small>→ [Ieșirea](#output--and-)</small>
+   **Verificare:** după adăugare, fișierul conține ambii arbori: `/usr` cu `bin`, `lib` și `share`, apoi `/var` cu
+   `cache`, `lib` și `log`; după suprascriere, conține doar arborele lui `/home`, cu `student`. <small>→ [Ieșirea](#output--and-)</small>
 
-4. **Erorile separat**: Cu o **singură** comandă `ls -a`, listați `/etc/skel` (fișierele copiate în directorul
-   fiecărui utilizator nou) și `/root` (directorul administratorului), astfel încât lista să ajungă în
-   `Reports/list.txt`, iar eroarea în `Reports/errors.txt`.
+4. **Erorile separat**:
+   1. cu o **singură** comandă `ls -a`, listați `/etc/skel` (fișierele copiate în directorul fiecărui utilizator nou)
+      și `/root` (directorul administratorului), astfel încât lista să ajungă în `Reports/list.txt`, iar eroarea în
+      `Reports/errors.txt`;
+   2. afișați cele două fișiere.
 
-   **Verificare:** pe ecran nu apare nimic; `Reports/list.txt` conține `.bashrc` și `.bash_profile`, iar
-   `Reports/errors.txt` conține un `Permission denied` pentru `/root`. <small>→ [Erorile](#errors-2-and-2)</small>
+   **Verificare:** când rulați `ls`, pe ecran nu apare nimic; `Reports/list.txt` conține `.bashrc` și
+   `.bash_profile`, iar `Reports/errors.txt` conține un `Permission denied` pentru `/root`. <small>→ [Erorile](#errors-2-and-2)</small>
 
-5. **Încă o eroare**: Afișați `/etc/shadow` (fișierul cu parolele utilizatorilor) și adăugați eroarea în
-   `Reports/errors.txt`, fără să pierdeți prima eroare.
+5. **Adăugarea erorilor**:
+   1. rulați `ls /root` și salvați eroarea în `Reports/errors.txt`, suprascriind fișierul;
+   2. afișați cu `cat` fișierul `/etc/shadow` (fișierul cu parolele utilizatorilor) și **adăugați** eroarea în
+      `Reports/errors.txt`;
+   3. afișați `Reports/errors.txt`.
 
    **Verificare:** `Reports/errors.txt` are două linii, una pentru `/root` și una pentru `/etc/shadow`: doar `root` le
    poate citi. <small>→ [Erorile](#errors-2-and-2)</small>
 
-6. **Utilizatorii și grupurile**: Copiați `/etc/passwd` în `Reports/users.txt` și `/etc/group` în
-   `Reports/groups.txt`, folosind `cat` și redirectări (nu `cp`).
+6. **Utilizatorii și grupurile**:
+   1. copiați `/etc/passwd` (lista utilizatorilor) în `Reports/users.txt`, folosind `cat` și o redirectare, nu `cp`;
+   2. copiați în același fel `/etc/group` (lista grupurilor) în `Reports/groups.txt`;
+   3. numărați cu `wc -l` liniile celor două copii și ale celor două originale.
 
-   **Verificare:** `wc -l` afișează același număr de linii pentru fiecare copie și pentru originalul ei. <small>→ [Ieșirea](#output--and-)</small>
+   **Verificare:** fiecare copie are același număr de linii ca originalul ei. <small>→ [Ieșirea](#output--and-)</small>
 
-7. **Totul într-un fișier**: Rulați `ls -a /etc/skel /root` astfel încât și lista, și eroarea să ajungă în
-   `Reports/all.txt`. Faceți asta de două ori: o dată cu `&>` și o dată în varianta mai veche, `> ... 2>&1` (vedeți
-   [tabelul redirectărilor](#redirects)).
+7. **Totul într-un fișier**:
+   1. rulați `ls -a /etc/skel /root` astfel încât și lista, și eroarea să ajungă în `Reports/all.txt`, folosind `&>`,
+      și afișați fișierul;
+   2. rulați din nou aceeași comandă, de data aceasta în varianta mai veche, `> Reports/all.txt 2>&1` (vedeți
+      [tabelul redirectărilor](#redirects)), și afișați din nou fișierul.
 
-   **Verificare:** de ambele dăți, `Reports/all.txt` conține eroarea pentru `/root` și fișierele din `/etc/skel`. <small>→ [Redirectări](#redirects)</small>
+   **Verificare:** de ambele dăți, `Reports/all.txt` conține eroarea pentru `/root` și fișierele din `/etc/skel`, iar
+   când rulați `ls` pe ecran nu apare nimic. <small>→ [Redirectări](#redirects)</small>
 
-8. **Liniște**: Căutați în `/etc` și `/usr` fișierele numite `os-release`, fără să vedeți niciun mesaj
-   `Permission denied`. Afișați-l pe cel din `/etc`.
+8. **Liniște**:
+   1. căutați cu `find` în `/etc` și `/usr` fișierele numite `os-release` și aruncați erorile, ca să nu vedeți niciun
+      mesaj `Permission denied`;
+   2. afișați cu `cat` conținutul lui `/etc/os-release` (fișierul care descrie distribuția voastră).
 
-   **Verificare:** se afișează doar căi: `/etc/os-release` și `/usr/lib/os-release`; fișierul conține numele și
-   versiunea distribuției voastre, `Fedora Linux`. <small>→ [Fișiere speciale](#special-files)</small>
+   **Verificare:** `find` afișează doar două căi, `/etc/os-release` și `/usr/lib/os-release`; `/etc/os-release`
+   conține numele și versiunea distribuției voastre, `Fedora Linux`. <small>→ [Fișiere speciale](#special-files)</small>
 
-9. **Intrarea dintr-un fișier**: Sortați `/etc/shells` (lista shell-urilor instalate în sistem) folosind `<`.
-   Numărați liniile din `/etc/passwd` cu `wc -l` de două ori: o dată cu numele fișierului ca parametru și o dată cu
-   `<`.
+9. **Intrarea dintr-un fișier**:
+   1. sortați cu `sort` fișierul `/etc/shells` (lista shell-urilor instalate în sistem), dându-i fișierul cu `<`;
+   2. numărați liniile din `/etc/passwd` cu `wc -l`, dându-i numele fișierului ca parametru;
+   3. numărați-le din nou, de data aceasta dându-i fișierul cu `<`.
 
-   **Verificare:** shell-urile din `/bin` apar înaintea celor din `/usr/bin`; doar primul `wc` afișează numele
-   fișierului. <small>→ [Intrarea](#input-)</small>
+   **Verificare:** shell-urile din `/bin` apar înaintea celor din `/usr/bin`; cele două numere sunt egale, dar doar
+   primul `wc` afișează numele fișierului. <small>→ [Intrarea](#input-)</small>
 
-10. **Un fișier scris de la tastatură**: Creați `Reports/todo.txt` cu `cat` și o redirectare, tastând trei linii.
+10. **Un fișier scris de la tastatură**:
+    1. rulați `cat` cu o redirectare, astfel încât ce tastați să ajungă în `Reports/todo.txt`;
+    2. tastați trei linii, apoi apăsați <kbd>Ctrl</kbd>+<kbd>D</kbd> la începutul unei linii noi, ca să încheiați
+       intrarea;
+    3. afișați `Reports/todo.txt`.
 
     **Verificare:** `cat Reports/todo.txt` afișează cele trei linii pe care le-ați tastat. <small>→ [Intrarea](#input-)</small>
 
-11. **Pipe-uri**: Numărați programele din `/usr/bin` și intrările din `/etc` (configurația sistemului). Apoi
-    afișați lista lungă a lui `/etc` câte un ecran pe rând.
+11. **Pipe-uri**:
+    1. numărați programele din `/usr/bin` cu `ls`, `wc -l` și un pipe;
+    2. numărați în același fel intrările din `/etc` (configurația sistemului);
+    3. afișați lista lungă a lui `/etc` (`ls -l`) câte un ecran pe rând, cu `less`.
 
-    **Verificare:** sunt peste o mie de programe și câteva sute de intrări în `/etc`; lista lungă se oprește după
-    fiecare ecran, iar din ea ieșiți cu <kbd>q</kbd>. <small>→ [Pipe-uri](#pipes-)</small>
+    **Verificare:** sunt peste o mie de programe și câteva sute de intrări în `/etc`; `less` se oprește după fiecare
+    ecran, iar din el ieșiți cu <kbd>q</kbd>. <small>→ [Pipe-uri](#pipes-)</small>
 
-12. **Căutare cu grep**: Afișați linia voastră din `/etc/passwd` (lista utilizatorilor) și numărați utilizatorii
-    care au shell-ul `nologin` (utilizatorii serviciilor, care nu se pot autentifica). Apoi listați programele din
-    `/usr/bin` care au `zip` în nume.
+12. **Căutare cu grep**:
+    1. afișați din `/etc/passwd` (lista utilizatorilor) linia utilizatorului vostru, `student`;
+    2. numărați liniile din `/etc/passwd` care conțin `nologin`: sunt utilizatorii serviciilor, care nu se pot
+       autentifica;
+    3. listați programele din `/usr/bin` care au `zip` în nume.
 
     **Verificare:** linia voastră se termină cu `/home/student:/bin/bash`; cei mai mulți utilizatori au `nologin`; în
     lista de programe apar `gzip` și `gunzip`. <small>→ [Căutarea unui text](#searching-for-a-text-grep)</small>
 
-13. **Linii repetate**: Rulați `uniq` pe `fruits.txt` și vedeți de ce nu elimină nimic. Apoi afișați fiecare fruct
-    din `fruits.txt` o singură dată, afișați fiecare fruct cu numărul lui de apariții, cel mai frecvent primul, și
-    afișați doar fructele care apar exact o dată.
+13. **Linii repetate**:
+    1. rulați `uniq fruits.txt` și aflați de ce nu elimină nimic;
+    2. afișați fiecare fruct din `fruits.txt` o singură dată;
+    3. afișați fiecare fruct cu numărul lui de apariții, cel mai frecvent primul;
+    4. afișați doar fructele care apar exact o dată (căutați în `man uniq`).
 
     **Verificare:** `uniq fruits.txt` afișează aceleași 7 linii, pentru că nicio linie nu este identică cu cea de
     deasupra ei; după `sort` obțineți 4 fructe, prima linie a numărătorii este `3 apple`, iar exact o dată apar doar
     `cherry` și `kiwi`. <small>→ [Linii repetate](#repeated-lines-uniq)</small>
 
-14. **Zerouri și octeți aleatori**: Afișați în hexazecimal primii 16 octeți din `/dev/zero` și din `/dev/urandom`.
+14. **Zerouri și octeți aleatori**:
+    1. afișați în hexazecimal primii 16 octeți din `/dev/zero`, cu `head` și `xxd`;
+    2. afișați în același fel primii 16 octeți din `/dev/urandom` și rulați comanda de două ori.
 
-    **Verificare:** prima linie are doar zerouri; a doua diferă la fiecare rulare a comenzii. <small>→ [Fișiere speciale](#special-files)</small>
+    **Verificare:** octeții din `/dev/zero` sunt toți zero; octeții din `/dev/urandom` diferă la fiecare rulare a
+    comenzii. <small>→ [Fișiere speciale](#special-files)</small>
 
 **Procese**
 
-15. **Shell-ul meu**: Afișați PID-ul shell-ului vostru și listați procesele terminalului cu toate coloanele lui
-    `-f`. Apoi afișați din fișierul `/proc/<PID>/status` al shell-ului liniile cu numele, starea, PID-ul și PPID-ul
-    lui.
+15. **Shell-ul meu**:
+    1. afișați PID-ul shell-ului vostru;
+    2. listați procesele terminalului cu toate coloanele lui `-f`;
+    3. afișați cu `grep` doar liniile `Name`, `State`, `Pid` și `PPid` din fișierul `/proc/<PID>/status` al
+       shell-ului vostru (puneți PID-ul shell-ului în locul lui `<PID>`).
 
     **Verificare:** `ps` și `status` arată același PID și același PPID pentru `bash`, iar starea lui este `S`. <small>→ [Listarea proceselor](#listing-processes-ps) · [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
-16. **Inspectarea unui proces**: În al doilea terminal, rulați `sleep 1000`. Din primul terminal, aflați-i PID-ul,
-    apoi afișați din `/proc` fișierul `status`, linia de comandă, programul (`exe`) și directorul curent (`cwd`) ale
-    procesului.
+16. **Inspectarea unui proces**:
+    1. în al doilea terminal, rulați `sleep 1000`;
+    2. în primul terminal, aflați cu `pgrep` PID-ul lui `sleep`;
+    3. afișați-i fișierul `/proc/<PID>/status`;
+    4. afișați-i cu `cat -v` linia de comandă, din `/proc/<PID>/cmdline`;
+    5. aflați-i programul și directorul curent, din legăturile `/proc/<PID>/exe` și `/proc/<PID>/cwd`;
+    6. opriți `sleep` cu <kbd>Ctrl</kbd>+<kbd>C</kbd> în al doilea terminal.
 
-    **Verificare:** starea este `S`, comanda este `sleep 1000`, programul este `/usr/bin/sleep`, iar directorul curent
-    este cel al celui de-al doilea terminal. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
+    **Verificare:** starea este `S`, linia de comandă este `sleep^@1000^@`, programul este `/usr/bin/sleep`, iar
+    directorul curent este cel al celui de-al doilea terminal. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
-17. **Fișiere deschise**: Listați tabela de descriptori de fișier a shell-ului vostru și pe cea a lui `sleep`. Apoi
-    opriți `sleep` cu <kbd>Ctrl</kbd>+<kbd>C</kbd> și încercați să-i listați din nou tabela.
+17. **Fișiere deschise**:
+    1. listați tabela de descriptori de fișier a shell-ului vostru, din `/proc/$$/fd`;
+    2. în al doilea terminal, rulați `sleep 1000`;
+    3. în primul terminal, aflați PID-ul lui `sleep` și listați-i tabela de descriptori de fișier;
+    4. opriți `sleep` cu <kbd>Ctrl</kbd>+<kbd>C</kbd> și încercați să-i listați din nou tabela.
 
     **Verificare:** `0`, `1` și `2` indică un fișier `/dev/pts/...`, altul pentru fiecare terminal; după
     <kbd>Ctrl</kbd>+<kbd>C</kbd>, `/proc/<PID>` nu mai există. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
-18. **Sistemul**: Folosind fișierele din `/proc`, aflați modelul procesorului, câte procesoare aveți, memoria
-    totală, de câte secunde rulează sistemul și versiunea kernelului (`/proc/version`). Folosiți `grep` ca să afișați
-    din `/proc/cpuinfo` și `/proc/meminfo` doar liniile de care aveți nevoie.
+18. **Sistemul**: Aflați următoarele despre calculatorul vostru folosind doar fișierele din `/proc`:
+    1. modelul procesorului: liniile `model name` din `/proc/cpuinfo` (folosiți `grep`);
+    2. câte procesoare aveți: numărați liniile `processor` din `/proc/cpuinfo`;
+    3. memoria totală: linia `MemTotal` din `/proc/meminfo`;
+    4. de câte secunde rulează sistemul: primul număr din `/proc/uptime`;
+    5. versiunea kernelului: `/proc/version`.
 
-    **Verificare:** numărul de linii `processor` din `/proc/cpuinfo` este același cu numărul afișat de `nproc`, timpul
-    se potrivește cu partea `up` din `uptime`, iar versiunea kernelului este aceeași cu cea afișată de `uname -r`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
+    **Verificare:** numărul de procesoare este același cu cel afișat de `nproc`, timpul se potrivește cu partea `up`
+    din `uptime`, iar versiunea kernelului este aceeași cu cea afișată de `uname -r`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
-19. **top și htop**: Porniți `top`, sortați procesele după memorie, apoi după procesor, și ieșiți. Porniți `htop`,
-    găsiți-vă `bash`-ul printr-o căutare și afișați procesele sub formă de arbore.
+19. **top și htop**:
+    1. porniți `top`, sortați procesele după memorie, apoi după procesor, și ieșiți;
+    2. porniți `htop`, găsiți-vă `bash`-ul printr-o căutare, afișați procesele sub formă de arbore și ieșiți.
 
     **Verificare:** `top` afișează linia `Tasks`, cu numărul de procese din fiecare stare; în arborele din `htop`,
     `bash`-ul vostru se află sub terminal. <small>→ [top](#top) · [htop](#htop)</small>
 
 **Arhive și compresie**
 
-20. **Trei programe de compresie**: Comprimați `numbers.txt` cu `gzip`, `bzip2` și `xz`, păstrând de fiecare dată
-    fișierul original. Comparați dimensiunile cu `ls -l`.
+20. **Trei programe de compresie**:
+    1. ștergeți `numbers.txt.gz`, `numbers.txt.bz2` și `numbers.txt.xz`, dacă există;
+    2. comprimați `numbers.txt` cu `gzip`, cu `bzip2` și cu `xz`, păstrând de fiecare dată fișierul original;
+    3. comparați cu `ls -l` dimensiunile celor patru fișiere.
 
     **Verificare:** aveți `numbers.txt`, `numbers.txt.gz`, `numbers.txt.bz2` și `numbers.txt.xz`, iar fișierul `.xz`
     este cel mai mic. <small>→ [Compresia unui singur fișier](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-21. **Cu cât mai mic**: Ștergeți cele trei fișiere comprimate și comprimați din nou `numbers.txt` cu fiecare
-    program, de data aceasta astfel încât să afișeze **cu cât** s-a micșorat fișierul.
+21. **Cu cât mai mic**:
+    1. ștergeți `numbers.txt.gz`, `numbers.txt.bz2` și `numbers.txt.xz`, dacă există;
+    2. comprimați `numbers.txt` cu `gzip`, cu `bzip2` și cu `xz`, păstrând fișierul original, astfel încât fiecare
+       program să afișeze **cu cât** s-a micșorat fișierul (căutați în paginile lor de manual opțiunea care afișează
+       mai multe detalii).
 
     **Verificare:** `gzip` și `bzip2` au afișat cât au **economisit**, ca procent, iar procentul lui `bzip2` este mai
     mare; `xz` a afișat în schimb un **raport** (aproximativ `0.045`, noua dimensiune împărțită la cea veche), deci a
     economisit în jur de 95%, cel mai mult dintre toate trei. <small>→ [Compresia unui singur fișier](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-22. **Decomprimare**: Ștergeți `numbers.txt` și refaceți-l din `numbers.txt.gz`. Ștergeți-l din nou și refaceți-l
-    din `numbers.txt.bz2`, de data aceasta păstrând fișierul comprimat.
+22. **Decomprimare**:
+    1. ștergeți `numbers.txt.gz` și `numbers.txt.bz2`, dacă există;
+    2. comprimați `numbers.txt` cu `gzip`, **fără** să păstrați originalul, și verificați cu `ls` că `numbers.txt` a
+       dispărut;
+    3. refaceți `numbers.txt` din `numbers.txt.gz`;
+    4. comprimați `numbers.txt` cu `bzip2`, păstrând originalul, apoi ștergeți `numbers.txt`;
+    5. refaceți `numbers.txt` din `numbers.txt.bz2`, de data aceasta păstrând fișierul comprimat.
 
     **Verificare:** `wc -l numbers.txt` afișează `20000` de ambele dăți; `numbers.txt.gz` a dispărut (`gunzip` l-a
     șters, la fel cum `gzip` șterge originalul), dar `numbers.txt.bz2` există în continuare. <small>→ [Compresia unui singur fișier](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-23. **Ce fel de fișier**: Cu o **singură** comandă `file`, aflați tipul lui `numbers.txt` și al celor două fișiere
-    comprimate rămase, `numbers.txt.bz2` și `numbers.txt.xz`. Apoi ștergeți fișierele comprimate. Aflați și tipul lui
-    `/usr/share/man/man1/ls.1.gz`, pagina de manual a lui `ls`.
+23. **Ce fel de fișier**:
+    1. ștergeți `numbers.txt.bz2` și `numbers.txt.xz`, dacă există;
+    2. comprimați `numbers.txt` cu `bzip2` și cu `xz`, păstrând originalul;
+    3. aflați cu o **singură** comandă `file` tipurile lui `numbers.txt`, `numbers.txt.bz2` și `numbers.txt.xz`;
+    4. ștergeți `numbers.txt.bz2` și `numbers.txt.xz`;
+    5. aflați tipul lui `/usr/share/man/man1/ls.1.gz`, pagina de manual a lui `ls`.
 
     **Verificare:** `file` afișează `ASCII text`, `bzip2 compressed data` și `XZ compressed data`, iar pentru
     `ls.1.gz`, `gzip compressed data`: paginile de manual sunt stocate comprimate cu `gzip`, iar `man` le decomprimă
     când le citiți. <small>→ [Ce format alegeți](#which-one-to-use)</small>
 
-24. **O arhivă tar**: În `~/lab03`, creați `Archives/music.tar` cu directoarele `Music` și `Photos` și fișierul
-    `fruits.txt`. Listați-i conținutul, apoi verificați-i tipul cu `file`.
+24. **O arhivă tar**:
+    1. creați `Archives/music.tar` cu directoarele `Music` și `Photos` și fișierul `fruits.txt`;
+    2. listați conținutul arhivei;
+    3. aflați cu `file` tipul arhivei.
 
     **Verificare:** arhiva conține `Music/`, `Photos/`, cele cinci fișiere goale și `fruits.txt`, iar `file` afișează
     `POSIX tar archive`. <small>→ [Arhive](#archives-tar)</small>
 
-25. **Extragere**: Extrageți `Archives/music.tar` în `/tmp/extract`.
+25. **Extragere**:
+    1. creați `Archives/music.tar` cu `Music`, `Photos` și `fruits.txt` (dacă există deja, `tar` o suprascrie);
+    2. creați directorul `/tmp/extract`;
+    3. extrageți `Archives/music.tar` în `/tmp/extract`.
 
     **Verificare:** `tree /tmp/extract` afișează `Music`, `Photos` și `fruits.txt`, cu aceleași fișiere ca în
     `~/lab03`. <small>→ [Arhive](#archives-tar)</small>
 
-26. **Un singur fișier**: Creați `/tmp/single` și extrageți în el doar `Photos/dog.jpg` din `Archives/music.tar`.
+26. **Un singur fișier**:
+    1. creați `Archives/music.tar` cu `Music`, `Photos` și `fruits.txt`;
+    2. creați directorul `/tmp/single`;
+    3. extrageți în `/tmp/single` doar `Photos/dog.jpg` din `Archives/music.tar`.
 
     **Verificare:** `tree /tmp/single` afișează `Photos/dog.jpg` și nimic altceva. <small>→ [Arhive](#archives-tar)</small>
 
-27. **Încă un fișier în arhivă**: Adăugați `numbers.txt` în `Archives/music.tar`, apoi listați arhiva cu detaliile
-    fiecărui fișier.
+27. **Încă un fișier în arhivă**:
+    1. creați `Archives/music.tar` cu `Music`, `Photos` și `fruits.txt`;
+    2. adăugați `numbers.txt` în `Archives/music.tar`, fără să creați din nou arhiva;
+    3. listați arhiva cu detaliile fiecărui fișier.
 
     **Verificare:** `numbers.txt` este ultimul fișier din listă, cu dimensiunea `108894`. <small>→ [Arhive](#archives-tar)</small>
 
-28. **Arhive comprimate**: Din `~/lab03`, creați `Archives/all.tar.gz`, `Archives/all.tar.bz2` și
-    `Archives/all.tar.xz`, fiecare cu `Music`, `Photos` și `numbers.txt`. Comparați-le dimensiunile cu dimensiunea
-    unei arhive `.tar` cu aceleași fișiere.
+28. **Arhive comprimate**:
+    1. creați `Archives/all.tar` cu `Music`, `Photos` și `numbers.txt`;
+    2. creați `Archives/all.tar.gz`, `Archives/all.tar.bz2` și `Archives/all.tar.xz`, fiecare cu aceleași trei
+       intrări, comprimate cu `gzip`, `bzip2` și `xz`;
+    3. comparați cu `ls -l` dimensiunile celor patru arhive.
 
     **Verificare:** arhiva `.tar` este cea mai mare, iar `.tar.xz` cea mai mică. <small>→ [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-29. **Listarea arhivelor comprimate**: Listați conținutul celor trei arhive comprimate **fără** să-i spuneți lui
-    `tar` cum sunt comprimate. Verificați-le tipul cu `file`.
+29. **Listarea arhivelor comprimate**:
+    1. creați `Archives/all.tar.gz`, `Archives/all.tar.bz2` și `Archives/all.tar.xz`, fiecare cu `Music`, `Photos` și
+       `numbers.txt`;
+    2. listați conținutul fiecărei arhive **fără** să-i spuneți lui `tar` cum este comprimată;
+    3. aflați cu `file` tipurile celor trei arhive.
 
     **Verificare:** toate trei listele sunt identice; `file` arată pentru fiecare altă compresie. <small>→ [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-30. **Extragerea arhivelor comprimate**: Extrageți fiecare dintre cele trei arhive comprimate în propriul director:
-    `/tmp/gz`, `/tmp/bz2` și `/tmp/xz`.
+30. **Extragerea arhivelor comprimate**:
+    1. creați `Archives/all.tar.gz`, `Archives/all.tar.bz2` și `Archives/all.tar.xz`, fiecare cu `Music`, `Photos` și
+       `numbers.txt`;
+    2. creați directoarele `/tmp/gz`, `/tmp/bz2` și `/tmp/xz`;
+    3. extrageți fiecare arhivă în propriul director: `.tar.gz` în `/tmp/gz`, `.tar.bz2` în `/tmp/bz2` și `.tar.xz` în
+       `/tmp/xz`;
+    4. afișați cu `tree` cele trei directoare.
 
     **Verificare:** arborii celor trei directoare sunt identici. <small>→ [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-31. **O arhivă zip**: Creați `Archives/all.zip` cu `Music`, `Photos` și `numbers.txt` (cu tot ce se află în
-    directoare). Listați-o, apoi extrageți-o în `/tmp/unzipped`.
+31. **O arhivă zip**:
+    1. ștergeți `Archives/all.zip`, dacă există (`zip` ar actualiza-o, nu ar crea-o din nou);
+    2. creați `Archives/all.zip` cu `Music`, `Photos` și `numbers.txt`, cu tot ce se află în directoare;
+    3. listați conținutul arhivei;
+    4. extrageți-o în `/tmp/unzipped`.
 
-    **Verificare:** `unzip -l` listează 8 intrări, iar `tree /tmp/unzipped` afișează aceleași fișiere ca `/tmp/gz`. <small>→ [Arhive zip](#zip-archives-zip-and-unzip)</small>
+    **Verificare:** `unzip -l` listează 8 intrări, iar `tree /tmp/unzipped` afișează `Music` cu trei fișiere, `Photos`
+    cu două fișiere și `numbers.txt`. <small>→ [Arhive zip](#zip-archives-zip-and-unzip)</small>
 
-32. **Actualizarea unei arhive zip**: Adăugați `fruits.txt` în `Archives/all.zip` și extrageți doar acest fișier în
-    `/tmp/single`.
+32. **Actualizarea unei arhive zip**:
+    1. ștergeți `Archives/all.zip`, dacă există;
+    2. creați `Archives/all.zip` cu `Music`, `Photos` și `numbers.txt`, cu tot ce se află în directoare;
+    3. adăugați `fruits.txt` în `Archives/all.zip`;
+    4. listați cu `zip -sf` fișierele din arhivă;
+    5. extrageți din arhivă doar `fruits.txt`, în `/tmp/fruit`.
 
-    **Verificare:** `zip -sf Archives/all.zip` listează `fruits.txt`, iar `/tmp/single` conține `fruits.txt` și
-    `Photos`. <small>→ [Arhive zip](#zip-archives-zip-and-unzip)</small>
+    **Verificare:** `zip -sf Archives/all.zip` listează `fruits.txt` ca ultim fișier, iar `/tmp/fruit` conține doar
+    `fruits.txt`. <small>→ [Arhive zip](#zip-archives-zip-and-unzip)</small>
 
 ### 🏠 Mai departe {/* #going-further */}
 
-33. **Ordinea contează**: Rulați `ls /etc/skel /root > Reports/a.txt 2>&1`, apoi
-    `ls /etc/skel /root 2>&1 > Reports/b.txt`. Aflați de ce eroarea ajunge în `a.txt`, dar nu și în `b.txt`.
+33. **Ordinea contează**:
+    1. rulați `ls /etc/skel /root > Reports/a.txt 2>&1` și afișați `Reports/a.txt`;
+    2. rulați `ls /etc/skel /root 2>&1 > Reports/b.txt` și afișați `Reports/b.txt`;
+    3. aflați de ce eroarea ajunge în `a.txt`, dar nu și în `b.txt`.
 
     **Verificare:** a doua comandă a afișat eroarea pe ecran. Shell-ul citește redirectările de la stânga la dreapta,
     iar `2>&1` trimite `2` acolo unde merge `1` **în acel moment**. <small>→ [Redirectări](#redirects)</small>
 
-34. **Vedeți și salvați**: Salvați lista programelor din `/usr/bin` în `Reports/programs.txt` **și** numărați-le,
-    într-o **singură** linie de comandă (uitați-vă în `man tee`).
+34. **Vedeți și salvați**: Într-o **singură** linie de comandă, salvați lista programelor din `/usr/bin` în
+    `Reports/programs.txt` **și** numărați-le (căutați în `man tee` comanda care își scrie intrarea și într-un fișier,
+    și la ieșire).
 
     **Verificare:** numărul afișat este același cu cel dat de `wc -l < Reports/programs.txt`. <small>→ [Pipe-uri](#pipes-)</small>
 
-35. **Redirectările văzute din interior**: În al doilea terminal, rulați `sleep 900 < ~/lab03/fruits.txt > /tmp/out.txt 2>
-/dev/null`. Din primul terminal, listați tabela de descriptori
-    de fișier a acestui `sleep`. Opriți-l.
+35. **Redirectările văzute din interior**:
+    1. în al doilea terminal, rulați `sleep 900 < ~/lab03/fruits.txt > /tmp/out.txt 2> /dev/null`;
+    2. în primul terminal, aflați PID-ul lui `sleep` și listați-i tabela de descriptori de fișier;
+    3. opriți `sleep` cu <kbd>Ctrl</kbd>+<kbd>C</kbd> în al doilea terminal.
 
     **Verificare:** `0` indică `fruits.txt`, `1` indică `/tmp/out.txt`, iar `2` indică `/dev/null`: shell-ul a
     modificat tabela înainte să pornească `sleep`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system) · [Redirectări](#redirects)</small>
 
-36. **Un pipe văzut din interior**: În al doilea terminal, rulați `sleep 800 | sleep 900`. Din primul terminal,
-    aflați cele două PID-uri și listați tabelele de descriptori de fișier ale ambelor procese. Opriți-le.
+36. **Un pipe văzut din interior**:
+    1. în al doilea terminal, rulați `sleep 800 | sleep 900`;
+    2. în primul terminal, aflați PID-urile celor două procese `sleep` (căutați în `man pgrep` opțiunea care afișează
+       și linia de comandă, ca să le deosebiți);
+    3. listați tabelele de descriptori de fișier ale ambelor procese;
+    4. opriți-le cu <kbd>Ctrl</kbd>+<kbd>C</kbd> în al doilea terminal.
 
-    **Verificare:** `1` al primului `sleep` și `0` al celui de-al doilea indică același `pipe:[...]`, cu același număr. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system) · [Pipe-uri](#pipes-)</small>
+    **Verificare:** `1` al lui `sleep 800` și `0` al lui `sleep 900` indică același `pipe:[...]`, cu același număr. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system) · [Pipe-uri](#pipes-)</small>
 
-37. **Ce citește less**: În al doilea terminal, deschideți cu `less` fișierul `/etc/services` (lista serviciilor de
-    rețea și a porturilor lor). Din primul terminal, aflați ce fișiere are deschise `less`, linia lui de comandă și
-    directorul lui curent. Ieșiți din `less`.
+37. **Ce citește less**:
+    1. în al doilea terminal, deschideți cu `less` fișierul `/etc/services` (lista serviciilor de rețea și a porturilor
+       lor);
+    2. în primul terminal, aflați PID-ul lui `less`;
+    3. folosind `/proc`, listați fișierele pe care `less` le are deschise și afișați-i linia de comandă și directorul
+       curent;
+    4. ieșiți din `less` cu <kbd>q</kbd>.
 
     **Verificare:** pe lângă `0`, `1` și `2`, `less` are deschis `/etc/services`, la descriptorul de fișier `3` sau la
     unul mai mare. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
-38. **Unde e celălalt shell**: În al doilea terminal, mergeți în `~/lab03/Music` și afișați `$$`. Din primul
-    terminal, aflați directorul curent al acelui shell și valoarea variabilei lui `HOME` din `environ` (deschideți
-    fișierul cu `less`: octeții `\0` dintre variabile apar ca `^@`).
+38. **Unde e celălalt shell**:
+    1. în al doilea terminal, mergeți în `~/lab03/Music` și afișați PID-ul shell-ului;
+    2. în primul terminal, aflați folosind `/proc` directorul curent al acelui shell;
+    3. deschideți cu `less` fișierul lui `environ` și găsiți valoarea variabilei `HOME` (octeții `\0` dintre variabile
+       apar ca `^@`; căutați cu <kbd>/</kbd>).
 
-    **Verificare:** `cwd` indică `/home/student/lab03/Music`, iar `environ` conține linia `HOME=/home/student`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
+    **Verificare:** `cwd` indică `/home/student/lab03/Music`, iar `environ` conține `HOME=/home/student`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
-39. **Salvați top**: Salvați lista lui `top` în `Reports/top.txt`, o singură dată și doar primele ei 15 linii.
+39. **Salvați top**:
+    1. rulați `top` astfel încât să-și afișeze lista o **singură** dată, fără s-o actualizeze (vedeți sfatul din
+       [top](#top));
+    2. în aceeași linie de comandă, păstrați doar primele 15 linii ale ieșirii lui și salvați-le în `Reports/top.txt`.
 
     **Verificare:** `Reports/top.txt` are 15 linii și începe cu rezumatul lui `top`. <small>→ [top](#top) · [Pipe-uri](#pipes-)</small>
 
-40. **htop în detaliu**: În `htop`, ascundeți firele de execuție, afișați doar procesele voastre, sortați-le după
-    memorie și afișați fișierele deschise ale `bash`-ului vostru. Apoi adăugați coloana `PPID` cu <kbd>F2</kbd>.
+40. **htop în detaliu**: În `htop`:
+    1. ascundeți firele de execuție;
+    2. afișați doar procesele voastre;
+    3. sortați-le după memorie;
+    4. alegeți-vă `bash`-ul și afișați-i fișierele deschise;
+    5. adăugați coloana `PPID`, din meniul de configurare (<kbd>F2</kbd>).
 
     **Verificare:** fișierele deschise ale lui `bash` sunt aceleași ca în `ls -l /proc/$$/fd`, iar `PPID`-ul lui
     `bash` este PID-ul terminalului. <small>→ [htop](#htop)</small>
 
-41. **Ale cui sunt procesele**: Numărați procesele lui `root` și procesele voastre, cu `ps` și `wc -l` (căutați în
-    `man ps` opțiunea care selectează procesele unui utilizator). Folosiți `--no-headers`, altfel `wc -l` numără și
-    prima linie afișată de `ps`, cea cu numele coloanelor.
+41. **Ale cui sunt procesele**:
+    1. numărați procesele lui `root` cu `ps`, `wc -l` și un pipe (căutați în `man ps` opțiunea care selectează procesele
+       unui utilizator și folosiți `--no-headers`, ca `wc -l` să nu numere și linia cu numele coloanelor);
+    2. numărați în același fel procesele voastre;
+    3. numărați-le din nou, fără `--no-headers`.
 
     **Verificare:** `root` are mult mai multe procese decât `student`: cea mai mare parte a sistemului rulează ca
     `root`. Fără `--no-headers`, fiecare număr este mai mare cu unu. <small>→ [Listarea proceselor](#listing-processes-ps) · [Pipe-uri](#pipes-)</small>
 
-42. **Cine rulează procesele**: Cu `ps`, `sort`, `uniq` și un pipe, afișați fiecare utilizator care rulează
-    procese, cu numărul proceselor lui în față, primul fiind utilizatorul cu cele mai multe procese. Afișați doar
-    coloana utilizatorului, fără linia de antet.
+42. **Cine rulează procesele**:
+    1. listați cu `ps` toate procesele sistemului, afișând doar coloana utilizatorului, fără linia de antet;
+    2. în aceeași linie de comandă, cu `sort` și `uniq`, afișați fiecare utilizator o singură dată, cu numărul
+       proceselor lui în față, primul fiind utilizatorul cu cele mai multe procese.
 
-    **Verificare:** prima linie este `root`, cu același număr ca în exercițiul anterior, iar `student` se află printre
-    primele linii; numerele adunate dau același rezultat ca `ps -e --no-headers | wc -l`. <small>→ [Listarea proceselor](#listing-processes-ps) · [Linii repetate](#repeated-lines-uniq)</small>
+    **Verificare:** prima linie este `root`, cu același număr ca `ps -u root --no-headers | wc -l`, iar `student` se
+    află printre primele linii; numerele adunate dau același rezultat ca `ps -e --no-headers | wc -l`. <small>→ [Listarea proceselor](#listing-processes-ps) · [Linii repetate](#repeated-lines-uniq)</small>
 
-43. **Fișiere mari**: Creați `Archives/zeros.bin` cu 10 MB din `/dev/zero` și `Archives/random.bin` cu 10 MB din
-    `/dev/urandom` (căutați în `man head` opțiunea care afișează un număr de octeți în loc de linii). Comprimați-le pe
-    amândouă cu `xz`, păstrând originalele, și comparați dimensiunile.
+43. **Fișiere mari**:
+    1. creați `Archives/zeros.bin` cu primii 10 MB din `/dev/zero`, folosind `head` (căutați în `man head` opțiunea care
+       afișează un număr de octeți în loc de linii);
+    2. creați în același fel `Archives/random.bin` cu primii 10 MB din `/dev/urandom`;
+    3. comprimați ambele fișiere cu `xz`, păstrând originalele;
+    4. comparați cu `ls -lh` dimensiunile celor patru fișiere;
+    5. ștergeți cele patru fișiere: sunt mari.
 
     **Verificare:** `zeros.bin.xz` are câțiva KB, iar `random.bin.xz` are tot în jur de 10 MB: datele aleatoare nu se
     pot comprima. <small>→ [Fișiere speciale](#special-files) · [Compresia unui singur fișier](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-44. **Compresie într-un alt fișier**: Comprimați `/etc/services` cu fiecare dintre `gzip`, `bzip2` și `xz` în
-    `Archives/services.gz`, `Archives/services.bz2` și `Archives/services.xz`, **fără** să-l copiați mai întâi și fără
-    să modificați `/etc` (folosiți `-c` și o redirectare). Puneți `time` în fața fiecărei comenzi și comparați.
+44. **Compresie într-un alt fișier**: Comprimați `/etc/services` (lista serviciilor de rețea) fără să-l copiați și
+    fără să modificați `/etc`: folosiți opțiunea `-c`, care scrie datele comprimate la ieșirea standard, și o
+    redirectare.
+    1. comprimați-l cu `gzip` în `Archives/services.gz`;
+    2. comprimați-l cu `bzip2` în `Archives/services.bz2`;
+    3. comprimați-l cu `xz` în `Archives/services.xz`;
+    4. puneți `time` în fața fiecăreia dintre cele trei comenzi și comparați timpii și dimensiunile fișierelor.
 
     **Verificare:** cele trei fișiere există, `/etc/services` a rămas neschimbat, iar `xz` creează cel mai mic fișier
     și durează cel mai mult. <small>→ [Compresia unui singur fișier](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-45. **Citire fără extragere**: Afișați conținutul lui `Archives/services.gz` și numărați liniile lui
-    `Archives/services.xz` fără să creați niciun fișier nou (căutați în `man gzip` și `man xz` comenzile care afișează
-    conținutul unui fișier comprimat). Apoi afișați în același fel primele 20 de linii ale paginii de manual
-    comprimate `/usr/share/man/man1/ls.1.gz`.
+45. **Citire fără extragere**: Căutați în `man gzip` și `man xz` comenzile care afișează conținutul unui fișier
+    comprimat, fără să creeze niciun fișier nou.
+    1. comprimați `/etc/services` cu `gzip -c` în `Archives/services.gz` și cu `xz -c` în `Archives/services.xz`;
+    2. afișați conținutul lui `Archives/services.gz`;
+    3. numărați liniile lui `Archives/services.xz`;
+    4. afișați primele 20 de linii ale paginii de manual comprimate `/usr/share/man/man1/ls.1.gz`.
 
     **Verificare:** numărul de linii este același cu `wc -l < /etc/services`; pagina de manual este un fișier text cu
     comenzi de formatare, adică linii care încep cu `.`, ca `.TH` și `.SH`. <small>→ [Compresia unui singur fișier](#compressing-one-file-gzip-bzip2-and-xz)</small>
 
-46. **Compresia aleasă după nume**: Creați `Archives/photos.tar.bz2` cu `Photos`, lăsându-l pe `tar` să aleagă
-    programul de compresie după extensie (căutați în `man tar` opțiunea care alege programul de compresie după numele
-    arhivei).
+46. **Compresia aleasă după nume**:
+    1. creați `Archives/photos.tar.bz2` cu `Photos`, fără să-i spuneți lui `tar` programul de compresie: lăsați-l să-l
+       aleagă după extensia arhivei (căutați în `man tar` această opțiune);
+    2. aflați cu `file` tipul arhivei.
 
     **Verificare:** `file Archives/photos.tar.bz2` afișează `bzip2 compressed data`. <small>→ [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-47. **Fără calea completă**: Creați `/tmp/doc.tar.gz` cu directorul `/usr/share/doc/bash`, astfel încât numele din
-    arhivă să înceapă cu `bash/`, nu cu `usr/share/doc/` (căutați în `man tar` opțiunea care schimbă directorul
-    înainte de adăugarea fișierelor).
+47. **Fără calea completă**:
+    1. creați `/tmp/doc.tar.gz` cu directorul `/usr/share/doc/bash` (documentația lui `bash`), astfel încât numele din
+       arhivă să înceapă cu `bash/`, nu cu `usr/share/doc/` (căutați în `man tar` opțiunea care schimbă directorul
+       înainte de adăugarea fișierelor);
+    2. listați conținutul arhivei.
 
     **Verificare:** `tar tf /tmp/doc.tar.gz` listează nume care încep cu `bash/`. <small>→ [Arhive](#archives-tar)</small>
 
 ### 📝 Provocări {/* #challenges */}
 
-48. **Numărare cu /proc**: Numărați directoarele din `/proc` al căror nume este un număr și comparați rezultatul cu
-    numărul de procese afișate de `ps -e`.
+48. **Numărare cu /proc**:
+    1. numărați directoarele din `/proc` al căror nume este un număr;
+    2. numărați procesele sistemului cu `ps -e --no-headers` și `wc -l`;
+    3. comparați cele două numere.
 
     **Verificare:** cele două numere sunt aproape egale: fiecare proces este un director în `/proc`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
-49. **Shell-urile utilizatorilor**: Fiecare linie din `/etc/passwd` se termină cu shell-ul unui utilizator, după
-    ultimul `:`. Afișați fiecare shell folosit în `/etc/passwd`, cu numărul de utilizatori care îl au, cel mai folosit
-    primul (căutați în `man cut` opțiunile care aleg separatorul și păstrează doar un câmp din fiecare linie). Apoi
-    afișați doar shell-urile folosite de mai mult de un utilizator.
+49. **Shell-urile utilizatorilor**: Fiecare linie din `/etc/passwd` are 7 câmpuri separate prin `:`, iar ultimul este
+    shell-ul utilizatorului.
+    1. afișați doar shell-ul fiecărui utilizator (căutați în `man cut` opțiunile care aleg separatorul și păstrează doar
+       un câmp din fiecare linie);
+    2. în aceeași linie de comandă, afișați fiecare shell o singură dată, cu numărul de utilizatori care îl au, cel mai
+       folosit primul;
+    3. afișați doar shell-urile folosite de mai mult de un utilizator.
 
     **Verificare:** prima linie este `/usr/sbin/nologin`, cu cei mai mulți utilizatori; `/sbin/nologin` este același
     program (`/sbin` este o legătură către `usr/sbin`), dar `uniq` compară doar textul, așa că îl numără pe o linie
     separată; `/bin/bash` este folosit de `root` și `student`; numerele adunate dau același rezultat ca
     `wc -l < /etc/passwd`. <small>→ [Linii repetate](#repeated-lines-uniq) · [Pipe-uri](#pipes-)</small>
 
-50. **Cine ține fișierul deschis**: În al doilea terminal, deschideți cu `less` fișierul `/etc/hosts` (numele
-    calculatoarelor pe care sistemul le cunoaște fără să întrebe rețeaua). Din primul terminal, aflați PID-ul
-    procesului care are deschis `/etc/hosts`, **fără** să folosiți `pgrep` sau `ps`: căutați cu `find` printre
-    descriptorii de fișier ai tuturor proceselor (căutați în `man find` testul care verifică încotro indică o legătură
-    simbolică). Ieșiți din `less`.
+50. **Cine ține fișierul deschis**:
+    1. în al doilea terminal, deschideți cu `less` fișierul `/etc/hosts` (numele calculatoarelor pe care sistemul le
+       cunoaște fără să întrebe rețeaua);
+    2. în primul terminal, găsiți descriptorul de fișier care indică `/etc/hosts`, **fără** să folosiți `pgrep` sau
+       `ps`: căutați cu `find` în `/proc/*/fd` (căutați în `man find` testul care verifică încotro indică o legătură
+       simbolică) și aruncați erorile `Permission denied` pentru procesele altor utilizatori;
+    3. verificați cu `ps -p` că numărul din calea afișată de `find` este PID-ul lui `less`;
+    4. ieșiți din `less` cu <kbd>q</kbd>.
 
-    **Verificare:** `find` afișează o cale ca `/proc/3402/fd/4`, iar `3402` este PID-ul lui `less`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
+    **Verificare:** `find` afișează o cale ca `/proc/3402/fd/4`, iar `ps -p 3402` afișează `less`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
-51. **Copie de rezervă a configurației**: Creați `/tmp/etc.tar.gz` cu întregul director `/etc` (configurația
-    sistemului), **mai puțin** `/etc/pki` (certificatele), și salvați erorile lui `tar` în `Reports/etc-errors.txt`
-    (căutați în `man tar` opțiunea care lasă fișiere în afara arhivei). Numărați fișierele din arhivă și erorile.
+51. **Copie de rezervă a configurației**:
+    1. creați `/tmp/etc.tar.gz` cu întregul director `/etc` (configurația sistemului), **mai puțin** `/etc/pki`
+       (certificatele), și salvați erorile lui `tar` în `Reports/etc-errors.txt` (căutați în `man tar` opțiunea care
+       lasă fișiere în afara arhivei);
+    2. numărați fișierele din arhivă;
+    3. numărați erorile din `Reports/etc-errors.txt`.
 
     **Verificare:** `tar tf /tmp/etc.tar.gz` listează `etc/passwd` și `etc/os-release`, dar nimic din `etc/pki`;
     `Reports/etc-errors.txt` conține câte un `Permission denied` pentru fiecare fișier pe care doar `root` îl poate
@@ -1227,25 +1362,35 @@ numbers.txt` afișează `7` și `20000`. <small>→ [Navigarea](/docs/labs/02#na
     eroare, `tar` doar vă anunță că salvează `/etc/passwd` ca `etc/passwd`, ca arhiva să poată fi extrasă oriunde, nu
     doar peste `/etc`. Nu o numărați printre erori. <small>→ [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-52. **Fără primul director**: Extrageți `Archives/all.tar.gz` în `/tmp/flat` astfel încât fișierele din `Music` și
-    `Photos` să ajungă direct în `/tmp/flat`, fără directoarele lor (căutați în `man tar` opțiunea care elimină
-    directoarele de la începutul numelor).
+52. **Fără primul director**:
+    1. creați `Archives/all.tar.gz` cu `Music`, `Photos` și `numbers.txt`;
+    2. creați directorul `/tmp/flat`;
+    3. extrageți `Archives/all.tar.gz` în `/tmp/flat` astfel încât fișierele din `Music` și `Photos` să ajungă direct în
+       `/tmp/flat`, fără directoarele lor (căutați în `man tar` opțiunea care elimină directoarele de la începutul
+       numelor).
 
     **Verificare:** `tree /tmp/flat` afișează cele cinci fișiere goale direct sub `/tmp/flat`, dar **nu** și
     `numbers.txt`. `--strip-components=1` elimină prima parte a fiecărui nume: `Music/jazz.mp3` devine `jazz.mp3`,
     însă `numbers.txt` se află în directorul de sus al arhivei, așa că din numele lui nu mai rămâne nimic și
     `tar` nu îl extrage (la fel se întâmplă cu numele `Music/` și `Photos/`). <small>→ [Arhive](#archives-tar)</small>
 
-53. **Arhive printr-un pipe**: Creați `/tmp/music.tar.gz` printr-un pipe: `tar` scrie arhiva la ieșirea standard,
-    iar `gzip` o comprimă (un fișier arhivă numit `-` înseamnă ieșirea standard). Apoi extrageți-o în `/tmp/piped` cu
-    `gunzip -c` și `tar`, într-un alt pipe.
+53. **Arhive printr-un pipe**:
+    1. creați `/tmp/music.tar.gz` cu directorul `Music`, într-o singură linie de comandă: `tar` scrie arhiva,
+       **necomprimată**, la ieșirea standard (un fișier arhivă numit `-` înseamnă ieșirea standard), `gzip` o comprimă
+       într-un pipe, iar o redirectare o salvează;
+    2. creați directorul `/tmp/piped`;
+    3. extrageți `/tmp/music.tar.gz` în `/tmp/piped` printr-un alt pipe: `gunzip -c` o decomprimă la ieșirea standard,
+       iar `tar` citește arhiva de la intrarea standard (un fișier arhivă numit `-` înseamnă intrarea standard).
 
     **Verificare:** `file /tmp/music.tar.gz` afișează `gzip compressed data`, iar `tree /tmp/piped` afișează `Music`. <small>→ [Pipe-uri](#pipes-) · [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
-54. **Curățenie**: Ștergeți, cu o **singură** comandă `rm`, toate directoarele și arhivele pe care le-ați creat în
-    `/tmp` și fișierele mari din exercițiul 43.
+54. **Curățenie**: Ștergeți cu o **singură** comandă `rm` tot ce creează exercițiile în `/tmp`, fără nicio eroare
+    pentru ce nu ați creat (căutați în `man rm`):
+    1. directoarele `/tmp/extract`, `/tmp/single`, `/tmp/gz`, `/tmp/bz2`, `/tmp/xz`, `/tmp/unzipped`, `/tmp/fruit`,
+       `/tmp/flat` și `/tmp/piped`;
+    2. fișierele `/tmp/out.txt`, `/tmp/doc.tar.gz`, `/tmp/etc.tar.gz` și `/tmp/music.tar.gz`.
 
-    **Verificare:** `ls /tmp` nu le mai afișează, iar `ls -l ~/lab03/Archives` nu afișează niciun fișier `.bin`. <small>→ [Gestionarea fișierelor](/docs/labs/02#managing-files)</small>
+    **Verificare:** `rm` nu afișează nimic, iar `ls /tmp` nu le mai afișează. <small>→ [Gestionarea fișierelor](/docs/labs/02#managing-files)</small>
 
 ## Întrebări de recapitulare {/* #wrap-up-questions */}
 

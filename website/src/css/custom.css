@@ -48,3 +48,6 @@
 [data-theme='dark'] .language-shell-session .token.function, [data-theme='dark'] .language-bash .token.function { color: #8be9fd !important; }
 [data-theme='dark'] .language-shell-session .token.parameter, [data-theme='dark'] .language-bash .token.parameter { color: #ffb86c !important; }
 [data-theme='dark'] .language-shell-session .token.output { color: #bfbfbf !important; }
+
+/* Steps inside a numbered exercise are lettered: a., b., c. */
+.markdown ol ol { list-style-type: lower-alpha; }
