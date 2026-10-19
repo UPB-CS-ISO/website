@@ -21,14 +21,14 @@
 // $variables) must come before the generic word fallback so it doesn't
 // swallow them. The fallback excludes "$" so a $VAR embedded mid-token
 // (e.g. the second half of "bin:$PATH") still gets tokenized on its own.
-#let shell-token-pattern = regex("\"[^\"]*\"|'[^']*'|\\$\\{[^}]*\\}|\\$[A-Za-z_][A-Za-z0-9_]*|[A-Za-z_][A-Za-z0-9_]*=\"[^\"]*\"|[A-Za-z_][A-Za-z0-9_]*='[^']*'|[A-Za-z_][A-Za-z0-9_]*=[^ \t$]*|\\|\\||&&|[|;&<>]+|#.*|--?[A-Za-z0-9][A-Za-z0-9._=-]*|[ \t]+|\\$|[^ \t$]+")
+#let shell-token-pattern = regex("\\\\.|\"[^\"]*\"|'[^']*'|\\$\\{[^}]*\\}|\\$[A-Za-z_][A-Za-z0-9_]*|[A-Za-z_][A-Za-z0-9_]*=\"[^\"]*\"|[A-Za-z_][A-Za-z0-9_]*='[^']*'|[A-Za-z_][A-Za-z0-9_]*=[^ \t$]*|\\|\\||&&|[|;&<>]+|#.*|--?[A-Za-z0-9][A-Za-z0-9._=-]*|[ \t]+|\\$|[^ \t$\\\\]+|\\\\")
 
 // Tokens that chain another command onto the line: after one of these, the
 // next word is a new command name (and gets the bold "command" color)
 // rather than a plain argument.
 #let shell-command-separators = ("&&", "||", ";", "|", "&")
 // Redirections don't start a new command, so they don't reset that state.
-#let shell-redirections = (">>", ">", "<<", "<")
+#let shell-redirections = (">>", ">", "<<", "<", ">&", "&>", "&>>", "<&", ">|")
 
 // Matches a leading environment-variable assignment/attribution, e.g. the
 // `FOO=` in `FOO=bar ./run.sh` or `export FOO=bar`.
@@ -43,6 +43,9 @@
   // true at the start of the line (unless continuing one) and reset after
   // &&, ||, ;, | or &.
   let expect-command = start-expect-command
+  // true right after a redirection: the next word is a file name (or a
+  // file descriptor), not a command, even at the start of the line
+  let after-redirect = false
   let in-comment = false
   let out = ()
   for m in tokens {
@@ -54,15 +57,30 @@
     } else if t.starts-with("#") {
       in-comment = true
       out.push(text(fill: shell-comment-color, style: "italic", t))
+    } else if t.len() == 2 and t.starts-with("\\") {
+      // an escaped character, e.g. `\$` or `\ `: the special meaning is gone
+      out.push(text(t))
+      if expect-command { expect-command = false }
     } else if t == "\\" {
       // trailing line-continuation marker
       out.push(text(fill: shell-op-color, weight: "bold", t))
     } else if t in shell-command-separators {
       out.push(text(fill: shell-op-color, weight: "bold", t))
       expect-command = true
-    } else if t in shell-redirections {
+    } else if t in shell-redirections or t.match(regex("^[0-9]+(>>|>|<|>&|<&)$")) != none {
       out.push(text(fill: shell-op-color, weight: "bold", t))
-    } else if t.match(shell-assignment-pattern) != none {
+      after-redirect = true
+    } else if after-redirect {
+      // the target of the redirection, e.g. the `list.txt` of `> list.txt ls`
+      if t.starts-with("\"") or t.starts-with("'") {
+        out.push(text(fill: shell-string-color, t))
+      } else if t.starts-with("$") {
+        out.push(text(fill: shell-var-color, t))
+      } else {
+        out.push(text(t))
+      }
+      after-redirect = false
+    } else if expect-command and t.match(shell-assignment-pattern) != none {
       // Env var attribution: color the name, leave the value on its own
       // (quoted values still get the string color).
       let eq = t.match(regex("=")).start
@@ -133,8 +151,12 @@
 // rule laid on top. It must not emit a new raw(...) inside this show rule:
 // the default `raw` text size (0.8em) would then apply twice (0.64em) and
 // fenced blocks would be smaller than #reveal-terminal blocks.
+// The lines are always aligned left: diatypst draws code blocks with
+// `width: 100%`, so inside e.g. #align(center)[...] the text would
+// otherwise follow the surrounding alignment and end up centered.
 #let render-terminal(it) = {
   let src-lines = it.text.split("\n")
+  set align(left)
   show raw.line: line => {
     let is-cont = line.number > 1 and shell-continues(src-lines.at(line.number - 2))
     render-terminal-line(line.text, is-continuation: is-cont)
@@ -201,6 +223,8 @@
   })
 
   let render-window(from, to) = {
+    // always aligned left, like render-terminal
+    set align(left)
     show raw.line: line => {
       if line.number <= from {
         before-action(line)

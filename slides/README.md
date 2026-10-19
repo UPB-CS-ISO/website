@@ -105,7 +105,8 @@ numbered and drive the dot-section progress indicator.
 
 **Terminal sessions** — use a `terminal` fenced block. Lines starting with
 `$ ` are commands (prompt + syntax highlighting), a trailing `\` continues a
-command on the next line, everything else is shown as output.
+command on the next line, everything else is shown as output. The lines are
+always aligned left, even inside `#align(center)[...]`.
 
 ````typst
 ```terminal
