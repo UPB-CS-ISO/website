@@ -931,16 +931,16 @@ să le modificați.
    1. cu o **singură** comandă `ls -a`, listați `/etc/skel` (fișierele copiate în directorul fiecărui utilizator nou)
       și `/root` (directorul administratorului), astfel încât lista să ajungă în `Reports/list.txt`, iar eroarea în
       `Reports/errors.txt`;
-   2. afișați cele două fișiere.
+   2. afișează conținutul celor două fișiere.
 
-   **Verificare:** când rulați `ls`, pe ecran nu apare nimic; `Reports/list.txt` conține `.bashrc` și
-   `.bash_profile`, iar `Reports/errors.txt` conține un `Permission denied` pentru `/root`. <small>→ [Erorile](#errors-2-and-2)</small>
+  **Verificare:** nu apare nimic pe ecran când rulați comanda `ls`; fișierul `Reports/list.txt` conține, printre altele, fișierele `.bashrc` și
+   `.bash_profile`, iar fișierul `Reports/errors.txt` conține mesajul „Permisiune refuzată” pentru `/root`. <small>→ [Erorile](#errors-2-and-2)</small>
 
 5. **Adăugarea erorilor**:
    1. rulați `ls /root` și salvați eroarea în `Reports/errors.txt`, suprascriind fișierul;
    2. afișați cu `cat` fișierul `/etc/shadow` (fișierul cu parolele utilizatorilor) și **adăugați** eroarea în
       `Reports/errors.txt`;
-   3. afișați `Reports/errors.txt`.
+   3. afișează conținutul fișierului `Reports/errors.txt`.
 
    **Verificare:** `Reports/errors.txt` are două linii, una pentru `/root` și una pentru `/etc/shadow`: doar `root` le
    poate citi. <small>→ [Erorile](#errors-2-and-2)</small>
@@ -988,8 +988,8 @@ să le modificați.
 
 11. **Pipe-uri**:
     1. numărați programele din `/usr/bin` cu `ls`, `wc -l` și un pipe;
-    2. numărați în același fel intrările din `/etc` (configurația sistemului);
-    3. afișați lista lungă a lui `/etc` (`ls -l`) câte un ecran pe rând, cu `less`.
+    2. numărați fișierele și directoarele din `/etc` (configurația sistemului) afișate de comanda `ls`, în același mod;
+    3. afișați lista detaliată a conținutului din `/etc` (`ls -l`) pe un singur ecran odată, folosind `less`.
 
     **Verificare:** sunt peste o mie de programe și câteva sute de intrări în `/etc`; `less` se oprește după fiecare
     ecran, iar din el ieșiți cu <kbd>q</kbd>. <small>→ [Pipe-uri](#pipes-)</small>
@@ -1009,9 +1009,8 @@ să le modificați.
     3. afișați fiecare fruct cu numărul lui de apariții, cel mai frecvent primul;
     4. afișați doar fructele care apar exact o dată (căutați în `man uniq`).
 
-    **Verificare:** `uniq fruits.txt` afișează aceleași 7 linii, pentru că nicio linie nu este identică cu cea de
-    deasupra ei; după `sort` obțineți 4 fructe, prima linie a numărătorii este `3 apple`, iar exact o dată apar doar
-    `cherry` și `kiwi`. <small>→ [Linii repetate](#repeated-lines-uniq)</small>
+    **Verificare:** comanda `uniq fruits.txt` afișează aceleași 7 rânduri; după comanda `sort`, se obțin 4 fructe, `3 apple` fiind primul rând
+        din listă, iar doar `cherry` și `kiwi` apar exact o singură dată. <small>→ [Linii repetate](#repeated-lines-uniq)</small>
 
 14. **Zerouri și octeți aleatori**:
     1. afișați în hexazecimal primii 16 octeți din `/dev/zero`, cu `head` și `xxd`;
@@ -1025,8 +1024,9 @@ să le modificați.
 15. **Shell-ul meu**:
     1. afișați PID-ul shell-ului vostru;
     2. listați procesele terminalului cu toate coloanele lui `-f`;
-    3. afișați cu `grep` doar liniile `Name`, `State`, `Pid` și `PPid` din fișierul `/proc/<PID>/status` al
-       shell-ului vostru (puneți PID-ul shell-ului în locul lui `<PID>`).
+    3. afișați doar liniile `Name`, `State`, `Pid` și `PPid` din fișierul `/proc/$$/status` al shell-ului vostru: folosiți `grep`
+       orice text după opțiunea `-e` (`grep -e Name -e State ...`) și căutați în `man grep` opțiunea care potrivește
+       numai cuvinte întregi, astfel încât `Pid` să nu se potrivească și cu `TracerPid`..
 
     **Verificare:** `ps` și `status` arată același PID și același PPID pentru `bash`, iar starea lui este `S`. <small>→ [Listarea proceselor](#listing-processes-ps) · [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
@@ -1038,8 +1038,8 @@ să le modificați.
     5. aflați-i programul și directorul curent, din legăturile `/proc/<PID>/exe` și `/proc/<PID>/cwd`;
     6. opriți `sleep` cu <kbd>Ctrl</kbd>+<kbd>C</kbd> în al doilea terminal.
 
-    **Verificare:** starea este `S`, linia de comandă este `sleep^@1000^@`, programul este `/usr/bin/sleep`, iar
-    directorul curent este cel al celui de-al doilea terminal. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
+    *Verificați:** starea este `S`, linia de comandă este `sleep^@1000^@`, programul este `/usr/bin/sleep`, iar directorul
+        curent este cel în care vă aflați în momentul în care ați rulat `sleep` (rulați `pwd` în al doilea terminal pentru a compara). <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
 17. **Fișiere deschise**:
     1. listați tabela de descriptori de fișier a shell-ului vostru, din `/proc/$$/fd`;
@@ -1047,8 +1047,8 @@ să le modificați.
     3. în primul terminal, aflați PID-ul lui `sleep` și listați-i tabela de descriptori de fișier;
     4. opriți `sleep` cu <kbd>Ctrl</kbd>+<kbd>C</kbd> și încercați să-i listați din nou tabela.
 
-    **Verificare:** `0`, `1` și `2` indică un fișier `/dev/pts/...`, altul pentru fiecare terminal; după
-    <kbd>Ctrl</kbd>+<kbd>C</kbd>, `/proc/<PID>` nu mai există. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
+**Verificare:** `0`, `1` și `2` indică un fișier din `/dev/pts/...`, câte unul diferit pentru fiecare terminal (`bash` menține, de asemenea, `255` deschis pe același terminal, pentru uz propriu); după <kbd>Ctrl</kbd>+<kbd>C</kbd>, `/proc/<PID>` nu mai
+    există. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
 18. **Sistemul**: Aflați următoarele despre calculatorul vostru folosind doar fișierele din `/proc`:
     1. modelul procesorului: liniile `model name` din `/proc/cpuinfo` (folosiți `grep`);
@@ -1062,7 +1062,7 @@ să le modificați.
 
 19. **top și htop**:
     1. porniți `top`, sortați procesele după memorie, apoi după procesor, și ieșiți;
-    2. porniți `htop`, găsiți-vă `bash`-ul printr-o căutare, afișați procesele sub formă de arbore și ieșiți.
+    2. porniți `htop`, căutați `bash` și apăsați <kbd>F3</kbd> până când linia selectată este cea a procesului `bash` din primul terminal (PID-ul afișat de comanda `echo $$`), afișați procesele sub formă de arbore și ieșiți.
 
     **Verificare:** `top` afișează linia `Tasks`, cu numărul de procese din fiecare stare; în arborele din `htop`,
     `bash`-ul vostru se află sub terminal. <small>→ [top](#top) · [htop](#htop)</small>
@@ -1119,7 +1119,7 @@ să le modificați.
 
 25. **Extragere**:
     1. creați `Archives/music.tar` cu `Music`, `Photos` și `fruits.txt` (dacă există deja, `tar` o suprascrie);
-    2. creați directorul `/tmp/extract`;
+    2. creați directorul `/tmp/extract` cu comanda `mkdir -p`, astfel încât să nu apară nicio eroare dacă acesta există deja;
     3. extrageți `Archives/music.tar` în `/tmp/extract`.
 
     **Verificare:** `tree /tmp/extract` afișează `Music`, `Photos` și `fruits.txt`, cu aceleași fișiere ca în
@@ -1127,7 +1127,7 @@ să le modificați.
 
 26. **Un singur fișier**:
     1. creați `Archives/music.tar` cu `Music`, `Photos` și `fruits.txt`;
-    2. creați directorul `/tmp/single`;
+    2. creați directorul `/tmp/single` cu comanda `mkdir -p`, astfel încât să nu apară nicio eroare dacă acesta există deja;
     3. extrageți în `/tmp/single` doar `Photos/dog.jpg` din `Archives/music.tar`.
 
     **Verificare:** `tree /tmp/single` afișează `Photos/dog.jpg` și nimic altceva. <small>→ [Arhive](#archives-tar)</small>
@@ -1191,8 +1191,8 @@ să le modificați.
     2. rulați `ls /etc/skel /root 2>&1 > Reports/b.txt` și afișați `Reports/b.txt`;
     3. aflați de ce eroarea ajunge în `a.txt`, dar nu și în `b.txt`.
 
-    **Verificare:** a doua comandă a afișat eroarea pe ecran. Shell-ul citește redirectările de la stânga la dreapta,
-    iar `2>&1` trimite `2` acolo unde merge `1` **în acel moment**. <small>→ [Redirectări](#redirects)</small>
+    **Verificare:** a doua comandă a afișat eroarea pe ecran, iar fișierul `Reports/b.txt` conține doar lista din
+       `/etc/skel`. Indiciu: shell-ul citește redirecționările de la stânga la dreapta. <small>→ [Redirectări](#redirects)</small>
 
 34. **Vedeți și salvați**: Într-o **singură** linie de comandă, salvați lista programelor din `/usr/bin` în
     `Reports/programs.txt` **și** numărați-le (căutați în `man tee` comanda care își scrie intrarea și într-un fișier,
@@ -1231,8 +1231,9 @@ să le modificați.
 38. **Unde e celălalt shell**:
     1. în al doilea terminal, mergeți în `~/lab03/Music` și afișați PID-ul shell-ului;
     2. în primul terminal, aflați folosind `/proc` directorul curent al acelui shell;
-    3. deschideți cu `less` fișierul lui `environ` și găsiți valoarea variabilei `HOME` (octeții `\0` dintre variabile
-       apar ca `^@`; căutați cu <kbd>/</kbd>).
+    3. deschideți fișierul `environ` cu `less` și găsiți valoarea variabilei `HOME`: `less` vă avertizează că ar putea fi un
+           fișier binar, din cauza octeților `\0` dintre variabile, așa că răspundeți <kbd>y</kbd>; octeții `\0` apar
+           sub forma `^@`, iar căutarea se face cu <kbd>/</kbd>.
 
     **Verificare:** `cwd` indică `/home/student/lab03/Music`, iar `environ` conține `HOME=/home/student`. <small>→ [Sistemul de fișiere `/proc`](#the-proc-file-system)</small>
 
@@ -1247,8 +1248,10 @@ să le modificați.
     1. ascundeți firele de execuție;
     2. afișați doar procesele voastre;
     3. sortați-le după memorie;
-    4. alegeți-vă `bash`-ul și afișați-i fișierele deschise;
-    5. adăugați coloana `PPID`, din meniul de configurare (<kbd>F2</kbd>).
+    4. alegeți `bash`-ul din primul terminal (PID-ul afișat de `echo $$`) și afișați fișierele deschise ale acestuia (dacă `htop` indică
+               că nu poate rula `lsof`, instalați-l cu `sudo dnf install lsof`);
+    5. adăugați coloana `PPID`: apăsați <kbd>F2</kbd>, accesați **Screens**, selectați `PPID` din **Available Columns**, apăsați
+               <kbd>Enter</kbd> pentru a o adăuga, apoi ieșiți din meniu cu <kbd>F10</kbd>.
 
     **Verificare:** fișierele deschise ale lui `bash` sunt aceleași ca în `ls -l /proc/$$/fd`, iar `PPID`-ul lui
     `bash` este PID-ul terminalului. <small>→ [htop](#htop)</small>
@@ -1267,8 +1270,7 @@ să le modificați.
     2. în aceeași linie de comandă, cu `sort` și `uniq`, afișați fiecare utilizator o singură dată, cu numărul
        proceselor lui în față, primul fiind utilizatorul cu cele mai multe procese.
 
-    **Verificare:** prima linie este `root`, cu același număr ca `ps -u root --no-headers | wc -l`, iar `student` se
-    află printre primele linii; numerele adunate dau același rezultat ca `ps -e --no-headers | wc -l`. <small>→ [Listarea proceselor](#listing-processes-ps) · [Linii repetate](#repeated-lines-uniq)</small>
+    **Verificare:** prima linie este `root`, cu același număr ca în `ps -u root --no-headers | wc -l`, iar `student` se află printre primele linii; suma numerelor este aceeași cu cea din `ps -e --no-headers | wc -l`. Unii utilizatori pot apărea sub formă de numere în loc de nume: `ps` afișează UID-ul atunci când numele este prea lung pentru coloană. <small>→ [Listarea proceselor](#listing-processes-ps) · [Linii repetate](#repeated-lines-uniq)</small>
 
 43. **Fișiere mari**:
     1. creați `Archives/zeros.bin` cu primii 10 MB din `/dev/zero`, folosind `head` (căutați în `man head` opțiunea care
@@ -1295,7 +1297,7 @@ să le modificați.
 45. **Citire fără extragere**: Căutați în `man gzip` și `man xz` comenzile care afișează conținutul unui fișier
     comprimat, fără să creeze niciun fișier nou.
     1. comprimați `/etc/services` cu `gzip -c` în `Archives/services.gz` și cu `xz -c` în `Archives/services.xz`;
-    2. afișați conținutul lui `Archives/services.gz`;
+    2. afișați conținutul lui `Archives/services.gz` pe câte un ecran pe rând, cu `less`;
     3. numărați liniile lui `Archives/services.xz`;
     4. afișați primele 20 de linii ale paginii de manual comprimate `/usr/share/man/man1/ls.1.gz`.
 
@@ -1320,7 +1322,7 @@ să le modificați.
 ### 📝 Provocări {/* #challenges */}
 
 48. **Numărare cu /proc**:
-    1. numărați directoarele din `/proc` al căror nume este un număr;
+    1. numără directoarele din `/proc` al căror nume este un număr (un caracter wildcard poate conține un interval de caractere: `[0-9]` corespunde unei singure cifre; vezi `man 7 glob`);
     2. numărați procesele sistemului cu `ps -e --no-headers` și `wc -l`;
     3. comparați cele două numere.
 
@@ -1334,10 +1336,10 @@ să le modificați.
        folosit primul;
     3. afișați doar shell-urile folosite de mai mult de un utilizator.
 
-    **Verificare:** prima linie este `/usr/sbin/nologin`, cu cei mai mulți utilizatori; `/sbin/nologin` este același
-    program (`/sbin` este o legătură către `usr/sbin`), dar `uniq` compară doar textul, așa că îl numără pe o linie
-    separată; `/bin/bash` este folosit de `root` și `student`; numerele adunate dau același rezultat ca
-    `wc -l < /etc/passwd`. <small>→ [Linii repetate](#repeated-lines-uniq) · [Pipe-uri](#pipes-)</small>
+    **Verificare:** un shell `nologin` apare pe prima linie, pentru majoritatea utilizatorilor. Este posibil să vedeți atât `/sbin/nologin`, cât și
+        `/usr/sbin/nologin`: sunt același program (`/sbin` este o legătură către `usr/sbin`), dar `uniq` compară doar
+        textul, așa că le numără pe linii separate. `/bin/bash` este utilizat de `root` și `student`, iar sumă numerelor
+        este identică cu cea obținută prin `wc -l < /etc/passwd`. <small>→ [Linii repetate](#repeated-lines-uniq) · [Pipe-uri](#pipes-)</small>
 
 50. **Cine ține fișierul deschis**:
     1. în al doilea terminal, deschideți cu `less` fișierul `/etc/hosts` (numele calculatoarelor pe care sistemul le
@@ -1354,14 +1356,15 @@ să le modificați.
     1. creați fișierul `/tmp/etc.tar.gz` conținând întregul director `/etc` (configurația sistemului), **cu excepția** directorului `/etc/pki`, care conține certificatele pe care sistemul le utilizează pentru a verifica conexiunile securizate, cum ar fi site-urile web de tip
        `https://` (consultați `man tar` pentru opțiunea care exclude anumite fișiere din arhivă);
     2. în aceeași comandă, salvați erorile comenzii `tar` în fișierul `Reports/etc-errors.txt`;
-    3. numărați fișierele din arhivă, folosind lista afișată de comanda `tar` și comanda `wc -l`;
-    4. numărați erorile din fișierul `Reports/etc-errors.txt`.
+    3. numărați intrările din arhivă, folosind `tar tf` și `wc -l`;
+    4. numărați doar rândurile „Permission denied” din fișierul `Reports/etc-errors.txt`, folosind `grep -c`.
 
-    **Verificare:** `tar tf /tmp/etc.tar.gz` listează `etc/passwd` și `etc/os-release`, dar nimic din `etc/pki`;
-    `Reports/etc-errors.txt` conține câte un `Permission denied` pentru fiecare fișier pe care doar `root` îl poate
-    citi, cum este `/etc/shadow`. Prima lui linie este ``tar: Removing leading `/' from member names``: nu este o
-    eroare, `tar` doar vă anunță că salvează `/etc/passwd` ca `etc/passwd`, ca arhiva să poată fi extrasă oriunde, nu
-    doar peste `/etc`. Nu o numărați printre erori. <small>→ [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
+**Verificare:** Comanda `tar tf /tmp/etc.tar.gz` afișează fișierele `etc/passwd` și `etc/os-release`, dar nimic din directorul `etc/pki`.
+   Fișierul `Reports/etc-errors.txt` conține mesajul „Permission denied” pentru fiecare fișier pe care numai utilizatorul `root` îl poate citi, cum ar fi `/etc/shadow`,
+   precum și alte două rânduri care nu se referă la niciun fișier. Prima dintre ele, ``tar: Eliminarea caracterului `/' din fața numelor elementelor``,
+   vă indică doar că `tar` salvează `/etc/passwd` ca `etc/passwd`, astfel încât arhiva să poată fi extrasă oriunde. Ultima
+   linie, `tar: Ieșire cu statut de eșec din cauza erorilor anterioare`, spune doar că au existat erori. De aceea
+   se iau în considerare doar liniile cu mesajul `Permission denied`. <small>→ [Arhive comprimate](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
 52. **Fără primul director**:
     1. creați `Archives/all.tar.gz` cu `Music`, `Photos` și `numbers.txt`;
@@ -1387,9 +1390,18 @@ să le modificați.
 
 54. **Curățenie**: Ștergeți cu o **singură** comandă `rm` tot ce creează exercițiile în `/tmp`, fără nicio eroare
     pentru ce nu ați creat (căutați în `man rm`):
-    1. directoarele `/tmp/extract`, `/tmp/single`, `/tmp/gz`, `/tmp/bz2`, `/tmp/xz`, `/tmp/unzipped`, `/tmp/fruit`,
+
+:::danger
+
+Comanda `rm -rf` nu solicită nicio confirmare, iar ceea ce șterge nu poate fi recuperat. Citește comanda de două ori înainte de a apăsa
+<kbd>Enter</kbd>: un spațiu pus în locul nepotrivit, cum ar fi `rm -rf /tmp /extract` în loc de `rm -rf /tmp/extract`,
+va șterge mult mai mult decât dorești.
+
+:::
+
+  1. directoarele `/tmp/extract`, `/tmp/single`, `/tmp/gz`, `/tmp/bz2`, `/tmp/xz`, `/tmp/unzipped`, `/tmp/fruit`,
        `/tmp/flat` și `/tmp/piped`;
-    2. fișierele `/tmp/out.txt`, `/tmp/doc.tar.gz`, `/tmp/etc.tar.gz` și `/tmp/music.tar.gz`.
+  2. fișierele `/tmp/out.txt`, `/tmp/doc.tar.gz`, `/tmp/etc.tar.gz` și `/tmp/music.tar.gz`.
 
     **Verificare:** `rm` nu afișează nimic, iar `ls /tmp` nu le mai afișează. <small>→ [Gestionarea fișierelor](/docs/labs/02#managing-files)</small>
 

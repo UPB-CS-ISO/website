@@ -1112,7 +1112,7 @@ change them.
 
 26. **Only one file**:
     1. create `Archives/music.tar` with `Music`, `Photos` and `fruits.txt`;
-    2. create the directory `/tmp/extract` with `mkdir -p`, so that there is no error if it already exists;
+    2. create the directory `/tmp/single` with `mkdir -p`, so that there is no error if it already exists;
     3. extract only `Photos/dog.jpg` from `Archives/music.tar` into `/tmp/single`.
 
     **Check:** `tree /tmp/single` shows `Photos/dog.jpg`, and nothing else. <small>→ [Archives](#archives-tar)</small>
