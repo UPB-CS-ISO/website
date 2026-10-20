@@ -111,13 +111,13 @@
   #table(
     columns: (auto, 1fr),
     table.header([Default Action], [Description]),
-    [*Terminate*], [Immediately ends the process. Can usually be caught or ignored.],
-    [*Terminate (Unblockable)*], [Ends the process and *cannot* be caught, blocked, or ignored (`SIGKILL`).],
-    [*Core Dump*], [Terminates the process *and creates a core dump* for debugging.],
+    [*Term*], [Immediately ends the process. Can usually be caught or ignored.],
+    [*Term (Unblockable)*], [Ends the process and *cannot* be caught, blocked, or ignored (`SIGKILL`).],
+    [*Core*], [Terminates the process *and creates a core dump* for debugging.],
     [*Stop*], [Suspends the process until it receives `SIGCONT`.],
     [*Stop (Unblockable)*], [Suspends the process, and *cannot* be caught or ignored (`SIGSTOP`).],
-    [*Continue*], [Resumes a process that was previously stopped.],
-    [*Ignore*], [Signal is discarded; no effect on the process.],
+    [*Cont*], [Resumes a process that was previously stopped.],
+    [*Ign*], [Signal is discarded; no effect on the process.],
   )
 ]
 
@@ -138,22 +138,22 @@
   == ✉️ Linux Signals: Default Actions (1/2)
 
   #signals-table(
-    [1], [`SIGHUP`], [Terminate], [Hangup detected on controlling terminal],
-    [2], [`SIGINT`], [Terminate], [Interrupt from keyboard (#kbd("Ctrl") + #kbd("C"))],
-    [3], [`SIGQUIT`], [Core Dump], [Quit from keyboard (#kbd("Ctrl") + #kbd("\\"))],
-    [4], [`SIGILL`], [Core Dump], [Illegal instruction],
-    [5], [`SIGTRAP`], [Core Dump], [Trace/breakpoint trap],
-    [6], [`SIGABRT`], [Core Dump], [Abort signal from `abort()`],
-    [7], [`SIGBUS`], [Core Dump], [Bus error (bad memory access)],
-    [8], [`SIGFPE`], [Core Dump], [Floating-point exception],
-    [9], [`SIGKILL`], [Terminate (Unblockable)], [Kill signal],
-    [10], [`SIGUSR1`], [Terminate], [User-defined signal 1],
-    [11], [`SIGSEGV`], [Core Dump], [Invalid memory reference],
-    [12], [`SIGUSR2`], [Terminate], [User-defined signal 2],
-    [13], [`SIGPIPE`], [Terminate], [Broken pipe],
-    [14], [`SIGALRM`], [Terminate], [Timer signal from `alarm()`],
-    [15], [`SIGTERM`], [Terminate], [Termination signal],
-    [16], [`SIGSTKFLT`], [Terminate], [Stack fault on coprocessor (unused)],
+    [1], [`SIGHUP`], [Term], [Hangup detected on controlling terminal],
+    [2], [`SIGINT`], [Term], [Interrupt from keyboard (#kbd("Ctrl") + #kbd("C"))],
+    [3], [`SIGQUIT`], [Core], [Quit from keyboard (#kbd("Ctrl") + #kbd("\\"))],
+    [4], [`SIGILL`], [Core], [Illegal instruction],
+    [5], [`SIGTRAP`], [Core], [Trace/breakpoint trap],
+    [6], [`SIGABRT`], [Core], [Abort signal from `abort()`],
+    [7], [`SIGBUS`], [Core], [Bus error (bad memory access)],
+    [8], [`SIGFPE`], [Core], [Floating-point exception],
+    [9], [`SIGKILL`], [Term (Unblockable)], [Kill signal],
+    [10], [`SIGUSR1`], [Term], [User-defined signal 1],
+    [11], [`SIGSEGV`], [Core], [Invalid memory reference],
+    [12], [`SIGUSR2`], [Term], [User-defined signal 2],
+    [13], [`SIGPIPE`], [Term], [Broken pipe],
+    [14], [`SIGALRM`], [Term], [Timer signal from `alarm()`],
+    [15], [`SIGTERM`], [Term], [Termination signal],
+    [16], [`SIGSTKFLT`], [Term], [Stack fault on coprocessor (unused)],
   )
 ]
 
@@ -161,21 +161,21 @@
   == ✉️ Linux Signals: Default Actions (2/2)
 
   #signals-table(
-    [17], [`SIGCHLD`], [Ignore], [Child stopped or terminated],
-    [18], [`SIGCONT`], [Continue], [Continue if stopped],
+    [17], [`SIGCHLD`], [Ign], [Child stopped or terminated],
+    [18], [`SIGCONT`], [Cont], [Continue if stopped],
     [19], [`SIGSTOP`], [Stop (Unblockable)], [Stop process],
     [20], [`SIGTSTP`], [Stop], [Stop from terminal (#kbd("Ctrl") + #kbd("Z"))],
     [21], [`SIGTTIN`], [Stop], [Background read from tty],
     [22], [`SIGTTOU`], [Stop], [Background write to tty],
-    [23], [`SIGURG`], [Ignore], [Urgent condition on socket],
-    [24], [`SIGXCPU`], [Core Dump], [CPU time limit exceeded],
-    [25], [`SIGXFSZ`], [Core Dump], [File size limit exceeded],
-    [26], [`SIGVTALRM`], [Terminate], [Virtual timer expired],
-    [27], [`SIGPROF`], [Terminate], [Profiling timer expired],
-    [28], [`SIGWINCH`], [Ignore], [Window resize signal],
-    [29], [`SIGIO`], [Terminate], [I/O now possible],
-    [30], [`SIGPWR`], [Terminate], [Power failure],
-    [31], [`SIGSYS`], [Core Dump], [Bad system call],
-    [34–64], [`SIGRTMIN`–`SIGRTMAX`], [Terminate], [Real-time signals (implementation-defined)],
+    [23], [`SIGURG`], [Ign], [Urgent condition on socket],
+    [24], [`SIGXCPU`], [Core], [CPU time limit exceeded],
+    [25], [`SIGXFSZ`], [Core], [File size limit exceeded],
+    [26], [`SIGVTALRM`], [Term], [Virtual timer expired],
+    [27], [`SIGPROF`], [Term], [Profiling timer expired],
+    [28], [`SIGWINCH`], [Ign], [Window resize signal],
+    [29], [`SIGIO`], [Term], [I/O now possible],
+    [30], [`SIGPWR`], [Term], [Power failure],
+    [31], [`SIGSYS`], [Core], [Bad system call],
+    [34–64], [`SIGRTMIN`–`SIGRTMAX`], [Term], [Real-time signals (implementation-defined)],
   )
 ]
