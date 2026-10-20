@@ -14,6 +14,41 @@
   + #link("https://man7.org/linux/man-pages/man8/ping.8.html")[`man ping`]
 ]
 
+#slide[
+  == Hub, Switch, AP, Router
+
+  #text(size: 10pt)[
+    #align(center, table(
+      columns: (auto, 1fr, 1fr, 1fr, 1fr),
+      inset: 5pt,
+      stroke: 0.6pt + luma(170),
+      align: left + horizon,
+      table.header(
+        [],
+        align(center, pic("hub", size: 14pt)) + [*Hub*],
+        align(center, pic("switch", size: 14pt)) + [*Switch*],
+        align(center, pic("wifi-router", size: 20pt)) + [*Access Point*],
+        align(center, pic(
+          "router",
+          size: 20pt,
+        ))
+          + [*Router*],
+      ),
+      [*Layer*],
+      table.cell(fill: layer-colors.physical.fill)[1: bits],
+      table.cell(fill: layer-colors.link.fill)[2: frames],
+      table.cell(fill: layer-colors.link.fill)[2: frames],
+      table.cell(fill: layer-colors.network.fill)[3: packets],
+
+      [*Uses*], [nothing], [MAC addresses], [MAC addresses], [IP addresses],
+      [*Sends to*], [all ports], [the destination port], [the destination device (radio)], [the next network],
+      [*Medium*], [shared cable], [one cable per port], [shared radio], [one per network],
+      [*Connects*], [devices], [devices of one network], [wireless devices to a wired network], [*different networks*],
+    ))
+  ]
+  #v(0pt)
+]
+
 // the steps of a shell: (lines shown, highlighted parts, explanation)
 #let test-steps(lines, steps, size: 0.9em) = for (i, (n, keys, body)) in steps.enumerate() {
   only(i + 1)[

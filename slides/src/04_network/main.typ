@@ -80,7 +80,7 @@
 #include "transport.typ"
 #include "dns.typ"
 #include "dhcp.typ"
-#include "netconfig.typ"
+// #include "netconfig.typ"
 #include "troubleshooting.typ"
 
 #slide[

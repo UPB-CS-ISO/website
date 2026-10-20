@@ -416,7 +416,7 @@
   c.pos(),
 ))
 #let wl-lines = (
-  "$ nmcli device wifi list ifname wlp2s0",
+  "$ nmcli device wifi list",
   wl-row("IN-USE", "BSSID", "SSID", "MODE", "CHAN", "RATE", "SIGNAL", "BARS", "SECURITY"),
   // the network in use: its name is highlighted with the IN-USE column too
   wl-row("*", "3C:A9:F4:11:22:33", "HomeWiFi", "Infra", "36", "540 Mbit/s", "82", "****", "WPA2 WPA3").map(((k, t)) => (
@@ -434,7 +434,7 @@
   #let steps = (
     (
       (),
-      explain[`ifname wlp2s0`: which Wi-Fi card to use; without it, `nmcli` shows the networks seen by *all* the Wi-Fi cards],
+      explain[`nmcli` shows the networks seen by *all* the Wi-Fi cards; add `ifname wlp2s0` to use only one card],
     ),
     (("in-use", "ssid-used"), explain[*IN-USE*: the `*` shows the network the card is connected to *now*: `HomeWiFi`]),
     (
@@ -474,135 +474,135 @@
   }
 ]
 
-// `nmcli device wifi connect`, disconnect, connect back, radio off and on
-#let uuid = "6e2c8d5b-1f0a-4c3e-9b7d-2a51c0e8f913"
-#let activated = (
-  (none, "Device '"),
-  ("dev", "wlp2s0"),
-  (none, "' successfully activated with '"),
-  ("uuid", uuid),
-  (none, "'."),
-)
-#let con-steps = (
-  (
-    lines: ("$ nmcli device wifi connect HomeWiFi password 'my secret' ifname wlp2s0", activated),
-    keys: ("dev", "uuid"),
-    body: explain(
-      [*connect* the card `wlp2s0` to the `HomeWiFi` network],
-      ([`ifname wlp2s0`], [which Wi-Fi card to use; without it, `nmcli` picks the Wi-Fi card for you]),
-      ([`6e2c8d5b-...`], [a *connection* is saved, with this ID: next time the card connects by itself]),
-    ),
-  ),
-  (
-    // the same shell, continued after the connect
-    lines: (
-      "$ nmcli device wifi connect HomeWiFi password 'my secret' ifname wlp2s0",
-      activated,
-      "$ nmcli device disconnect wlp2s0",
-      ((none, "Device '"), ("dev2", "wlp2s0"), (none, "' successfully "), ("off", "disconnected"), (none, ".")),
-    ),
-    keys: ("dev2", "off"),
-    body: explain(
-      [*disconnect* the card],
-      ([`wlp2s0`], [here the name of the card is *required*]),
-      ([`disconnected`], [only this card; the connection stays saved]),
-    ),
-  ),
-  (
-    lines: ("$ nmcli device connect wlp2s0", activated),
-    keys: ("dev", "uuid"),
-    body: explain(
-      [*connect back*],
-      ([`wlp2s0`], [here the name of the card is *required*]),
-      ([`6e2c8d5b-...`], [the same saved connection: no password needed]),
-    ),
-  ),
-  (
-    lines: (
-      "$ nmcli connection show",
-      ..(
-        ("NAME", "UUID", "TYPE", "DEVICE"),
-        ("HomeWiFi", uuid, "wifi", "wlp2s0"),
-        ("lo", "8d3b5f0e-6a41-4d2c-9e7b-1c0a2f4d6e85", "loopback", "lo"),
-        ("CafeFree", "3f1d7c92-b5e4-4a08-8c6d-9e2f0a1b7c43", "wifi", "--"),
-        ("Wired connection 1", "b7e2a419-0c5d-3f86-a1e4-6d9c2b8f0e57", "ethernet", "--"),
-      ).map(((n, u, t, d)) => tab((20, 38, 10, 7), ("name", n), (none, u), (none, t), ("device", d))),
-    ),
-    keys: ("name", "device"),
-    body: explain(
-      [the *saved connections*],
-      ([*NAME*], [the name to use in commands]),
-      ([*DEVICE*], [the card that uses it now; `--`: not in use]),
-    ),
-  ),
-  (
-    lines: (
-      "$ nmcli connection up CafeFree ifname wlp2s0",
-      ((none, "Connection "), ("ok", "successfully activated"), (none, " (D-Bus active path:")),
-      ((none, "/org/freedesktop/NetworkManager/ActiveConnection/7)"),),
-    ),
-    keys: ("ok",),
-    body: explain(
-      [*pick* a saved connection],
-      ([`up CafeFree`], [connect with the saved connection `CafeFree`; `down` disconnects it]),
-      ([`ifname wlp2s0`], [which Wi-Fi card to use; without it, `nmcli` picks the Wi-Fi card for you]),
-    ),
-  ),
-  (
-    lines: (
-      "$ nmcli connection up HomeWiFi ifname wlp0s20f0u2",
-      ((none, "Connection "), ("ok", "successfully activated"), (none, " (D-Bus active path:")),
-      ((none, "/org/freedesktop/NetworkManager/ActiveConnection/8)"),),
-    ),
-    keys: ("ok",),
-    body: explain(
-      [the same connection on *another Wi-Fi card*],
-      ([`wlp0s20f0u2`], [a second Wi-Fi card, on USB: it works]),
-    ),
-  ),
-  (
-    lines: (
-      "$ nmcli connection up HomeWiFi ifname enp0s31f6",
-      ((none, "Error: Connection activation failed: No suitable device"),),
-      ((none, "found for this connection (device enp0s31f6 not available"),),
-      ((none, "because profile is not compatible with device"),),
-      ((none, "("), ("bad", "mismatching connection type"), (none, ")).")),
-    ),
-    keys: ("bad",),
-    body: explain(
-      [the same connection on the *Ethernet card*],
-      ([`enp0s31f6`], [refused: a Wi-Fi connection needs a Wi-Fi card]),
-    ),
-  ),
-  (
-    lines: (
-      "$ nmcli radio wifi off",
-      "$ nmcli radio wifi",
-      (("radio", "disabled"),),
-      "$ nmcli radio wifi on",
-    ),
-    keys: ("radio",),
-    body: explain(
-      [turn the Wi-Fi *radio* off and on],
-      ([`radio wifi`], [no card name: *all* the Wi-Fi cards, like airplane mode]),
-      ([`disabled`], [the radio is off]),
-    ),
-  ),
-)
+// // `nmcli device wifi connect`, disconnect, connect back, radio off and on
+// #let uuid = "6e2c8d5b-1f0a-4c3e-9b7d-2a51c0e8f913"
+// #let activated = (
+//   (none, "Device '"),
+//   ("dev", "wlp2s0"),
+//   (none, "' successfully activated with '"),
+//   ("uuid", uuid),
+//   (none, "'."),
+// )
+// #let con-steps = (
+//   (
+//     lines: ("$ nmcli device wifi connect HomeWiFi password 'my secret' ifname wlp2s0", activated),
+//     keys: ("dev", "uuid"),
+//     body: explain(
+//       [*connect* the card `wlp2s0` to the `HomeWiFi` network],
+//       ([`ifname wlp2s0`], [which Wi-Fi card to use; without it, `nmcli` picks the Wi-Fi card for you]),
+//       ([`6e2c8d5b-...`], [a *connection* is saved, with this ID: next time the card connects by itself]),
+//     ),
+//   ),
+//   (
+//     // the same shell, continued after the connect
+//     lines: (
+//       "$ nmcli device wifi connect HomeWiFi password 'my secret' ifname wlp2s0",
+//       activated,
+//       "$ nmcli device disconnect wlp2s0",
+//       ((none, "Device '"), ("dev2", "wlp2s0"), (none, "' successfully "), ("off", "disconnected"), (none, ".")),
+//     ),
+//     keys: ("dev2", "off"),
+//     body: explain(
+//       [*disconnect* the card],
+//       ([`wlp2s0`], [here the name of the card is *required*]),
+//       ([`disconnected`], [only this card; the connection stays saved]),
+//     ),
+//   ),
+//   (
+//     lines: ("$ nmcli device connect wlp2s0", activated),
+//     keys: ("dev", "uuid"),
+//     body: explain(
+//       [*connect back*],
+//       ([`wlp2s0`], [here the name of the card is *required*]),
+//       ([`6e2c8d5b-...`], [the same saved connection: no password needed]),
+//     ),
+//   ),
+//   (
+//     lines: (
+//       "$ nmcli connection show",
+//       ..(
+//         ("NAME", "UUID", "TYPE", "DEVICE"),
+//         ("HomeWiFi", uuid, "wifi", "wlp2s0"),
+//         ("lo", "8d3b5f0e-6a41-4d2c-9e7b-1c0a2f4d6e85", "loopback", "lo"),
+//         ("CafeFree", "3f1d7c92-b5e4-4a08-8c6d-9e2f0a1b7c43", "wifi", "--"),
+//         ("Wired connection 1", "b7e2a419-0c5d-3f86-a1e4-6d9c2b8f0e57", "ethernet", "--"),
+//       ).map(((n, u, t, d)) => tab((20, 38, 10, 7), ("name", n), (none, u), (none, t), ("device", d))),
+//     ),
+//     keys: ("name", "device"),
+//     body: explain(
+//       [the *saved connections*],
+//       ([*NAME*], [the name to use in commands]),
+//       ([*DEVICE*], [the card that uses it now; `--`: not in use]),
+//     ),
+//   ),
+//   (
+//     lines: (
+//       "$ nmcli connection up CafeFree ifname wlp2s0",
+//       ((none, "Connection "), ("ok", "successfully activated"), (none, " (D-Bus active path:")),
+//       ((none, "/org/freedesktop/NetworkManager/ActiveConnection/7)"),),
+//     ),
+//     keys: ("ok",),
+//     body: explain(
+//       [*pick* a saved connection],
+//       ([`up CafeFree`], [connect with the saved connection `CafeFree`; `down` disconnects it]),
+//       ([`ifname wlp2s0`], [which Wi-Fi card to use; without it, `nmcli` picks the Wi-Fi card for you]),
+//     ),
+//   ),
+//   (
+//     lines: (
+//       "$ nmcli connection up HomeWiFi ifname wlp0s20f0u2",
+//       ((none, "Connection "), ("ok", "successfully activated"), (none, " (D-Bus active path:")),
+//       ((none, "/org/freedesktop/NetworkManager/ActiveConnection/8)"),),
+//     ),
+//     keys: ("ok",),
+//     body: explain(
+//       [the same connection on *another Wi-Fi card*],
+//       ([`wlp0s20f0u2`], [a second Wi-Fi card, on USB: it works]),
+//     ),
+//   ),
+//   (
+//     lines: (
+//       "$ nmcli connection up HomeWiFi ifname enp0s31f6",
+//       ((none, "Error: Connection activation failed: No suitable device"),),
+//       ((none, "found for this connection (device enp0s31f6 not available"),),
+//       ((none, "because profile is not compatible with device"),),
+//       ((none, "("), ("bad", "mismatching connection type"), (none, ")).")),
+//     ),
+//     keys: ("bad",),
+//     body: explain(
+//       [the same connection on the *Ethernet card*],
+//       ([`enp0s31f6`], [refused: a Wi-Fi connection needs a Wi-Fi card]),
+//     ),
+//   ),
+//   (
+//     lines: (
+//       "$ nmcli radio wifi off",
+//       "$ nmcli radio wifi",
+//       (("radio", "disabled"),),
+//       "$ nmcli radio wifi on",
+//     ),
+//     keys: ("radio",),
+//     body: explain(
+//       [turn the Wi-Fi *radio* off and on],
+//       ([`radio wifi`], [no card name: *all* the Wi-Fi cards, like airplane mode]),
+//       ([`disabled`], [the radio is off]),
+//     ),
+//   ),
+// )
 
-// the steps of a slide: a terminal and an explanation for each step
-#let con-slide(steps) = for (i, st) in steps.enumerate() {
-  only(i + 1)[
-    #parts-terminal(st.lines, hl: ((st.keys, ip-peach),), size: 1em)
-    #st.body
-  ]
-}
+// // the steps of a slide: a terminal and an explanation for each step
+// #let con-slide(steps) = for (i, st) in steps.enumerate() {
+//   only(i + 1)[
+//     #parts-terminal(st.lines, hl: ((st.keys, ip-peach),), size: 1em)
+//     #st.body
+//   ]
+// }
 
-#slide[
-  == Connecting to Wi-Fi
+// #slide[
+//   == Connecting to Wi-Fi
 
-  #con-slide(con-steps.slice(0, 2))
-]
+//   #con-slide(con-steps.slice(0, 2))
+// ]
 
 // #slide[
 //   == Reconnecting to Wi-Fi
