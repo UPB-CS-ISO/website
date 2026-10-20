@@ -14,7 +14,7 @@ a list of words as its parameters.
 ## Objectives
 
 - Understand what a **terminal**, a **pseudo terminal** and a **shell** are, and use the **virtual terminals**
-- Send **signals** to processes with `kill` and with the keyboard, and **handle** a signal with `trap`
+- Send **signals** to processes with `kill` command and with the keyboard, and **handle** a signal with `trap`
 - Run commands in the **background** and manage them as **jobs** with `&`, `jobs`, `fg`, `bg` and `kill %N`
 - See how the processes of a terminal are grouped in **process groups** and **sessions**, and keep a command running
   after the terminal closes with `nohup`
@@ -57,12 +57,14 @@ program reads the keys from it and writes the text to it, through the file descr
 | Device                                  | What it is                                                                                         |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `/dev/tty1` ... `/dev/tty6`             | the **virtual terminals** of the kernel: text mode, the whole screen                               |
-| `/dev/pts/0`, `/dev/pts/1`, ...         | the **pseudo terminals**: one for every terminal window (or tab) opened in the graphical interface |
+| `/dev/pts/0`, `/dev/pts/1`, ...         | the **pseudo terminals**: one for every terminal window or tab, and for every SSH connection |
 | `/dev/tty`                              | always the terminal of the process that opens it                                                   |
 
 ### Virtual Terminals
 
-The kernel has several **virtual terminals**, which share the same screen and keyboard.
+A computer today has one screen and one keyboard, but the kernel makes them look like several terminals: the
+**virtual terminals**. Each one works like one of the old terminals, with its own login and its own programs, but
+only one of them is on the screen at a time.
 
 ![Virtual terminals](./virtual-teletype-shell.png)
 
@@ -169,8 +171,15 @@ or, if it has one, its own **signal handler**, and then continues.
 | _Terminate_    | it ends                                                                  |
 | _Core dump_    | it ends and leaves a copy of its memory (a _core dump_), for debugging   |
 | _Stop_         | it is paused, until it receives `SIGCONT`                                |
-| _Continue_     | it continues, if it was stopped                                          |
-| _Ignore_       | nothing                                                                  |
+| _Continue_     | it continues, if it was stopped; otherwise nothing happens                                         |
+| _Ignore_       | nothing, the signal is thrown away                                                                  |
+
+:::info
+
+On Fedora, the core dumps do not appear as files in the current directory: `systemd-coredump` keeps them.
+`coredumpctl list` shows them, the newest last.
+
+:::
 
 The signals you will use most often:
 
@@ -181,12 +190,13 @@ The signals you will use most often:
 | `3`    | `SIGQUIT` | Core dump      | you pressed <kbd>Ctrl</kbd>+<kbd>\\</kbd>                                     | yes             |
 | `9`    | `SIGKILL` | Terminate      | someone wants the process to end **now**                                     | **no**          |
 | `15`   | `SIGTERM` | Terminate      | someone asks the process to end; the default of `kill`                       | yes             |
-| `18`   | `SIGCONT` | Continue       | `fg` or `bg` continues a stopped job                                         | yes             |
+| `18`   | `SIGCONT` | Continue       | `fg` or `bg` continues a stopped job                                         | yes, but it continues anyway             |
 | `19`   | `SIGSTOP` | Stop           | someone wants the process to stop **now**                                    | **no**          |
 | `20`   | `SIGTSTP` | Stop           | you pressed <kbd>Ctrl</kbd>+<kbd>Z</kbd>                                      | yes             |
 | `21`   | `SIGTTIN` | Stop           | a background process tried to read from the terminal                         | yes             |
 
-`man 7 signal` has the full list.
+The numbers `18` to `21` are for x86 and ARM computers; other processors use other numbers. Use the **names** in
+commands, `kill -CONT`, not `kill -18`: they work everywhere. `man 7 signal` has the full list.
 
 ### Sending a Signal: `kill`
 
@@ -195,12 +205,12 @@ Despite its name, `kill` **sends a signal**. Only `SIGTERM`, its default, asks t
 | Command                         | What it does                                                    |
 | ------------------------------- | --------------------------------------------------------------- |
 | `kill -l`                       | Lists all the signals, with their numbers                       |
-| `kill -l 15`                    | Prints the name of signal `15`: `TERM`                          |
-| `kill <PID>`                    | Sends `SIGTERM` to the process                                  |
+| `kill -l <NUMBER>`         | Prints the name of a signal: `kill -l 15` prints `TERM`                               |
+| `kill <PID>`                    | Sends `SIGTERM`, the default, to the process                                 |
 | `kill -KILL <PID>`              | Sends `SIGKILL`; `kill -9 <PID>` and `kill -SIGKILL <PID>` are the same |
 | `kill -STOP <PID>`              | Stops the process                                               |
 | `kill -CONT <PID>`              | Continues the stopped process                                   |
-| `kill <PID1> <PID2> ...`        | Sends the signal to several processes                           |
+| `kill <PID1> <PID2> ...`        | Sends the signal (`SIGTERM`, or the one you give) to several processes                           |
 | `kill %<N>`                     | Sends the signal to job `N` of this shell (see [jobs](#foreground-and-background)) |
 
 Start `sleep 1000` in the second terminal and send it signals from the first one:
@@ -237,12 +247,12 @@ files, delete its temporary files), `SIGKILL` does not give it any chance.
 The terminal turns some keys into signals for the process that runs in the **foreground**, the one that reads the
 keyboard:
 
-| Keys                          | Sends     | What happens                                                                 |
+| Keys                          | Sends     | What happens, by default                                                                 |
 | ----------------------------- | --------- | ---------------------------------------------------------------------------- |
-| <kbd>Ctrl</kbd>+<kbd>C</kbd>  | `SIGINT`  | the process ends                                                             |
-| <kbd>Ctrl</kbd>+<kbd>\\</kbd> | `SIGQUIT` | the process ends and leaves a core dump                                      |
-| <kbd>Ctrl</kbd>+<kbd>Z</kbd>  | `SIGTSTP` | the process is stopped and becomes a **job** (see [below](#foreground-and-background)) |
-| <kbd>Ctrl</kbd>+<kbd>D</kbd>  | no signal | _end of file_: the input has nothing more to read                            |
+| <kbd>Ctrl</kbd>+<kbd>C</kbd>  | `SIGINT`  | the foreground job ends                                                             |
+| <kbd>Ctrl</kbd>+<kbd>\\</kbd> | `SIGQUIT` | the foreground job ends, and the system saves a core dump                                      |
+| <kbd>Ctrl</kbd>+<kbd>Z</kbd>  | `SIGTSTP` | the foreground job is stopped, and the shell shows the prompt (see [below](#foreground-and-background)) |
+| <kbd>Ctrl</kbd>+<kbd>D</kbd>  | no signal | at the start of a line, _end of file_: the program reads nothing more                            |
 
 ```shell-session
 [student@fedora ~]$ sleep 100
@@ -263,8 +273,9 @@ window closes.
 
 ### Handling a Signal: `trap`
 
-A program can replace the default action of a signal with its own **signal handler**. In `bash`, `trap` does this: it
-runs a command, or a function, when the signal arrives. Create the file `~/lab04/stubborn.sh` with `nano`:
+A program can replace the default action of a signal with its own **signal handler**: a part of its code that runs
+when the signal arrives, instead of the default action. A `bash` script sets a handler with `trap`, which runs a
+command or a function.. Create the file `~/lab04/stubborn.sh` with `nano`:
 
 ```bash
 #!/bin/bash
@@ -300,10 +311,15 @@ working
 
 | Command                         | What it does                                                    |
 | ------------------------------- | --------------------------------------------------------------- |
-| `trap <command> <SIGNAL>`       | Runs `command` when `SIGNAL` arrives                            |
+| `trap '<command>' <SIGNAL>`     | Runs `command` when `SIGNAL` arrives; the quotes make it **one** word         |
 | `trap '' <SIGNAL>`              | **Ignores** the signal                                          |
 | `trap - <SIGNAL>`               | Goes back to the default action                                 |
 | `trap -p`                       | Prints the handlers                                             |
+
+:::info
+
+`trap` keeps the handler as **text**, and the shell runs that text when the signal arrives, as if you typed it then.
+The quotes decide **when** a variable in it is replaced:
 
 :::info
 
@@ -314,8 +330,9 @@ process.
 
 ## Foreground and Background
 
-A terminal has **one** process in the **foreground**: it reads the keyboard, and the shell waits for it to end before
-it shows the prompt again. All the commands you ran so far ran in the foreground.
+A terminal has **one** job in the **foreground**: it reads the keyboard and receives the signals
+of the keys, and the shell waits for it to end before it shows the prompt again. All the commands you ran so far ran
+in the foreground.
 
 The shell can also start commands in the **background**. They are called **jobs**: the shell does not wait for them
 and shows the prompt right away, so they run at the same time as the commands you type. A job is either _running_ or
@@ -372,11 +389,14 @@ example `find / -name passwd > found.txt 2> /dev/null &`.
 
 A command that runs in the foreground can be moved to the background later:
 
-1. press <kbd>Ctrl</kbd>+<kbd>Z</kbd>: the command is stopped (`SIGTSTP`) and becomes a job;
+1. press <kbd>Ctrl</kbd>+<kbd>Z</kbd>: the command is stopped (`SIGTSTP`), and the shell prints its job ID, for
+   example `[1]+  Stopped`, and shows the prompt;
 2. find its job ID with `jobs`;
 3. run `bg %<N>`: the job continues (`SIGCONT`) in the background.
 
+:::tip
 `fg %<N>` brings it back to the foreground.
+:::
 
 ```shell-session
 [student@fedora ~]$ sleep 100 > /dev/null
@@ -434,9 +454,9 @@ only a second `exit` closes it (and ends the jobs).
 
 The kernel groups the processes of a terminal in two levels:
 
-| Group             | What it is                                                                 | Its ID                                           | Its leader                                     |
+| Group             | What it is                                                                 | Its ID: the PID of its **leader**                                           | Its leader                                     |
 | ----------------- | -------------------------------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------- |
-| **process group** | one **job**: all the processes of one command line, `sleep 100 \| cat` is one group of two processes | `PGID`, the PID of its first process | the **group leader**                           |
+| **process group** | one **job**: all the processes of one command line, `sleep 100 \| cat` is one group of two processes | `PGID`: the first process of the command line | the **group leader**                           |
 | **session**       | all the process groups of **one terminal**                                 | `SID`, the PID of the shell                       | the **session leader**: the shell, `s` in `STAT` |
 
 The terminal is the **controlling terminal** of the session. Its input, and the signals of the keys
@@ -503,9 +523,13 @@ terminal, even without `nohup`.
 
 ## Environment Variables
 
-Every process has a list of `NAME=value` texts, its **environment**. A process **receives** a copy of the environment
-of its parent when it starts, and programs read it to configure themselves: `HOME` tells them the home directory of
-the user, `LANG` the language, `PATH` where the programs are. By convention, the names are in **UPPER CASE**.
+Every process has an **environment**: a list of variables, each written as `NAME=value`. Programs read it to configure
+themselves: `HOME` tells them the home directory of the user, `LANG` the language, and `PATH` where to look for
+programs. The names are case-sensitive (`HOME` and `home` are different variables) and, by convention, in
+**UPPER CASE**.
+
+A process **receives** its environment from its parent when it starts: usually a **copy** of the parent's environment.
+From then on the two are separate: a change in one does not reach the other.
 
 | Command            | What it does                                                        |
 | ------------------ | ------------------------------------------------------------------- |
@@ -533,12 +557,13 @@ The shell has two kinds of variables:
 
 | Syntax                  | What it does                                                                 |
 | ----------------------- | ---------------------------------------------------------------------------- |
-| `NAME=value`            | Sets a **shell variable** (or changes it, if it exists)                      |
-| `export NAME`           | Makes it an **environment variable**                                         |
+| `NAME=value`            | Creates a **shell variable**, or changes the value of an existing variable                     |
+| `export NAME`           | Makes the variable an **environment variable**: every command started **from now on** receives it                                        |
 | `export NAME=value`     | Both at once                                                                 |
 | `NAME=value command`    | An environment variable **only for** `command`; the shell does not keep it  |
-| `unset NAME`            | Deletes the variable                                                         |
-| `$NAME` or `${NAME}`    | Replaced by the shell with the value; an empty text if the variable does not exist |
+| `unset NAME`            | Deletes the variable, from the shell and from the environment                                                          |
+| `$NAME`              | Replaced by the shell with the value, or with nothing if the variable does not exist          |
+| `${NAME}`            | The same, with clear limits: `"${NAME}_old"` is the value followed by `_old`; `"$NAME_old"` is the variable `NAME_old` |
 
 ```shell-session
 [student@fedora ~]$ GREETING=hello
@@ -624,7 +649,7 @@ The shell sets a few more values that you can only read:
 | --------- | --------------------------------------------------------------------------- |
 | `$?`      | the **exit code** of the last command: `0` means _success_, anything else an error |
 | `$$`      | the PID of the shell                                                        |
-| `$!`      | the PID of the last job started with `&`                                    |
+| `$!`      | the PID of the job most recently sent to the background, with `&` or `bg`                                   |
 
 ```shell-session
 [student@fedora ~]$ ls /nope
@@ -756,9 +781,9 @@ docs  notes.txt  photo1.png  photo2.png  photo3.png  photoA.png  report.md  todo
 
 | Glob              | Matches                                         | `echo` receives                                         |
 | ----------------- | ----------------------------------------------- | ------------------------------------------------------- |
-| `*.txt`           | `*`: any characters, or none                    | `notes.txt`, `todo.txt`                                 |
+| `*.txt`           | `*`: any characters, or none (but not `/`)                    | `notes.txt`, `todo.txt`                                 |
 | `photo?.png`      | `?`: exactly one character                      | `photo1.png`, `photo2.png`, `photo3.png`, `photoA.png`  |
-| `photo[12].png`   | `[12]`: one of these characters                 | `photo1.png`, `photo2.png`                              |
+| `photo[12].png`   | `[12]`: one character, `1` or `2`                 | `photo1.png`, `photo2.png`                              |
 | `photo[0-9].png`  | `[0-9]`: one character in the range             | `photo1.png`, `photo2.png`, `photo3.png`                |
 | `photo[!0-9].png` | `[!0-9]`: one character **not** in the range    | `photoA.png`                                            |
 | `docs/**/*.txt`   | `**`: any directories, at any depth (needs `shopt -s globstar`) | `docs/2026/exam.txt`, `docs/plan.txt`   |
@@ -790,9 +815,11 @@ command at all.
 
 Not every command is a program:
 
-- **built-in** commands run **inside** the shell, without a new process: `cd`, `export`, `unset`, `jobs`, `fg`, `bg`,
-  `trap`, `type`, `exit`, `echo`, `kill`, ...;
-- **external** commands are executable files, somewhere on the disk: `ls`, `sort`, `grep`, `sleep`, `bash`, ...
+| Kind                 | What it is                                                         | Examples                                         | Help         |
+| -------------------- | ------------------------------------------------------------------ | ------------------------------------------------ | ------------ |
+| **built-in** command | part of the shell: it runs **inside** it, without a new process     | `cd`, `export`, `unset`, `exit`, `jobs`, `fg`, `bg`, `trap`, `type` | `help <name>` |
+|                      | some are built in only to be faster, and also exist as programs    | `echo`, `printf`, `kill`, `pwd`                  |              |
+| **external** command | an executable file on the disk, found in `PATH`; the shell starts it as a **child process** | `ls`, `sort`, `grep`, `sleep`, `bash`  | `man <name>` |
 
 `type` tells which one a command is:
 
@@ -1004,12 +1031,12 @@ processes, and check the PID twice before `kill -KILL`.
    `sleep` is stopped. <small>→ [Sending a Signal](#sending-a-signal-kill)</small>
 
 7. **Keys and signals**:
-   1. run `sleep 100` and stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd>;
+   1. run `sleep 100` and end it with <kbd>Ctrl</kbd>+<kbd>C</kbd>;
    2. run it again and stop it with <kbd>Ctrl</kbd>+<kbd>\\</kbd>;
-   3. run it again and press <kbd>Ctrl</kbd>+<kbd>Z</kbd>;
+   3. run it again and press <kbd>Ctrl</kbd>+<kbd>Z</kbd> in order to stop it;
    4. list the jobs.
 
-   **Check:** the shell prints nothing after <kbd>Ctrl</kbd>+<kbd>C</kbd>, `Quit (core dumped)` after
+   **Check:** the shell prints `^C` after <kbd>Ctrl</kbd>+<kbd>C</kbd>, `Quit (core dumped)` after
    <kbd>Ctrl</kbd>+<kbd>\\</kbd>, and `Stopped` after <kbd>Ctrl</kbd>+<kbd>Z</kbd>; `sleep` is still in the list of
    jobs. End it with `kill %1`. <small>→ [Keys That Send Signals](#keys-that-send-signals)</small>
 
@@ -1120,13 +1147,15 @@ processes, and check the PID twice before `kill -KILL`.
     **Check:** without quotes, the three spaces become one; between double quotes they are kept; between single quotes
     `echo` prints `$NAME`. <small>→ [Quoting and Escaping](#quoting-and-escaping)</small>
 
-20. **A dollar sign**: Print the text `The price is $5` with `echo`, in three ways:
-    1. with single quotes;
-    2. with a `\` and no quotes;
-    3. with double quotes.
+20. **A dollar sign**: Print the text `The price is $5` with `echo`:
+    1. first with double quotes and nothing else, and see what goes wrong;
+    2. with single quotes;
+    3. with a `\` and no quotes;
+    4. with double quotes and a `\`.
 
-    **Check:** without single quotes or `\`, the shell replaces `$5` with nothing (it is a special parameter, empty
-    here) and prints `The price is`. <small>→ [Quoting and Escaping](#quoting-and-escaping)</small>
+    **Check:** step 1 prints `The price is`: the shell replaced `$5` with nothing. `$5` is the fifth **positional
+    parameter**, a parameter given to a script, and it is empty in your shell. Single quotes and `\` turn off the
+    meaning of `$`, so steps 2, 3 and 4 print `The price is $5`. <small>→ [Quoting and Escaping](#quoting-and-escaping)</small>
 
 21. **Globs**: Go to `~/lab04/glob` and, with `echo`, print:
     1. all the `.png` files;
