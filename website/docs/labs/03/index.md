@@ -917,16 +917,16 @@ change them.
    1. with a **single** `ls -a` command, list `/etc/skel` (the files copied into the home directory of every new user)
       and `/root` (the home directory of the administrator), so that the list goes into `Reports/list.txt` and the
       error into `Reports/errors.txt`;
-   2. print the two files.
+   2. print the content of the two files.
 
-   **Check:** nothing appears on the display when you run `ls`; `Reports/list.txt` has `.bashrc` and `.bash_profile`,
-   and `Reports/errors.txt` has a `Permission denied` for `/root`. <small>→ [Errors](#errors-2-and-2)</small>
+   **Check:** nothing appears on the display when you run `ls`; `Reports/list.txt` has, among others, `.bashrc` and
+   `.bash_profile`, and `Reports/errors.txt` has a `Permission denied` for `/root`. <small>→ [Errors](#errors-2-and-2)</small>
 
 5. **Append errors**:
    1. run `ls /root` and save its error into `Reports/errors.txt`, overwriting the file;
    2. print `/etc/shadow` (the file with the passwords of the users) with `cat`, and **append** its error to
       `Reports/errors.txt`;
-   3. print `Reports/errors.txt`.
+   3. print the content `Reports/errors.txt`.
 
    **Check:** `Reports/errors.txt` has two lines, one for `/root` and one for `/etc/shadow`: only `root` can read
    them. <small>→ [Errors](#errors-2-and-2)</small>
@@ -973,8 +973,8 @@ change them.
 
 11. **Pipes**:
     1. count the programs in `/usr/bin` with `ls`, `wc -l` and a pipe;
-    2. count the entries in `/etc` (the configuration of the system) in the same way;
-    3. show the long list of `/etc` (`ls -l`) one screen at a time, with `less`.
+    2. count the files and directories in `/etc` (the configuration of the system) that `ls` shows, in the same way;
+    3. show the long list of `/etc` (`ls -l`) on one screen at a time, with `less`.
 
     **Check:** there are more than a thousand programs and a few hundred entries in `/etc`; `less` stops after every
     screen, and you quit it with <kbd>q</kbd>. <small>→ [Pipes](#pipes-)</small>
@@ -994,9 +994,8 @@ change them.
     3. print every fruit with the number of times it appears, the most frequent first;
     4. print only the fruits that appear exactly once (look in `man uniq`).
 
-    **Check:** `uniq fruits.txt` prints the same 7 lines, because no line is the same as the one above it; after
-    `sort`, you get 4 fruits, `3 apple` is the first line of the count, and only `cherry` and `kiwi` appear exactly
-    once. <small>→ [Repeated Lines](#repeated-lines-uniq)</small>
+    **Check:** `uniq fruits.txt` prints the same 7 lines; after `sort`, you get 4 fruits, `3 apple` is the first line
+    of the count, and only `cherry` and `kiwi` appear exactly once. <small>→ [Repeated Lines](#repeated-lines-uniq)</small>
 
 14. **Zeros and random bytes**:
     1. show the first 16 bytes of `/dev/zero` in hexadecimal, with `head` and `xxd`;
@@ -1010,8 +1009,9 @@ change them.
 15. **My shell**:
     1. print the PID of your shell;
     2. list the processes of the terminal with all the columns of `-f`;
-    3. show only the `Name`, `State`, `Pid` and `PPid` lines of the `/proc/<PID>/status` file of your shell, using
-       `grep` (put the PID of your shell instead of `<PID>`).
+    3. show only the `Name`, `State`, `Pid` and `PPid` lines of the `/proc/$$/status` file of your shell: give `grep`
+       every text after its own `-e` (`grep -e Name -e State ...`), and look in `man grep` for the option that matches
+       only whole words, so that `Pid` does not also match `TracerPid`.
 
     **Check:** `ps` and `status` show the same PID and PPID for `bash`, and its state is `S`. <small>→ [Listing Processes](#listing-processes-ps) · [The `/proc` File System](#the-proc-file-system)</small>
 
@@ -1023,8 +1023,8 @@ change them.
     5. find out its program and its current directory, from the links `/proc/<PID>/exe` and `/proc/<PID>/cwd`;
     6. stop `sleep` with <kbd>Ctrl</kbd>+<kbd>C</kbd> in the second terminal.
 
-    **Check:** the state is `S`, the command line is `sleep^@1000^@`, the program is `/usr/bin/sleep`, and the current directory
-    is the one of the second terminal. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
+    **Check:** the state is `S`, the command line is `sleep^@1000^@`, the program is `/usr/bin/sleep`, and the current
+    directory is the one you were in when you ran `sleep` (run `pwd` in the second terminal to compare). <small>→ [The `/proc` File System](#the-proc-file-system)</small>
 
 17. **Open files**:
     1. list the File Descriptor Table of your shell, from `/proc/$$/fd`;
@@ -1032,8 +1032,9 @@ change them.
     3. in the first terminal, find the PID of `sleep` and list its File Descriptor Table;
     4. stop `sleep` with <kbd>Ctrl</kbd>+<kbd>C</kbd> and try to list its table again.
 
-    **Check:** `0`, `1` and `2` point to a `/dev/pts/...` file, a different one for each terminal; after
-    <kbd>Ctrl</kbd>+<kbd>C</kbd>, `/proc/<PID>` no longer exists. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
+    **Check:** `0`, `1` and `2` point to a `/dev/pts/...` file, a different one for each terminal (`bash` also keeps
+    `255` open on the same terminal, for its own use); after <kbd>Ctrl</kbd>+<kbd>C</kbd>, `/proc/<PID>` no longer
+    exists. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
 
 18. **The system**: Find out about your computer using only the files in `/proc`:
     1. the model of the processor: the `model name` lines of `/proc/cpuinfo` (use `grep`);
@@ -1045,9 +1046,10 @@ change them.
     **Check:** the number of processors is the same as the one printed by `nproc`, the time matches the `up` part of
     `uptime`, and the version of the kernel is the same as `uname -r`. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
 
+
 19. **top and htop**:
     1. start `top`, sort the processes by memory, then by processor, and quit;
-    2. start `htop`, find your `bash` with a search, show the processes as a tree, and quit.
+    2. start `htop`, search for `bash` and press <kbd>F3</kbd> until the chosen line is the `bash` of the first terminal (the PID printed by `echo $$`), show the processes as a tree, and quit.
 
     **Check:** `top` shows the `Tasks` line with the number of processes in every state; in the tree of `htop`, your
     `bash` is under the terminal. <small>→ [top](#top) · [htop](#htop)</small>
@@ -1103,14 +1105,14 @@ change them.
 
 25. **Extract**:
     1. create `Archives/music.tar` with `Music`, `Photos` and `fruits.txt` (if it already exists, `tar` overwrites it);
-    2. create the directory `/tmp/extract`;
+    2. create the directory `/tmp/extract` with `mkdir -p`, so that there is no error if it already exists;
     3. extract `Archives/music.tar` into `/tmp/extract`.
 
     **Check:** `tree /tmp/extract` shows `Music`, `Photos` and `fruits.txt`, with the same files as in `~/lab03`. <small>→ [Archives](#archives-tar)</small>
 
 26. **Only one file**:
     1. create `Archives/music.tar` with `Music`, `Photos` and `fruits.txt`;
-    2. create the directory `/tmp/single`;
+    2. create the directory `/tmp/extract` with `mkdir -p`, so that there is no error if it already exists;
     3. extract only `Photos/dog.jpg` from `Archives/music.tar` into `/tmp/single`.
 
     **Check:** `tree /tmp/single` shows `Photos/dog.jpg`, and nothing else. <small>→ [Archives](#archives-tar)</small>
@@ -1173,8 +1175,8 @@ change them.
     2. run `ls /etc/skel /root 2>&1 > Reports/b.txt` and print `Reports/b.txt`;
     3. find out why the error is in `a.txt`, but not in `b.txt`.
 
-    **Check:** the second command printed the error on the display. The shell reads the redirects from left to right,
-    and `2>&1` makes `2` go where `1` goes **at that moment**. <small>→ [Redirects](#redirects)</small>
+  **Check:** the second command printed the error on the display, and `Reports/b.txt` has only the list of
+   `/etc/skel`. Hint: the shell reads the redirects from left to right. <small>→ [Redirects](#redirects)</small>
 
 34. **See and save**: In a **single** command line, save the list of the programs in `/usr/bin` into
     `Reports/programs.txt` **and** count them (look in `man tee` for the command that writes its input both to a file
@@ -1210,8 +1212,9 @@ change them.
 38. **Where is the other shell**:
     1. in the second terminal, go to `~/lab03/Music` and print the PID of the shell;
     2. in the first terminal, find the current directory of that shell, using `/proc`;
-    3. open its `environ` file with `less` and find the value of the `HOME` variable (the `\0` bytes between the
-       variables show up as `^@`; search with <kbd>/</kbd>).
+    3. open its `environ` file with `less` and find the value of the `HOME` variable: `less` warns that it may be a
+       binary file, because of the `\0` bytes between the variables, so answer <kbd>y</kbd>; the `\0` bytes show up
+       as `^@`, and you search with <kbd>/</kbd>.
 
     **Check:** `cwd` points to `/home/student/lab03/Music`, and `environ` has `HOME=/home/student`. <small>→ [The `/proc` File System](#the-proc-file-system)</small>
 
@@ -1225,8 +1228,10 @@ change them.
     1. hide the threads;
     2. show only your processes;
     3. sort them by memory;
-    4. choose your `bash` and show its open files;
-    5. add the `PPID` column, from the setup menu (<kbd>F2</kbd>).
+    4. choose the `bash` of the first terminal (the PID printed by `echo $$`) and show its open files (if `htop` says
+           that it cannot run `lsof`, install it with `sudo dnf install lsof`);
+    5. add the `PPID` column: press <kbd>F2</kbd>, go to **Screens**, choose `PPID` in **Available Columns**, press
+           <kbd>Enter</kbd> to add it, then leave the menu with <kbd>F10</kbd>.
 
     **Check:** the open files of `bash` are the same as in `ls -l /proc/$$/fd`, and the `PPID` of `bash` is the PID of
     the terminal. <small>→ [htop](#htop)</small>
@@ -1247,7 +1252,8 @@ change them.
        in front of it, the user with the most processes first.
 
     **Check:** the first line is `root`, with the same number as `ps -u root --no-headers | wc -l`, and `student` is
-    among the first lines; the numbers added up are the same as `ps -e --no-headers | wc -l`. <small>→ [Listing Processes](#listing-processes-ps) · [Repeated Lines](#repeated-lines-uniq)</small>
+    among the first lines; the numbers added up are the same as `ps -e --no-headers | wc -l`. Some users may show up as
+    numbers instead of names: `ps` prints the UID when the name is too long for the column. <small>→ [Listing Processes](#listing-processes-ps) · [Repeated Lines](#repeated-lines-uniq)</small>
 
 43. **Big files**:
     1. create `Archives/zeros.bin` with the first 10 MB of `/dev/zero`, using `head` (look in `man head` for the option
@@ -1273,7 +1279,7 @@ change them.
     compressed file, without creating any new file.
     1. compress `/etc/services` with `gzip -c` into `Archives/services.gz`, and with `xz -c` into
        `Archives/services.xz`;
-    2. print the content of `Archives/services.gz`;
+    2. print the content of `Archives/services.gz` one screen at a time, with `less`;
     3. count the lines of `Archives/services.xz`;
     4. print the first 20 lines of the compressed manual page `/usr/share/man/man1/ls.1.gz`.
 
@@ -1298,7 +1304,8 @@ change them.
 ### 📝 Challenges {/* #challenges */}
 
 48. **Count with /proc**:
-    1. count the directories in `/proc` whose name is a number;
+    1. count the directories in `/proc` whose name is a number (a wildcard can have a range of characters: `[0-9]`
+   matches one digit; see `man 7 glob`);
     2. count the processes of the system with `ps -e --no-headers` and `wc -l`;
     3. compare the two numbers.
 
@@ -1312,9 +1319,10 @@ change them.
        first;
     3. print only the shells that are used by more than one user.
 
-    **Check:** `/usr/sbin/nologin` is the first line, with most of the users; `/sbin/nologin` is the same program
-    (`/sbin` is a link to `usr/sbin`), but `uniq` compares only the text, so it counts it on its own line; `/bin/bash`
-    is used by `root` and `student`; the numbers added up are the same as `wc -l < /etc/passwd`. <small>→ [Repeated Lines](#repeated-lines-uniq) · [Pipes](#pipes-)</small>
+    **Check:** a `nologin` shell is the first line, with most of the users. You may see both `/sbin/nologin` and
+    `/usr/sbin/nologin`: they are the same program (`/sbin` is a link to `usr/sbin`), but `uniq` compares only the
+    text, so it counts them on separate lines. `/bin/bash` is used by `root` and `student`, and the numbers added up
+    are the same as `wc -l < /etc/passwd`. <small>→ [Repeated Lines](#repeated-lines-uniq) · [Pipes](#pipes-)</small>
 
 50. **Who has the file open**:
     1. in the second terminal, open `/etc/hosts` (the names of the computers that the system knows without asking the
@@ -1332,14 +1340,15 @@ change them.
        `/etc/pki`, the directory with the certificates that the system uses to check secure connections, like the
        `https://` websites (look in `man tar` for the option that leaves files out of the archive);
     2. in the same command, save the errors of `tar` into `Reports/etc-errors.txt`;
-    3. count the files in the archive, using the list that `tar` prints and `wc -l`;
-    4. count the errors in `Reports/etc-errors.txt`.
+    3. count the entries in the archive, with `tar tf` and `wc -l`;
+    4. count only the `Permission denied` lines in `Reports/etc-errors.txt`, with `grep -c`.
 
-    **Check:** `tar tf /tmp/etc.tar.gz` lists `etc/passwd` and `etc/os-release`, but nothing from `etc/pki`;
-    `Reports/etc-errors.txt` has a `Permission denied` for every file that only `root` can read, like `/etc/shadow`.
-    Its first line is ``tar: Removing leading `/' from member names``: this is not an error, `tar` only tells you
-    that it saves `/etc/passwd` as `etc/passwd`, so that the archive can be extracted anywhere, not only over `/etc`.
-    Do not count it with the errors. <small>→ [Compressed Archives](#compressed-archives-targz-tarbz2-and-tarxz)</small>
+    **Check:** `tar tf /tmp/etc.tar.gz` lists `etc/passwd` and `etc/os-release`, but nothing from `etc/pki`.
+    `Reports/etc-errors.txt` has a `Permission denied` for every file that only `root` can read, like `/etc/shadow`,
+    and two more lines that are not about a file. The first one, ``tar: Removing leading `/' from member names``, only
+    tells you that `tar` saves `/etc/passwd` as `etc/passwd`, so that the archive can be extracted anywhere. The last
+    one, `tar: Exiting with failure status due to previous errors`, only says that there were errors. This is why you
+    count only the `Permission denied` lines. <small>→ [Compressed Archives](#compressed-archives-targz-tarbz2-and-tarxz)</small>
 
 52. **Strip a directory**:
     1. create `Archives/all.tar.gz` with `Music`, `Photos` and `numbers.txt`;
@@ -1365,6 +1374,15 @@ change them.
 
 54. **Clean up**: With a **single** `rm` command, delete everything that the exercises create in `/tmp`, without any
     error for the ones you did not create (look in `man rm`):
+
+:::danger
+
+`rm -rf` does not ask anything, and what it deletes cannot be recovered. Read the command twice before you press
+<kbd>Enter</kbd>: a space in the wrong place, like `rm -rf /tmp /extract` instead of `rm -rf /tmp/extract`,
+deletes much more than you want.
+
+:::
+
     1. the directories `/tmp/extract`, `/tmp/single`, `/tmp/gz`, `/tmp/bz2`, `/tmp/xz`, `/tmp/unzipped`, `/tmp/fruit`,
        `/tmp/flat` and `/tmp/piped`;
     2. the files `/tmp/out.txt`, `/tmp/doc.tar.gz`, `/tmp/etc.tar.gz` and `/tmp/music.tar.gz`.
