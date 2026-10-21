@@ -56,7 +56,7 @@ program reads the keys from it and writes the text to it, through the file descr
 
 | Device                                  | What it is                                                                                         |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `/dev/tty1` ... `/dev/tty6`             | the **virtual terminals** of the kernel: text mode, the whole screen                               |
+| `/dev/tty1` ... `/dev/tty6`             | the **virtual terminals** of the kernel: each one uses the screen and the keyboard of the computer, one at a time |
 | `/dev/pts/0`, `/dev/pts/1`, ...         | the **pseudo terminals**: one for every terminal window or tab, and for every SSH connection |
 | `/dev/tty`                              | always the terminal of the process that opens it                                                   |
 
@@ -127,8 +127,9 @@ the kernel for a **pseudo terminal**: it opens `/dev/ptmx`, and the kernel creat
 
 ![The graphical interface and the pseudo terminals](./terminal-emulator.png)
 
-A pseudo terminal has two ends: the **master**, kept by the terminal emulator, and the **slave**, `/dev/pts/<n>`, which
-the emulator gives to the shell as its `0`, `1` and `2`.
+A pseudo terminal has two ends. The terminal emulator keeps one end, the **master**, and reads and writes it like
+a file. The other end, the **slave**, is the file `/dev/pts/<n>`: it behaves exactly like a real terminal. When the
+emulator starts the shell, it redirects `/dev/pts/<n>` as the `0`, `1` and `2` of the shell.
 
 ![A pseudo terminal](./pseudo-terminal.png)
 
@@ -168,11 +169,18 @@ or, if it has one, its own **signal handler**, and then continues.
 
 | Default action | What happens to the process                                              |
 | -------------- | ------------------------------------------------------------------------ |
-| _Terminate_    | it ends                                                                  |
-| _Core dump_    | it ends and leaves a copy of its memory (a _core dump_), for debugging   |
+| _Term_    | it ends                                                                  |
+| _Core_    | it ends and leaves a copy of its memory (a _core dump_), for debugging   |
 | _Stop_         | it is paused, until it receives `SIGCONT`                                |
-| _Continue_     | it continues, if it was stopped; otherwise nothing happens                                         |
-| _Ignore_       | nothing, the signal is thrown away                                                                  |
+| _Cont_     | it continues, if it was stopped; otherwise nothing happens                                         |
+| _Ign_       | nothing, the signal is thrown away                                                                  |
+
+:::info
+
+On Fedora, the core dumps do not appear as files in the current directory: `systemd-coredump` keeps them.
+`coredumpctl list` shows them, the newest last.
+
+:::
 
 :::info
 
@@ -185,12 +193,12 @@ The signals you will use most often:
 
 | Number | Signal    | Default action | Sent when                                                                    | Can be handled? |
 | ------ | --------- | -------------- | ---------------------------------------------------------------------------- | --------------- |
-| `1`    | `SIGHUP`  | Terminate      | the terminal closed (_hang up_)                                              | yes             |
-| `2`    | `SIGINT`  | Terminate      | you pressed <kbd>Ctrl</kbd>+<kbd>C</kbd> (_interrupt_)                       | yes             |
-| `3`    | `SIGQUIT` | Core dump      | you pressed <kbd>Ctrl</kbd>+<kbd>\\</kbd>                                     | yes             |
-| `9`    | `SIGKILL` | Terminate      | someone wants the process to end **now**                                     | **no**          |
-| `15`   | `SIGTERM` | Terminate      | someone asks the process to end; the default of `kill`                       | yes             |
-| `18`   | `SIGCONT` | Continue       | `fg` or `bg` continues a stopped job                                         | yes, but it continues anyway             |
+| `1`    | `SIGHUP`  | Term      | the terminal closed (_hang up_)                                              | yes             |
+| `2`    | `SIGINT`  | Term      | you pressed <kbd>Ctrl</kbd>+<kbd>C</kbd> (_interrupt_)                       | yes             |
+| `3`    | `SIGQUIT` | Core      | you pressed <kbd>Ctrl</kbd>+<kbd>\\</kbd>                                     | yes             |
+| `9`    | `SIGKILL` | Term      | someone wants the process to end **now**                                     | **no**          |
+| `15`   | `SIGTERM` | Term      | someone asks the process to end; the default of `kill`                       | yes             |
+| `18`   | `SIGCONT` | Cont       | `fg` or `bg` continues a stopped job                                         | yes, but it continues anyway             |
 | `19`   | `SIGSTOP` | Stop           | someone wants the process to stop **now**                                    | **no**          |
 | `20`   | `SIGTSTP` | Stop           | you pressed <kbd>Ctrl</kbd>+<kbd>Z</kbd>                                      | yes             |
 | `21`   | `SIGTTIN` | Stop           | a background process tried to read from the terminal                         | yes             |
@@ -785,7 +793,7 @@ docs  notes.txt  photo1.png  photo2.png  photo3.png  photoA.png  report.md  todo
 | `photo?.png`      | `?`: exactly one character                      | `photo1.png`, `photo2.png`, `photo3.png`, `photoA.png`  |
 | `photo[12].png`   | `[12]`: one character, `1` or `2`                 | `photo1.png`, `photo2.png`                              |
 | `photo[0-9].png`  | `[0-9]`: one character in the range             | `photo1.png`, `photo2.png`, `photo3.png`                |
-| `photo[!0-9].png` | `[!0-9]`: one character **not** in the range    | `photoA.png`                                            |
+| `photo[!0-9].png` | `[!0-9]`: one character **not** in the range (`[^0-9]` also works)    | `photoA.png`                                            |
 | `docs/**/*.txt`   | `**`: any directories, at any depth (needs `shopt -s globstar`) | `docs/2026/exam.txt`, `docs/plan.txt`   |
 | `{a,b,c}.pdf`     | `{...}`: one word for each, **even if the file does not exist** | `a.pdf`, `b.pdf`, `c.pdf`               |
 | `*.pdf`           | no file matches                                 | `*.pdf`, the glob as it is                              |
@@ -1024,21 +1032,23 @@ processes, and check the PID twice before `kill -KILL`.
 6. **Stop and continue**:
    1. in the second terminal, run `sleep 1000`;
    2. in the first terminal, find its PID and stop it with a signal;
-   3. show its state with `ps -o pid,stat,cmd -p <PID>`;
-   4. continue it, and show its state again.
+   3. show its state with `ps -o pid,stat,cmd -p <PID>`, and look at the second terminal;
+   4. continue it, show its state again, and run `jobs` in the second terminal;
+   5. end it with `kill %1` in the second terminal.
 
-   **Check:** the state is `T` after `SIGSTOP` and `S` after `SIGCONT`; the second terminal shows nothing while
-   `sleep` is stopped. <small>→ [Sending a Signal](#sending-a-signal-kill)</small>
+   **Check:** the state is `T` after `SIGSTOP` and `S` after `SIGCONT`, without the `+`. As soon as `sleep` stopped,
+   the second shell printed `[1]+  Stopped (signal)`, took the terminal back and showed the prompt, so after
+   `SIGCONT`, `jobs` shows `sleep` as `Running` in the background. <small>→ [Sending a Signal](#sending-a-signal-kill)</small>
 
 7. **Keys and signals**:
    1. run `sleep 100` and end it with <kbd>Ctrl</kbd>+<kbd>C</kbd>;
-   2. run it again and stop it with <kbd>Ctrl</kbd>+<kbd>\\</kbd>;
-   3. run it again and press <kbd>Ctrl</kbd>+<kbd>Z</kbd> in order to stop it;
+   2. run it again and end it with <kbd>Ctrl</kbd>+<kbd>\\</kbd>;
+   3. run it again and stop it with <kbd>Ctrl</kbd>+<kbd>Z</kbd>;
    4. list the jobs.
 
-   **Check:** the shell prints `^C` after <kbd>Ctrl</kbd>+<kbd>C</kbd>, `Quit (core dumped)` after
-   <kbd>Ctrl</kbd>+<kbd>\\</kbd>, and `Stopped` after <kbd>Ctrl</kbd>+<kbd>Z</kbd>; `sleep` is still in the list of
-   jobs. End it with `kill %1`. <small>→ [Keys That Send Signals](#keys-that-send-signals)</small>
+   **Check:** the terminal shows `^C` after <kbd>Ctrl</kbd>+<kbd>C</kbd>, `Quit (core dumped)` after
+   <kbd>Ctrl</kbd>+<kbd>\\</kbd> (only `Quit` if core dumps are turned off), and `Stopped` after
+   <kbd>Ctrl</kbd>+<kbd>Z</kbd>; `sleep` is still in the list of jobs. End it with `kill %1`. <small>→ [Keys That Send Signals](#keys-that-send-signals)</small>
 
 8. **A stubborn script**:
    1. run `bash stubborn.sh`;
@@ -1054,10 +1064,11 @@ processes, and check the PID twice before `kill -KILL`.
    1. start `sleep 300` and `sleep 400` in the background;
    2. list the jobs, and then the jobs with their PIDs;
    3. print the PID of the last job with `$!`;
-   4. end the first job using its job ID.
+   4. end the first job using its job ID;
+   5. end the second job too, and list the jobs again.
 
    **Check:** `jobs` shows `[1]` and `[2]`, with `+` at `[2]`; `$!` is the PID of `sleep 400`; after the next command,
-   the shell prints `[1]-  Terminated`. <small>→ [Starting a Job](#starting-a-job-)</small>
+   the shell prints `[1]-  Terminated`; at the end, `jobs` prints nothing. <small>→ [Starting a Job](#starting-a-job-)</small>
 
 10. **To the background and back**:
     1. run `sleep 200 > /dev/null` in the foreground;
@@ -1093,7 +1104,9 @@ processes, and check the PID twice before `kill -KILL`.
     3. in another terminal, look for the two `sleep` processes;
     4. end `sleep 2000` with `kill`.
 
-    **Check:** only `sleep 2000` is still running, with the parent `1` and no terminal (`?`). <small>→ [Closing the Terminal](#closing-the-terminal-sighup-and-nohup)</small>
+    **Check:** only `sleep 2000` is still running, without a terminal (`?`). Its parent ended, so it was adopted: its
+    new parent is PID `1`, or a process that adopts orphans, like `systemd --user` (see which one with
+    `ps -o pid,comm -p <PPID>`). <small>→ [Closing the Terminal](#closing-the-terminal-sighup-and-nohup)</small>
 
 **Variables**
 
@@ -1145,7 +1158,7 @@ processes, and check the PID twice before `kill -KILL`.
     3. print the text `$NAME is Alice   Smith` with a single `echo` and **one** pair of double quotes.
 
     **Check:** without quotes, the three spaces become one; between double quotes they are kept; between single quotes
-    `echo` prints `$NAME`. <small>→ [Quoting and Escaping](#quoting-and-escaping)</small>
+    `echo` prints `$NAME`; the last `echo` prints `$NAME is Alice   Smith`, with the three spaces. <small>→ [Quoting and Escaping](#quoting-and-escaping)</small>
 
 20. **A dollar sign**: Print the text `The price is $5` with `echo`:
     1. first with double quotes and nothing else, and see what goes wrong;
@@ -1162,10 +1175,12 @@ processes, and check the PID twice before `kill -KILL`.
     2. the photos with a single digit after `photo`;
     3. the photos whose name does **not** have a digit after `photo`;
     4. all the files whose name has exactly 8 characters (count the extension too);
-    5. all the `.pdf` files.
+    5. all the `.pdf` files;
+    6. the names `photo7.png` and `photo8.png`, with `{...}`.
 
     **Check:** `photoA.png` is in the first and the third list, not in the second one; the fourth list is `todo.txt`;
-    the last `echo` prints `*.pdf`, because no file matches. <small>→ [Globbing](#globbing)</small>
+    the fifth `echo` prints `*.pdf`, because no file matches; the last one prints both names, even if the files do not
+    exist. <small>→ [Globbing](#globbing)</small>
 
 22. **Built-in or external**:
     1. find out with `type` what `cd`, `ls`, `sort`, `type` and `sleep` are;
@@ -1173,7 +1188,8 @@ processes, and check the PID twice before `kill -KILL`.
     3. print the `PATH`, and find in which of its directories `sort` is.
 
     **Check:** `cd` and `type` are built in, `ls` is an alias, `sort` and `sleep` are in `/usr/bin`; `kill` and `echo`
-    are built in, and also exist as programs in `/usr/bin`. <small>→ [Built-in and External Commands](#built-in-and-external-commands) · [The `PATH` Search](#the-path-search)</small>
+    are built in, and also exist as programs in `/usr/bin`. For a program you already ran, `type` says `hashed`, for
+    example `sleep is hashed (/usr/bin/sleep)`: the shell remembers where it found it. <small>→ [Built-in and External Commands](#built-in-and-external-commands) · [The `PATH` Search](#the-path-search)</small>
 
 23. **Command not found**:
     1. run `sl` (a typo of `ls`), and print the exit code;
@@ -1181,7 +1197,8 @@ processes, and check the PID twice before `kill -KILL`.
     3. run `/usr/bin/nope`, and print the exit code.
 
     **Check:** the shell searched all the directories of `PATH` and found no `sl`: the exit code is `127`, the code of
-    the shell for _command not found_; `/usr/bin/nope` is a path that does not exist, and its exit code is `127` too. <small>→ [The `PATH` Search](#the-path-search) · [Special Parameters](#special-parameters---and-)</small>
+    the shell for _command not found_; `/usr/bin/nope` is a path that does not exist, and its exit code is `127` too.
+    If the shell offers to install a package for `sl`, answer `N`. <small>→ [The `PATH` Search](#the-path-search) · [Special Parameters](#special-parameters---and-)</small>
 
 ### 🏠 Going Further {/* #going-further */}
 
@@ -1217,10 +1234,12 @@ processes, and check the PID twice before `kill -KILL`.
 
 28. **Leave an editor for a moment**:
     1. open `stubborn.sh` with `nano`;
-    2. stop `nano` with <kbd>Ctrl</kbd>+<kbd>Z</kbd>, and run `ls`;
-    3. go back to `nano`, and quit it.
+    2. stop `nano` with <kbd>Ctrl</kbd>+<kbd>Z</kbd> (if it does not stop, press <kbd>Ctrl</kbd>+<kbd>T</kbd>, then
+       <kbd>Ctrl</kbd>+<kbd>Z</kbd>), and run `ls`;
+    3. go back to `nano`, and quit it;
+    4. do the same with `less stubborn.sh`.
 
-    **Check:** `nano` comes back exactly as you left it. <small>→ [Stopping and Continuing](#stopping-and-continuing-fg-and-bg)</small>
+    **Check:** `nano` and `less` come back exactly as you left them. <small>→ [Stopping and Continuing](#stopping-and-continuing-fg-and-bg)</small>
 
 29. **A job that reads**:
     1. start `cat` in the background;
@@ -1241,7 +1260,7 @@ processes, and check the PID twice before `kill -KILL`.
 31. **Jobs belong to a shell**:
     1. in the second terminal, start `sleep 600` in the background;
     2. in the first terminal, list the jobs;
-    3. in the first terminal, find the PID of `sleep 600` and end it.
+    3. in the first terminal, find the PID of `sleep 600` with `pgrep -f 'sleep 600'`, and end it.
 
     **Check:** `jobs` prints nothing in the first terminal: every shell has only its own jobs. `kill %1` does not work
     there, but `kill <PID>` does, and the second terminal prints `Terminated` after its next command. <small>→ [Starting a Job](#starting-a-job-)</small>
@@ -1291,19 +1310,21 @@ processes, and check the PID twice before `kill -KILL`.
        `MESSAGE`;
     3. look for `MESSAGE` in the environment of the second shell in the same way.
 
-    **Check:** `sleep` has `MESSAGE=secret`, the shell of the second terminal does not. <small>→ [A Variable for One Command](#a-variable-for-one-command) · [The `/proc` File System](/docs/labs/03#the-proc-file-system)</small>
+    **Check:** `sleep` has `MESSAGE=secret`, the shell of the second terminal does not. `/proc/<PID>/environ` shows the
+    environment that a process received when it **started**: a variable that the shell exports later does not appear
+    there. <small>→ [A Variable for One Command](#a-variable-for-one-command) · [The `/proc` File System](/docs/labs/03#the-proc-file-system)</small>
 
 38. **The language of the messages**:
     1. run `ls /nope` with `LANG` set to `ro_RO.UTF-8` only for `ls`;
-    2. sort `my list.txt` with `sort`, then with `LANG=C` only for `sort`.
+    2. sort `my list.txt` with `sort` (the name has a space), then with `LANG=C` only for `sort`.
 
     **Check:** the error is in Romanian (if the language is installed); `sort` prints `apple`, `Banana`, `cherry`, but
     with `LANG=C` it prints `Banana` first: it compares the bytes, and all the upper case letters come before the lower
     case ones. <small>→ [A Variable for One Command](#a-variable-for-one-command)</small>
 
 39. **A new prompt**:
-    1. set `PS1` so that the prompt shows the user, the full current directory and the `$` (see the tip in
-       [Variables Defined by the System](#variables-defined-by-the-system));
+    1. set `PS1` so that the prompt shows the user, the path of the current directory (with `~` for your home
+       directory) and the `$` (see the tip in [Variables Defined by the System](#variables-defined-by-the-system));
     2. go to `~/lab04/glob`;
     3. check whether `PS1` is an environment variable.
 
@@ -1319,7 +1340,8 @@ processes, and check the PID twice before `kill -KILL`.
 
     then replace `sort` with `printf '[%s]\n'` and remove the `> sorted.txt` redirect, to check your answer.
 
-    **Check:** 5 words: `-r`, `/home/student/my notes.txt`, `my list.txt`, `a.csv` and `b.csv`. <small>→ [The Command Line](#the-command-line)</small>
+    **Check:** 5 words: `-r`, `/home/student/my notes.txt`, `my list.txt`, `a.csv` and `b.csv`. The output of `sort`
+    goes into `sorted.txt` and its errors into `errors.txt`; `LANG=C` is only in its environment. <small>→ [The Command Line](#the-command-line)</small>
 
 41. **Redirects anywhere**:
     1. run `2> errors.txt ls > list.txt /nope .`;
@@ -1338,17 +1360,19 @@ processes, and check the PID twice before `kill -KILL`.
 43. **Variables with spaces**:
     1. set `FILE="my notes.txt"`;
     2. run `cat $FILE`, then `cat "$FILE"`;
-    3. set `OPTS="-r -n"` and sort `a.csv` with `sort $OPTS`, then with `sort "$OPTS"`.
+    3. set `OPTS="-t, -k2 -n"` and sort `a.csv` and `b.csv` with `sort $OPTS`, then with `sort "$OPTS"`.
 
-    **Check:** `cat $FILE` looks for `my` and `notes.txt`; `cat "$FILE"` works. `sort $OPTS` receives two options and
-    works, `sort "$OPTS"` receives one word, `-r -n`, which is not a valid option. <small>→ [Quoting and Escaping](#quoting-and-escaping)</small>
+    **Check:** `cat $FILE` looks for `my` and `notes.txt`; `cat "$FILE"` works. `sort $OPTS` receives three options
+    and sorts the lines by the number after the comma: `cherry,1`, `banana,3`, `apple,5`, `kiwi,7`. `sort "$OPTS"`
+    receives one word, so `-t` takes `, -k2 -n` as the separator: `sort: multi-character tab`. <small>→ [Quoting and Escaping](#quoting-and-escaping)</small>
 
 44. **Special names**:
-    1. create the files `rock & roll.txt`, `it's mine.txt` and `100$.txt` with **one** `touch` command;
-    2. list them with `ls`;
+    1. create the files `rock & roll.txt`, `it's mine.txt` and `$HOME.txt` with **one** `touch` command;
+    2. list them with `ls`, then with `ls -N`;
     3. delete them with **one** `rm` command, this time using `\` instead of quotes.
 
-    **Check:** `ls` shows exactly these three names, and `rm` deletes all three. <small>→ [Quoting and Escaping](#quoting-and-escaping)</small>
+    **Check:** `ls` shows the names between quotes, only for display; `ls -N` shows exactly these three names, and
+    `$HOME.txt` is not `/home/student.txt`. `rm` deletes all three. <small>→ [Quoting and Escaping](#quoting-and-escaping)</small>
 
 45. **Names from braces**:
     1. in `~/lab04`, create the directories `trips/2025` and `trips/2026` with one `mkdir -p` command and `{...}`;
@@ -1362,11 +1386,12 @@ processes, and check the PID twice before `kill -KILL`.
     1. print all the `.txt` files from `glob`, at any depth (turn `globstar` on first);
     2. print only `photo1.png` and `photo2.png`, with one glob;
     3. create `photo4.png`, `photo5.png` and `photo6.png` with one `touch` and a `{...}` range;
-    4. print the hidden files of your home directory, with `echo` and a glob, without `.` and `..` (look in
-       `man bash`, at `Pattern Matching`).
+    4. print the hidden files of your home directory with `echo ~/.*`, and check whether the list has `.` and `..`;
+       find the `shopt` option that decides this in `man bash`.
 
     **Check:** the first list has `docs/2026/exam.txt`, `docs/plan.txt`, `notes.txt` and `todo.txt`; `photo?.png` now
-    matches 7 files. <small>→ [Globbing](#globbing)</small>
+    matches 7 files; `~/.*` has `.bashrc` and the other hidden files, but not `.` and `..`: the option `globskipdots`
+    is on by default since `bash` 5.2. <small>→ [Globbing](#globbing)</small>
 
 47. **Glob or text**: In `~/lab04/glob`:
     1. run `find . -name *.txt`;
@@ -1384,7 +1409,8 @@ processes, and check the PID twice before `kill -KILL`.
     4. add `~/lab04/bin` at the **end** of `PATH`, go to your home directory and run `hello`.
 
     **Check:** `hello` alone is `command not found`, but `bin/hello`, `/home/student/lab04/bin/hello` and, in `bin`,
-    `./hello` work; after the change of `PATH`, `hello` works from any directory, and `type hello` shows its path. <small>→ [The `PATH` Search](#the-path-search)</small>
+    `./hello` work; after the change of `PATH`, `hello` works from any directory, and `type hello` shows its path
+    (`hello is hashed (...)`, because you already ran it). <small>→ [The `PATH` Search](#the-path-search)</small>
 
 49. **A broken PATH**: Open a new terminal:
     1. set `PATH` to `/tmp`, and run `ls`;
@@ -1400,18 +1426,21 @@ processes, and check the PID twice before `kill -KILL`.
     2. open a **new** terminal and run `hello` from your home directory;
     3. find out from where it was started.
 
-    **Check:** `type hello` prints `/home/student/.local/bin/hello`: on Fedora, this directory is already in `PATH`. <small>→ [The `PATH` Search](#the-path-search)</small>
+    **Check:** `type hello` prints `hello is hashed (/home/student/.local/bin/hello)`: on Fedora, this directory is
+    already in `PATH`. <small>→ [The `PATH` Search](#the-path-search)</small>
 
 51. **Who wins**:
-    1. create the directory `~/lab04/first` with a program `ls` in it that prints `Not the real ls!` (do as for
-       `bin/hello` in exercise 1, with `printf` and `chmod +x`);
+    1. create the directory `~/lab04/first` with two programs, `ls` and `echo`, that print `Not the real ls!` and
+       `Not the real echo!` (do as for `bin/hello` in exercise 1: `printf` with **single** quotes, then `chmod +x`);
     2. add `~/lab04/first` at the **beginning** of `PATH`;
-    3. run `ls` and `/usr/bin/ls`, and `type -a ls`;
-    4. remove the alias of `ls` with `unalias ls`, and run `ls` again;
+    3. run `ls`, `\ls`, `/usr/bin/ls` and `echo hi`;
+    4. run `type -a ls` and `type -a echo`;
     5. close the terminal.
 
-    **Check:** with the alias, `ls` still runs the real one, because an alias comes before the search; without the
-    alias, `ls` prints `Not the real ls!`, because `~/lab04/first` is the first directory of `PATH`. <small>→ [The `PATH` Search](#the-path-search)</small>
+    **Check:** `ls` and `\ls` (which skips the alias) both print `Not the real ls!`: the alias only replaces the word
+    `ls` with `ls --color=auto`, and this `ls` is still searched in `PATH`, where `~/lab04/first` comes first.
+    `/usr/bin/ls` is a path, so there is no search. `echo hi` prints `hi`: a built-in command comes before the `PATH`
+    search. `type -a` lists the meanings in the order the shell tries them. <small>→ [The `PATH` Search](#the-path-search)</small>
 
 ### 📝 Challenges {/* #challenges */}
 
@@ -1432,8 +1461,8 @@ processes, and check the PID twice before `kill -KILL`.
        with the columns `pid`, `ppid`, `sid`, `tty` and `comm`;
     5. end the two `sleep` processes.
 
-    **Check:** the window closed, but both `sleep` processes are still running, without a terminal and with the parent
-    `1`: the shell could not send `SIGHUP` to them. <small>→ [Closing the Terminal](#closing-the-terminal-sighup-and-nohup)</small>
+    **Check:** the window closed, but both `sleep` processes are still running, without a terminal; their new parent is
+    PID `1`, or a process that adopts orphans, like `systemd --user`. The shell could not send `SIGHUP` to them. <small>→ [Closing the Terminal](#closing-the-terminal-sighup-and-nohup)</small>
 
 54. **A session in text mode**:
     1. log in on `/dev/tty3` (<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F3</kbd>) and start `sleep 1000 &`;
@@ -1455,10 +1484,12 @@ processes, and check the PID twice before `kill -KILL`.
 56. **Your own alias**:
     1. add the line `alias lt='ls -lt'` at the end of `~/.bashrc`, with `nano`;
     2. run `lt` in the same terminal, then in a **new** terminal;
-    3. find out with `type` what `lt` is.
+    3. in the old terminal, run `source ~/.bashrc`, and try `lt` again;
+    4. find out with `type` what `lt` is.
 
-    **Check:** in the old terminal, `lt` is `command not found`: `bash` reads `~/.bashrc` only when it starts; in the new
-    terminal, `lt` lists the files, the newest first, and `type` prints ``lt is aliased to `ls -lt'``. <small>→ [Built-in and External Commands](#built-in-and-external-commands)</small>
+    **Check:** in the old terminal, `lt` is `command not found` at first: `bash` reads `~/.bashrc` only when it starts,
+    or when you ask it to with `source`; in the new terminal, and after `source`, `lt` lists the files, the newest
+    first, and `type` prints ``lt is aliased to `ls -lt'``. <small>→ [Built-in and External Commands](#built-in-and-external-commands)</small>
 
 57. **An empty environment**: Look in `man env` for the option that starts a command with an **empty** environment.
     1. run `env` with this option, followed by `bash -c 'echo "[$HOME] [$PATH]"'`;
@@ -1476,21 +1507,23 @@ processes, and check the PID twice before `kill -KILL`.
     **Check:** `$!` is the PID of `sleep 400`, the last process of the pipe; `jobs -l` shows both PIDs; `kill %1` ends
     both processes, because it sends the signal to the whole process group. <small>→ [Starting a Job](#starting-a-job-) · [Sessions and Process Groups](#sessions-and-process-groups)</small>
 
-59. **Count with globs**: Without `ls` or `find`, using only a glob:
-    1. print, one per line, the programs in `/usr/bin` whose name starts with `g` and has exactly 4 characters (use
+59. **Count with globs**: Go to `/usr/bin` and, without `ls` or `find`, using only a glob:
+    1. print, one per line, the programs whose name starts with `g` and has exactly 4 characters (use
        `printf '%s\n'`);
     2. count them, in the same command line;
-    3. do the same for the programs whose name ends with a digit.
+    3. do the same for the programs whose name ends with a digit;
+    4. go back to `~/lab04`.
 
-    **Check:** the first count is the same as `find /usr/bin -name 'g???' | wc -l`; the list of the first command has
-    `gzip` and `grep`. <small>→ [Globbing](#globbing) · [Pipes](/docs/labs/03#pipes-)</small>
+    **Check:** the first count is the same as `find /usr/bin -maxdepth 1 -name 'g???' | wc -l`; the first list has
+    `gzip` and `grep`, and the third one has `python3`. <small>→ [Globbing](#globbing) · [Pipes](/docs/labs/03#pipes-)</small>
 
 60. **Another shell**:
     1. install `zsh` with `sudo dnf install zsh`, and start it by typing `zsh` (if it shows a configuration menu, press
        <kbd>q</kbd>);
     2. in `~/lab04/glob`, run `echo *.pdf` and `echo docs/**/*.txt`;
     3. set `NAME="Alice   Smith"` and run `printf '[%s]\n' $NAME`;
-    4. leave `zsh` with `exit`, and run the same three commands in `bash`, without `globstar`.
+    4. leave `zsh` with `exit`, open a **new** terminal (so that `globstar` is off), go to `~/lab04/glob`, set `NAME`
+       again and run the same three commands in `bash`.
 
     **Check:** `zsh` prints `zsh: no matches found: *.pdf` and does not run `echo`; it understands `**` without any
     option, and it does **not** split `$NAME` into words. `bash` prints `*.pdf`, only `docs/2026/exam.txt` (without
@@ -1505,12 +1538,14 @@ processes, and check the PID twice before `kill -KILL`.
     number of the signal (`2`, `3` and `9`). <small>→ [Special Parameters](#special-parameters---and-) · [Signals](#signals)</small>
 
 62. **Clean up**:
-    1. end all your `sleep` processes with **one** command (look in `man pkill`);
-    2. delete `~/.local/bin/hello`, `~/lab04/first`, `~/lab04/trips`, `found.txt`, `list.txt`, `errors.txt`, `all.txt`
-       and `sorted.txt` with one `rm` command, without errors for the ones that do not exist;
+    1. end all your `sleep` processes with **one** command (look in `man pkill` for how to match the exact name);
+    2. delete `~/.local/bin/hello`, `~/lab04/first`, `~/lab04/trips`, `glob/photo4.png`, `glob/photo5.png`,
+       `glob/photo6.png`, `found.txt`, `list.txt`, `errors.txt`, `all.txt` and `sorted.txt` with one `rm` command,
+       without errors for the ones that do not exist (use `{...}` for the photos);
     3. remove the `lt` alias from the end of `~/.bashrc`, with `nano`.
 
-    **Check:** `pgrep sleep` prints nothing, and `ls ~/lab04` shows only the files from exercise 1. <small>→ [Managing Files](/docs/labs/02#managing-files)</small>
+    **Check:** `pgrep sleep` prints nothing, `ls ~/lab04` shows only the files from exercise 1, and `ls ~/lab04/glob`
+    shows the same 7 names as before exercise 46. <small>→ [Managing Files](/docs/labs/02#managing-files)</small>
 
 ## Wrap-up Questions
 
