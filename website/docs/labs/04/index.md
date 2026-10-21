@@ -54,11 +54,11 @@ mainframe.
 Today, the kernel gives every program that runs in a terminal a **terminal device**, a special file in `/dev`. The
 program reads the keys from it and writes the text to it, through the file descriptors `0`, `1` and `2`.
 
-| Device                                  | What it is                                                                                         |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `/dev/tty1` ... `/dev/tty6`             | the **virtual terminals** of the kernel: each one uses the screen and the keyboard of the computer, one at a time |
-| `/dev/pts/0`, `/dev/pts/1`, ...         | the **pseudo terminals**: one for every terminal window or tab, and for every SSH connection |
-| `/dev/tty`                              | always the terminal of the process that opens it                                                   |
+| Device                          | What it is                                                                                                        | In `ps`                        |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `/dev/tty1`, `/dev/tty2`, ...   | the **virtual terminals** of the kernel: each one uses the screen and the keyboard of the computer, one at a time | `tty1`                         |
+| `/dev/pts/0`, `/dev/pts/1`, ... | the **pseudo terminals**: one for every terminal window or tab, and for every SSH connection                      | `pts/0`                        |
+| `/dev/tty`                      | not a terminal of its own: a **shortcut** to the terminal of the process that opens it                            | never: `ps` shows the real one |
 
 ### Virtual Terminals
 
