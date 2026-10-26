@@ -2,7 +2,7 @@
 #import "common.typ": *
 
 #slide[
-  = Becoming `root` #text(size: 10pt, weight: "regular")[\ `sudo`, `su` _and the_ `sudoers` _file_]
+  = Becoming `root` #text(size: 10pt, weight: "regular")[\ `sudo` _and_ `su`]
 ]
 
 #slide[
@@ -103,23 +103,60 @@
 ]
 
 #let sudo-notes = (
-  ("🪄", [`sudo` is a _setuid_ program], [the `s` bit: it always runs as `root`, but it knows who started it]),
-  ("📜", [is `alice` allowed?], [`sudo` reads `/etc/sudoers`: `alice` is in the group `sudo`, she may run *any* command]),
-  ("🔑", [who is at the keyboard?], [it asks for the password of *`alice`*, not the one of `root`]),
-  ("⏱️", [remembered for a while], [no password again for the next 5 minutes, in the same terminal]),
-  ("🚫", [not allowed], [`bob` is not in `/etc/sudoers`: `sudo` refuses and writes the attempt in the log]),
-  ("📒", [everything is written down], [the log shows *who* ran *what*, *where* and *as whom*]),
+  [🔑 `sudo` asks for the password of *`alice`*, not the one of `root`],
+  [📜 `/etc/sudoers` says who may become `root`: `alice` may, so `whoami` runs as `root`],
+  [⏱️ no password again for the next 5 minutes, in the same terminal],
+  [🚫 `bob` is not in `/etc/sudoers`: `sudo` refuses, `whoami` never starts],
+  [📒 every attempt is written in the log: *who* ran *what*, *as whom*],
 )
 
+// what `sudo` does, one drawing per step; every box keeps its place
+#let how-sudo-drawing(step) = {
+  let user = if step == 4 { "bob" } else { "alice" }
+  let ok = step != 4
+  let shown(from, body) = if step >= from { body } else { hide(body) }
+  let arrow(from-pos, to-pos, label, color: arrow-gray, on: true, dash: none) = edge(
+    from-pos, to-pos, arrow-marks,
+    stroke: (paint: if on { color } else { white }, thickness: arrow-thickness, dash: dash),
+    label: if on and label != none { text(size: 0.9em, fill: if color == arrow-gray { luma(110) } else { color }, label) },
+    label-side: left,
+  )
+  let plain(body, stroke: 0.8pt + luma(150), dash: none) = box(inset: (x: 0.6em, y: 0.45em), radius: 0.3em, stroke: (paint: stroke.paint, thickness: stroke.thickness, dash: dash), fill: white, align(center, body))
+
+  let sudo-box = plain[⚙️ #text(font: mono, weight: "bold")[sudo whoami] \ #text(size: 0.8em, fill: luma(110))[started by #raw(user)]]
+  let password = if step == 3 {
+    plain(stroke: 0.8pt + accent)[⏱️ remembered \ #text(size: 0.8em, fill: luma(110))[no password]]
+  } else {
+    plain(stroke: 0.8pt + accent)[🔑 password \ #text(size: 0.8em, fill: luma(110))[of #raw(user)]]
+  }
+  let sudoers = plain[📜 #text(font: mono, weight: "bold")[/etc/sudoers] \ #text(size: 0.8em, fill: luma(110))[who may become `root`]]
+  let answer = verdict(ok, if ok [#raw(user) may] else [#raw(user) may not])
+  let child = if ok { proc-box("whoami", "root", 0) } else { plain(stroke: 0.8pt + luma(170), dash: "dashed", text(fill: luma(150))[⚙️ `whoami` \ #text(size: 0.85em)[never starts]]) }
+  let log = plain[📒 *the log* \ #text(size: 0.8em, fill: luma(110))[`journalctl -t sudo`]]
+
+  set text(size: 0.85em)
+  diagram(
+    spacing: (2.5em, 2.2em),
+    thing((0, 0), sudo-box),
+    thing((1, 0), shown(1, password)),
+    arrow((0, 0), (1, 0), [asks]),
+    thing((0, 1), shown(2, sudoers)),
+    arrow((0, 0), (0, 1), [may #raw(user)?], on: step >= 2),
+    thing((1, 1), shown(2, answer)),
+    thing((0, 2), shown(2, child)),
+    arrow((0, 1), (0, 2), if ok [starts] else [refuses], color: if ok { ok-color } else { bad-color }, on: step >= 2),
+    thing((1, 2), shown(5, log)),
+    arrow((0, 1), (1, 2), [writes], on: step >= 5, dash: "dotted"),
+  )
+}
+
 #slide[
-  == How `sudo` Works
+  == Who can use `sudo`
   🛡️ a program that decides who may become `root`
 
-  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
+  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
     #set text(size: 0.7em)
-    #prompt-term(reveal: (2, 5, 5, 7, 10, 14))[```
-    alice@laptop:~$ ls -l /usr/bin/sudo
-    -rwsr-xr-x 1 root root 277936 /usr/bin/sudo
+    #prompt-term(reveal: (2, 3, 5, 8, 12))[```
     alice@laptop:~$ sudo whoami
     [sudo] password for alice:
     root
@@ -134,13 +171,15 @@
     bob : user NOT in sudoers ; TTY=pts/1 ; USER=root ; ...
     ```]
   ][
-    #set text(size: 0.9em)
-    #only(1)[#card(icon: sudo-notes.at(0).at(0), title: sudo-notes.at(0).at(1), sudo-notes.at(0).at(2))]
-    #for (i, (icon, title, body)) in sudo-notes.slice(1).enumerate() {
-      let step = i + 2
-      only(if step == 6 { "6-" } else { step }, card(icon: icon, title: title, color: if step == 5 { bad-color } else { accent }, body))
+    #for step in range(1, 6) {
+      only(if step == 5 { "5-" } else { step }, align(center, how-sudo-drawing(step)))
     }
   ]
+
+  #v(0.8em)
+  #for (i, note) in sudo-notes.enumerate() {
+    only(if i == 4 { "5-" } else { i + 1 }, note)
+  }
 ]
 
 #slide[

@@ -33,17 +33,15 @@
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
     - every group has a *name* and a *GID*
-    #uncover("2-")[#block[- every user has *one primary group* (the GID in `/etc/passwd`)]]
-    #uncover("3-")[#block[- 💡 usually a group with the same name as the user, only for them]]
-    #uncover("4-")[#block[- and any number of *supplementary groups*]]
-    #uncover("5-")[#block[- a file belongs to *one user* and *one group*]]
+    #uncover("2-")[#block[- every user has *one primary group* (the GID in `/etc/passwd`), usually a group with the same name as the user, only for them]]
+    #uncover("3-")[#block[- and any number of *supplementary groups*]]
   ][
     #set text(size: 0.9em)
     #let cell(group, user) = {
       let (name, gid, members) = group
       if user in members {
         let primary = members.at(user)
-        uncover(if primary { "2-" } else { "4-" }, if primary [⭐] else [●])
+        uncover(if primary { "2-" } else { "3-" }, if primary [⭐] else [●])
       } else []
     }
     #table(
@@ -68,14 +66,15 @@
     size: 1.35em,
     intro: card(icon: "📒", title: [4 fields, separated by `:`])[
       ```terminal
-      $ grep students /etc/group
+      $ grep students /etc/group   # only the local file
+      $ getent group students      # the groups database
       ```
-      🌍 everyone can read it
+      🌍 everyone can read it, `getent` asks the network too, like `getent passwd`
     ],
     (
       ("🏷️", [group name], [the name of the group]),
       ("🔒", [password], [`x` - almost never used]),
-      ("🔢", [GID], [the group ID, the kernel only knows the GID]),
+      ("🔢", [GID], [the group ID, the kernel uses the GID]),
       ("👥", [members], [the users that have this group as a *supplementary* group, separated by `,`\ ⚠️ the users that have it as *primary* group are not listed here]),
     ),
   )

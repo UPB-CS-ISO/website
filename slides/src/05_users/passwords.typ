@@ -80,10 +80,7 @@
     shadow-fields,
     size: 1.25em,
     intro: card(icon: "🔐", title: [9 fields, separated by `:`])[
-      ```terminal
-      $ getent shadow alice   # nothing
-      ```
-      a normal user cannot read it, not even their own line
+      the line of `alice`
     ],
     (
       ("🏷️", [username], [the same name as in `/etc/passwd`]),
@@ -128,6 +125,7 @@
 // dotted line starts right under its field.
 // `step` - the names shown so far: the hash (1), the salt (2), the algorithm
 // and the parameters (5), the others keep their place
+// (the slide calls it with 1, 2 and then 5)
 #let hash-anatomy(step) = {
   set text(size: 0.75em)
   context {
@@ -172,19 +170,17 @@
   🧂 a hash, with salt, in `/etc/shadow`
 
   #align(center)[
-    #for step in range(1, 5) {
+    #for step in range(1, 3) {
       only(step, hash-anatomy(step))
     }
-    #only("5-", hash-anatomy(5))
+    #only("3-", hash-anatomy(5))
   ]
   #v(0.5em)
 
   #set text(size: 0.9em)
   - the password is never stored, only its *hash*: a *one way* function, it cannot be turned back into the password
-  #uncover("2-")[#block[- a random *salt* is added to the password before hashing]]
-  #uncover("3-")[#block[- two users with the same password get *different* hashes: `bob` with `pass123` has #text(font: mono, size: 0.85em)[\$#text(fill: hl, weight: "bold")[Lp0w]…\$#text(fill: accent, weight: "bold")[Tz7k]…]]]
-  #uncover("4-")[#block[- an attacker cannot use a list of hashes computed in advance]]
-  #uncover("5-")[#block[- the *algorithm* and its *parameters* are stored too: they are needed to check the password]]
+  #uncover("2-")[#block[- a random *salt* is added to the password before hashing: two users with the same password get *different* hashes]]
+  #uncover("3-")[#block[- the *algorithm* and its *parameters* are stored too: they are needed to check the password]]
 ]
 
 // Checking a password: the algorithm, the parameters and the salt from

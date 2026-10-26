@@ -1,7 +1,7 @@
 #import "/src/slides.typ": *
 #import "common.typ": *
 
-#show: uso_slides.with(title: "Users")
+#show: uso_slides.with(title: "5. Users")
 
 // every permission string, `-rw-r-----`, in the colors of u, g and o
 #show mode-pattern: it => mode-text(it.text)
@@ -54,10 +54,10 @@
   - Logging In
   - The `root` User
   - Becoming `root`
-  - The `sudoers` File
+  - File Permissions
+  - Special Permissions
   - The Prompt
   - Managing Users and Groups
-  - File Permissions
 ]
 
 #include "users.typ"
@@ -67,10 +67,10 @@
 #include "login.typ"
 #include "root.typ"
 #include "sudo.typ"
-#include "sudoers.typ"
+#include "permissions.typ"
+#include "special.typ"
 #include "prompt.typ"
 #include "management.typ"
-#include "permissions.typ"
 
 #slide[
   == We talked about
@@ -82,8 +82,8 @@
   - Logging In
   - The `root` User
   - Becoming `root`
-  - The `sudoers` File
+  - File Permissions
+  - Special Permissions
   - The Prompt
   - Managing Users and Groups
-  - File Permissions
 ]

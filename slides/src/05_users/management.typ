@@ -19,63 +19,6 @@
 ]
 
 #slide[
-  == Who Am I?
-  🔍 commands that only *read*, any user can run them
-
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.8em)
-    #reveal-terminal(before: none, lines: (2, 4, 6, 9, 11), full: false)[```terminal
-    $ whoami
-    alice
-    $ id
-    uid=1000(alice) gid=1000(alice) groups=1000(alice),27(sudo),1100(students)
-    $ groups bob
-    bob : bob students
-    $ who
-    alice    tty1    2026-10-11 08:55
-    bob      pts/0   2026-10-11 09:02 (10.0.0.7)
-    $ getent passwd bob
-    bob:x:1001:1001:Bob Jones,,,:/home/bob:/bin/bash
-    ```]
-  ][
-    #only(1)[#card(icon: "🙋", title: [`whoami`])[the name of the user of the *current process*]]
-    #only(2)[#card(icon: "🪪", title: [`id [user]`])[the *whole label*: UID, primary GID and the supplementary groups]]
-    #only(3)[#card(icon: "👥", title: [`groups [user]`])[only the names of the groups]]
-    #only(4)[#card(icon: "🖥️", title: [`who`, `w`])[who is logged in now, on which terminal, from where\ `last` - who logged in before]]
-    #only(5)[#card(icon: "📚", title: [`getent passwd [user]`])[asks the *users database*: the local files #emph[and] the network (see _Logging In_)]]
-  ]
-]
-
-#slide[
-  == Editing the Files
-  ✏️ the database is made of text files, they can be edited
-
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #table(
-      columns: (auto, auto),
-      table.header([File], [Edit it with]),
-      [`/etc/passwd`], [`sudo vipw`],
-      [`/etc/shadow`], [`sudo vipw -s`],
-      [`/etc/group`], [`sudo vigr`],
-    )
-  ][
-    #uncover("2-")[
-      #card(icon: "🔒", title: [why not just `nano /etc/passwd`?])[
-        - `vipw` and `vigr` *lock* the file, so no other program changes it at the same time
-        - they *check* the file before saving it
-      ]
-    ]
-    #uncover("3-")[
-      #card(icon: "⚠️", title: [a mistake can lock you out], color: bad-color)[
-        a broken `root` line means nobody can log in as `root` any more
-      ]
-    ]
-  ]
-
-  #uncover("4-")[💡 usually the *commands* on the next slide are the safer way]
-]
-
-#slide[
   == The Commands
   🛠️ they edit the files for you, they need `root`
 
@@ -199,52 +142,5 @@
     #for step in range(1, 6) {
       only(if step == 5 { "5-" } else { step }, label-drawing(step))
     }
-  ]
-]
-
-#slide[
-  == Who May Use `sudo`?
-  👥 usually you do not edit the file, you join the group
-
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.8em)
-    #reveal-terminal(before: none, lines: (1, 4), full: false)[```terminal
-    $ sudo usermod -aG sudo bob
-    $ sudo -l -U bob
-    User bob may run the following commands on laptop:
-        (ALL : ALL) ALL
-    ```]
-  ][
-    #only(1)[- `bob` joins `sudo` (`wheel` on Fedora): the rule `%sudo` gives him the rights]
-    #only("2-")[- `sudo -l` lists what *you* may run, `-U` asks for another user]
-
-    #uncover("3-")[
-      #card(icon: "💡", title: [log in again])[
-        `bob` must *log in again* before the new group takes effect
-      ]
-    ]
-  ]
-]
-
-#slide[
-  == Groups Give Rights
-  🔑 some groups are special, joining them gives a right
-
-  #table(
-    columns: (auto, 1fr),
-    table.header([Group], [Its members can]),
-    [`sudo` / `wheel`], [become `root` with `sudo` (Debian, Ubuntu / Fedora, Arch)],
-    [`adm`], [read the logs from `/var/log`],
-    [`dialout`], [use the serial ports, `/dev/ttyUSB0` (Arduino, microcontrollers)],
-    [`audio`, `video`], [use the sound card and the camera directly],
-    [`docker`], [start containers, ⚠️ almost the same as being `root`],
-  )
-
-  #uncover("2-")[
-    #set text(size: 0.8em)
-    ```terminal
-    $ ls -l /dev/ttyUSB0
-    crw-rw---- 1 root dialout 188, 0 Oct 11 09:00 /dev/ttyUSB0
-    ```
   ]
 ]

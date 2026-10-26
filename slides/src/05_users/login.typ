@@ -58,7 +58,7 @@
 #let login-notes = (
   ("⌨️", [the name], [`agetty` waits on the terminal, as `root`, for a user name]),
   ("🔑", [the password], [`agetty` *becomes* `login` (`exec`), still `root`, it asks for the password]),
-  ("✅", [the check], [`login` finds `alice`, hashes the password with the salt from `/etc/shadow` and compares]),
+  ("✅", [the check], [`login` finds `alice`#footnote[`login` asks the C library (`getpwnam()`, `getspnam()`), that may also find the users on a network server], hashes the password with the salt from `/etc/shadow` and compares]),
   ("🏷️", [the label], [a child of `login` sets the *GID*, the *groups* and the *UID* of `alice`\ ⚠️ after `setuid` it can *never* go back to `root`]),
   ("🐚", [the shell], [it changes to the home directory and runs the *shell* from `/etc/passwd`\ every program `alice` starts inherits the label]),
 )
@@ -93,6 +93,8 @@
   == Logging In Locally
   🖥️ a text terminal, `/dev/tty1`
 
+  #counter(footnote).update(0)
+
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
     #set text(size: 0.8em)
     #for (i, tree) in login-trees.enumerate() {
@@ -117,8 +119,6 @@
     }
   ]
 
-  #align(bottom)[
-    💡 a graphical login (`gdm`, `sddm`) and `ssh` do the *same steps* \
-    🌐 in a university or a company, users can also log in with an account kept on a *server*
-  ]
+  #v(1fr)
+  💡 a graphical login (`gdm`, `sddm`) and `ssh` do the *same steps*
 ]

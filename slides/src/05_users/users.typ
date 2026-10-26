@@ -97,7 +97,7 @@
 )
 
 #slide[
-  == A User Is a Label
+  == A User Is a Label (number)
   🏷️ the kernel checks the label of a process for *every action*
 
   #toolbox.side-by-side(columns: (5fr, 4fr), gutter: 1.5em)[
