@@ -128,7 +128,7 @@
   📚 every program that shows a user name reads `/etc/passwd`, through the C library
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.9em)
+    #set text(size: 0.85em)
     - the kernel gives programs only *UIDs*: `getuid()` tells `whoami` that it runs as UID `1000`
     #uncover("2-")[#block[
       - to find the *name*, the program calls a function of the C library:
@@ -138,11 +138,10 @@
     ]]
     #uncover("3-")[#block[- `libc` reads `/etc/passwd` and returns a `struct passwd`: name, UID, GID, home, shell]]
     #uncover("4-")[#block[- `ls`, `ps`, `id`, `whoami`, the prompt ... all do this, so `/etc/passwd` must be readable by *everyone*]]
+    #uncover("5-", key("⚠️", [never read `/etc/passwd` directly (`grep`, `cut`): the users may also come from other places], none, color: bad-color))
   ][
     #lookup-drawing
   ]
-
-  #uncover("5-")[⚠️ never read `/etc/passwd` directly (`grep`, `cut`): the users may also come from other places]
 ]
 
 // the forms of `getent passwd`, one per step
@@ -180,5 +179,5 @@
     only(if i == 2 { "3-" } else { i + 1 }, getent-table(i))
   }
 
-  #uncover("3-")[✅ the same format as `/etc/passwd`: use `getent` in scripts, instead of `grep` or `cut`]
+  #uncover("3-", key("✅", [the same format as `/etc/passwd`: use `getent` in scripts, instead of `grep` or `cut`], none, color: ok-color))
 ]

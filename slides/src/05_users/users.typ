@@ -166,11 +166,9 @@
     [`65534`], [🚫 `nobody`], [a user that owns *nothing*], [`nobody`],
   )
 
-  #uncover("2-")[
-    💡 a *system user* isolates a service: if `nginx` is hacked, the attacker is `www-data`, not `root`
-  ]
-
+  #uncover("2-", key("💡", [a *system user* isolates a service], [if `nginx` is hacked, the attacker is `www-data`, not `root`]))
   #uncover("3-")[
-    💡 the limits are set in `/etc/login.defs` (`UID_MIN`, `SYS_UID_MAX`, ...)
+    #set text(size: 0.9em)
+    the limits are set in `/etc/login.defs` (`UID_MIN`, `SYS_UID_MAX`, ...)
   ]
 ]

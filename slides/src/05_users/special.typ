@@ -55,15 +55,13 @@
       uncover("3-", none-yet), uncover("3-")[in a directory everyone can write, you can delete or rename *only your own* files],
   )
 
-  #uncover("4-")[
-    💡 a capital `S` or `T`: the bit is set, but the `x` under it is not
-    #v(0.2em)
+  #uncover("4-", key("💡", [a capital `S` or `T`: the bit is set, but the `x` under it is not])[
     #align(center)[
       #mark-mode("-rwSr--r--", 3) #h(0.4em) means #h(0.4em) #decode("-rwSr--r--", 3, "setuid", u-color)
       #h(2.5em)
       #mark-mode("drwxrwxrwT", 9) #h(0.4em) means #h(0.4em) #decode("drwxrwxrwT", 9, "sticky", o-color)
     ]
-  ]
+  ])
 ]
 
 // setuid at work: `alice` runs a program owned by root with the `s` bit,
@@ -166,11 +164,7 @@
     ]
 
     #v(0.4em)
-    #uncover("3-")[
-      ⚠️ on *your* program it is risky too: whoever runs it acts as *you*, with your files
-      #v(0.2em)
-      ✅ leave the `s` bit to the programs made for it: `sudo`, `passwd`, `su`
-    ]
+    #uncover("3-", key("✅", [leave the `s` bit to the programs made for it: `sudo`, `passwd`, `su`], [on *your* program it is risky too: whoever runs it acts as *you*, with your files], color: ok-color))
   ]
 ]
 

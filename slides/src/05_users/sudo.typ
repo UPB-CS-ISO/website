@@ -97,9 +97,7 @@
     ]
   ]
 
-  #uncover("3-")[
-    💡 on some systems (Ubuntu, macOS) `root` has *no password* (`!` in `/etc/shadow`), only `sudo` works
-  ]
+  #uncover("3-", key("💡", [`root` may have *no password*], [on some systems (Ubuntu, macOS) it is `!` in `/etc/shadow`, only `sudo` works]))
 ]
 
 #let sudo-notes = (
@@ -266,12 +264,11 @@
   #only(1)[
     #align(center, trap-drawing)
     #v(0.3em)
-    💡 the *shell* of `alice` opens the file for `>>`, *before* `sudo` starts: the redirect is not part of the command
+    #key("💡", [the *shell* of `alice` opens the file for `>>`, *before* `sudo` starts: the redirect is not part of the command], none)
   ]
   #only("2-")[
     #align(center, tee-drawing)
     #v(0.3em)
-    💡 `tee` writes its input to a file *and* to the screen, `sudo` runs it as `root`, so `tee` opens the file \
-    `-a` *appends*, like `>>` (without `-a`, `tee` replaces the whole file)
+    #key("💡", [`tee` writes to the file *and* to the screen, as `root`; `-a` *appends*, like `>>`], none)
   ]
 ]

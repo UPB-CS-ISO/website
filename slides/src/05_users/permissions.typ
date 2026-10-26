@@ -156,10 +156,7 @@
   #for (i, note) in dir-notes.enumerate() {
     only(if i == 3 { "4-" } else { i + 1 }, note)
   }
-  #uncover("2-")[
-    #v(0.2em)
-    ✅ the files are `r--r--r--`, but `alice` has `w` on `project`: it is the *list* that changes
-  ]
+  #uncover("2-", key("✅", [it is the *list* that changes], [the files are `r--r--r--`, but `alice` has `w` on `project`], color: ok-color))
 ]
 
 // (user, UID, groups, the rule that matches, can read, can write)
@@ -372,6 +369,71 @@
       ]
     ]
   ]
+]
+
+// three permission sets, each in its color: ("rw-", "r--", "r--")
+#let sets-text(sets) = text(font: mono, {
+  for (i, letters) in sets.enumerate() {
+    if i > 0 { h(0.4em) }
+    text(fill: set-colors.at(i), letters)
+  }
+})
+
+// umask at work: the start, the bits that are removed, the result
+// (label, start sets, start octal, mask sets, mask octal, result sets, result octal)
+#let umask-calc(label, start, start-n, mask, mask-n, result, result-n) = {
+  set text(size: 0.9em)
+  table(
+    columns: (auto, auto, auto),
+    align: (left, center, center),
+    stroke: none,
+    inset: (x: 0.6em, y: 0.35em),
+    table.header(table.cell(colspan: 3, align: center, text(weight: "bold", label))),
+    table.hline(stroke: 0.5pt + luma(200)),
+    [the program asks for], sets-text(start), text(font: mono, start-n),
+    [#text(fill: bad-color)[−] `umask` removes], text(fill: bad-color, font: mono, mask.join(h(0.4em))), text(font: mono, fill: bad-color, mask-n),
+    table.hline(stroke: 0.8pt + luma(120)),
+    [*the result*], sets-text(result), text(font: mono, weight: "bold", result-n),
+  )
+}
+
+#slide[
+  == `umask`
+  🎭 the permissions that new files *do not* get
+
+  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
+    #set text(size: 0.75em)
+    #reveal-terminal(before: none, lines: (2, 5, 8, 12), full: false)[```terminal
+    $ umask
+    0022
+    $ touch notes.txt
+    $ ls -l notes.txt
+    -rw-r--r-- 1 alice alice 0 Oct 11 09:00 notes.txt
+    $ mkdir project
+    $ ls -ld project
+    drwxr-xr-x 2 alice alice 4096 Oct 11 09:00 project
+    $ umask 077
+    $ touch secret.txt
+    $ ls -l secret.txt
+    -rw------- 1 alice alice 0 Oct 11 09:00 secret.txt
+    ```]
+  ][
+    #only(1)[
+      #card(icon: "🎭", title: [a mask, not a permission])[
+        `umask` lists the bits that are *removed* from every new file \
+        `022` - remove `w` for the group and for the others
+      ]
+    ]
+    #only(2, align(center, umask-calc([📄 a new file], ("rw-", "rw-", "rw-"), "666", ("---", "-w-", "-w-"), "022", ("rw-", "r--", "r--"), "644")))
+    #only(3, align(center, umask-calc([📁 a new directory], ("rwx", "rwx", "rwx"), "777", ("---", "-w-", "-w-"), "022", ("rwx", "r-x", "r-x"), "755")))
+    #only("4-", align(center, umask-calc([📄 with `umask 077`], ("rw-", "rw-", "rw-"), "666", ("---", "rwx", "rwx"), "077", ("rw-", "---", "---"), "600")))
+  ]
+
+  #v(0.6em)
+  #only(1, key("🧬", [inherited], [every process has a `umask`, inherited from its parent, usually `022` (`002` on some systems)]))
+  #only(2, key("📄", [a new file is *never* executable], [programs create files with `rw-rw-rw-` (`666`), the `umask` only *removes* bits]))
+  #only(3, key("📁", [a new directory gets `x`], [directories are created with `rwxrwxrwx` (`777`): they need `x` to be entered]))
+  #only("4-", key("🔒", [private by default], [`umask 077`: nobody else can read the new files, put it in `~/.bashrc` to keep it]))
 ]
 
 #slide[

@@ -33,9 +33,7 @@
     [🗑️ delete], [`userdel -r bob` (`-r` also the home)], [`groupdel students`],
   )
 
-  #uncover("2-")[
-    💡 a user may run `passwd` and `chsh` without `sudo`, *only* for themselves
-  ]
+  #uncover("2-", key("💡", [no `sudo` needed for yourself], [a user may run `passwd` and `chsh` without `sudo`, *only* for themselves]))
 ]
 
 #slide[

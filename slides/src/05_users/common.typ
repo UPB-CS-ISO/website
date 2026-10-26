@@ -29,6 +29,16 @@
   #body
 ]
 
+// the key idea of a slide, in a card that stands out: a short title and
+// one sentence (none - only the title, on one line)
+#let key(icon, title, body, color: hl) = if body == none {
+  block(width: 100%, inset: (x: 0.8em, y: 0.5em), radius: 0.3em, fill: luma(245), stroke: (left: 2pt + color))[
+    #icon #text(fill: color, weight: "bold", title)
+  ]
+} else {
+  card(icon: icon, title: title, color: color, body)
+}
+
 // an arrow pointing right, drawn with shapes rather than an arrow glyph
 // (the glyph is missing from some fonts and shows up as a box)
 #let draw-arrow(length: 2em, color: luma(150), thickness: 0.8pt) = {
