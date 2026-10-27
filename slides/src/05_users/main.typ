@@ -70,7 +70,6 @@
 #include "permissions.typ"
 #include "special.typ"
 #include "prompt.typ"
-// #include "management.typ"
 
 #slide[
   == We talked about
@@ -85,5 +84,4 @@
   - File Permissions
   - Special Permissions
   - The Prompt
-  - Managing Users and Groups
 ]
