@@ -12,7 +12,10 @@ Each deck compiles to a PDF in `build/`, which gets copied into the website
 
 - **Typst CLI** — `brew install typst`, `cargo install --locked typst-cli`
   or `sudo snap install typst`
+- **polylux2pdfpc** — extracts the speaker notes into a `.pdfpc` file:
+  `cargo install --git https://github.com/polylux-typ/polylux/ --branch release`
 - **GNU Make**
+- Optional: [pdfpc](https://pdfpc.github.io) to present with speaker notes.
 - Internet access on the first build: Typst downloads `@preview/diatypst:0.9.3`
   and `@preview/polylux:0.4.0` and caches them.
 - The `DejaVu Sans Mono` font (used by AI prompt boxes). Typst falls back to
@@ -27,15 +30,25 @@ make watch_01_intro   # rebuild a deck on every save (typst watch)
 make clean            # remove build/
 ```
 
-Each deck `src/<deck>/main.typ` becomes `build/iso_<deck>.pdf`, e.g.
-`src/01_intro` → `build/iso_01_intro.pdf`. Under the hood:
+Each deck `src/<deck>/main.typ` becomes `build/iso_<deck>.pdf` plus
+`build/iso_<deck>.pdfpc` (speaker notes), e.g. `src/01_intro` →
+`build/iso_01_intro.pdf`. Under the hood:
 
 ```bash
 typst compile --root . src/<deck>/main.typ build/iso_<deck>.pdf
+polylux2pdfpc --root . src/<deck>/main.typ
+mv src/<deck>/main.pdfpc build/iso_<deck>.pdfpc
 ```
 
 `--root .` makes absolute imports like `/src/slides.typ` resolve relative to
 this folder, so always run `make` (or `typst`) from `slides/`.
+
+To present with speaker notes, open the PDF with pdfpc; it picks up the
+`.pdfpc` file next to it automatically:
+
+```bash
+pdfpc build/iso_01_intro.pdf
+```
 
 To publish the PDFs on the website locally:
 
