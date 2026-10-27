@@ -8,7 +8,7 @@ all: $(SLIDES)
 $(foreach S,$(SLIDES), \
   $(eval FILES_$(S) := $(wildcard src/$(S)/*)) \
   $(eval $(S): $$(FILES_$(S))) \
-  $(eval $(S): ; @echo "Building slides $(S)"; mkdir -p build; typst compile --root . src/$(S)/main.typ build/iso_$(S).pdf ) \
+  $(eval $(S): ; @echo "Building slides $(S)"; mkdir -p build; typst compile --root . src/$(S)/main.typ build/iso_$(S).pdf && polylux2pdfpc --root . src/$(S)/main.typ && mv src/$(S)/main.pdfpc build/iso_$(S).pdfpc ) \
 )
 
 $(foreach S,$(SLIDES), \

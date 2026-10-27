@@ -30,6 +30,7 @@ jobs:
         working-directory: slides
         run: |
           sudo snap install typst
+          cargo install --git https://github.com/polylux-typ/polylux/ --branch release
 
       - name: Build slides
         working-directory: slides

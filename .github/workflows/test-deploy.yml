@@ -26,13 +26,14 @@ jobs:
         working-directory: slides
         run: |
           sudo snap install typst
+          cargo install --git https://github.com/polylux-typ/polylux/ --branch release
 
       - name: Build slides
         working-directory: slides
         run: |
-            make
-            mkdir -p ../website/static/slides/
-            cp build/*.pdf ../website/static/slides/
+          make
+          mkdir -p ../website/static/slides/
+          cp build/*.pdf ../website/static/slides/
 
       - name: Install dependencies (website)
         working-directory: website
