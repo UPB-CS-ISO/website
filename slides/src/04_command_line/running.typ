@@ -424,3 +424,47 @@
   #only("7-")[💡 the shell runs the file it found]
   ])
 ]
+
+#slide[
+  == `which`
+  Do the ```bash $PATH``` search, without running the command
+
+  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
+    - prints the file the shell would run
+    // `only`, not `uncover`: a hidden list item still shows its bullet
+    #only("2-")[
+      - `-a` prints *every* match, in the order of `PATH`
+    ]
+    #only("3-")[
+      - nothing found: no output, exit status `1`
+    ]
+
+    #uncover("4-")[
+      #block(above: 1em, text(size: 1.3em, weight: "bold", fill: accent)[Why does `which` not find `cd`?])
+    ]
+    #uncover("5-")[
+      💡 `which` is an *external* command: it only searches ```bash $PATH```, it does not know the built-ins of the shell
+
+      💡 ```bash type cd``` asks the shell itself: `cd is a shell builtin`
+    ]
+  ][
+    ```terminal
+    $ which sort
+    /usr/bin/sort
+    ```
+    #uncover("2-")[
+      ```terminal
+      $ which -a sort
+      /usr/bin/sort
+      /bin/sort
+      ```
+    ]
+    #uncover("3-")[
+      ```terminal
+      $ which cd
+      $ echo $?
+      1
+      ```
+    ]
+  ]
+]
