@@ -137,37 +137,6 @@
 ]
 
 #slide[
-  == Terminal Emulator
-  Provides a pseudo terminal
-
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.8em)
-    `kitty`, `ptyxis`, `alacritty`, ...
-    #uncover("2-")[#block[1. opens `/dev/ptmx`, the kernel creates a _pseudo terminal_: a *master* (kept by the emulator) and a *slave* (`/dev/pts/n`)]]
-    #uncover("3-")[#block[2. starts the shell (`fork` + `exec`) with `0`, `1` and `2` connected to `/dev/pts/n`]]
-    #uncover("4-")[#block[3. the keys you press are written into the *master*, the shell reads them from `stdin`]]
-    #uncover("5-")[#block[4. the shell writes into `stdout`, the emulator reads it from the *master* and draws the text in its window]]
-
-    `bash`, `sh`, `zsh`, ...
-    - only see a terminal: `/dev/pts/n`
-  ][
-    #align(center)[#diagram("img/pseudo_terminal.svg", height: 42%)]
-
-    #uncover("6-")[
-      #set text(size: 0.8em)
-      ```terminal
-      $ tty                  # the terminal of the shell
-      /dev/pts/1
-      $ ps                   # the processes of this terminal
-          PID TTY          TIME CMD
-         4011 pts/1    00:00:00 bash
-         4242 pts/1    00:00:00 ps
-      ```
-    ]
-  ]
-]
-
-#slide[
   == Shell
   Operating System Interaction
 
@@ -198,6 +167,59 @@
       - `explorer.exe`, Finder, `nautilus`
       - Total Commander
       - Control Panel, Settings
+    ]
+  ]
+]
+
+#slide[
+  == Terminal & Shell
+  Two different programs
+
+  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
+    #only(1)[#align(center)[#diagram("img/terminal_window.svg", width: 100%)]]
+    #only(2)[#align(center)[#diagram("img/terminal_shell.svg", width: 100%)]]
+    #only(3)[#align(center)[#diagram("img/terminal_shell_pty.svg", width: 100%)]]
+  ][
+    #set text(size: 0.9em)
+    === Terminal (`foot`)
+    - the window, the font, the colors
+    - reads the keyboard and draws the text
+    #uncover("2-")[
+      === Shell (`bash`)
+      - the text inside the window: the prompt and the output
+      - runs the commands
+    ]
+    #uncover("3-")[#block[- they talk through the _pseudo terminal_ `/dev/pts/1`]]
+  ]
+]
+
+#slide[
+  == Terminal Emulator
+  Provides a pseudo terminal
+
+  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
+    #set text(size: 0.8em)
+    `kitty`, `ptyxis`, `alacritty`, ...
+    #uncover("2-")[#block[1. opens `/dev/ptmx`, the kernel creates a _pseudo terminal_: a *master* (kept by the emulator) and a *slave* (`/dev/pts/n`)]]
+    #uncover("3-")[#block[2. starts the shell (`fork` + `exec`) with `0`, `1` and `2` connected to `/dev/pts/n`]]
+    #uncover("4-")[#block[3. the keys you press are written into the *master*, the shell reads them from `stdin`]]
+    #uncover("5-")[#block[4. the shell writes into `stdout`, the emulator reads it from the *master* and draws the text in its window]]
+
+    `bash`, `sh`, `zsh`, ...
+    - only see a terminal: `/dev/pts/n`
+  ][
+    #align(center)[#diagram("img/pseudo_terminal.svg", height: 42%)]
+
+    #uncover("6-")[
+      #set text(size: 0.8em)
+      ```terminal
+      $ tty                  # the terminal of the shell
+      /dev/pts/1
+      $ ps                   # the processes of this terminal
+          PID TTY          TIME CMD
+         4011 pts/1    00:00:00 bash
+         4242 pts/1    00:00:00 ps
+      ```
     ]
   ]
 ]
