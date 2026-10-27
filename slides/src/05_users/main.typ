@@ -70,7 +70,7 @@
 #include "permissions.typ"
 #include "special.typ"
 #include "prompt.typ"
-#include "management.typ"
+// #include "management.typ"
 
 #slide[
   == We talked about
