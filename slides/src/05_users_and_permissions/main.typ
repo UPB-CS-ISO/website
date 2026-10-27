@@ -1,7 +1,7 @@
 #import "/src/slides.typ": *
 #import "common.typ": *
 
-#show: uso_slides.with(title: "5. Users")
+#show: uso_slides.with(title: "5. Users and Permissions")
 
 // every permission string, `-rw-r-----`, in the colors of u, g and o
 #show mode-pattern: it => mode-text(it.text)
