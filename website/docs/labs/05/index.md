@@ -80,7 +80,7 @@ signal, the kernel looks at this label and decides if the process is **allowed**
 Users are not only people. Many services of the system run as a user of their own: if one of them has a bug, or is attacked, it can only touch its own files, not the files of the
 other services or of the people.
 
-![A user is a label](./user-label.png)
+![A user is a label](./images/user-label.svg)
 
 ### Who Am I: `whoami` and `id`
 
@@ -166,7 +166,7 @@ the **credentials** of the process: **four** UIDs, **four** GIDs and the list of
 of it as an ID card that the **kernel** keeps for the process: the kernel looks at it every time the process asks for
 something, and the process cannot change it as it likes.
 
-![The credentials of a process](./credentials.png)
+![The credentials of a process](./images/credentials.svg)
 
 | Credential                  | What it is                                                                                          |
 | --------------------------- | --------------------------------------------------------------------------------------------------- |
@@ -190,7 +190,7 @@ of them, for the shell or the command that they start.
 
 The kernel does not look at all the credentials every time. It depends on what the process asks for:
 
-![Which credentials are checked](./credentials-check.png)
+![Which credentials are checked](./images/credentials-check.svg)
 
 - **opening a file**: the effective UID is compared with the **owner** of the file, and the effective GID and the
   supplementary groups with the **group** of the file (see [Which Permissions Apply?](#which-permissions-apply));
@@ -206,7 +206,7 @@ The kernel does not look at all the credentials every time. It depends on what t
 A process gets its credentials from its parent. This table shows what happens to them at each step of the life of a
 process, and the only two cases that change them:
 
-![How the credentials change](./credentials-change.png)
+![How the credentials change](./images/credentials-change.svg)
 
 | When                                           | What happens to the UIDs                                                                          |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------- |
@@ -268,7 +268,7 @@ daemon:x:2:2:daemon:/sbin:/usr/sbin/nologin
 student:x:1000:1000:Student:/home/student:/bin/bash
 ```
 
-![The fields of /etc/passwd](./passwd-fields.png)
+![The fields of /etc/passwd](./images/passwd-fields.svg)
 
 | Field | In the example     | What it is                                                                                    |
 | ----- | ------------------ | --------------------------------------------------------------------------------------------- |
@@ -406,7 +406,7 @@ the password is correct. `openssl passwd` computes a hash in the same way (`-6` 
 :::
 
 
-![Checking a password](./password-check.png)
+![Checking a password](./images/password-check.svg)
 
 ```shell-session
 [student@fedora ~]$ openssl passwd -6 -salt Xr3aB7tP pass123
@@ -496,7 +496,7 @@ When you log in, a process gets the label of your user. On a text terminal, `/de
    it can **never** go back to `root`;
 5. the child changes to the **home directory** and runs (`exec`) the **shell** from `/etc/passwd`.
 
-![Logging in](./login.png)
+![Logging in](./images/login.svg)
 
 ```shell-session
 [student@fedora ~]$ ps -t tty3 -o user,pid,ppid,comm
@@ -575,6 +575,35 @@ Oct 27 10:02:11 fedora sudo[3311]:  student : TTY=pts/0 ; PWD=/home/student ; US
 Oct 27 10:02:20 fedora sudo[3315]:  student : TTY=pts/0 ; PWD=/home/student ; USER=root ; COMMAND=/usr/bin/journalctl -t sudo
 ```
 
+While the command runs, `sudo` does not go away: it waits for the command to end and passes on the signals that it
+receives. On Fedora, `sudo` also runs the command in a **new pseudo terminal** of its own (the option `use_pty`, see
+[Terminal Emulators](/docs/labs/04#terminal-emulators) in lab 04), so there are **two** `sudo` processes: the first one
+stays on your terminal, the second one opens the new pseudo terminal and starts the command in it. With `sudo sleep 300`
+running in a shell with the PID `2817`:
+
+```shell-session
+[student@fedora ~]$ pstree -pu 2817
+bash(2817)───sudo(3320,root)───sudo(3321)───sleep(3322)
+[student@fedora ~]$ ps -o pid,ppid,tty,comm -p 3320,3321,3322
+    PID    PPID TT       COMMAND
+   3320    2817 pts/0    sudo
+   3321    3320 pts/2    sudo
+   3322    3321 pts/2    sleep
+```
+
+- `pstree -p` shows the PIDs, and `-u` the user, where it changes: `sudo` runs as `root`, and so does everything under
+  it.
+- The second `sudo` and `sleep` are on `pts/2`, not on `pts/0`: `ps -t pts/0` does **not** show the command started
+  with `sudo`. Find it with `pstree`, `pgrep` or the PPID instead.
+
+:::info
+
+The new pseudo terminal protects you: a program started with `sudo` cannot type commands into your own terminal after
+it ends. Some distributions do not use it (`sudo` 1.9.14 and later use it by default); there, `pstree` shows only one
+`sudo`.
+
+:::
+
 | Command                 | What it does                                                                   |
 | ----------------------- | ------------------------------------------------------------------------------ |
 | `sudo <command>`        | runs `command` as `root`                                                       |
@@ -638,7 +667,7 @@ bash: /etc/hosts: Permission denied
 192.168.1.20 printer
 ```
 
-![The redirect trap](./redirect-trap.png)
+![The redirect trap](./images/redirect-trap.svg)
 
 - In the first line, `bash` tries to open `/etc/hosts` for `>>`, as `student`, and fails: `sudo echo` never starts.
 - In the second line, `tee` runs as `root`: it reads the text from the pipe and writes it into the file **and** on the
@@ -646,8 +675,10 @@ bash: /etc/hosts: Permission denied
 
 :::tip
 
-`tee` also prints the text on the screen. To hide it, send its output to `/dev/null`:
-`echo "192.168.1.20 printer" | sudo tee -a /etc/hosts > /dev/null`. This redirect is also done by your shell, as you, but it works because of the permissions of `/dev/null`: they are `rw-rw-rw-` (`666`), so every user may write to it.
+`tee` also prints the text on the screen. To hide it, send its output to `/dev/null`:
+
+`echo "192.168.1.20 printer" | sudo tee -a /etc/hosts > /dev/null`. This redirect is also done by your shell, as you, but it works because of the permissions of `/dev/null`: they are `rw-rw-rw-` (`666`), so every user may write to it.
+
 
 :::
 
@@ -749,7 +780,7 @@ them:
 -rw-r-----. 1 student students 9 Oct 27 10:20 notes.txt
 ```
 
-![The permissions of a file](./permissions.png)
+![The permissions of a file](./images/permissions.svg)
 
 | Part          | In the example | What it is                                                                              |
 | ------------- | -------------- | --------------------------------------------------------------------------------------- |
@@ -778,11 +809,13 @@ The same letters have a different meaning for files and for directories:
 
 | Permission  | Value | For a file                       | For a directory                                                          |
 | ----------- | ----- | -------------------------------- | ------------------------------------------------------------------------ |
-| `r` read    | `4`   | read the content (`cat`, `less`) | **list** the names of the files inside (`ls`); `ls -l` also needs `x`, as it reads each file's details, which means "entering" the directory |
-| `w` write   | `2`   | change the content               | **create**, **delete** and **rename** the files inside, only together with `x`, as it needs to enter the directory first |
+| `r` read    | `4`   | read the content (`cat`, `less`) | **list** the names of the files inside (`ls`); `ls -l` also needs `x`, as it reads each file's details, which means "entering" the directory |
+
+| `w` write   | `2`   | change the content               | **create**, **delete** and **rename** the files inside, only together with `x`, as it needs to enter the directory first |
+
 | `x` execute | `1`   | run it as a program              | **enter** it (`cd`) and reach the files inside, if you know their names  |
 
-![A directory is a list of names](./directory-list.png)
+![A directory is a list of names](./images/directory-list.svg)
 
 A directory is a file whose content is a **list of names**, each pointing to a file. `r` reads this list, `w` changes
 it, and `x` uses it to reach a file. This has two consequences:
@@ -828,7 +861,7 @@ The kernel checks the label of the process in this **order**, and the first matc
 3. if one of the groups of the process is the **group** of the file: the `g` permissions are used;
 4. otherwise: the `o` permissions are used.
 
-![Which permissions apply](./permission-check.png)
+![Which permissions apply](./images/permission-check.svg)
 
 For `notes.txt` above, `-rw-r----- student students`:
 
@@ -853,7 +886,8 @@ permissions can be written with **letters**:
 
 | Part   | Letters                                                      |
 | ------ | ------------------------------------------------------------ |
-| who    | `u` the owner, `g` the group, `o` the others (**not** the owner and **not** a member of the group), `a` all three   |
+| who    | `u` the owner, `g` the group, `o` the others (**not** the owner and **not** a member of the group), `a` all three   |
+
 | how    | `+` adds, `-` removes, `=` sets exactly these                |
 | what   | `r`, `w`, `x`                                                |
 
@@ -863,9 +897,12 @@ permissions can be written with **letters**:
 | `chmod g+w,o-r notes.txt`   | adds `w` for the group and removes `r` for the others                             |
 | `chmod go-rwx notes.txt`    | removes everything for the group and the others                                   |
 | `chmod a=r readme.txt`      | sets `r--` for everybody                                                          |
-| `chmod -R g+rX project`     | for the group, adds `r` to `project` and everything inside, and `x` only to the directories and to the files that are already executable for someone |
-| `chmod u=rw,go=r notes.txt` | sets exactly `rw-` for the user and `r--` for the group and others (`rw-r--r--`); `=` replaces the old permissions instead of adding to them |
-
+| `chmod -R g+rX project`     | for the group, adds `r` to `project` and everything inside, and `x` only to the directories and to the files that are already executable for someone |
+
+| `chmod u=rw,go=r notes.txt` | sets exactly `rw-` for the user and `r--` for the group and others (`rw-r--r--`); `=` replaces the old permissions instead of adding to them |
+
+
+
 or with **numbers**, in octal: `r` is `4`, `w` is `2` and `x` is `1`. Add them for each of `u`, `g` and `o`:
 
 | Letters     | `u`         | `g`       | `o`       | Number |
@@ -939,8 +976,10 @@ has a primary group of their own, with no other members.
 | `chown :students notes.txt`          | only the group, like `chgrp`                                         |
 | `chgrp students notes.txt`           | only the group                                                       |
 | `chown -R`, `chgrp -R`               | the directory and everything inside it                               |
-| `sudo chown 1005 notes.txt`         | the owner becomes the UID `1005`, even if there is not user with UID 1005             |
-
+| `sudo chown 1005 notes.txt`         | the owner becomes the UID `1005`, even if there is not user with UID 1005             |
+
+
+
 - Only `root` can give a file to another user: otherwise, anyone could fill the disk of another user, or hide what
   they did.
 - The owner can change the group of a file, but only to one of the groups of their **process**.
@@ -988,7 +1027,7 @@ user who started it. Run `passwd` in one terminal (do not type anything), and lo
    6011 student  root     root     passwd
 ```
 
-![The setuid bit](./setuid.png)
+![The setuid bit](./images/setuid.svg)
 
 The kernel checks the effective UID, so `passwd` may write `/etc/shadow`. `passwd` reads the real UID to find out who
 started it, so it changes only **your** password.
@@ -1006,7 +1045,7 @@ possible. After the `exec`, the `Uid:` line of the program is `1000 0 0 0`:
 3. when it does not need `root` any more, it sets **all three** UIDs to `1000` (`Uid: 1000 1000 1000 1000`): `0` is
    none of its UIDs now, so it can never go back.
 
-![The saved UID](./saved-uid.png)
+![The saved UID](./images/saved-uid.svg)
 
 :::danger
 
@@ -1268,7 +1307,7 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     4. give `report.txt` the group `students` and the permissions `rw-r-----`;
     5. list the directory itself, then its content.
 
-    ![The shared directory](./ex-shared-dir.png)
+    ![The shared directory](./images/ex-shared-dir.svg)
 
     💡 [`chown` and `chgrp`](#chown-and-chgrp): `man chown`, search for `OWNER:GROUP`. You are not a member of
     `students`, so changing the group needs `root` too. `man ls`: search for `directory` to list the directory itself.
@@ -1373,7 +1412,7 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     3. print the `Uid:` line of its `status` file, and compare it with the one of your shell: which of the UIDs changed?
     4. end `passwd` with <kbd>Ctrl</kbd>+<kbd>C</kbd>.
 
-    ![Two terminals](./ex-two-terminals.png)
+    ![Two terminals](./images/ex-two-terminals.svg)
 
     💡 `man ps`: search for `command name`, to select a process by its name instead of its PID.
 
@@ -1408,8 +1447,10 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     2. do it again, and see that the password is not asked;
     3. make `sudo` forget the password, and try once more;
     4. list what you are allowed to run with `sudo`;
-        5. try to print the first line of `/etc/shadow` as yourself; then run the **same** command again as `root`,
-       without typing the command again;
+        5. try to print the first line of `/etc/shadow` as yourself; then run the **same** command again as `root`,
+
+       without typing the command again;
+
     6. print the last 5 commands that were run with `sudo`, from the system log;
     7. (optional) print the end of `/etc/sudoers` as `root`, and find the line that mentions the group of the
        administrators (`%wheel`, or `%sudo` on Ubuntu); you do not have to understand the rest of the file.
@@ -1754,8 +1795,9 @@ there, but you choose the commands. At the end, check the goal itself, not only 
 
     For steps 3 - 5, **first** write down your guess, then check it:
 
-    1. in the second terminal, run `sleep 300` as `root`; in the first terminal, list the processes of the second
-       terminal, with their PID, PPID, real and effective user;
+    1. in the second terminal, print the PID of the shell, then run `sleep 300` as `root`; in the first terminal, show
+       the tree of processes of the second shell, with the PIDs, and list these processes with their PID, PPID,
+       terminal, real and effective user;
     2. print the `Uid:` line of `sudo` and of `sleep`, and compare them with the `passwd` of exercise 10: which
        program is like `passwd`, and which one is different?
     3. can you end the `sleep` with `kill` and its PID?
@@ -1763,11 +1805,14 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     5. in the second terminal, start `passwd`, and do not type anything; can you end it with `kill` from the first
        terminal? Can `bob` (run `kill` as `bob` with `sudo`)?
 
-    💡 `tty`, run in the second terminal, prints its name; `man pgrep` finds the PID of a process from its name. For
+    💡 `man pstree`: search for `pid`; `ps -p` takes several PIDs, separated by `,`; `man pgrep` finds the PID of a
+    process from its name. Do not look for `sleep` with `ps -t` and the terminal of the second shell: `sudo` runs it on a
+    new pseudo terminal (see [`sudo`](#sudo)). For
     `kill`, use the rule from [Which Credentials Are Checked](#which-credentials-are-checked): print the real and the
     saved UID of the target, and the real and the effective UID of the sender.
 
-**Check:** there are two `sudo` processes: the second one handles the terminal, and `sleep` is its child. The first
+    **Check:** the tree is `bash───sudo───sudo───sleep`: the first `sudo` is on the terminal of the second shell, the
+    second one on a **new** pseudo terminal, with `sleep`, its child. The first
     `sudo` is like `passwd`: its `Uid:` is `1000 0 0 0`, because it is a setuid program. For `sleep`, `Uid:` is
     `0 0 0 0`: `sudo`, as `root`, set **all** the UIDs of its child. So you cannot end the `sleep`, but you **can** end
     `sudo`, whose real UID is yours, and `sudo` passes the signal on to its child. You can end your `passwd`, its real
@@ -1784,7 +1829,7 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     3. take `root` back, in the effective UID only;
     4. set all three UIDs to `1000`, and try to take `root` back once more.
 
-    ![Play a setuid program](./ex-saved-uid.png)
+    ![Play a setuid program](./images/ex-saved-uid.svg)
 
     💡 In `python3`, `import os` first, then `help(os.getresuid)`, `help(os.setresuid)` and `help(os.seteuid)`;
     `open('/etc/shadow').readline()` reads the first line of a file; `exit()` leaves `python3`.
@@ -1821,14 +1866,16 @@ there, but you choose the commands. At the end, check the goal itself, not only 
        the real and effective user of every process in this tree, with `ps`;
     5. leave the shells one by one, and show the tree after each step.
 
-    ![Shells inside shells](./ex-shells.png)
+    ![Shells inside shells](./images/ex-shells.svg)
 
-    💡 `man pstree`: search for `uid` and for `pid`; `man ps`: search for `--ppid` or use `-t` with the terminal.
+    💡 `man pstree`: search for `uid` and for `pid`; `ps -p` takes the PIDs that `pstree` printed, separated by `,`.
+    `ps -t` with the first terminal is not enough: `sudo` starts its command on a new pseudo terminal.
 
     **Check:** even `root` gets `This account is currently not available.`: the shell of `daemon` is
-    `/usr/sbin/nologin`, a program that prints this message and ends. The tree is `bash---sudo---bash---su---bash`;
-    `pstree` shows the user where it changes: `sudo(...,root)` and the last `bash(...,bob)`; `su` runs as `root`, and
-    its child as `bob`. Every `exit` removes the last shell. <small>→ [`su`](#su) · [`/etc/passwd`](#etcpasswd) · [Listing Processes](/docs/labs/03#listing-processes-ps)</small>
+    `/usr/sbin/nologin`, a program that prints this message and ends. The tree is
+    `bash───sudo───sudo───bash───su───bash`: two `sudo`, because `sudo` runs the shell of `root` on a new pseudo
+    terminal; `pstree` shows the user where it changes: `sudo(...,root)` and the last `bash(...,bob)`; `su` runs as
+    `root`, and its child as `bob`. Every `exit` removes the last shell. <small>→ [`su`](#su) · [`/etc/passwd`](#etcpasswd) · [Listing Processes](/docs/labs/03#listing-processes-ps)</small>
 
 **Permissions**
 
@@ -1970,7 +2017,7 @@ reading, listing, writing or running the files.
     - the members of `students` can only read it;
     - nobody else can do anything.
 
-    ![Read only for the group](./ex-grades.png)
+    ![Read only for the group](./images/ex-grades.svg)
 
     **Check:** `bob` reads it but cannot write it; `carol` gets `Permission denied`; `ls -l` shows the group
     `students`. <small>→ [`chmod`](#chmod) · [`chown` and `chgrp`](#chown-and-chgrp)</small>
@@ -1983,7 +2030,7 @@ reading, listing, writing or running the files.
     - only `student` can create, delete or change files in it;
     - use **one** `chmod` with letters for the directory and all the files.
 
-    ![A public directory](./ex-public.png)
+    ![A public directory](./images/ex-public.svg)
 
     Start by closing `public` and everything inside it to the group and the others, with **one** command, and check
     that `carol` cannot read `a.txt`; then open it as asked.
@@ -2000,7 +2047,7 @@ reading, listing, writing or running the files.
     - the members of `students` can run it, but not change it;
     - nobody else can read or run it.
 
-    ![A script for the group](./ex-tool.png)
+    ![A script for the group](./images/ex-tool.svg)
 
     First try to give the group only `x` and run it as `bob`; then find the right permissions.
 
@@ -2015,7 +2062,7 @@ reading, listing, writing or running the files.
     - the members of `students` can read `key.txt` if they know its name, but cannot list the directory;
     - nobody else can do anything.
 
-    ![Known names only](./ex-hidden.png)
+    ![Known names only](./images/ex-hidden.svg)
 
     **Check:** `bob` can print `hidden/key.txt`, but `ls hidden` is denied; `carol` cannot reach `key.txt`, even with
     its name. <small>→ [`r`, `w` and `x`](#r-w-and-x)</small>
@@ -2024,7 +2071,7 @@ reading, listing, writing or running the files.
 
     As `bob`:
 
-    ![A private list](./ex-private.png)
+    ![A private list](./images/ex-private.svg)
 
     1. close `/home/bob` to everybody except `bob` (it is already like this on Fedora, not on Ubuntu); create
        `/home/bob/todo.txt` with the text `Bob's TODO list`, readable and writable **only** by `bob`; check that
@@ -2069,7 +2116,7 @@ reading, listing, writing or running the files.
     3. find all the processes that run with the effective user `root` but have a terminal, and show for each its
        terminal, its real and effective user, and its command.
 
-    ![The credentials to find](./ex-credentials.png)
+    ![The credentials to find](./images/ex-credentials.svg)
 
     💡 `man ps`, `STANDARD FORMAT SPECIFIERS`: search for `saved` and for `filesystem`; `-p` takes several PIDs,
     separated by `,`; `man ps`: search for `effective user`; the processes without a terminal have `?` in the `TTY`
@@ -2090,7 +2137,7 @@ reading, listing, writing or running the files.
     - every new file in it belongs to the group `students`, whoever creates it;
     - a member cannot delete or rename the files of another member.
 
-    ![A project for the group](./ex-project.png)
+    ![A project for the group](./images/ex-project.svg)
 
     Create a file in it as `bob`, one as `dave`, and try to delete the file of `dave` as `bob`; try to list it as
     `carol`.
@@ -2110,7 +2157,7 @@ reading, listing, writing or running the files.
     - `student`, the teacher, can do everything;
     - `carol` can do nothing.
 
-    ![A homework box](./ex-homework.png)
+    ![A homework box](./images/ex-homework.svg)
 
     Hand in `bob.txt` as `bob`, and `dave.txt` as `dave`; as `bob`, try to list the directory and to delete `dave.txt`;
     then, as the teacher, delete `dave.txt`.
