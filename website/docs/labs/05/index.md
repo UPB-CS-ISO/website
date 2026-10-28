@@ -1599,7 +1599,7 @@ command, or **one** idea, from the lab: read the section linked at the end of th
 
     **Check:** `noread` cannot be listed, but `noread/secret.txt` can be printed; `noenter` lists the name with an
     error, but cannot be entered and its file cannot be printed. The error comes from the colors of `ls`, which need
-    the details of the file: `\ls noenter` lists the name without it.
+    the details of the file: `\ls noenter` lists the name without it.<small>→ [`r`, `w` and `x`](#r-w-and-x)</small>
 
 23. **Who can read the report**: See which of the three sets of permissions applies to the owner, to a member of the
     group and to the others.
