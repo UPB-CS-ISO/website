@@ -646,7 +646,8 @@ bash: /etc/hosts: Permission denied
 
 :::tip
 
-To throw away the copy that `tee` prints on the screen, redirect its output: `... | sudo tee -a /etc/hosts > /dev/null`.
+`tee` also prints the text on the screen. To hide it, send its output to `/dev/null`:
+`echo "192.168.1.20 printer" | sudo tee -a /etc/hosts > /dev/null`. This redirect is also done by your shell, as you, but it works because of the permissions of `/dev/null`: they are `rw-rw-rw-` (`666`), so every user may write to it.
 
 :::
 
@@ -777,8 +778,8 @@ The same letters have a different meaning for files and for directories:
 
 | Permission  | Value | For a file                       | For a directory                                                          |
 | ----------- | ----- | -------------------------------- | ------------------------------------------------------------------------ |
-| `r` read    | `4`   | read the content (`cat`, `less`) | **list** the names of the files inside (`ls`)                            |
-| `w` write   | `2`   | change the content               | **create**, **delete** and **rename** the files inside                  |
+| `r` read    | `4`   | read the content (`cat`, `less`) | **list** the names of the files inside (`ls`); `ls -l` also needs `x`, as it reads each file's details, which means "entering" the directory |
+| `w` write   | `2`   | change the content               | **create**, **delete** and **rename** the files inside, only together with `x`, as it needs to enter the directory first |
 | `x` execute | `1`   | run it as a program              | **enter** it (`cd`) and reach the files inside, if you know their names  |
 
 ![A directory is a list of names](./directory-list.png)
@@ -852,7 +853,7 @@ permissions can be written with **letters**:
 
 | Part   | Letters                                                      |
 | ------ | ------------------------------------------------------------ |
-| who    | `u` the owner, `g` the group, `o` the others, `a` all three  |
+| who    | `u` the owner, `g` the group, `o` the others (**not** the owner and **not** a member of the group), `a` all three   |
 | how    | `+` adds, `-` removes, `=` sets exactly these                |
 | what   | `r`, `w`, `x`                                                |
 
@@ -862,8 +863,9 @@ permissions can be written with **letters**:
 | `chmod g+w,o-r notes.txt`   | adds `w` for the group and removes `r` for the others                             |
 | `chmod go-rwx notes.txt`    | removes everything for the group and the others                                   |
 | `chmod a=r readme.txt`      | sets `r--` for everybody                                                          |
-| `chmod -R g+rX project`     | adds `r` to everything in `project`, and `X`: `x` only for the directories (and the files that already have an `x`) |
-
+| `chmod -R g+rX project`     | for the group, adds `r` to `project` and everything inside, and `x` only to the directories and to the files that are already executable for someone |
+| `chmod u=rw,go=r notes.txt` | sets exactly `rw-` for the user and `r--` for the group and others (`rw-r--r--`); `=` replaces the old permissions instead of adding to them |
+
 or with **numbers**, in octal: `r` is `4`, `w` is `2` and `x` is `1`. Add them for each of `u`, `g` and `o`:
 
 | Letters     | `u`         | `g`       | `o`       | Number |
@@ -937,7 +939,8 @@ has a primary group of their own, with no other members.
 | `chown :students notes.txt`          | only the group, like `chgrp`                                         |
 | `chgrp students notes.txt`           | only the group                                                       |
 | `chown -R`, `chgrp -R`               | the directory and everything inside it                               |
-
+| `sudo chown 1005 notes.txt`         | the owner becomes the UID `1005`, even if there is not user with UID 1005             |
+
 - Only `root` can give a file to another user: otherwise, anyone could fill the disk of another user, or hide what
   they did.
 - The owner can change the group of a file, but only to one of the groups of their **process**.
@@ -1405,7 +1408,8 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     2. do it again, and see that the password is not asked;
     3. make `sudo` forget the password, and try once more;
     4. list what you are allowed to run with `sudo`;
-    5. print the first line of `/etc/shadow`, then run the **same** command again as `root`, without typing it again;
+        5. try to print the first line of `/etc/shadow` as yourself; then run the **same** command again as `root`,
+       without typing the command again;
     6. print the last 5 commands that were run with `sudo`, from the system log;
     7. (optional) print the end of `/etc/sudoers` as `root`, and find the line that mentions the group of the
        administrators (`%wheel`, or `%sudo` on Ubuntu); you do not have to understand the rest of the file.
