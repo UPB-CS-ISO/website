@@ -1949,7 +1949,7 @@ running the files.
     💡 `man bash`: search for `EUID`; write `PS1` between **single** quotes, so that the variable is replaced every
     time the prompt is shown, not once when you set it.
 
-    **Check:** your prompt shows `1000` and `$`; the shell of `root` shows `0` and `#`: `\$` and `$UID` come from the
+    **Check:** your prompt shows `1000` and `$`; the shell of `root` shows `0` and `#`: `\$` and `$EUID` come from the
     credentials of the shell, not from a text you typed. The new terminal has your prompt; the shell of `root` does
     not: it reads `/root/.bashrc`, not yours. <small>→ [Changing the Prompt](#changing-the-prompt)</small>
 
@@ -2078,7 +2078,8 @@ reading, listing, writing or running the files.
 54. **A project for the group**: Build a project directory for a group, where the files belong to the group and nobody
     can delete the work of the others.
 
-    Create again the user `dave` in the group `students`. Then make `/srv/project` so that:
+        Create again the user `dave` in the group `students`. If `/srv/project` exists from the lab, delete it first. Then
+    make `/srv/project` so that:
 
     - only `root` owns it, and only the members of `students` can enter it, list it and create files in it;
     - every new file in it belongs to the group `students`, whoever creates it;
