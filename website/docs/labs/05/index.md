@@ -1,7 +1,7 @@
 # 05. Users and Permissions
 
 In the fourth lab you learned what the shell does with a command line, and how it starts the programs and sends them
-signals. In this lab you will find out **who** these programs run as. You will look at the **users** and the
+signals. In this lab you will find out **with which user id** these programs are running. You will look at the **users** and the
 **groups** of the system, at the files that keep them, `/etc/passwd`, `/etc/shadow` and `/etc/group`, and at how the
 system checks a **password** without ever storing it. You will run commands as `root` with `sudo`, create new users,
 and then decide who may read, write and run your files, with `chmod`, `chown` and `umask`. At the end you will meet
@@ -212,7 +212,7 @@ process, and the only two cases that change them:
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `fork`, a new child                             | the child gets a **copy** of the credentials of its parent                                        |
 | `exec` of a regular program                    | **nothing** changes                                                                               |
-| `exec` of a program with the `setuid` bit      | the effective and the saved UID become the **owner** of the file; the real UID stays (see [`setuid`](#setuid)) |
+| `exec` of a program with the `setuid` bit      | the effective and the saved UID become the **owner** of the executable file; the real UID is inherited from the parent process; the `setgid` bit does the same for the GIDs, with the **group** of the file (see [`setuid`](#setuid)) |
 | a process whose effective UID is `0` calls `setgid()`, `initgroups()` and `setuid()` | **all** the GIDs, the supplementary groups and **all** the UIDs change, in this order: this is how `login`, `su` and `sudo` give a process the label of a user (see [Logging In](#logging-in) and [`sudo`](#sudo)) |
 
 #### Seeing the Credentials
@@ -290,9 +290,10 @@ every file on Fedora: ignore it in this lab. Ubuntu does not show it.
 ### `getent`
 
 `/etc/passwd` is not the only place where users can be kept: in a university or a company, the accounts are usually
-on a **server** in the network (LDAP, Active Directory, ...). Programs do not read `/etc/passwd` themselves: they ask
-the **C library** (`getpwnam()`, `getpwuid()`), and the C library reads `/etc/nsswitch.conf` to find out where to look,
-and in which order.
+on a **server** in the network (LDAP, Active Directory, ...). That is why **no**  program do not read `/etc/passwd` directly by
+themselves: they ask the **C library**, with `getpwnam()` (from a name to a user) and `getpwuid()` (from a UID to a
+user). The C library reads `/etc/nsswitch.conf` to find out where to look for the users, the passwords and the groups,
+and in which order. So `ls`, `ps` and `id` work the same way whether a user is kept in `/etc/passwd` or on a server.
 
 ```shell-session
 [student@fedora ~]$ grep -E '^(passwd|shadow|group):' /etc/nsswitch.conf
@@ -656,7 +657,7 @@ The commands below change `/etc/passwd`, `/etc/shadow` and `/etc/group` for you,
 | Command                             | What it does                                                                  |
 | ----------------------------------- | ----------------------------------------------------------------------------- |
 | `sudo useradd -m <USER>`            | creates a user, with a group of the same name; `-m` creates the home directory, `-c` sets the full name, `-s` the shell |
-| `sudo passwd <USER>`                | sets the password of the user; until then, the account is locked              |
+| `sudo passwd <USER>`                | sets the password of the user             |
 | `sudo groupadd <GROUP>`             | creates a group                                                               |
 | `sudo usermod -aG <GROUP> <USER>`   | **adds** the user to a supplementary group                                    |
 | `sudo usermod <OPTIONS> <USER>`     | **changes** a user that already exists; it takes most of the options of `useradd`: `-c` the full name, `-s` the shell, ... |
