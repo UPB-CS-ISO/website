@@ -11,7 +11,12 @@ directories and the **sticky bit** of `/tmp`.
 The most important idea of this lab is that the kernel does not know any names. Every process carries a **label**, the
 number of its user (the **UID**) and the numbers of its groups, and every file has an **owner**, a **group** and three
 sets of **permissions**. Every time a process opens a file, the kernel compares the two.
-
+The most important idea of this lab is that the kernel does not know any names, only **numbers**. Every process
+carries a **label**: the number of its user (the **UID**) and the numbers of its groups (the **GIDs**). Every file
+keeps the number of its **owner**, the number of its **group**, and three sets of **permissions**: for the owner, for
+the group and for everybody else. Every time a process opens a file, the kernel compares the label of the process with
+the owner and the group of the file, picks **one** of the three sets, and checks if it allows what the process asks
+for.
 ## Objectives
 
 - Understand what a **user** and a **group** are for the kernel: a **UID** and a **GID**
@@ -45,20 +50,21 @@ sets of **permissions**. Every time a process opens a file, the kernel compares 
 
 ## Fedora and Ubuntu
 
-The lab computers run **Fedora**, with the **Sway** desktop, and all the examples come from them. At home, you may use
-Fedora or **Ubuntu**: everything in this lab works on both, but a few details differ. When an exercise asks you to
-check a value that is different on Ubuntu, look it up in this table:
+The lab computers run **Fedora**, with the **Sway** window manager, and all the examples in this lab come from them.
+At home, you may use Fedora or **Ubuntu**: every command in this lab works on both, but some names, defaults and
+outputs are different. When an example or a check does not match what you see on Ubuntu, look for it in this table
+first:
 
 |                                                      | Fedora                               | Ubuntu                                     |
 | ---------------------------------------------------- | ------------------------------------ | ------------------------------------------ |
 | the prompt                                           | `[student@fedora ~]$`                | `student@ubuntu:~$`, in color              |
 | the group of the **administrators**, who may `sudo`  | `wheel`, GID `10`                    | `sudo`, GID `27` (you are also in `adm`, `cdrom`, ...) |
-| the `.` after the permissions, `context=` in `id`    | shown: the **SELinux** labels        | not shown                                  |
+| the `.` after the permissions in `ls -l`, `context=` in `id`    | shown: the **SELinux** labels        | not shown                                  |
 | the shell of a new user made with `useradd`          | `/bin/bash`                          | `/bin/sh`, unless you give `-s /bin/bash`  |
 | a new home directory                                 | `drwx------` (`700`)                 | `drwxr-x---` (`750`)                       |
 | `/etc/shadow`                                        | `---------- root root`               | `-rw-r----- root shadow`                   |
 | `/usr/bin/sudo`                                      | `---s--x--x` (`4111`)                | `-rwsr-xr-x` (`4755`)                      |
-| a password locked with `passwd -l`                   | `!!` in front of the hash            | `!` in front of the hash                   |
+| a password not set yet, or locked with `passwd -l`                   | `!!` in front of the hash, or alone            | `!` in front of the hash, or alone                   |
 | the `umask` of a regular user                        | `0022`                               | `0002`                                     |
 | installing a package                                 | `sudo dnf install <PACKAGE>`         | `sudo apt install <PACKAGE>`               |
 
@@ -67,12 +73,12 @@ Your user may also have another name than `student`: use your own name wherever 
 ## Users
 
 For you, a user is a **name**, like `student`. For the kernel, a user is only a **number**, the **UID** (_User ID_).
-Every **process** carries the UID of the user that started it, as a **label**, for its whole life, and a child process
+Every **process** carries the UID of the user that started it, as a **label**, for its whole lifetime, and a child process
 **inherits** the label of its parent. When a process asks the kernel to do something, to open a file or to send a
 signal, the kernel looks at this label and decides if the process is **allowed** to do it.
 
-Users are not only people: every service of the system runs as a user of its own, so that a bug in one service cannot
-touch the files of the others.
+Users are not only people. Many services of the system run as a user of their own: if one of them has a bug, or is attacked, it can only touch its own files, not the files of the
+other services or of the people.
 
 ![A user is a label](./user-label.png)
 
@@ -80,12 +86,12 @@ touch the files of the others.
 
 | Command          | What it prints                                                                          |
 | ---------------- | --------------------------------------------------------------------------------------- |
-| `whoami`         | the name of the user of this process                                                    |
-| `id`             | the whole label: the UID, the primary group (GID) and all the groups, with their names   |
-| `id -u`, `id -g` | only the UID, only the GID                                                              |
+| `whoami`         | the user name associated with the current effective user ID                                                    |
+| `id`             | the whole label of the process: the UID, the primary group (GID) and all the groups, with their names   |
+| `id -u`, `id -g` | only the UID, only the GID of the primary group                                                              |
 | `id -un`         | only the name of the user, like `whoami`                                                |
 | `id -nG`         | only the names of the groups                                                            |
-| `id <USER>`      | the label of another user, from the users database                                      |
+| `id <USER>`, `groups <USER>` | the label of a user, read from the users and groups databases                      |
 | `groups`         | the names of your groups, like `id -nG`                                                 |
 
 ```shell-session
@@ -109,11 +115,13 @@ uid=0(root) gid=0(root) groups=0(root)
 | UID           | Kind              | Used for                                                       | Examples on Fedora                  |
 | ------------- | ----------------- | -------------------------------------------------------------- | ----------------------------------- |
 | `0`           | `root`            | the administrator, the kernel skips most of the checks for it | `root`                              |
-| `1` - `999`   | **system users**  | services, they **cannot log in**                               | `bin`, `daemon`, `dbus`, `chrony`   |
+| `1` - `999`   | **system users**  | services; they cannot log in, because their shell is `nologin`                               | `bin`, `daemon`, `dbus`, `chrony`   |
 | `1000` - ...  | **regular users** | people                                                         | `student`                           |
-| `65534`       | `nobody`          | a user that owns nothing                                       | `nobody`                            |
+| `65534`       | `nobody`          | files whose real owner is unknown, and processes that must have no rights                                      | `nobody`                            |
 
-The limits are set in `/etc/login.defs`, the settings of the commands that create users:
+These ranges are only a **convention**: for the kernel, every UID except `0` is the same. They are set in
+`/etc/login.defs`, the settings file of `useradd` and of the other commands that create users, which take the next
+free UID from the right range:
 
 ```shell-session
 [student@fedora ~]$ grep -E '^(UID|SYS_UID)_(MIN|MAX)' /etc/login.defs
@@ -146,30 +154,37 @@ student   1000    3104    2817 ps
 
 :::info
 
-`ps` does not keep any names: the kernel gives it only the UIDs, and `ps` looks for the names in the users database.
-`ls -l`, `id` and the prompt do the same.
+`ps` gets only the UIDs from the kernel. To print a name, it looks up each UID in the users database; if the UID is
+not there, for example because the user was deleted, it prints the number. `ls -l`, `id` and the prompt do the same.
 
 :::
 
 ### The Credentials of a Process
 
-The label of a process is more than one UID. For every process, the kernel keeps a small record, the **credentials**
-of the process: **four** UIDs, **four** GIDs and the list of the **supplementary groups**. Think of it as the ID card
-that the process shows to the kernel every time it asks for something.
+The label of a process is more than one UID and a list of groups. For every process, the kernel keeps a small record,
+the **credentials** of the process: **four** UIDs, **four** GIDs and the list of the **supplementary groups**. Think
+of it as an ID card that the **kernel** keeps for the process: the kernel looks at it every time the process asks for
+something, and the process cannot change it as it likes.
 
 ![The credentials of a process](./credentials.png)
 
 | Credential                  | What it is                                                                                          |
 | --------------------------- | --------------------------------------------------------------------------------------------------- |
-| **real** UID and GID        | the user and the group that **started** the process; programs read it to find out who you are       |
+| **real** UID and GID        | the user who **started** the process, and their primary group; programs read them to find out who you are       |
 | **effective** UID and GID   | the ones that the kernel **checks**, when the process opens a file or sends a signal                |
 | **saved** UID and GID       | a spare copy of the effective ones, made when the program starts, so that it can put its rights aside for a while and **take them back** |
 | **file system** UID and GID | used only for files; on Linux, they always follow the effective ones, so you can ignore them        |
-| **supplementary groups**    | the other groups of the process, copied from the groups database at login                           |
+| **supplementary groups**    | the other groups of the process, checked together with the effective GID; copied from the groups database at login, and by `su` and `sudo`                           |
+
+
+:::note
 
 For your shell, the four UIDs are all `1000` and the four GIDs are all `1000`. Why does the kernel keep four copies of
-the same number? Because they are **not always** the same: a program with the `setuid` bit, like `passwd`, and the
-programs that log you in or change the user, like `login`, `su` and `sudo`, change some of them, and not the others.
+the same number? Because they are **not always** the same: a program with the `setuid` bit, like `passwd`, changes the
+effective and the saved UID, but keeps the real one. `login`, `su` and `sudo` do something else: they change **all**
+of them, for the shell or the command that they start.
+
+:::
 
 #### Which Credentials Are Checked
 
@@ -188,7 +203,8 @@ The kernel does not look at all the credentials every time. It depends on what t
 
 #### How the Credentials Change
 
-A process gets its credentials from its parent. Only a few things change them:
+A process gets its credentials from its parent. This table shows what happens to them at each step of the life of a
+process, and the only two cases that change them:
 
 ![How the credentials change](./credentials-change.png)
 
@@ -197,7 +213,7 @@ A process gets its credentials from its parent. Only a few things change them:
 | `fork`, a new child                             | the child gets a **copy** of the credentials of its parent                                        |
 | `exec` of a regular program                    | **nothing** changes                                                                               |
 | `exec` of a program with the `setuid` bit      | the effective and the saved UID become the **owner** of the file; the real UID stays (see [`setuid`](#setuid)) |
-| `setuid()` in a process of `root`              | **all** the UIDs change: this is how `login`, `su` and `sudo` give a process the label of a user (see [Logging In](#logging-in) and [`sudo`](#sudo)) |
+| a process whose effective UID is `0` calls `setgid()`, `initgroups()` and `setuid()` | **all** the GIDs, the supplementary groups and **all** the UIDs change, in this order: this is how `login`, `su` and `sudo` give a process the label of a user (see [Logging In](#logging-in) and [`sudo`](#sudo)) |
 
 #### Seeing the Credentials
 
@@ -289,12 +305,19 @@ group:      files systemd
 `sss`, a network server). `getent` (_get entries_) asks the C library, exactly like `ls` and `id` do, so it finds a user
 wherever it is kept:
 
-| Command                | Finds                                          |
-| ---------------------- | ---------------------------------------------- |
-| `getent passwd <NAME>` | the user with this **name**                    |
-| `getent passwd <UID>`  | the user with this **UID**                     |
-| `getent passwd`        | **all** the users                              |
-| `getent group <NAME>`  | the group with this name (or GID)              |
+| Command                           | Finds                                                      |
+| --------------------------------- | ---------------------------------------------------------- |
+| `getent passwd <NAME>` or `<UID>` | the user with this **name**, or this **UID**               |
+| `getent passwd`                   | **all** the users                                          |
+| `getent group <NAME>` or `<GID>`  | the group with this name, or this GID                      |
+| `getent group`                    | **all** the groups                                         |
+| `sudo getent shadow <NAME>`       | the line of the user from `/etc/shadow`, only for `root`   |
+
+:::tip
+
+When nothing is found, `getent` prints **nothing**, without an error.
+
+:::
 
 ```shell-session
 [student@fedora ~]$ getent passwd 0
@@ -362,9 +385,9 @@ Sun Oct 11 12:00:00 AM EEST 2026
 
 ### Hashes and Salt
 
-The password itself is **never** stored, only its **hash**: the result of a **one way** function. It is easy to compute
-the hash of a password, but it is impossible to turn the hash back into the password. The second field has 4 parts,
-separated by `$`:
+The password itself is **never** stored, only its **hash**: the result of a **one-way** function. It is easy to
+compute the hash of a password, but there is no way to compute the password from the hash: the only way back is to
+**guess** a password, hash it, and compare. The second field of `/etc/shadow` is made of parts separated by `$`:
 
 | Part         | In the example            | What it is                                                                       |
 | ------------ | ------------------------- | -------------------------------------------------------------------------------- |
@@ -373,9 +396,14 @@ separated by `$`:
 | **salt**     | `Xr3aB7tPq2LkV9sD1fGh0J`  | a random text, different for every user, added to the password before hashing   |
 | hash         | `9mQeT4bW1sZx...`         | the hash of the salt and the password                                            |
 
+:::note
+
 To **check** a password, `login` (or `sudo`, or `passwd`) reads the algorithm, the parameters and the salt from
 `/etc/shadow`, hashes the typed password with them, and compares the result with the stored hash. If they are equal,
 the password is correct. `openssl passwd` computes a hash in the same way (`-6` is _SHA-512_):
+
+:::
+
 
 ![Checking a password](./password-check.png)
 
@@ -398,9 +426,11 @@ $6$Lp0wQ2zM$Uo9XUE/86KtNuRc.TcZpxeM0kWUejWZuFOaRQSujvsfACi8WRK55XpaV3Z3WE8TLEWQB
 :::info
 
 Why is the hash not in `/etc/passwd`, which everyone can read? Because the check works for an attacker too: with a
-copy of the hash, they can hash millions of passwords per second, on their own computer, until one of them gives the
-same hash. Nobody sees these tries. In `/etc/shadow`, only `root` can read the hashes, and the programs that check
-passwords, `login`, `sudo` and `passwd`, run as `root`.
+copy of the hash, they can hash one password after another, on their own computer, until one of them gives the same
+hash. Nobody sees these tries, and nothing slows them down, unlike `login`, which waits after a wrong password and
+writes it in the log. A slow algorithm, like _yescrypt_, makes every try cost more, and the salt makes the attacker
+start again for every user, but a simple password is still found quickly. That is why only `root` can read
+`/etc/shadow`: the programs that check passwords, `login`, `sudo` and `passwd`, run as `root`, so they can read it.
 
 :::
 
@@ -410,9 +440,9 @@ passwords, `login`, `sudo` and `passwd`, run as `root`.
 | ----------------------- | --------------------------------------------------------------- |
 | `passwd`                | changes **your** password; it asks for the old one first        |
 | `sudo passwd <USER>`    | changes the password of another user (only `root` can do it)    |
-| `sudo passwd -l <USER>` | **locks** the account: adds `!!` (Ubuntu: `!`) in front of the hash |
-| `sudo passwd -u <USER>` | unlocks it                                                      |
-| `sudo passwd -S <USER>` | prints the state of the password                                |
+| `sudo passwd -l <USER>` | **locks** the password: adds `!!` (Ubuntu: `!`) in front of the hash, so no password works |
+| `sudo passwd -u <USER>` | unlocks it: removes the `!`, and the **old** password works again                                                     |
+| `sudo passwd -S <USER>` | prints the state of the password: set, locked or empty                                 |
 
 :::caution
 
@@ -423,12 +453,13 @@ When you type a password in the terminal, **nothing** appears on the screen. Typ
 
 ## Groups
 
-A **group** is a set of users that get the same rights. Every group has a **name** and a number, the **GID**
-(_Group ID_). Every user has:
+A **group** is a set of users. A group has no rights by itself: a file can give permissions to a group, and `sudo`
+trusts one group, and then every member gets these rights. Like a user, a group has a **name** and a number, the
+**GID** (_Group ID_), and the kernel knows only the number. Every user has:
 
-- **one primary group**, the GID in `/etc/passwd`; on Fedora, it is a group with the same name as the user, only for
-  them;
-- any number of **supplementary groups**, for example `wheel`.
+- **one primary group**, the GID in `/etc/passwd`: the new files of the user get this group. On Fedora and Ubuntu,
+  `useradd` creates a group with the same name as the user, only for them;
+- any number of **supplementary groups**, listed in `/etc/group`, for example `wheel`.
 
 The local groups are kept in `/etc/group`, one group per line, with 4 fields:
 
@@ -478,20 +509,25 @@ it inherits this label. A graphical login and `ssh` do the same steps.
 
 :::info
 
-The groups are read **only at login**. If you are added to a new group, the shells that are already running do not
-have it: you have to **log in again**. Opening a new terminal window is not enough, because the window belongs to the
-same login.
+The groups are copied from the groups database only when a process gets the label of a user: at login, and by `su` and
+`sudo`. If you are added to a new group, the processes that are already running do not have it, and neither do their
+children: a new terminal window is a child of Sway, which got its groups when you logged in. To get the new group,
+**log out and log in again**, or, for one shell only, start a login shell with `su - student`, or run
+`newgrp <GROUP>`.
 
 :::
 
 ## The `root` User
 
-`root` is the user with the UID `0`. The kernel **skips** most of its checks for it: `root` can read and write any
-file, send signals to any process, install software, add users, mount disks and change the network. Its home
-directory is `/root`, not `/home/root`.
+`root` is the user with the UID `0`. For a process whose effective UID is `0`, the kernel **skips** most of its
+checks: it can read and write any file, send signals to any process, mount disks and change the network. Installing
+software and adding users need `root` for the same reason: they write files that belong to `root`, in `/usr` and in
+`/etc`. The home directory of `root` is `/root`, not `/home/root`, so that `root` can still log in when `/home` is on
+another disk that does not work.
 
-The kernel checks only the **UID**: `root` is just the name of the UID `0`, in the first line of `/etc/passwd`. Two user
-names with the same UID are the **same user** for the kernel.
+The kernel looks only at the **number**: `root` is just the name of the UID `0`, usually on the first line of
+`/etc/passwd`. Two user names with the same UID are the **same user** for the kernel: this is how an attacker can hide
+a second `root`.
 
 :::danger
 
@@ -541,13 +577,13 @@ Oct 27 10:02:20 fedora sudo[3315]:  student : TTY=pts/0 ; PWD=/home/student ; US
 | Command                 | What it does                                                                   |
 | ----------------------- | ------------------------------------------------------------------------------ |
 | `sudo <command>`        | runs `command` as `root`                                                       |
-| `sudo -u <USER> <command>` | runs `command` as another user                                              |
+| `sudo -u <USER> <command>` | runs the command as another user; it asks for **your** password, not theirs                                              |
 | `sudo -i`               | starts a **login shell** of `root`, in `/root`, with the variables of `root`   |
 | `sudo -s`               | starts a shell as `root`, in the current directory                             |
-| `sudo -E <command>`     | keeps your environment variables; without it, `sudo` removes most of them      |
+| `sudo -E <command>`     | keeps your environment variables, except `PATH`; without it, `sudo` removes most of them      |
 | `sudo -l`               | lists what you are allowed to run                                              |
 | `sudo -k`               | forgets the password: the next `sudo` asks again                               |
-| `sudo !!`               | runs the **previous** command again, with `sudo` (`!!` is a trick of `bash`)   |
+| `sudo !!`               | runs the **previous** command again, with `sudo`: `bash` replaces `!!` before `sudo` starts   |
 
 :::info
 
@@ -627,7 +663,7 @@ The commands below change `/etc/passwd`, `/etc/shadow` and `/etc/group` for you,
 | `sudo gpasswd -a <USER> <GROUP>`    | also adds the user to the group                                               |
 | `sudo gpasswd -d <USER> <GROUP>`    | removes the user from the group                                               |
 | `sudo userdel -r <USER>`            | deletes the user; `-r` also deletes its home directory                        |
-| `sudo groupdel <GROUP>`             | deletes a group                                                               |
+| `sudo groupdel <GROUP>`             | deletes a group; it refuses if the group is the primary group of a user                                                                |
 
 ```shell-session
 [student@fedora ~]$ sudo useradd -m -c "Dave Brown" dave
@@ -702,7 +738,9 @@ ls: cannot access '/home/dave': No such file or directory
 ### Owner, Group and Permissions
 
 Every file and directory has **one owner** (a user), **one group**, and three sets of **permissions**: for the
-**owner** (`u`, _user_), for the **group** (`g`) and for all the **others** (`o`). `ls -l` shows them:
+**owner** (`u`, _user_), for the **group** (`g`) and for all the **others** (`o`). The owner and the group are kept as
+numbers, a UID and a GID, and they are independent: the owner does not have to be a member of the group. `ls -l` shows
+them:
 
 ```shell-session
 [student@fedora lab05]$ ls -l notes.txt
@@ -772,9 +810,10 @@ bash: cd: noenter: Permission denied
 
 :::info
 
-On Fedora, the home directories are `drwx------`: the other users cannot even enter yours, whatever the permissions of
-the files inside. On Ubuntu, they are `drwxr-x---`: the members of your primary group may enter it too, but your
-primary group has no other member.
+On Fedora, the home directories are `drwx------`: the other users cannot even enter yours, so they cannot reach your
+files, whatever their permissions. On Ubuntu, they are `drwxr-x---`: the members of your primary group may also list
+and enter it, but this group usually has no other member. An older Ubuntu, or one upgraded from an older version, may
+still have `drwxr-xr-x`, open to everybody: check yours with `ls -ld ~`.
 
 :::
 
@@ -848,8 +887,10 @@ student
 
 :::tip
 
-Use the letters to **change** one permission and keep the others (`chmod g+w`), and the numbers to **set** all of them
-at once (`chmod 640`).
+Use the letters to **change** some permissions and keep the others (`chmod g+w`), and the numbers to **set** all of
+them at once (`chmod 640`). With `-R`, use the letters: `chmod -R 644 box` also removes the `x` of the directories,
+and then nobody can enter them, not even `chmod`; `chmod -R u=rwX,go=rX box` gives the files `rw-r--r--` and the
+directories `rwxr-xr-x`.
 
 :::
 
@@ -912,11 +953,11 @@ chown: changing ownership of 'notes.txt': Operation not permitted
 
 There are three more bits, shown by `ls -l` in the place of an `x`:
 
-| Bit          | Number | `ls -l` shows   | On a file                                                      | On a directory                                                         |
-| ------------ | ------ | --------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| **setuid**   | `4000` | `-rwsr-xr-x`    | the program runs as the **owner** of the file                  | -                                                                      |
-| **setgid**   | `2000` | `drwxrwsr-x`    | the program runs with the **group** of the file                | the new files get the **group of the directory**, not the one of their creator |
-| **sticky**   | `1000` | `drwxrwxrwt`    | -                                                              | in a directory everyone can write, you can delete or rename **only your own** files |
+| Bit        | Number | `ls -l` shows              | On a program                                       | On a directory                                                                     |
+| ---------- | ------ | -------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| **setuid** | `4000` | `-rwsr-xr-x`               | runs with the effective UID of the **owner** of the file | ignored                                                                      |
+| **setgid** | `2000` | `-rwxr-sr-x`, `drwxrwsr-x` | runs with the effective GID of the **group** of the file | new files get the **group of the directory**; new directories also get the bit |
+| **sticky** | `1000` | `drwxrwxrwt`               | ignored                                            | a file can be deleted or renamed only by its owner, the owner of the directory and `root` |
 
 With letters, they are `u+s`, `g+s` and `+t`; with numbers, the 4th digit in front: `chmod 2775 project` is
 `rwxrwsr-x`. A **capital** `S` or `T` means that the bit is set, but the `x` under it is not.
@@ -951,11 +992,15 @@ started it, so it changes only **your** password.
 #### The Saved UID
 
 A careful setuid program does not work as `root` all the time: it works as **you**, and uses `root` only for the few
-steps that need it. The **saved** UID makes this possible:
+steps that need it, so that a bug in the rest of it can only do what you could do anyway. The **saved** UID makes this
+possible. After the `exec`, the `Uid:` line of the program is `1000 0 0 0`:
 
-1. the program sets its **effective** UID to its real one, `1000`; `root` stays in the saved UID;
-2. when it needs `root` again, it sets its effective UID back to `0`: this is allowed, because `0` is its saved UID;
-3. when it does not need `root` any more, it sets **all three** UIDs to `1000`; from now on, it can never go back.
+1. the program sets its **effective** UID to its real one, `1000` (`Uid: 1000 1000 0 1000`): `root` stays only in
+   the saved UID;
+2. when it needs `root` again, it sets its effective UID back to `0` (`Uid: 1000 0 0 0`): this is allowed, because
+   `0` is its saved UID;
+3. when it does not need `root` any more, it sets **all three** UIDs to `1000` (`Uid: 1000 1000 1000 1000`): `0` is
+   none of its UIDs now, so it can never go back.
 
 ![The saved UID](./saved-uid.png)
 
@@ -969,7 +1014,10 @@ are made for it: `passwd`, `su`, `sudo`.
 
 :::info
 
-The kernel ignores the setuid bit on **scripts**, like `myid.sh`: it works only for real programs.
+The kernel ignores the setuid and the setgid bit on **scripts**, like `myid.sh`. A script does not run by itself: the
+kernel starts the program on its first line, `/bin/bash`, and gives it the script to read. A `bash` with the label of
+`root` would be dangerous, because the user who starts it can change what it does, for example with environment
+variables. So the bits work only for compiled programs, like `passwd`.
 
 :::
 
@@ -1041,16 +1089,17 @@ Do not trust the prompt to tell you who you are. `whoami` and `id` ask the **ker
 
 `PS1` can hold any text, and these escapes (`man bash`, section `PROMPTING`):
 
-| Escape        | Replaced with                                                    |
-| ------------- | ---------------------------------------------------------------- |
-| `\u`, `\h`    | the user, the host name                                          |
-| `\w`, `\W`    | the whole path of the current directory, with `~`; only its name |
-| `\$`          | `$`, or `#` for `root`                                           |
-| `\t`, `\A`    | the time, `HH:MM:SS` and `HH:MM`                                 |
-| `\d`          | the date, `Tue Oct 27`                                           |
-| `\j`          | the number of jobs of the shell (lab 04)                         |
-| `\n`          | a new line                                                       |
-| `\[\e[1;32m\]` | a **color**: bold green, until `\[\e[0m\]` turns it off      |
+| Escape     | Replaced with                                                                       |
+| ---------- | ----------------------------------------------------------------------------------- |
+| `\u`, `\h` | the user; the host name, up to the first `.`                                        |
+| `\w`, `\W` | the whole path of the current directory, with `~` for your home; only its last name |
+| `\$`       | `$`, or `#` if the effective UID is `0`                                             |
+| `\t`, `\A` | the time, as `HH:MM:SS` and `HH:MM`                                                 |
+| `\d`       | the date, like `Tue Oct 27`                                                         |
+| `\j`       | the number of jobs of the shell (lab 04)                                            |
+| `\n`       | a new line                                                                          |
+| `\e`       | the escape character, which starts a color code                                     |
+| `\[`, `\]` | put around a color code: it takes no space on the screen                            |
 
 ```shell-session
 [student@fedora lab05]$ PS1='\A \u in \w \$ '
@@ -1503,7 +1552,8 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     3. give both of them back `rwxr-xr-x`.
 
     **Check:** `noread` cannot be listed, but `noread/secret.txt` can be printed; `noenter` lists the name with an
-    error, but cannot be entered and its file cannot be printed. <small>→ [`r`, `w` and `x`](#r-w-and-x)</small>
+    error, but cannot be entered and its file cannot be printed. The error comes from the colors of `ls`, which need
+    the details of the file: `\ls noenter` lists the name without it.
 
 23. **Who can read the report**: See which of the three sets of permissions applies to the owner, to a member of the
     group and to the others.
@@ -1652,7 +1702,8 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     5. start a **login shell** of yourself with `su`, print its groups and its `Groups:` line;
     6. in this login shell, and then in your **old** terminal, try to change the group of `notes.txt` to `students`;
        at the end, give `notes.txt` its old group back.
-
+    7. remove yourself from `students`.
+ 
     **Check:** the database has `students`; the running shell, and the new window, do not have it (no GID of
     `students` in `Groups:`), because their credentials were set when you logged in; the new login shell has it. In the
     login shell, the group of `notes.txt` changes; in the old terminal you get `Operation not permitted`, even if
@@ -1711,7 +1762,7 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     `kill`, use the rule from [Which Credentials Are Checked](#which-credentials-are-checked): print the real and the
     saved UID of the target, and the real and the effective UID of the sender.
 
-    **Check:** `sleep` is a child of `sudo` (sometimes there are two `sudo` processes, one for the terminal). The first
+**Check:** there are two `sudo` processes: the second one handles the terminal, and `sleep` is its child. The first
     `sudo` is like `passwd`: its `Uid:` is `1000 0 0 0`, because it is a setuid program. For `sleep`, `Uid:` is
     `0 0 0 0`: `sudo`, as `root`, set **all** the UIDs of its child. So you cannot end the `sleep`, but you **can** end
     `sudo`, whose real UID is yours, and `sudo` passes the signal on to its child. You can end your `passwd`, its real
@@ -1733,9 +1784,9 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     💡 In `python3`, `import os` first, then `help(os.getresuid)`, `help(os.setresuid)` and `help(os.seteuid)`;
     `open('/etc/shadow').readline()` reads the first line of a file; `exit()` leaves `python3`.
 
-    **Check:** `Uid:` is `0 0 0 0`, then `1000 1000 0 0` and `/etc/shadow` is denied, then `1000 0 0 0` and it can be
-    read again, because `0` was the saved UID; after the last step, `Uid:` is `1000 1000 1000 1000` and `seteuid(0)`
-    fails with `Operation not permitted`. <small>→ [The Saved UID](#the-saved-uid) · [Which Credentials Are Checked](#which-credentials-are-checked)</small>
+    **Check:** `Uid:` is `0 0 0 0`, then `1000 1000 0 1000` and `/etc/shadow` is denied, then `1000 0 0 0` and it can
+    be read again, because `0` was the saved UID; after the last step, `Uid:` is `1000 1000 1000 1000` and
+    `seteuid(0)` fails with `Operation not permitted`. The 4th number, the file system UID, always follows the 2nd. <small>→ [The Saved UID](#the-saved-uid) · [Which Credentials Are Checked](#which-credentials-are-checked)</small>
 
 37. **The shells of `root`**: There are two ways to get a shell of `root` with `sudo`. Find out how they differ, which
     of your variables reach a command started with `sudo`, and where `sudo` looks for programs.
@@ -1785,7 +1836,8 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     3. as `bob`, create `/srv/lab05/bob.txt`;
     4. as `bob`, delete `/srv/lab05/plan.txt`, a file that belongs to **you** and that `bob` cannot write;
     5. create `plan.txt` again, with the text `the plan`.
-
+    6. take back the `w` of the group on `/srv/lab05`.
+   
     **Check:** you cannot write `ro.txt`, but you can rename it and delete it (after `y`): you have `w` on `~/lab05`.
     `bob` can create files in `/srv/lab05` now; `rm` asks `remove write-protected regular file`, and after `y` the file
     is gone: deleting a file is writing the **directory**. <small>→ [`r`, `w` and `x`](#r-w-and-x)</small>
@@ -1814,10 +1866,18 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     **Check:** set each value on `test.txt` in the form you started from, and print the other form with `stat`: it must
     be the one you wrote. <small>→ [`chmod`](#chmod)</small>
 
+:::info
+
+**Permission puzzles(exercises 42 and 47-55)**: In each exercise, set the permissions (and the group, if you need it) so that **exactly** the
+given users can do the given things, and nothing more. You are not a member of `students`, so giving a file this group
+needs `root`, as in exercise 3. Then test every user (`student`, `bob` and `carol`) by reading, listing, writing or
+running the files.
+
+:::
 42. **The owner is checked first**: Show that the kernel uses only **one** set of permissions, even when another set
     would allow more.
 
-    1. copy `notes.txt` to `first.txt`, and give its group to `students`;
+        1. copy `notes.txt` to `first.txt`, and give its group to `students` (you are not a member: use `root`);
     2. give it `----rw-r--`;
     3. try to read it yourself, as `bob` and as `carol`; then try to write it as `bob`.
 
@@ -1851,9 +1911,10 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     💡 `man find`: search for `-perm`, and for `/mode`.
 
     **Check:** the setgid programs have an `s` in the place of the `x` of the group; each runs with the group of its
-    file, for example `tty` or `utmp` on Fedora, `shadow` or `crontab` on Ubuntu, and not as `root`. `bob` can write
-    `/tmp/student.txt` (`rw-rw-rw-`), but he cannot delete it: `Operation not permitted`, because of the `t` of
-    `/tmp`. <small>→ [Special Permissions](#special-permissions) · [The Sticky Bit](#the-sticky-bit)</small>
+    file, for example `tty` or `utmp` on Fedora, `shadow` or `crontab` on Ubuntu, and not as `root`. `bob` cannot
+    delete `/tmp/student.txt`: `Operation not permitted`, because of the `t` of `/tmp`. He cannot add a line to it
+    either, although it is `rw-rw-rw-`: in a sticky directory, the kernel also stops opening the files of somebody
+    else with `>>` (`sysctl fs.protected_regular` is not `0`), to protect them from tricks with names in `/tmp`. <small>→ [Special Permissions](#special-permissions) · [The Sticky Bit](#the-sticky-bit)</small>
 
 **The prompt**
 
