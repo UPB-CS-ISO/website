@@ -255,7 +255,8 @@ that **already** runs as `root`, like `sudo`, or one with the `setuid` bit, like
 ### `/etc/passwd`
 
 The local users are kept in `/etc/passwd`, a text file with **one user on every line**, and the fields separated by
-`:`. **Everyone** can read it, because every program that shows a user name needs it.
+`:`. **Everyone** can read it, because every program that shows a user name needs it. The examples below
+read the file only to show its format: to look up the users, always use [`getent`](#getent).
 
 ```shell-session
 [student@fedora ~]$ ls -l /etc/passwd
@@ -290,8 +291,8 @@ every file on Fedora: ignore it in this lab. Ubuntu does not show it.
 ### `getent`
 
 `/etc/passwd` is not the only place where users can be kept: in a university or a company, the accounts are usually
-on a **server** in the network (LDAP, Active Directory, ...). That is why **no**  program do not read `/etc/passwd` directly by
-themselves: they ask the **C library**, with `getpwnam()` (from a name to a user) and `getpwuid()` (from a UID to a
+on a **server** in the network (LDAP, Active Directory, ...). That is why the programs do **not** read `/etc/passwd`
+directly: they ask the **C library**, with `getpwnam()` (from a name to a user) and `getpwuid()` (from a UID to a
 user). The C library reads `/etc/nsswitch.conf` to find out where to look for the users, the passwords and the groups,
 and in which order. So `ls`, `ps` and `id` work the same way whether a user is kept in `/etc/passwd` or on a server.
 
@@ -329,11 +330,18 @@ student:x:1000:1000:Student:/home/student:/bin/bash
 nobody:x:65534:65534:Kernel Overflow User:/:/usr/sbin/nologin
 ```
 
-:::tip
+:::caution
 
-The output has the same format as `/etc/passwd`. Use `getent` instead of `grep` on `/etc/passwd` when you look for a
-user: `grep root /etc/passwd` also finds every line that has `root` somewhere else, for example in the home
-directory.
+**Always read the users and the groups with `getent`**
+
+To list the users, or to look for one, use `getent passwd`; for the groups, use `getent group`. Do **not** read
+`/etc/passwd` and `/etc/group` with `cat` or `grep`: they hold only the **local** accounts, so the users and the groups
+that come from `systemd` or from a server in the network are missing, although `ls`, `ps`, `id` and `login` see them.
+`getent` shows exactly what the system sees, in the same format as the files. Searching the file has a second trap
+too: `grep root /etc/passwd` finds every line that has `root` somewhere, for example in the home directory, while
+`getent passwd root` finds only the user `root`.
+
+In this lab, **the users database** means `getent passwd`, and **the groups database** means `getent group`.
 
 :::
 
@@ -462,7 +470,8 @@ trusts one group, and then every member gets these rights. Like a user, a group 
   `useradd` creates a group with the same name as the user, only for them;
 - any number of **supplementary groups**, listed in `/etc/group`, for example `wheel`.
 
-The local groups are kept in `/etc/group`, one group per line, with 4 fields:
+The local groups are kept in `/etc/group`, one group per line, with 4 fields. As for the users, read them with
+`getent group`, not from the file:
 
 ```shell-session
 [student@fedora ~]$ getent group wheel
@@ -1170,6 +1179,7 @@ shells of `root` a red prompt, that you cannot miss.
 
 | Problem                                                       | Solution                                                                                                  |
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| A user that `id` finds is not in `/etc/passwd`                | It is not a local user: always look up users with `getent passwd`, and groups with `getent group`         |
 | `Permission denied` on a file                                 | `ls -l` the file and `id`: find which set applies to you (owner, group or others) and what it allows      |
 | `Permission denied` on a file that has `r` for you            | One of the directories of its path has no `x` for you: `ls -ld` each of them                              |
 | `./script.sh: Permission denied`                              | The file has no `x`: `chmod u+x script.sh`                                                                |
@@ -1190,11 +1200,11 @@ shells of `root` a red prompt, that you cannot miss.
 
 The exercises get harder as you go:
 
-- 🧪 [First Steps](#first-steps) (exercises 1 - 27) goes once through **everything** in this lab: each exercise
-  shows **one** command or **one** idea, in a few short steps, to do in the lab;
-- 🏠 [Going Further](#going-further) (exercises 28 - 51) has longer exercises to do at home: each one starts with
+- 🧪 [First Steps](#first-steps) (exercises 1 - 14) goes once through **everything** in this lab: each exercise
+  shows **one** command or **one** idea, in a few short steps, to do in the two hours of the lab;
+- 🏠 [Going Further](#going-further) (exercises 15 - 47) has longer exercises to do at home: each one starts with
   a **goal**, a situation to solve or a question to answer, and puts together several commands;
-- 📝 [Challenges](#challenges) (exercises 52 - 60) has the hardest ones.
+- 📝 [Challenges](#challenges) (exercises 48 - 56) has the hardest ones.
 
 Exercise 1 creates the files that all the other exercises start from, and exercises 2 - 3 ask **you** to create the
 users, the group and the shared directory used by the rest of the lab. Run the commands in `~/lab05`, unless the
@@ -1205,6 +1215,10 @@ In exercises 2 - 3 you create two more users, `bob` and `carol`, with the passwo
 `students`, with `bob` as its only member. In the exercises, `student` plays the **owner** of the files, `bob` a member
 of their **group**, and `carol` one of the **others**. Your home directory is closed to the other users, so the files
 that they must reach are in `/srv/lab05`.
+
+When an exercise says **the users database** or **the groups database**, use `getent passwd` or `getent group`:
+always read the users and the groups with `getent`, never with `cat` or `grep` on `/etc/passwd` and `/etc/group` (see
+[`getent`](#getent)).
 
 The checks give the values of the lab computers, with Fedora. If you work at home on Ubuntu, some of them are
 different, as shown in [Fedora and Ubuntu](#fedora-and-ubuntu): for example, the group of the administrators is `sudo`
@@ -1298,22 +1312,34 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     password may warn `BAD PASSWORD: The password is shorter than 8 characters`, but `root` may set it anyway. <small>→ [Managing Users and Groups](#managing-users-and-groups) · [Groups](#groups)</small>
 
 3. **A shared directory**: Prepare `/srv/lab05`, the directory where `bob` and `carol` will try to reach your files,
-    since they cannot enter your home directory.
+    since they cannot enter your home directory, and see what each of them may do there.
 
     1. create `/srv/lab05` as `root`;
     2. make yourself its owner and `students` its group, with **one** command;
     3. create in it, as yourself, the file `plan.txt`, with the text `the plan`, and `report.txt`, with the text
        `the report`;
     4. give `report.txt` the group `students` and the permissions `rw-r-----`;
-    5. list the directory itself, then its content.
+    5. list the directory itself, then its content;
+    6. become `bob`, with `su - bob` and the password `uso2026`; print `plan.txt` and `report.txt`, and try to create
+       `/srv/lab05/bob.txt`;
+    7. still as `bob`, create `/tmp/bob.txt`, with the text `hello from bob`, and list it; leave the shell of `bob`
+       with `exit`;
+    8. become `carol` the same way; print `plan.txt`, `report.txt` and `/tmp/bob.txt`, and try to add a line to
+       `/tmp/bob.txt`; leave the shell of `carol`.
 
     ![The shared directory](./images/ex-shared-dir.svg)
 
     💡 [`chown` and `chgrp`](#chown-and-chgrp): `man chown`, search for `OWNER:GROUP`. You are not a member of
     `students`, so changing the group needs `root` too. `man ls`: search for `directory` to list the directory itself.
+    `su - bob` starts a shell of `bob` and asks for **his** password (see [`su`](#su)); `exit` leaves it. Look at the
+    prompt: it shows who you are.
 
     **Check:** `/srv/lab05` is `drwxr-xr-x student students`; `report.txt` is `-rw-r----- student students` and
-    `plan.txt` is `-rw-r--r--` (`-rw-rw-r--` on Ubuntu, because of the `umask`) with your own group. <small>→ [Owner, Group and Permissions](#owner-group-and-permissions)</small>
+    `plan.txt` is `-rw-r--r--` (`-rw-rw-r--` on Ubuntu, because of the `umask`) with your own group. As `bob`, you can
+    read both files, but you cannot create `bob.txt`: `Permission denied`, because the group of `/srv/lab05` has only
+    `r-x`. In `/tmp` everybody can create files, and `/tmp/bob.txt` is `-rw-r--r-- bob bob` (`-rw-rw-r--` on Ubuntu).
+    `carol` reads `plan.txt` and `bob.txt`, but `report.txt` and adding a line to `bob.txt` give `Permission denied`:
+    she is one of the **others**, who have `r--` on `bob.txt` and nothing on `report.txt`. <small>→ [Owner, Group and Permissions](#owner-group-and-permissions) · [Which Permissions Apply?](#which-permissions-apply) · [`su`](#su)</small>
 
 **Users**
 
@@ -1321,17 +1347,206 @@ command, or **one** idea, from the lab: read the section linked at the end of th
 
     1. print your user name, with two different commands;
     2. print your whole label, then only your UID, then only the **names** of your groups;
-    3. print the labels of `bob`, `carol` and `root`, without logging in as them;
+    3. print the label of `root`, without logging in as `root`, and list the processes of your terminal, with their
+       user and UID;
     4. print the lines of the group of the administrators (`wheel`, or `sudo` on Ubuntu), of `students` and of
        `student` from the groups database.
 
-    💡 `man id`: search for `name`, `user` and `groups`; [`getent`](#getent) reads the groups database too.
+    💡 `man id`: search for `name`, `user` and `groups`; `man ps`: search for `user`; [`getent`](#getent) reads the
+    groups database too.
 
     **Check:** the name is `student`, the UID `1000`; your groups are `student` and the group of the administrators
-    (Ubuntu: `sudo`, and a few more); `root` has the UID `0`, and `bob` is also in `students`. The group of the
-    administrators lists `student`, but `student` lists nobody: a user is not listed in its primary group. <small>→ [Who Am I](#who-am-i-whoami-and-id) · [Groups](#groups)</small>
+    (Ubuntu: `sudo`, and a few more); `root` has the UID `0`; the processes of your terminal run as `student`. The
+    group of the administrators lists `student`, and `students` lists `bob`, but `student` lists nobody: a user is not
+    listed in its primary group. <small>→ [Who Am I](#who-am-i-whoami-and-id) · [Groups](#groups) · [The User of a Process](#the-user-of-a-process)</small>
 
-5. **The credentials of your shell**: See all the credentials that the kernel keeps for your shell, and learn the two
+**Users and passwords**
+
+5. **Users and passwords**: Read your own account in the users database and in the passwords database, see who may
+    read each of them, and find out how many users exist only to run services.
+
+    1. print the permissions of `/etc/passwd` and of `/etc/shadow`, then try to print `/etc/shadow`;
+    2. print your line, once from `/etc/passwd` and once from the users database; find in it your UID, your home
+       directory and your shell;
+    3. as `root`, print your line and the line of `bob` from `/etc/shadow`, and find the algorithm of your hash;
+    4. count all the users of the users database, and the users whose shell is `nologin`;
+    5. print the UID limits for the regular and the system users.
+
+    💡 `man getent`: the `DATABASES` are `passwd`, `group`, `shadow`, ...; `man 5 shadow` explains the fields of
+    `/etc/shadow`, and `man 5 crypt` lists the algorithms (search for `yescrypt`); `man grep`: search for `count`;
+    `man login.defs`: search for `UID_MIN`.
+
+    **Check:** everyone can read `/etc/passwd`, but `/etc/shadow` is `----------` (Ubuntu: `-rw-r----- root shadow`),
+    and you cannot read it; your line has 7 fields, `student:x:1000:1000:...:/home/student:/bin/bash`, and the `x` says
+    that the password is in `/etc/shadow`; the two lines of step 2 are the same, because you are a local user, but only
+    `getent` also finds the users kept elsewhere; your hash starts with `$y$`, _yescrypt_; there are a few dozen users,
+    and most of them have `nologin`: they are the system users, with a UID below `1000`. <small>→ [`/etc/passwd`](#etcpasswd) · [`getent`](#getent) · [`/etc/shadow`](#etcshadow) · [UID Ranges](#uid-ranges)</small>
+
+**Logging in**
+
+6. **Log in as `bob`**: Follow a real login on a text terminal, and see which process runs as which user.
+
+    1. switch to the third virtual terminal and log in as `bob`;
+    2. print the user, the current directory and the label of the shell;
+    3. try to print your user as `root` with `sudo`, with the password of `bob`;
+    4. go back to Sway (at home, to your graphical desktop), and list the processes of `tty3` with their user,
+       PID, PPID and name;
+    5. go back to `tty3`, and log out.
+
+    💡 <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F3</kbd> (<kbd>Host</kbd>+<kbd>F3</kbd> in VirtualBox), and back with
+    <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F1</kbd> or <kbd>F2</kbd>; `man ps`: search for `Select by`, to see all the
+    ways to choose the processes, and find the one for a terminal.
+
+    **Check:** the shell runs as `bob`, in `/home/bob`, with the groups `bob` and `students`; `login` runs as `root` and
+    is the parent of the `bash` of `bob`. `sudo` refuses `bob`: `bob is not in the sudoers file.`: logging in as `bob`
+    gives the shell **his** label, and `bob` is not in the group of the administrators. <small>→ [Logging In](#logging-in) · [Virtual Terminals](/docs/labs/04#virtual-terminals)</small>
+
+**Becoming `root`**
+
+7. **`sudo`**: Run commands as `root` with `sudo`, see how it remembers your password and what it allows you to do,
+    write into a file of `root`, and start a shell of `root`.
+
+    1. print your user and your label as `root`; do it again, and see that the password is not asked;
+    2. make `sudo` forget the password, and list what you are allowed to run with `sudo`;
+    3. try to print the first line of `/etc/shadow` as yourself; then run the **same** command again as `root`,
+       without typing the command again;
+    4. create the empty file `/srv/lab05/root.txt` as `root`, and add the line `hello` at its end with `sudo echo` and
+       `>>`; then find a way that works, with a command that writes to a file **and** to the screen;
+    5. start a login shell of `root` with `sudo`, print the user and the current directory, and leave it.
+
+    💡 `man sudo`: search for `invalidate`, `list` and `login`; `man bash`: search for `HISTORY EXPANSION` and then
+    for `!!`; `man tee`: search for `append`.
+
+    **Check:** the user is `root`, `uid=0(root)`; after the password is forgotten, it is asked again; the list ends with
+    `(ALL) ALL` (Ubuntu: `(ALL : ALL) ALL`): as an administrator, you may run any command, as any user. `bash` prints
+    the command that `!!` became, then runs it. `sudo echo` with `>>` fails with `Permission denied`, because your shell
+    opens the file, not `sudo`; at the end, the file has `hello`. The shell of `root` starts in `/root`, with a `#` in
+    the prompt. <small>→ [`sudo`](#sudo) · [The Redirect Trap](#the-redirect-trap)</small>
+
+8. **A stack of shells**: Start the shells of other users one inside the other with `su`, see who you are at every
+    level, and see that `exit` takes you back one level at a time.
+
+    1. print the PID of your shell; become `bob` with a **login** shell, and print the user, the current directory and
+       the PID of the new shell;
+    2. from the shell of `bob`, become `carol` the same way, and print the same;
+    3. as `carol`, try to print your user as `root` with `sudo`;
+    4. in the second terminal, show the tree of processes of your first shell, with the PIDs and the users;
+    5. leave the shells one by one with `exit`, and print the user after each `exit`, until you are back in your own
+       shell.
+
+    💡 `man su`: search for `login`; `man pstree`: search for `uid` and for `pid`. Look at the prompt after every `su`
+    and every `exit`.
+
+    **Check:** `su` asks for the password of the user you become, not for yours; each shell starts in the home directory
+    of its user. The tree is `bash───su───bash───su───bash`, and `pstree` shows the user where it changes:
+    `su(...,root)`, `bash(...,bob)`, `su(...,root)` and `bash(...,carol)`: each `su` runs as `root` and waits for its
+    shell to end, as `login` does. `sudo` refuses `carol`: `carol is not in the sudoers file.`, because the shell of
+    `carol` has **only** the label of `carol`, even if it was started from your shell. Every `exit` ends the last shell
+    and its `su`, and takes you back to the user before it: `carol`, then `bob`, then `student`. <small>→ [`su`](#su) · [Logging In](#logging-in) · [`sudo`](#sudo)</small>
+
+**File permissions**
+
+9. **Read the permissions**: Learn to read who owns a file and what each user may do with it, recognize the special
+    bits, and predict the permissions of a new file.
+
+    1. print the permissions, the owner and the group of `notes.txt`, `/etc/passwd`, `/etc/shadow` and
+       `/usr/bin/passwd`, and of the directories `/tmp` and `~` (not their content);
+    2. print the same with `stat`, as letters **and** as numbers, with the owner, the group and the name;
+    3. print your `umask`, as a number and as letters; guess the permissions of a new file and of a new directory, then
+       create `new.txt` and `newdir` and check.
+
+    💡 `man stat`: search for `%a`, `%A`, `%U`, `%G` and `--format`; `help umask`: search for `symbolic`.
+
+    **Check:** for each file, say who the owner is and what the owner, the group and the others can do; `~` is
+    `drwx------` (`700`) on Fedora, `drwxr-x---` (`750`) on Ubuntu. `/usr/bin/passwd` has an `s` in the place of the
+    `x` of the owner (`4755`), and `/tmp` has a `t` (`1777`): these are special bits. With the `umask` `0022`
+    (`u=rwx,g=rx,o=rx`), `new.txt` is `rw-r--r--` and `newdir` is `rwxr-xr-x`; with `0002` (Ubuntu), the group also
+    gets `w`: `rw-rw-r--` and `rwxrwxr-x`. <small>→ [Owner, Group and Permissions](#owner-group-and-permissions) · [Special Permissions](#special-permissions) · [`umask`](#umask)</small>
+
+10. **`chmod`**: Change the permissions one at a time, with letters, or all at once, with a number, and see that a
+    program needs `x` to run.
+
+    1. on `notes.txt`, remove `r` for the group and the others;
+    2. remove `w` for yourself, and try to add a line to it; add `w` back, and add the line;
+    3. set the permissions of `notes.txt` back to `rw-r--r--` with **one** command, with letters;
+    4. run `./myid.sh`; give it `rwxr-xr-x`, with a number, and run it again;
+    5. give `myid.sh` the permissions `rw-------`, with a number, and try to run it.
+
+    **Check:** after step 1, `notes.txt` is `-rw-------`; in step 2 your own shell gets `Permission denied`; after
+    step 3 it is `-rw-r--r--` again. Without `x`, `./myid.sh` gives `Permission denied`; with `755`, it prints
+    `student`; with `600`, it is denied again. <small>→ [`chmod`](#chmod)</small>
+
+**The prompt**
+
+11. **The prompt**: Change what the prompt of `bash` shows, and see that it is only text, which the kernel does not
+    look at.
+
+    1. print the value of `PS1`;
+    2. change the prompt to `student in ~/lab05 $`, with the user, the **whole** path and the `$` of the user;
+    3. add the time in front, as `HH:MM`;
+    4. change the prompt so that it looks like the prompt of `root`; print your user and your UID, and try to print
+       `/etc/shadow`;
+    5. go back to the original prompt.
+
+    💡 `man bash`: search for `PROMPTING`.
+
+    **Check:** the original is `[\u@\h \W]\$ ` on Fedora (`\u@\h:\w\$ ` with colors on Ubuntu); the prompt changes
+    right away, and the path changes when you `cd`. With the fake prompt of `root`, the user is still `student`, the
+    UID `1000`, and `/etc/shadow` is still denied: the kernel looks at the credentials, not at the prompt. <small>→ [The Prompt](#the-prompt) · [Changing the Prompt](#changing-the-prompt)</small>
+
+**More about permissions**
+
+12. **`r` and `x` for directories**: See what `r` and `x` allow on a directory, one without the other.
+
+    1. give `noread` only `x` for you (`--x------`) and `noenter` only `r` (`r--------`);
+    2. try to list them, to enter them, and to print the `secret.txt` inside them;
+    3. give both of them back `rwxr-xr-x`.
+
+    **Check:** `noread` cannot be listed, but `noread/secret.txt` can be printed; `noenter` lists the name with an
+    error, but cannot be entered and its file cannot be printed. The error comes from the colors of `ls`, which need
+    the details of the file: `\ls noenter` lists the name without it. <small>→ [`r`, `w` and `x`](#r-w-and-x)</small>
+
+13. **Who can read the report**: See which of the three sets of permissions applies to the owner, to a member of the
+    group and to the others.
+
+    `/srv/lab05/report.txt` is `rw-r----- student students`.
+
+    1. print it as yourself, as `bob` and as `carol`;
+    2. try to add a line to it as `bob`.
+
+    💡 `man sudo`: search for `-u user` to run a command as another user (it asks for **your** password); to write as
+    `bob`, use the trick from [The Redirect Trap](#the-redirect-trap).
+
+    **Check:** you and `bob` can read it, `carol` cannot; `bob` cannot write it: he gets the `g` permissions, `r--`. <small>→ [Which Permissions Apply?](#which-permissions-apply)</small>
+
+**The credentials of a process**
+
+14. **Who runs `passwd`**: See what the `setuid` bit of `passwd` changes in the credentials of the process.
+
+    1. in the second terminal, start `passwd`, and do **not** type anything;
+    2. in the first terminal, find its PID, and print its real, its effective and its saved user;
+    3. print the `Uid:` line of its `status` file, and compare it with the one of your shell: which of the UIDs changed?
+    4. end `passwd` with <kbd>Ctrl</kbd>+<kbd>C</kbd>.
+
+    ![Two terminals](./images/ex-two-terminals.svg)
+
+    💡 `man ps`: search for `command name`, to select a process by its name instead of its PID, and, in the section
+    `STANDARD FORMAT SPECIFIERS`, for `real user`, `effective user` and `saved user`; `man 5 proc`: search for `Uid`;
+    `$$` is the PID of your shell (lab 04).
+
+    **Check:** the real user is `student`, the effective and the saved user are `root`; `Uid:` is `1000 0 0 0`,
+    while the one of your shell is `1000 1000 1000 1000`. The
+    `s` bit of `/usr/bin/passwd` changed the effective and the saved UID, but not the real one: `passwd` still knows who
+    started it. <small>→ [`setuid`](#setuid) · [The Credentials of a Process](#the-credentials-of-a-process)</small>
+
+### 🏠 Going Further {/* #going-further */}
+
+Each exercise starts with its **goal**: what must be true at the end, or what you must find out. The steps lead you
+there, but you choose the commands. At the end, check the goal itself, not only that each command worked.
+
+**Users and passwords**
+
+15. **The credentials of your shell**: See all the credentials that the kernel keeps for your shell, and learn the two
     ways to read them.
 
     1. print the PID of your shell;
@@ -1346,53 +1561,34 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     effective, saved and file system UID; `Groups:` has `10` and `1000`, the GIDs of `wheel` and `student`
     (on Ubuntu, `27` for `sudo`, and the GIDs of your other groups). <small>→ [The Credentials of a Process](#the-credentials-of-a-process)</small>
 
-6. **The users of the processes**: Find out which users run the processes of the system, and how many processes each of
+16. **The users of the processes**: Find out which users run the processes of the system, and how many processes each of
     them has.
 
-    1. list the processes of your terminal, with their user and UID;
-    2. count the processes of **every** user of the system;
-    3. find the two users with the most processes.
+    1. count the processes of **every** user of the system;
+    2. find the two users with the most processes.
 
     💡 `man ps`: search for `every process` and for `user`; count them with `sort` and `uniq` (lab 03).
 
-    **Check:** the processes of your terminal run as `student`; `root` and `student` have the most processes. <small>→ [The User of a Process](#the-user-of-a-process) · [Pipes](/docs/labs/03#pipes-)</small>
+    **Check:** `root` and `student` have the most processes. <small>→ [The User of a Process](#the-user-of-a-process) · [Pipes](/docs/labs/03#pipes-)</small>
 
-**The users database**
+17. **Audit the users database**: An attacker who becomes `root` often adds a second user with the UID `0`: a hidden
+    `root`, with an innocent name. Check that your system has no such user, list the people who have a home directory,
+    and find out whether all the users are in `/etc/passwd`.
 
-7. **The users database**: Read your own account in the users database, look up other users by name and by UID, and
-    find out how many users exist only to run services.
+    1. find all the users whose UID is `0`, and the user whose UID is `65534`;
+    2. find the users whose home directory is in `/home`, and count them;
+    3. find where the C library looks for the users, the passwords and the groups;
+    4. compare the number of users in the database with the number of lines of `/etc/passwd`.
 
-    1. print the permissions of `/etc/passwd`, and your line, once from the file and once from the users database;
-       find in it your UID, your home directory and your shell;
-    2. find the users with the UIDs `0` and `65534`, and print the line of `bob`;
-    3. count all the users, and the users whose shell is `nologin`;
-    4. print the UID limits for the regular and the system users.
+    💡 read the users with `getent passwd`, not from the file; the UID is the 3rd field and the home directory the 6th:
+    `man cut`, search for `delimiter` and for `fields`, then filter the lines with `grep` (lab 03). Why is `grep 0`
+    alone not enough? `man 5 nsswitch.conf` tells where the users are kept.
 
-    💡 `man getent`: the `DATABASES` are `passwd`, `group`, `shadow`, ...; `man grep`: search for `count`;
-    `man login.defs`: search for `UID_MIN`.
+    **Check:** only `root` has the UID `0`, and `65534` is `nobody`; the users in `/home` are `student`, `bob` and
+    `carol`; `files` is the first place where the C library looks; if the two numbers are different, the extra users
+    come from `systemd`: this is why you always read the users with `getent`. <small>→ [`/etc/passwd`](#etcpasswd) · [`getent`](#getent)</small>
 
-    **Check:** everyone can read `/etc/passwd`; your line has 7 fields, `student:x:1000:1000:...:/home/student:/bin/bash`;
-    `0` is `root`, `65534` is `nobody`; there are a few dozen users, and most of them have `nologin`: they are the
-    system users, with a UID below `1000`. <small>→ [`/etc/passwd`](#etcpasswd) · [`getent`](#getent) · [UID Ranges](#uid-ranges)</small>
-
-**Passwords**
-
-8. **`/etc/shadow`**: See where the passwords are kept, who may read them, how a password is stored, and when it was
-    last changed.
-
-    1. print the permissions of `/etc/shadow`, then try to print it;
-    2. print your line and the line of `bob`, and find the algorithm of your hash;
-    3. print the password dates of your account;
-    4. turn the third field of your line into a date.
-
-    💡 `man 5 shadow` explains the fields; `man 5 crypt` lists the algorithms (search for `yescrypt`); `man chage`:
-    search for `list`; `man date`: search for `--date` (the date can be `1970-01-01 + N days`).
-
-    **Check:** `/etc/shadow` is `----------` (Ubuntu: `-rw-r----- root shadow`), and you cannot read it; your hash
-    starts with `$y$`, _yescrypt_; steps 3 and 4 give the same date: the day you last set your password (or installed
-    the system). <small>→ [`/etc/shadow`](#etcshadow)</small>
-
-9. **Hash a password**: See how a hash depends on the password and on the salt.
+18. **Hash a password**: See how a hash depends on the password and on the salt.
 
     With `openssl`:
 
@@ -1405,89 +1601,41 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     **Check:** the first two hashes are the same; with another salt, or one different letter, the hash is completely
     different. <small>→ [Hashes and Salt](#hashes-and-salt)</small>
 
-10. **Who runs `passwd`**: See what the `setuid` bit of `passwd` changes in the credentials of the process.
+19. **What `/etc/shadow` tells**: Find out what `/etc/shadow` tells an administrator: which accounts can be used with a
+    password, and whether two users have the same password.
 
-    1. in the second terminal, start `passwd`, and do **not** type anything;
-    2. in the first terminal, find its PID, and print its real, its effective and its saved user;
-    3. print the `Uid:` line of its `status` file, and compare it with the one of your shell: which of the UIDs changed?
-    4. end `passwd` with <kbd>Ctrl</kbd>+<kbd>C</kbd>.
+    1. print the line of `root` from `/etc/shadow`, and the state of its password;
+    2. print the lines of 5 system users;
+    3. `bob` and `carol` both have the password `uso2026`: print their lines, and compare their salts and their hashes;
+    4. print the password dates of your account; then turn the third field of your line in `/etc/shadow` into a date.
 
-    ![Two terminals](./images/ex-two-terminals.svg)
+    💡 `man passwd`: search for `status`; `man chage`: search for `list`; `man date`: search for `--date` (the date can
+    be `1970-01-01 + N days`).
 
-    💡 `man ps`: search for `command name`, to select a process by its name instead of its PID.
+    **Check:** the password field of `root` and of the system users starts with `!` or `*`, or is only `!` or `*`: no
+    password can log in as them. The salts of `bob` and `carol` are different, so their hashes are different too: nobody
+    can tell from `/etc/shadow` that they have the same password. Both dates of step 4 are the same: the day you last
+    set your password (or installed the system). <small>→ [`/etc/shadow`](#etcshadow) · [Hashes and Salt](#hashes-and-salt)</small>
 
-    **Check:** the real user is `student`, the effective and the saved user are `root`; `Uid:` is `1000 0 0 0`. The
-    `s` bit of `/usr/bin/passwd` changed the effective and the saved UID, but not the real one: `passwd` still knows who
-    started it. <small>→ [`setuid`](#setuid) · [The Credentials of a Process](#the-credentials-of-a-process)</small>
+20. **Accounts on hold**: `bob` goes on holiday, and the internship of `carol` ended on 1 January 2020. Stop both
+    accounts without deleting anything and without changing their passwords, then let them back in: they must log in
+    with their **old** passwords.
 
-**Logging in**
+    1. lock the account of `bob`, and print his line from `/etc/shadow`;
+    2. try to become `bob` with `su`, with the right password; unlock the account, and try again;
+    3. make the account of `carol` expire on 1 January 2020, and print her password dates and her line in
+       `/etc/shadow`;
+    4. try to become `carol`; then remove the expiry date.
 
-11. **Log in as `bob`**: Follow a real login on a text terminal, and see which process runs as which user.
+    💡 `man passwd`: search for `lock`; `man chage`: search for `expiredate`, and for `-1`.
 
-    1. switch to the third virtual terminal and log in as `bob`;
-    2. print the user, the current directory and the label of the shell;
-    3. go back to Sway (at home, to your graphical desktop), and list the processes of `tty3` with their user, real
-       user, PID, PPID and name;
-    4. print the supplementary groups of the shell of `bob`, with `ps`;
-    5. go back to `tty3`, and log out.
-
-    💡 <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F3</kbd> (<kbd>Host</kbd>+<kbd>F3</kbd> in VirtualBox), and back with
-    <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F1</kbd> or <kbd>F2</kbd>; `man ps`: search for `Select by`, to see all the
-    ways to choose the processes, and find the one for a terminal.
-
-    **Check:** the shell runs as `bob`, in `/home/bob`, with the groups `bob` and `students`; `login` runs as `root`
-    and is the parent of the `bash` of `bob`. <small>→ [Logging In](#logging-in) · [Virtual Terminals](/docs/labs/04#virtual-terminals)</small>
+    **Check:** the hash of `bob` starts with `!!` (Ubuntu: `!`) and `su` fails with `Authentication failure`; after the
+    unlock, the `!` disappear and `su` works. The 8th field of the line of `carol` is now a number of days, and `su`
+    refuses the expired account; after step 4 the field is empty again. <small>→ [Changing a Password](#changing-a-password-passwd) · [`/etc/shadow`](#etcshadow)</small>
 
 **Becoming `root`**
 
-12. **`sudo`**: Run commands as `root` with `sudo`, and see how it remembers your password, what it allows you to do
-    and what it writes in the log.
-
-    1. print your user and your label as `root`;
-    2. do it again, and see that the password is not asked;
-    3. make `sudo` forget the password, and try once more;
-    4. list what you are allowed to run with `sudo`;
-        5. try to print the first line of `/etc/shadow` as yourself; then run the **same** command again as `root`,
-
-       without typing the command again;
-
-    6. print the last 5 commands that were run with `sudo`, from the system log;
-    7. (optional) print the end of `/etc/sudoers` as `root`, and find the line that mentions the group of the
-       administrators (`%wheel`, or `%sudo` on Ubuntu); you do not have to understand the rest of the file.
-
-    💡 `man sudo`: search for `invalidate` and for `list`; `man bash`: search for `HISTORY EXPANSION` and then for
-    `!!`; `man journalctl`: search for `identifier`.
-
-    **Check:** the user is `root`, `uid=0(root)`; after the password is forgotten, it is asked again; the list ends with
-    `(ALL) ALL` (Ubuntu: `(ALL : ALL) ALL`): as an administrator, you may run any command, as any user. `bash` prints
-    the command that `!!` became, then runs it. The log shows your commands, with your user, your terminal and the
-    directory. <small>→ [`sudo`](#sudo)</small>
-
-13. **`su` and `sudo`**: Become another user, or `root`, in a new shell, with `su` and with `sudo`, and see the
-    difference.
-
-    1. become `bob` with `su`, with a **login** shell; print the user and the current directory; leave;
-    2. try to become `root` with `su`;
-    3. start a login shell of `root` with `sudo`, print the user and the current directory, and leave it.
-
-    💡 `man su`: search for `login`; `man sudo`: search for `login` too.
-
-    **Check:** `su` asks for the password of `bob` and starts in `/home/bob`; `su` to `root` fails with
-    `Authentication failure` (unless `root` has a password); the shell of `root` starts in `/root`, with a `#` in the
-    prompt. <small>→ [`su`](#su)</small>
-
-14. **The redirect trap**: Write into a file of `root`, and see why putting `sudo` in front of `echo` is not enough.
-
-    1. create the empty file `/srv/lab05/root.txt` as `root`, and look at its owner;
-    2. add the line `hello` at its end with `sudo echo` and `>>`;
-    3. find a way that works, with a command that writes to a file **and** to the screen.
-
-    💡 `man tee`: search for `append`.
-
-    **Check:** step 2 fails with `Permission denied`, because your shell opens the file; at the end, the file has
-    `hello`. <small>→ [The Redirect Trap](#the-redirect-trap)</small>
-
-15. **Which commands need `root`**: Learn to tell which actions need `root`, before you run them.
+21. **Which commands need `root`**: Learn to tell which actions need `root`, before you run them.
 
     **Before** you run them, guess which of these commands need `root`. Then run them **without** `sudo`, check your
     guesses, and run again with `sudo` only the ones that failed because of the permissions:
@@ -1504,9 +1652,130 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     to everybody; `/etc/shadow`, writing in `/etc`, `/root` and restarting a service need `root`. `systemctl` may ask
     for your password in a window, instead of failing. <small>→ [The `root` User](#the-root-user) · [`sudo`](#sudo)</small>
 
+22. **Is it the permissions?**: Learn to tell, from the error, when `sudo` helps and when it does not.
+
+    Run each command without `sudo`, decide if the error is about **permissions** (then `sudo` fixes it) or something
+    else (then `sudo` does not help), and check with `sudo`:
+
+    1. `cat /var/log/kill/them/all.log`;
+    2. `userdel hariseldon`;
+    3. `chown $USER /home/search/and/destroy`;
+    4. `cat /root/missing.txt`;
+    5. `dnf install sports-illustrated` (on Ubuntu, `apt install sports-illustrated`).
+
+    **Check:** when the error was about permissions, `sudo` makes it go away, and the command may then fail again with
+    the **real** error: the user, the file or the package does not exist. When the error was about something else,
+    `sudo` gives the same error. <small>→ [`sudo`](#sudo)</small>
+
+23. **`sudo` as another user**: Run commands as `bob`, without knowing his password, check that they get the **whole**
+    label of `bob`, and find out what `bob` may do in `/srv/lab05`.
+
+    1. print the user and the label of a process that runs as `bob`, started with `sudo`;
+    2. try to create the file `/srv/lab05/bob.txt` as `bob`;
+    3. start a **login** shell of `bob` with `sudo`, print the current directory, and leave it;
+    4. in the second terminal, run `sleep 300` as `bob`, with `sudo`; in the first terminal, print the real and
+       effective user, the real and effective group and the supplementary groups of `sleep`, and the `Uid:`, `Gid:`
+       and `Groups:` lines of its `status` file.
+
+    💡 `man sudo`: search for `-u user` and for `login`; `man ps`, section `STANDARD FORMAT SPECIFIERS`: search for
+    `real group`, `effective group` and `supplementary`.
+
+    **Check:** the process runs as `bob`, with the groups `bob` and `students`; `bob` cannot create the file: the group
+    of `/srv/lab05` has only `r-x`; the login shell starts in `/home/bob`, and `sudo` asked for **your** password, not
+    the one of `bob`. For `sleep`, everything is `bob`: `Uid:` is 4 times `1001`, and `Groups:` has the GIDs of `bob`
+    and `students`, as after a login. <small>→ [`sudo`](#sudo) · [The Credentials of a Process](#the-credentials-of-a-process)</small>
+
+24. **The credentials of `sudo`**: Find out how `sudo` changes the credentials of the command that it starts, and who
+    may then end the command with `kill`.
+
+    For steps 3 - 5, **first** write down your guess, then check it:
+
+    1. in the second terminal, print the PID of the shell, then run `sleep 300` as `root`; in the first terminal, show
+       the tree of processes of the second shell, with the PIDs, and list these processes with their PID, PPID,
+       terminal, real and effective user;
+    2. print the `Uid:` line of `sudo` and of `sleep`, and compare them with the `passwd` of exercise 14: which
+       program is like `passwd`, and which one is different?
+    3. can you end the `sleep` with `kill` and its PID?
+    4. send the signal to the `sudo` process instead, and look at what happened to `sleep`;
+    5. in the second terminal, start `passwd`, and do not type anything; can you end it with `kill` from the first
+       terminal? Can `bob` (run `kill` as `bob` with `sudo`)?
+
+    💡 `man pstree`: search for `pid`; `ps -p` takes several PIDs, separated by `,`; `man pgrep` finds the PID of a
+    process from its name. Do not look for `sleep` with `ps -t` and the terminal of the second shell: `sudo` runs it on a
+    new pseudo terminal (see [`sudo`](#sudo)). For
+    `kill`, use the rule from [Which Credentials Are Checked](#which-credentials-are-checked): print the real and the
+    saved UID of the target, and the real and the effective UID of the sender.
+
+    **Check:** the tree is `bash───sudo───sudo───sleep`: the first `sudo` is on the terminal of the second shell, the
+    second one on a **new** pseudo terminal, with `sleep`, its child. The first
+    `sudo` is like `passwd`: its `Uid:` is `1000 0 0 0`, because it is a setuid program. For `sleep`, `Uid:` is
+    `0 0 0 0`: `sudo`, as `root`, set **all** the UIDs of its child. So you cannot end the `sleep`, but you **can** end
+    `sudo`, whose real UID is yours, and `sudo` passes the signal on to its child. You can end your `passwd`, its real
+    UID is yours; `bob` gets `Operation not permitted`. <small>→ [`sudo`](#sudo) · [Which Credentials Are Checked](#which-credentials-are-checked)</small>
+
+25. **Play a setuid program**: See how the saved UID lets a setuid program put `root` aside and take it back, by acting
+    as one, as in [The Saved UID](#the-saved-uid).
+
+    After each step, print the `Uid:` line of the `python3` process from the second terminal, and try to read the first
+    line of `/etc/shadow` from `python3`:
+
+    1. in the first terminal, start `python3` as `root`; print its real, effective and saved UID;
+    2. become `student` in the real and the effective UID, but keep `root` in the saved UID;
+    3. take `root` back, in the effective UID only;
+    4. set all three UIDs to `1000`, and try to take `root` back once more.
+
+    ![Play a setuid program](./images/ex-saved-uid.svg)
+
+    💡 In `python3`, `import os` first, then `help(os.getresuid)`, `help(os.setresuid)` and `help(os.seteuid)`;
+    `open('/etc/shadow').readline()` reads the first line of a file; `exit()` leaves `python3`.
+
+    **Check:** `Uid:` is `0 0 0 0`, then `1000 1000 0 1000` and `/etc/shadow` is denied, then `1000 0 0 0` and it can
+    be read again, because `0` was the saved UID; after the last step, `Uid:` is `1000 1000 1000 1000` and
+    `seteuid(0)` fails with `Operation not permitted`. The 4th number, the file system UID, always follows the 2nd. <small>→ [The Saved UID](#the-saved-uid) · [Which Credentials Are Checked](#which-credentials-are-checked)</small>
+
+26. **The shells of `root`**: There are two ways to get a shell of `root` with `sudo`. Find out how they differ, which
+    of your variables reach a command started with `sudo`, and where `sudo` looks for programs.
+
+    1. try to become `root` with `su`;
+    2. in `~/lab05`, start a shell of `root` that stays in the current directory, and print the current directory
+       and `$HOME`; leave it;
+    3. do the same with a **login** shell of `root`;
+    4. export the variable `COURSE` with the value `ISO`; print it from a command started with `sudo`, then from one
+       started with `sudo` that keeps your environment;
+    5. compare your `PATH` with the `PATH` that `sudo` gives to a command.
+
+    💡 `man sudo`: search for `shell` and for `preserve-env`; `printenv` prints the value of one variable, and you can
+    run it with `sudo`.
+
+    **Check:** `su` fails with `Authentication failure` (unless `root` has a password); the shell of step 2 stays in
+    `~/lab05`, the login shell starts in `/root`; both have `HOME=/root`. By default, `sudo` removed `COURSE`; `sudo`
+    also uses a `PATH` of its own, so a program from your `~/.local/bin` is not found by `sudo`. <small>→ [`su`](#su) · [`sudo`](#sudo) · [Environment Variables](/docs/labs/04#environment-variables)</small>
+
+27. **Shells inside shells**: Follow the user of every process when you start shells inside shells, and see that not
+    even `root` can log in as a system user.
+
+    1. in the first terminal, print the PID of the shell;
+    2. start a login shell of `root` with `sudo`; from it, try to become `daemon` and `bin` with `su`, and print the
+       shell of `daemon` from the users database;
+    3. still in the shell of `root`, start a login shell of `bob` with `su` (`root` is not asked for a password);
+    4. in the second terminal, show the tree of processes of the first shell, with the PIDs and the users, and print
+       the real and effective user of every process in this tree, with `ps`;
+    5. leave the shells one by one, and show the tree after each step.
+
+    ![Shells inside shells](./images/ex-shells.svg)
+
+    💡 `man pstree`: search for `uid` and for `pid`; `ps -p` takes the PIDs that `pstree` printed, separated by `,`.
+    `ps -t` with the first terminal is not enough: `sudo` starts its command on a new pseudo terminal.
+
+    **Check:** even `root` gets `This account is currently not available.`: the shell of `daemon` is
+    `/usr/sbin/nologin`, a program that prints this message and ends. The tree is
+    `bash───sudo───sudo───bash───su───bash`: two `sudo`, because `sudo` runs the shell of `root` on a new pseudo
+    terminal; `pstree` shows the user where it changes: `sudo(...,root)` and the last `bash(...,bob)`; `su` runs as
+    `root`, and its child as `bob`. Every `exit` removes the last shell. <small>→ [`su`](#su) · [`/etc/passwd`](#etcpasswd) · [Listing Processes](/docs/labs/03#listing-processes-ps)</small>
+
 **Managing users and groups**
 
-16. **Create a user**: Create a new account, `dave`, see when it becomes usable, and see that a new user cannot use
+28. **Create a user**: Create a new account, `dave`, see when it becomes usable, and see that a new user cannot use
     `sudo`.
 
     1. create the user `dave`, with a home directory, the shell `/bin/bash` and the full name `Dave Brown`;
@@ -1514,9 +1783,9 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     3. give him a password, and print his line from `/etc/shadow` again;
     4. print his label and the permissions of his home directory, and try to list what is inside it;
     5. become `dave`, with a login shell, and try to print your user as `root`, with the password of `dave`; leave, and
-       find the attempt of `dave` in the log of `sudo`.
+       print the last 5 commands that were run with `sudo`, from the system log: find the attempt of `dave`.
 
-    💡 `man useradd`: search for `home`, `shell` and `comment`.
+    💡 `man useradd`: search for `home`, `shell` and `comment`; `man journalctl`: search for `identifier`.
 
     **Check:** before step 3, the password field in `/etc/shadow` is `!` or `!!`: nobody can log in as `dave` yet;
     after it, the field is a hash that starts with `$y$`. `dave` has the next free UID and a group `dave` of his own;
@@ -1524,7 +1793,7 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     list it. `sudo` refuses `dave`: `dave is not in the sudoers file.`, because he is not in the group of the
     administrators; the log has a line for `dave` with `user NOT in sudoers`. <small>→ [Managing Users and Groups](#managing-users-and-groups) · [`/etc/shadow`](#etcshadow) · [`sudo`](#sudo)</small>
 
-17. **Change a user**: Change an existing account, its full name and its shell, and see which fields of `/etc/passwd`
+29. **Change a user**: Change an existing account, its full name and its shell, and see which fields of `/etc/passwd`
     change.
 
     After each step, print the line of `dave` from the users database, and find the field that changed:
@@ -1538,7 +1807,7 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     **Check:** the 5th field becomes `David Brown`, the 7th `/usr/sbin/nologin`; with this shell, `su` fails with
     `This account is currently not available.`, even with the right password; with `/bin/bash`, it works again. <small>→ [Managing Users and Groups](#managing-users-and-groups) · [`/etc/passwd`](#etcpasswd)</small>
 
-18. **Groups of a user**: Add a user to a group and remove him from it, with the two commands that can do it, and create
+30. **Groups of a user**: Add a user to a group and remove him from it, with the two commands that can do it, and create
     and delete a group.
 
     After each step, print the groups of `dave`:
@@ -1554,7 +1823,7 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     **Check:** `dave` is in `dave` and `students`, then also in `tas`, then only in `dave` and `tas`, and at the end
     only in `dave`; `getent group tas` prints nothing. <small>→ [Managing Users and Groups](#managing-users-and-groups) · [Groups](#groups)</small>
 
-19. **Delete a user**: Delete an account completely: the user, his group and his home directory.
+31. **Delete a user**: Delete an account completely: the user, his group and his home directory.
 
     1. in the second terminal, become `dave` with a login shell; in the first terminal, try to delete `dave`;
     2. leave the shell of `dave`, and delete him together with his home directory;
@@ -1565,157 +1834,7 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     **Check:** while `dave` is logged in, `userdel` refuses: `user dave is currently used by process ...`; at the end,
     `id dave` prints `no such user`, `getent group dave` prints nothing, and `/home/dave` does not exist. <small>→ [Managing Users and Groups](#managing-users-and-groups)</small>
 
-**File permissions**
-
-20. **Read the permissions**: Learn to read who owns a file, and what each user may do with it.
-
-    1. print the permissions, the owner and the group of `notes.txt`, `/etc/passwd`, `/etc/shadow` and `/usr/bin/ls`,
-       and of the directories `/tmp` and `~` (not their content);
-    2. print the same with `stat`, as letters **and** as numbers, with the owner, the group and the name.
-
-    💡 `man stat`: search for `%a`, `%A`, `%U`, `%G` and `--format`.
-
-    **Check:** for each file, say who the owner is and what the owner, the group and the others can do; `~` is
-    `drwx------` (`700`) on Fedora, `drwxr-x---` (`750`) on Ubuntu. <small>→ [Owner, Group and Permissions](#owner-group-and-permissions)</small>
-
-21. **`chmod`**: Change the permissions one at a time, with letters, or all at once, with a number, and see that a
-    program needs `x` to run.
-
-    1. on `notes.txt`, remove `r` for the group and the others;
-    2. remove `w` for yourself, and try to add a line to it; add `w` back, and add the line;
-    3. set the permissions of `notes.txt` back to `rw-r--r--` with **one** command, with letters;
-    4. run `./myid.sh`; give it `rwxr-xr-x`, with a number, and run it again;
-    5. give `myid.sh` the permissions `rw-------`, with a number, and try to run it.
-
-    **Check:** after step 1, `notes.txt` is `-rw-------`; in step 2 your own shell gets `Permission denied`; after
-    step 3 it is `-rw-r--r--` again. Without `x`, `./myid.sh` gives `Permission denied`; with `755`, it prints
-    `student`; with `600`, it is denied again. <small>→ [`chmod`](#chmod)</small>
-
-22. **`r` and `x` for directories**: See what `r` and `x` allow on a directory, one without the other.
-
-    1. give `noread` only `x` for you (`--x------`) and `noenter` only `r` (`r--------`);
-    2. try to list them, to enter them, and to print the `secret.txt` inside them;
-    3. give both of them back `rwxr-xr-x`.
-
-    **Check:** `noread` cannot be listed, but `noread/secret.txt` can be printed; `noenter` lists the name with an
-    error, but cannot be entered and its file cannot be printed. The error comes from the colors of `ls`, which need
-    the details of the file: `\ls noenter` lists the name without it.<small>→ [`r`, `w` and `x`](#r-w-and-x)</small>
-
-23. **Who can read the report**: See which of the three sets of permissions applies to the owner, to a member of the
-    group and to the others.
-
-    `/srv/lab05/report.txt` is `rw-r----- student students`.
-
-    1. print it as yourself, as `bob` and as `carol`;
-    2. try to add a line to it as `bob`.
-
-    💡 `man sudo`: search for `-u user` to run a command as another user (it asks for **your** password); to write as
-    `bob`, use the trick from [The Redirect Trap](#the-redirect-trap).
-
-    **Check:** you and `bob` can read it, `carol` cannot; `bob` cannot write it: he gets the `g` permissions, `r--`. <small>→ [Which Permissions Apply?](#which-permissions-apply)</small>
-
-24. **`umask`**: Predict the permissions of a new file and of a new directory from the `umask`.
-
-    1. print your `umask`, as a number and as letters;
-    2. guess the permissions of a new file and of a new directory, then create `new.txt` and `newdir` and check.
-
-    💡 `help umask`: search for `symbolic`.
-
-    **Check:** with `0022` (`u=rwx,g=rx,o=rx`), `new.txt` is `rw-r--r--` and `newdir` is `rwxr-xr-x`; with `0002`
-    (Ubuntu), the group also gets `w`: `rw-rw-r--` and `rwxrwxr-x`. <small>→ [`umask`](#umask)</small>
-
-25. **`chown`**: Give a file to another user, and find out who is allowed to do it.
-
-    1. give `notes.txt` to `carol`, as yourself;
-    2. do it as `root`, and list it;
-    3. give it back to your user **and** your group, with one command.
-
-    💡 `man chown`: search for `colon`, to change the group to the login group of the user.
-
-    **Check:** as yourself, `Operation not permitted`; as `root`, the owner becomes `carol`; at the end it is yours
-    again. <small>→ [`chown` and `chgrp`](#chown-and-chgrp)</small>
-
-**Special permissions**
-
-26. **Special bits on the system**: Recognize the special bits on the programs and the directories of the system.
-
-    1. print the permissions of `/usr/bin/passwd`, `/usr/bin/su` and `/usr/bin/sudo`, and of the directory `/tmp`;
-    2. print them as numbers.
-
-    **Check:** the three programs have an `s` in the place of the `x` of the owner (`4755`, and `4111` for `sudo` on
-    Fedora); `/tmp` has a `t` (`1777`). <small>→ [Special Permissions](#special-permissions)</small>
-
-**The prompt**
-
-27. **The prompt**: Change what the prompt of `bash` shows, and see that it is only text, which the kernel does not
-    look at.
-
-    1. print the value of `PS1`;
-    2. change the prompt to `student in ~/lab05 $`, with the user, the **whole** path and the `$` of the user;
-    3. add the time in front, as `HH:MM`;
-    4. change the prompt so that it looks like the prompt of `root`; print your user, your UID and the effective user
-       of your shell, and try to print `/etc/shadow`;
-    5. go back to the original prompt.
-
-    💡 `man bash`: search for `PROMPTING`.
-
-    **Check:** the original is `[\u@\h \W]\$ ` on Fedora (`\u@\h:\w\$ ` with colors on Ubuntu); the prompt changes
-    right away, and the path changes when you `cd`. With the fake prompt of `root`, the user is still `student`, the
-    UID `1000`, and `/etc/shadow` is still denied: the kernel looks at the credentials, not at the prompt. <small>→ [The Prompt](#the-prompt) · [Changing the Prompt](#changing-the-prompt)</small>
-
-### 🏠 Going Further {/* #going-further */}
-
-Each exercise starts with its **goal**: what must be true at the end, or what you must find out. The steps lead you
-there, but you choose the commands. At the end, check the goal itself, not only that each command worked.
-
-**Users and passwords**
-
-28. **Audit the users database**: An attacker who becomes `root` often adds a second user with the UID `0`: a hidden
-    `root`, with an innocent name. Check that your system has no such user, list the people who have a home directory,
-    and find out whether all the users are in `/etc/passwd`.
-
-    1. find all the users whose UID is `0`;
-    2. find the users whose home directory is in `/home`, and count them;
-    3. find where the C library looks for the users, the passwords and the groups;
-    4. compare the number of users in the database with the number of lines of `/etc/passwd`.
-
-    💡 the UID is the 3rd field and the home directory the 6th: `man cut`, search for `delimiter` and for `fields`, then
-    filter the lines with `grep` (lab 03). Why is `grep 0` alone not enough? `man 5 nsswitch.conf` tells where the
-    users are kept.
-
-    **Check:** only `root` has the UID `0`; the users in `/home` are `student`, `bob` and `carol`; `files` is the first
-    place where the C library looks; if the two numbers are different, the extra users come from `systemd`. <small>→ [`/etc/passwd`](#etcpasswd) · [`getent`](#getent)</small>
-
-29. **What `/etc/shadow` tells**: Find out what `/etc/shadow` tells an administrator: which accounts can be used with a
-    password, and whether two users have the same password.
-
-    1. print the line of `root` from `/etc/shadow`, and the state of its password;
-    2. print the lines of 5 system users;
-    3. `bob` and `carol` both have the password `uso2026`: print their lines, and compare their salts and their hashes.
-
-    💡 `man passwd`: search for `status`.
-
-    **Check:** the password field of `root` and of the system users starts with `!` or `*`, or is only `!` or `*`: no
-    password can log in as them. The salts of `bob` and `carol` are different, so their hashes are different too:
-    nobody can tell from `/etc/shadow` that they have the same password. <small>→ [`/etc/shadow`](#etcshadow) · [Hashes and Salt](#hashes-and-salt)</small>
-
-30. **Accounts on hold**: `bob` goes on holiday, and the internship of `carol` ended on 1 January 2020. Stop both
-    accounts without deleting anything and without touching their passwords, then let them back in: they must log in
-    with their **old** passwords.
-
-    1. lock the account of `bob`, and print his line from `/etc/shadow`;
-    2. try to become `bob` with `su`, with the right password; unlock the account, and try again;
-    3. make the account of `carol` expire on 1 January 2020, and print her password dates and her line in
-       `/etc/shadow`;
-    4. try to become `carol`; then remove the expiry date.
-
-    💡 `man passwd`: search for `lock`; `man chage`: search for `expiredate`, and for `-1`.
-
-    **Check:** the hash of `bob` starts with `!!` (Ubuntu: `!`) and `su` fails with `Authentication failure`; after the
-    unlock, the `!` disappear and `su` works. The 8th field of the line of `carol` is now a number of days, and `su`
-    refuses the expired account; after step 4 the field is empty again. <small>→ [Changing a Password](#changing-a-password-passwd) · [`/etc/shadow`](#etcshadow)</small>
-
-31. **A new colleague, from the first day to the last**: `erin` joins the team, becomes an administrator, and leaves
+32. **A new colleague, from the first day to the last**: `erin` joins the team, becomes an administrator, and leaves
     after a while. Manage her account from the first day to the last, without looking at the lab, only with the manual
     pages.
 
@@ -1738,7 +1857,7 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     `sudo` works, with the password of `erin`; after step 4, only the 5th field changed; at the end, `id erin`,
     `getent group erin` and `ls -d /home/erin` find nothing. <small>→ [Managing Users and Groups](#managing-users-and-groups) · [Logging In](#logging-in)</small>
 
-32. **A new group needs a new login**: You add yourself to `students`, but not all your processes get the new group.
+33. **A new group needs a new login**: You add yourself to `students`, but not all your processes get the new group.
     Find out which of them have it, why, and what the kernel checks when you use the group.
 
     1. add yourself to `students`;
@@ -1747,139 +1866,28 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     4. open a **new** terminal, and print the groups of its shell;
     5. start a **login shell** of yourself with `su`, print its groups and its `Groups:` line;
     6. in this login shell, and then in your **old** terminal, try to change the group of `notes.txt` to `students`;
-       at the end, give `notes.txt` its old group back.
+       at the end, give `notes.txt` its old group back;
     7. remove yourself from `students`.
- 
+
     **Check:** the database has `students`; the running shell, and the new window, do not have it (no GID of
     `students` in `Groups:`), because their credentials were set when you logged in; the new login shell has it. In the
     login shell, the group of `notes.txt` changes; in the old terminal you get `Operation not permitted`, even if
     `/etc/group` lists you in `students`: the kernel checks the groups of the **process**. <small>→ [Logging In](#logging-in) · [The Credentials of a Process](#the-credentials-of-a-process) · [`chown` and `chgrp`](#chown-and-chgrp)</small>
 
-**`sudo`**
-
-33. **Is it the permissions?**: Learn to tell, from the error, when `sudo` helps and when it does not.
-
-    Run each command without `sudo`, decide if the error is about **permissions** (then `sudo` fixes it) or something
-    else (then `sudo` does not help), and check with `sudo`:
-
-    1. `cat /var/log/kill/them/all.log`;
-    2. `userdel hariseldon`;
-    3. `chown $USER /home/search/and/destroy`;
-    4. `cat /root/missing.txt`;
-    5. `dnf install sports-illustrated` (on Ubuntu, `apt install sports-illustrated`).
-
-    **Check:** when the error was about permissions, `sudo` makes it go away, and the command may then fail again with
-    the **real** error: the user, the file or the package does not exist. When the error was about something else,
-    `sudo` gives the same error. <small>→ [`sudo`](#sudo)</small>
-
-34. **`sudo` as another user**: Run commands as `bob`, without knowing his password, check that they get the **whole**
-    label of `bob`, and find out what `bob` may do in `/srv/lab05`.
-
-    1. print the user and the label of a process that runs as `bob`, started with `sudo`;
-    2. try to create the file `/srv/lab05/bob.txt` as `bob`;
-    3. start a **login** shell of `bob` with `sudo`, print the current directory, and leave it;
-    4. in the second terminal, run `sleep 300` as `bob`, with `sudo`; in the first terminal, print the real and
-       effective user, the real and effective group and the supplementary groups of `sleep`, and the `Uid:`, `Gid:`
-       and `Groups:` lines of its `status` file.
-
-    💡 `man sudo`: search for `-u user` and for `login`; `man ps`, section `STANDARD FORMAT SPECIFIERS`: search for
-    `real group`, `effective group` and `supplementary`.
-
-    **Check:** the process runs as `bob`, with the groups `bob` and `students`; `bob` cannot create the file: the group
-    of `/srv/lab05` has only `r-x`; the login shell starts in `/home/bob`, and `sudo` asked for **your** password, not
-    the one of `bob`. For `sleep`, everything is `bob`: `Uid:` is 4 times `1001`, and `Groups:` has the GIDs of `bob`
-    and `students`, as after a login. <small>→ [`sudo`](#sudo) · [The Credentials of a Process](#the-credentials-of-a-process)</small>
-
-35. **The credentials of `sudo`**: Find out how `sudo` changes the credentials of the command that it starts, and who
-    may then end the command with `kill`.
-
-    For steps 3 - 5, **first** write down your guess, then check it:
-
-    1. in the second terminal, print the PID of the shell, then run `sleep 300` as `root`; in the first terminal, show
-       the tree of processes of the second shell, with the PIDs, and list these processes with their PID, PPID,
-       terminal, real and effective user;
-    2. print the `Uid:` line of `sudo` and of `sleep`, and compare them with the `passwd` of exercise 10: which
-       program is like `passwd`, and which one is different?
-    3. can you end the `sleep` with `kill` and its PID?
-    4. send the signal to the `sudo` process instead, and look at what happened to `sleep`;
-    5. in the second terminal, start `passwd`, and do not type anything; can you end it with `kill` from the first
-       terminal? Can `bob` (run `kill` as `bob` with `sudo`)?
-
-    💡 `man pstree`: search for `pid`; `ps -p` takes several PIDs, separated by `,`; `man pgrep` finds the PID of a
-    process from its name. Do not look for `sleep` with `ps -t` and the terminal of the second shell: `sudo` runs it on a
-    new pseudo terminal (see [`sudo`](#sudo)). For
-    `kill`, use the rule from [Which Credentials Are Checked](#which-credentials-are-checked): print the real and the
-    saved UID of the target, and the real and the effective UID of the sender.
-
-    **Check:** the tree is `bash───sudo───sudo───sleep`: the first `sudo` is on the terminal of the second shell, the
-    second one on a **new** pseudo terminal, with `sleep`, its child. The first
-    `sudo` is like `passwd`: its `Uid:` is `1000 0 0 0`, because it is a setuid program. For `sleep`, `Uid:` is
-    `0 0 0 0`: `sudo`, as `root`, set **all** the UIDs of its child. So you cannot end the `sleep`, but you **can** end
-    `sudo`, whose real UID is yours, and `sudo` passes the signal on to its child. You can end your `passwd`, its real
-    UID is yours; `bob` gets `Operation not permitted`. <small>→ [`sudo`](#sudo) · [Which Credentials Are Checked](#which-credentials-are-checked)</small>
-
-36. **Play a setuid program**: See how the saved UID lets a setuid program put `root` aside and take it back, by acting
-    as one, as in [The Saved UID](#the-saved-uid).
-
-    After each step, print the `Uid:` line of the `python3` process from the second terminal, and try to read the first
-    line of `/etc/shadow` from `python3`:
-
-    1. in the first terminal, start `python3` as `root`; print its real, effective and saved UID;
-    2. become `student` in the real and the effective UID, but keep `root` in the saved UID;
-    3. take `root` back, in the effective UID only;
-    4. set all three UIDs to `1000`, and try to take `root` back once more.
-
-    ![Play a setuid program](./images/ex-saved-uid.svg)
-
-    💡 In `python3`, `import os` first, then `help(os.getresuid)`, `help(os.setresuid)` and `help(os.seteuid)`;
-    `open('/etc/shadow').readline()` reads the first line of a file; `exit()` leaves `python3`.
-
-    **Check:** `Uid:` is `0 0 0 0`, then `1000 1000 0 1000` and `/etc/shadow` is denied, then `1000 0 0 0` and it can
-    be read again, because `0` was the saved UID; after the last step, `Uid:` is `1000 1000 1000 1000` and
-    `seteuid(0)` fails with `Operation not permitted`. The 4th number, the file system UID, always follows the 2nd. <small>→ [The Saved UID](#the-saved-uid) · [Which Credentials Are Checked](#which-credentials-are-checked)</small>
-
-37. **The shells of `root`**: There are two ways to get a shell of `root` with `sudo`. Find out how they differ, which
-    of your variables reach a command started with `sudo`, and where `sudo` looks for programs.
-
-    1. in `~/lab05`, start a shell of `root` that stays in the current directory, and print the current directory
-       and `$HOME`; leave it;
-    2. do the same with a **login** shell of `root`;
-    3. export the variable `COURSE` with the value `ISO`; print it from a command started with `sudo`, then from one
-       started with `sudo` that keeps your environment;
-    4. compare your `PATH` with the `PATH` that `sudo` gives to a command.
-
-    💡 `man sudo`: search for `shell` and for `preserve-env`; `printenv` prints the value of one variable, and you can
-    run it with `sudo`.
-
-    **Check:** the first shell stays in `~/lab05`, the login shell starts in `/root`; both have `HOME=/root`. By
-    default, `sudo` removed `COURSE`; `sudo` also uses a `PATH` of its own, so a program from your `~/.local/bin` is
-    not found by `sudo`. <small>→ [`sudo`](#sudo) · [Environment Variables](/docs/labs/04#environment-variables)</small>
-
-38. **Shells inside shells**: Follow the user of every process when you start shells inside shells, and see that not
-    even `root` can log in as a system user.
-
-    1. in the first terminal, print the PID of the shell;
-    2. start a login shell of `root` with `sudo`; from it, try to become `daemon` and `bin` with `su`, and print the
-       shell of `daemon` from the users database;
-    3. still in the shell of `root`, start a login shell of `bob` with `su` (`root` is not asked for a password);
-    4. in the second terminal, show the tree of processes of the first shell, with the PIDs and the users, and print
-       the real and effective user of every process in this tree, with `ps`;
-    5. leave the shells one by one, and show the tree after each step.
-
-    ![Shells inside shells](./images/ex-shells.svg)
-
-    💡 `man pstree`: search for `uid` and for `pid`; `ps -p` takes the PIDs that `pstree` printed, separated by `,`.
-    `ps -t` with the first terminal is not enough: `sudo` starts its command on a new pseudo terminal.
-
-    **Check:** even `root` gets `This account is currently not available.`: the shell of `daemon` is
-    `/usr/sbin/nologin`, a program that prints this message and ends. The tree is
-    `bash───sudo───sudo───bash───su───bash`: two `sudo`, because `sudo` runs the shell of `root` on a new pseudo
-    terminal; `pstree` shows the user where it changes: `sudo(...,root)` and the last `bash(...,bob)`; `su` runs as
-    `root`, and its child as `bob`. Every `exit` removes the last shell. <small>→ [`su`](#su) · [`/etc/passwd`](#etcpasswd) · [Listing Processes](/docs/labs/03#listing-processes-ps)</small>
-
 **Permissions**
 
-39. **Who may delete a file**: Find out who may delete or rename a file: the one who can write the file, or the one who
+34. **`chown`**: Give a file to another user, and find out who is allowed to do it.
+
+    1. give `notes.txt` to `carol`, as yourself;
+    2. do it as `root`, and list it;
+    3. give it back to your user **and** your group, with one command.
+
+    💡 `man chown`: search for `colon`, to change the group to the login group of the user.
+
+    **Check:** as yourself, `Operation not permitted`; as `root`, the owner becomes `carol`; at the end it is yours
+    again. <small>→ [`chown` and `chgrp`](#chown-and-chgrp)</small>
+
+35. **Who may delete a file**: Find out who may delete or rename a file: the one who can write the file, or the one who
     can write the directory.
 
     1. copy `notes.txt` to `ro.txt`, and make it read only for everyone; try to add a line to it; then rename it to
@@ -1887,14 +1895,14 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     2. give the group of `/srv/lab05` the permission to write;
     3. as `bob`, create `/srv/lab05/bob.txt`;
     4. as `bob`, delete `/srv/lab05/plan.txt`, a file that belongs to **you** and that `bob` cannot write;
-    5. create `plan.txt` again, with the text `the plan`.
+    5. create `plan.txt` again, with the text `the plan`;
     6. take back the `w` of the group on `/srv/lab05`.
-   
+
     **Check:** you cannot write `ro.txt`, but you can rename it and delete it (after `y`): you have `w` on `~/lab05`.
     `bob` can create files in `/srv/lab05` now; `rm` asks `remove write-protected regular file`, and after `y` the file
     is gone: deleting a file is writing the **directory**. <small>→ [`r`, `w` and `x`](#r-w-and-x)</small>
 
-40. **`x` on every directory**: `bob` needs to read your `notes.txt`. Find the **smallest** change that lets him,
+36. **`x` on every directory**: `bob` needs to read your `notes.txt`. Find the **smallest** change that lets him,
     without letting him see the names of your other files.
 
     1. as `bob`, print `notes.txt` from your `~/lab05`, with its absolute path;
@@ -1907,7 +1915,7 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     pass through it; with `x` for the others, `bob` reads `notes.txt` (it is `rw-r--r--`), but cannot list your home
     directory: he has no `r` on it. <small>→ [`r`, `w` and `x`](#r-w-and-x)</small>
 
-41. **Octal by hand**: Learn to switch between the letters and the numbers of the permissions without help.
+37. **Octal by hand**: Learn to switch between the letters and the numbers of the permissions without help.
 
     Without the computer:
 
@@ -1918,25 +1926,17 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     **Check:** set each value on `test.txt` in the form you started from, and print the other form with `stat`: it must
     be the one you wrote. <small>→ [`chmod`](#chmod)</small>
 
-:::info
-
-**Permission puzzles(exercises 42 and 47-55)**: In each exercise, set the permissions (and the group, if you need it) so that **exactly** the
-given users can do the given things, and nothing more. You are not a member of `students`, so giving a file this group
-needs `root`, as in exercise 3. Then test every user (`student`, `bob` and `carol`) by reading, listing, writing or
-running the files.
-
-:::
-42. **The owner is checked first**: Show that the kernel uses only **one** set of permissions, even when another set
+38. **The owner is checked first**: Show that the kernel uses only **one** set of permissions, even when another set
     would allow more.
 
-        1. copy `notes.txt` to `first.txt`, and give its group to `students` (you are not a member: use `root`);
+    1. copy `notes.txt` to `first.txt`, and give its group to `students` (you are not a member: use `root`);
     2. give it `----rw-r--`;
     3. try to read it yourself, as `bob` and as `carol`; then try to write it as `bob`.
 
     **Check:** you, the owner, cannot read it; `bob` can read and write it (the `g` set), and `carol` can read it (the
     `o` set). <small>→ [Which Permissions Apply?](#which-permissions-apply)</small>
 
-43. **A private `umask`**: Make every new file of your shell private, and find out for which processes, and for how
+39. **A private `umask`**: Make every new file of your shell private, and find out for which processes, and for how
     long, this lasts.
 
     In a new terminal:
@@ -1952,7 +1952,7 @@ running the files.
     parent: the kernel keeps a `umask` for every process, and a child inherits it, like the credentials; the new
     terminal has the old `umask` again. <small>→ [`umask`](#umask)</small>
 
-44. **Special bits at work**: Find the programs that run with the **group** of their file, and show that in `/tmp` your
+40. **Special bits at work**: Find the programs that run with the **group** of their file, and show that in `/tmp` your
     files are safe from deletion, even if you let everybody write them.
 
     1. find the files in `/usr` that have the `setgid` bit, without the errors; list them, and look at their group;
@@ -1970,7 +1970,7 @@ running the files.
 
 **The prompt**
 
-45. **A richer prompt**: Make the prompt show the time and the number of jobs, let you type the command on a new line,
+41. **A richer prompt**: Make the prompt show the time and the number of jobs, let you type the command on a new line,
     and stand out in color in a long output.
 
     1. make the prompt look like this, then start `sleep 100 &`, and look at the prompt:
@@ -1990,7 +1990,7 @@ running the files.
     command wraps correctly; without them, `bash` counts the color codes as characters, and the line is drawn over
     itself. <small>→ [Changing the Prompt](#changing-the-prompt)</small>
 
-46. **A prompt that tells the truth, and stays**: Unlike the fake `root` of the First Steps, make a prompt that shows
+42. **A prompt that tells the truth, and stays**: Unlike the fake `root` of the First Steps, make a prompt that shows
     the UID of the shell, so that it changes by itself, and keep it for every new terminal.
 
     1. make a prompt that shows your UID, from a variable of `bash`, and the `$` or `#`;
@@ -2006,10 +2006,11 @@ running the files.
     not: it reads `/root/.bashrc`, not yours. <small>→ [Changing the Prompt](#changing-the-prompt)</small>
 
 **Permission puzzles**: In each exercise, set the permissions (and the group, if you need it) so that **exactly** the
-given users can do the given things, and nothing more. Then test every user (`student`, `bob` and `carol`) by
-reading, listing, writing or running the files.
+given users can do the given things, and nothing more. You are not a member of `students`, so giving a file this group
+needs `root`, as in exercise 3. Then test every user (`student`, `bob` and `carol`) by reading, listing, writing or
+running the files.
 
-47. **Read only for the group**: Share a file with the group `students`, for reading only.
+43. **Read only for the group**: Share a file with the group `students`, for reading only.
 
     `/srv/lab05/grades.txt`, with the text `bob: 10`:
 
@@ -2022,7 +2023,7 @@ reading, listing, writing or running the files.
     **Check:** `bob` reads it but cannot write it; `carol` gets `Permission denied`; `ls -l` shows the group
     `students`. <small>→ [`chmod`](#chmod) · [`chown` and `chgrp`](#chown-and-chgrp)</small>
 
-48. **A public directory**: Publish files that everybody may read, but only you may change.
+44. **A public directory**: Publish files that everybody may read, but only you may change.
 
     `/srv/lab05/public`, with two files, `a.txt` and `b.txt`:
 
@@ -2040,7 +2041,7 @@ reading, listing, writing or running the files.
     **Check:** while it is closed, `public` is `drwx------` and `a.txt` is `-rw-------`; at the end, `carol` lists
     `public` and reads `a.txt`, but cannot create `public/c.txt` or change `a.txt`; the files did not get an `x`. <small>→ [`chmod`](#chmod)</small>
 
-49. **A script for the group**: Let the group run a script, without letting it change the script.
+45. **A script for the group**: Let the group run a script, without letting it change the script.
 
     `/srv/lab05/tool.sh`, a copy of `myid.sh`:
 
@@ -2055,7 +2056,7 @@ reading, listing, writing or running the files.
     file to run the commands inside it. With the right permissions, `bob` runs it and it prints `bob`; `carol` can
     neither read it nor run it. <small>→ [`r`, `w` and `x`](#r-w-and-x)</small>
 
-50. **Known names only**: Hide a file in a directory, so that only those who know its name can read it.
+46. **Known names only**: Hide a file in a directory, so that only those who know its name can read it.
 
     `/srv/lab05/hidden`, with the file `key.txt`:
 
@@ -2067,7 +2068,7 @@ reading, listing, writing or running the files.
     **Check:** `bob` can print `hidden/key.txt`, but `ls hidden` is denied; `carol` cannot reach `key.txt`, even with
     its name. <small>→ [`r`, `w` and `x`](#r-w-and-x)</small>
 
-51. **A private list**: Help `bob` share a file from his home directory with his group, and with nobody else.
+47. **A private list**: Help `bob` share a file from his home directory with his group, and with nobody else.
 
     As `bob`:
 
@@ -2088,7 +2089,7 @@ reading, listing, writing or running the files.
 
 ### 📝 Challenges {/* #challenges */}
 
-52. **An offline attack**: Find a password from its hash, the way an attacker with a copy of `/etc/shadow` would.
+48. **An offline attack**: Find a password from its hash, the way an attacker with a copy of `/etc/shadow` would.
 
     A user has this line in a stolen copy of `/etc/shadow`:
 
@@ -2105,7 +2106,7 @@ reading, listing, writing or running the files.
     **Check:** exactly one of the hashes you computed is the same as the one of `mallory`, and its line number tells you
     which password it is. This is why `/etc/shadow` must not be readable, and why common passwords are dangerous. <small>→ [Hashes and Salt](#hashes-and-salt)</small>
 
-53. **All the credentials of a process**: Predict all the UIDs and GIDs of three processes, check them with a single
+49. **All the credentials of a process**: Predict all the UIDs and GIDs of three processes, check them with a single
     command, and then find every process that has the power of `root` and was started from a terminal.
 
     For your shell, a `sleep` started with `sudo` and a `passwd` waiting for a password:
@@ -2127,10 +2128,10 @@ reading, listing, writing or running the files.
     of every virtual terminal where somebody is logged in, the `sudo` and `su` that are still running, and the shells
     of `root`; the real user tells you who started each of them. <small>→ [The Credentials of a Process](#the-credentials-of-a-process)</small>
 
-54. **A project for the group**: Build a project directory for a group, where the files belong to the group and nobody
+50. **A project for the group**: Build a project directory for a group, where the files belong to the group and nobody
     can delete the work of the others.
 
-        Create again the user `dave` in the group `students`. If `/srv/project` exists from the lab, delete it first. Then
+    Create again the user `dave` in the group `students`. If `/srv/project` exists from the lab, delete it first. Then
     make `/srv/project` so that:
 
     - only `root` owns it, and only the members of `students` can enter it, list it and create files in it;
@@ -2146,7 +2147,7 @@ reading, listing, writing or running the files.
     `Operation not permitted` when he deletes the file of `dave`; `carol` gets `Permission denied`; you needed **two**
     special bits. <small>→ [`setgid` on a Directory](#setgid-on-a-directory) · [The Sticky Bit](#the-sticky-bit)</small>
 
-55. **A homework box**: Build a box where the students hand in their homework, without seeing or touching the homework
+51. **A homework box**: Build a box where the students hand in their homework, without seeing or touching the homework
     of the others, while the teacher may still clean it.
 
     Make `/srv/lab05/homework` so that:
@@ -2158,15 +2159,30 @@ reading, listing, writing or running the files.
     - `carol` can do nothing.
 
     ![A homework box](./images/ex-homework.svg)
+51. **A homework box**: Build a box where the students hand in their homework, without seeing the names of the files
+    of the others, or changing them, while the teacher may still clean it.
 
-    Hand in `bob.txt` as `bob`, and `dave.txt` as `dave`; as `bob`, try to list the directory and to delete `dave.txt`;
-    then, as the teacher, delete `dave.txt`.
+    If `dave` does not exist (he is created in exercise 50), create him again in the group `students`. Then make
+    `/srv/lab05/homework` so that:
+
+    - the members of `students` can hand in files (create them), but cannot list the directory, so they cannot see
+      the names of the others;
+    - they cannot delete or replace the files of the others, even if they guess the names;
+    - `student`, the teacher, can do everything;
+    - `carol` can do nothing.
+
+    ![A homework box](./images/ex-homework.svg)
+
+    Hand in `bob.txt` as `bob`, and `dave.txt` as `dave`; as `bob`, try to list the directory, to delete `dave.txt`,
+    and to print it; then, as the teacher, delete `dave.txt`.
 
     **Check:** `bob` can create files, but cannot list the directory or delete `dave.txt` (`Operation not permitted`);
-    you see both files, and you **can** delete `dave.txt`: the **owner of the directory** may delete any file in it,
-    even with the sticky bit; `carol` gets `Permission denied` for everything. <small>→ [`r`, `w` and `x`](#r-w-and-x) · [The Sticky Bit](#the-sticky-bit)</small>
+    he **can** print `dave.txt`, because he guessed its name: it is `rw-r--r--`, and he has `x` on the directory.
+    Hiding the names does not protect the content; only the permissions of the file do. You see both files, and you
+    **can** delete `dave.txt`: the **owner of the directory** may delete any file in it, even with the sticky bit;
+    `carol` gets `Permission denied` for everything. <small>→ [`r`, `w` and `x`](#r-w-and-x) · [The Sticky Bit](#the-sticky-bit)</small>
 
-56. **All the special bits**: Find out what a capital `S` or `T` means in `ls -l`, find all the programs of the system
+52. **All the special bits**: Find out what a capital `S` or `T` means in `ls -l`, find all the programs of the system
     that run as their owner, and understand the permissions of `sudo`.
 
     1. copy `notes.txt` to `cap.txt`, and give it the setuid bit **without** `x` for the owner;
@@ -2181,7 +2197,7 @@ reading, listing, writing or running the files.
     the bit is set, but the `x` under it is not. There are a few dozen setuid programs, all owned by `root`. For `sudo`,
     say for each of `r`, `w`, `x` and `s` who has it, and what it allows them to do. <small>→ [Special Permissions](#special-permissions) · [`setuid`](#setuid)</small>
 
-57. **Scripts and programs**: See why the setuid bit works for programs but not for scripts, and why a setuid program of
+53. **Scripts and programs**: See why the setuid bit works for programs but not for scripts, and why a setuid program of
     `root` is dangerous.
 
     1. as `root`, copy `myid.sh` to `/srv/lab05/rootid.sh` and give it `4755`; run it;
@@ -2193,24 +2209,27 @@ reading, listing, writing or running the files.
     `1000` and the effective UID `0`: a setuid program of `root` runs as `root` for everybody. This is why you must
     never do it with a program that can write files or start other programs. <small>→ [`setuid`](#setuid) · [The Credentials of a Process](#the-credentials-of-a-process)</small>
 
-58. **An administrator, the other way**: A colleague who uses the **other** distribution tells you to make `bob` an
+54. **An administrator, the other way**: A colleague who uses the **other** distribution tells you to make `bob` an
     administrator by adding him to **their** group of the administrators: `sudo` if you are on Fedora, `wheel` if you
     are on Ubuntu. Find out if this works on your system, and why.
 
-    1. check if your colleague's group exists on your system;
-    2. create it if it does not exist, add `bob` to it, and try to print his user as `root`, from a new login shell of
+    1. print the end of `/etc/sudoers` as `root`, and find the line that mentions the group of the administrators
+       (`%wheel`, or `%sudo` on Ubuntu); you do not have to understand the rest of the file;
+    2. check if your colleague's group exists on your system;
+    3. create it if it does not exist, add `bob` to it, and try to print his user as `root`, from a new login shell of
        `bob`;
-    3. remove `bob` from the group; delete the group if you created it;
-    4. make `bob` an administrator the way of **your** distribution, and try again from a new login shell; then take
+    4. remove `bob` from the group; delete the group if you created it;
+    5. make `bob` an administrator the way of **your** distribution, and try again from a new login shell; then take
        the right away.
 
     💡 [`sudo`](#sudo): the table of the groups of the administrators.
 
-    **Check:** in your colleague's group, `bob` is still refused: `bob is not in the sudoers file.` The **name** of a
-    group gives no right by itself; `sudo` trusts only the group it was set up for, `wheel` on Fedora and `sudo` on
-    Ubuntu. In that group, `bob` may use `sudo`, with his own password. <small>→ [`sudo`](#sudo) · [Managing Users and Groups](#managing-users-and-groups)</small>
+    **Check:** `/etc/sudoers` names only the group of your distribution. In your colleague's group, `bob` is still
+    refused: `bob is not in the sudoers file.` The **name** of a group gives no right by itself; `sudo` trusts only the
+    group it was set up for, `wheel` on Fedora and `sudo` on Ubuntu. In that group, `bob` may use `sudo`, with his own
+    password. <small>→ [`sudo`](#sudo) · [Managing Users and Groups](#managing-users-and-groups)</small>
 
-59. **The UID is what matters**: Show that a file belongs to a UID, not to a name, and what happens when a UID is used
+55. **The UID is what matters**: Show that a file belongs to a UID, not to a name, and what happens when a UID is used
     again.
 
     1. find the UID of `carol`, then delete her **without** her home directory;
@@ -2224,11 +2243,11 @@ reading, listing, writing or running the files.
     `grace` gets this UID, she becomes the owner of all the files of `carol`. Before a UID is reused, the files of the
     old user must be deleted. <small>→ [Users](#users)</small>
 
-60. **Clean up**: Leave the system as it was before the lab.
+56. **Clean up**: Leave the system as it was before the lab.
 
     1. delete the users `bob`, `carol` (if she still exists) and `dave`, with their home directories, and the group
        `students`;
-    2. delete `/srv/lab05` and `/srv/project`;
+    2. delete `/srv/lab05`, `/srv/project` and `/tmp/bob.txt`;
     3. delete `~/lab05` (if it fails, find out which directory has no `w` or `x` for you);
     4. remove your `PS1` from `~/.bashrc`.
 
@@ -2241,7 +2260,8 @@ Use the **last 5 minutes** of the lab to answer these questions together with yo
 assistant. There are no wrong answers for the last two.
 
 1. What is a **user** for the kernel? And a **group**?
-2. Why can everyone read `/etc/passwd`, but only `root` can read `/etc/shadow`?
+2. Why can everyone read `/etc/passwd`, but only `root` can read `/etc/shadow`? Why do you read the users with `getent`,
+   and not from `/etc/passwd`?
 3. How does `login` check a password if the password is not stored anywhere? What is the **salt** for?
 4. What is the difference between the **real** and the **effective** UID of a process? When are they different? What is
    the **saved** UID for?
