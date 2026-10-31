@@ -1356,9 +1356,9 @@ command, or **one** idea, from the lab: read the section linked at the end of th
     groups database too.
 
     **Check:** the name is `student`, the UID `1000`; your groups are `student` and the group of the administrators
-    (Ubuntu: `sudo`, and a few more); `root` has the UID `0`, and `bob` is also in `students`; the processes of your
-    terminal run as `student`. The group of the administrators lists `student`, but `student` lists nobody: a user is
-    not listed in its primary group. <small>→ [Who Am I](#who-am-i-whoami-and-id) · [Groups](#groups) · [The User of a Process](#the-user-of-a-process)</small>
+    (Ubuntu: `sudo`, and a few more); `root` has the UID `0`; the processes of your terminal run as `student`. The
+    group of the administrators lists `student`, and `students` lists `bob`, but `student` lists nobody: a user is not
+    listed in its primary group. <small>→ [Who Am I](#who-am-i-whoami-and-id) · [Groups](#groups) · [The User of a Process](#the-user-of-a-process)</small>
 
 **Users and passwords**
 
@@ -1618,7 +1618,7 @@ there, but you choose the commands. At the end, check the goal itself, not only 
     set your password (or installed the system). <small>→ [`/etc/shadow`](#etcshadow) · [Hashes and Salt](#hashes-and-salt)</small>
 
 20. **Accounts on hold**: `bob` goes on holiday, and the internship of `carol` ended on 1 January 2020. Stop both
-    accounts without deleting anything and without touching their passwords, then let them back in: they must log in
+    accounts without deleting anything and without changing their passwords, then let them back in: they must log in
     with their **old** passwords.
 
     1. lock the account of `bob`, and print his line from `/etc/shadow`;
@@ -2159,13 +2159,28 @@ running the files.
     - `carol` can do nothing.
 
     ![A homework box](./images/ex-homework.svg)
+51. **A homework box**: Build a box where the students hand in their homework, without seeing the names of the files
+    of the others, or changing them, while the teacher may still clean it.
 
-    Hand in `bob.txt` as `bob`, and `dave.txt` as `dave`; as `bob`, try to list the directory and to delete `dave.txt`;
-    then, as the teacher, delete `dave.txt`.
+    If `dave` does not exist (he is created in exercise 50), create him again in the group `students`. Then make
+    `/srv/lab05/homework` so that:
+
+    - the members of `students` can hand in files (create them), but cannot list the directory, so they cannot see
+      the names of the others;
+    - they cannot delete or replace the files of the others, even if they guess the names;
+    - `student`, the teacher, can do everything;
+    - `carol` can do nothing.
+
+    ![A homework box](./images/ex-homework.svg)
+
+    Hand in `bob.txt` as `bob`, and `dave.txt` as `dave`; as `bob`, try to list the directory, to delete `dave.txt`,
+    and to print it; then, as the teacher, delete `dave.txt`.
 
     **Check:** `bob` can create files, but cannot list the directory or delete `dave.txt` (`Operation not permitted`);
-    you see both files, and you **can** delete `dave.txt`: the **owner of the directory** may delete any file in it,
-    even with the sticky bit; `carol` gets `Permission denied` for everything. <small>→ [`r`, `w` and `x`](#r-w-and-x) · [The Sticky Bit](#the-sticky-bit)</small>
+    he **can** print `dave.txt`, because he guessed its name: it is `rw-r--r--`, and he has `x` on the directory.
+    Hiding the names does not protect the content; only the permissions of the file do. You see both files, and you
+    **can** delete `dave.txt`: the **owner of the directory** may delete any file in it, even with the sticky bit;
+    `carol` gets `Permission denied` for everything. <small>→ [`r`, `w` and `x`](#r-w-and-x) · [The Sticky Bit](#the-sticky-bit)</small>
 
 52. **All the special bits**: Find out what a capital `S` or `T` means in `ls -l`, find all the programs of the system
     that run as their owner, and understand the permissions of `sudo`.
