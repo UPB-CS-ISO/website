@@ -55,13 +55,13 @@ Calculatoarele din laborator rulează **Fedora** cu **Sway**, iar exemplele prov
 
 |                                                                 | Fedora                               | Ubuntu                                                 |
 | --------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------ |
-| promptul                                                        | `[student@fedora ~]$`                | `student@ubuntu:~$`, colorat                           |
+| promptul                                                        | `[student@fedora ~]$`                | `student@ubuntu:~$`                                    |
 | grupul **administratorilor**, cei care pot folosi `sudo`        | `wheel`, GID `10`                    | `sudo`, GID `27` (sunteți și în `adm`, `cdrom`, ...)   |
 | `.` de după permisiuni în `ls -l`, `context=` în `id`           | afișate: ignorați-le în laborator    | nu apar                                                |
 | shell-ul unui utilizator nou creat cu `useradd`                 | `/bin/bash`                          | `/bin/sh`, dacă nu dați `-s /bin/bash`                 |
 | un director nou al utilizatorului                               | `drwx------` (`700`)                 | `drwxr-x---` (`750`)                                   |
-| `/etc/shadow`                                                   | `---------- root root`               | `-rw-r----- root shadow`                               |
-| `/usr/bin/sudo`                                                 | `---s--x--x` (`4111`)                | `-rwsr-xr-x` (`4755`)                                  |
+| `/etc/shadow`                                                   | `----------. root root`              | `-rw-r----- root shadow`                               |
+| `/usr/bin/sudo`                                                 | `---s--x--x.` (`4111`)               | `-rwsr-xr-x` (`4755`)                                  |
 | o parolă încă nesetată sau blocată cu `passwd -l`               | `!!` în fața hash-ului sau singur    | `!` în fața hash-ului sau singur                       |
 | `umask`-ul unui utilizator obișnuit                             | `0022`                               | `0002`                                                 |
 | instalarea unui pachet                                          | `sudo dnf install <PACKAGE>`         | `sudo apt install <PACKAGE>`                           |
@@ -71,9 +71,9 @@ Ubuntu 25.10 și versiunile mai noi folosesc `sudo-rs`, ale cărui mesaje difer�
 
 ## Utilizatori {/* #users */}
 
-Un **utilizator** este un **cont**: un nume, de exemplu `student`, o parolă, un director propriu și programul care
-pornește când se autentifică, de obicei un shell. Utilizatorii țin separată munca oamenilor: un program pornit de `bob`
-nu poate atinge fișierele lui `carol`, decât dacă ea îi permite.
+Un **utilizator** este un **cont**: un nume, de exemplu `student`, un director propriu, programul care pornește când
+utilizatorul se autentifică, de obicei un shell, și, dacă oamenii se autentifică cu el, o parolă. Utilizatorii țin
+separată munca oamenilor: un program pornit de `bob` nu poate atinge fișierele lui `carol`, decât dacă ea îi permite.
 
 Și serviciile rulează ca utilizatori proprii: astfel, o eroare într-unul dintre ele poate atinge doar fișierele lui.
 
@@ -339,11 +339,11 @@ Oct 27 10:02:20 fedora sudo[3315]:  student : TTY=pts/0 ; PWD=/home/student ; US
 | `sudo <COMMAND>`           | rulează comanda ca `root`                                                                                  |
 | `sudo -u <USER> <COMMAND>` | rulează comanda ca alt utilizator; cere parola **voastră**, nu pe a lui                                    |
 | `sudo -i`                  | pornește un **shell de autentificare** al lui `root`, în `/root`, cu variabilele lui `root`                |
-| `sudo -k`                  | uită parola: următorul `sudo` o cere din nou                                                               |
+| `sudo -k`                  | uită că ați tastat parola: următorul `sudo` o cere din nou                                                 |
 | `sudo !!`                  | rulează din nou comanda **anterioară**, cu `sudo`: `bash` înlocuiește `!!` înainte să pornească `sudo`     |
 
 `sudo` așteaptă să se termine comanda și îi transmite semnalele pe care le primește. Pe Fedora, rulează comanda și
-într-un **pseudo-terminal nou** (vedeți [Emulatoare de terminal](/docs/labs/04#terminal-emulators) din laboratorul 04),
+într-un **pseudoterminal nou** (vedeți [Emulatoare de terminal](/docs/labs/04#terminal-emulators) din laboratorul 04),
 deci există **două** procese `sudo`. Pentru `sudo sleep 300` pornit din shell-ul `2817`:
 
 ```shell-session
@@ -362,7 +362,7 @@ bash(2817)───sudo(3320,root)───sudo(3321)───sleep(3322)
 
 :::info
 
-Pseudo-terminalul nou împiedică un program pornit cu `sudo` să tasteze comenzi în terminalul vostru după ce se termină.
+Noul pseudoterminal împiedică un program pornit cu `sudo` să tasteze comenzi în terminalul vostru după ce se termină.
 Înainte de `sudo` 1.9.14 nu era implicit, iar `pstree` arată un singur `sudo`.
 
 :::
@@ -451,8 +451,8 @@ Fiecare linie are 9 câmpuri, separate prin `:`:
 | Câmp | În exemplu       | Ce este                                                                                                      |
 | ---- | ---------------- | ------------------------------------------------------------------------------------------------------------ |
 | 1    | `student`        | numele de utilizator, același ca în `/etc/passwd`                                                            |
-| 2    | `$y$j9T$Xr3a...` | **hash**-ul parolei; `!`, `!!` sau `*` la început înseamnă că parola este **blocată**: nu merge nicio parolă |
-| 3    | `20737`          | ziua ultimei schimbări a parolei, numărată de la 1 ianuarie 1970                                             |
+| 2    | `$y$j9T$Xr3a...` | **hash**-ul parolei; `!` sau `!!` în fața hash-ului înseamnă că parola este **blocată**; `!`, `!!` sau `*` singure înseamnă că nu există nicio parolă: nu merge nicio parolă |
+| 3    | `20737`          | ziua ultimei schimbări a parolei, numărată de la 1 ianuarie 1970; `0` înseamnă că parola trebuie schimbată la următoarea autentificare |
 | 4    | `0`              | numărul minim de zile între două schimbări de parolă                                                         |
 | 5    | `99999`          | numărul maxim de zile după care parola **trebuie** schimbată; `99999` înseamnă niciodată                     |
 | 6    | `7`              | cu câte zile înainte de expirare este avertizat utilizatorul                                                 |
@@ -784,11 +784,12 @@ Se folosește un **singur** set: cu `----rw----`, proprietarul nu poate face **n
 | Comandă                     | Ce face                                                                                                                              |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `chmod u+x script.sh`       | adaugă `x` pentru proprietar                                                                                                         |
+| `chmod +x script.sh`        | adaugă `x` pentru toți, mai puțin acolo unde îl blochează [`umask`](#umask)-ul                                                       |
 | `chmod g+w,o-r notes.txt`   | adaugă `w` pentru grup și elimină `r` pentru ceilalți                                                                                |
 | `chmod go-rwx notes.txt`    | elimină tot pentru grup și pentru ceilalți                                                                                           |
 | `chmod a=r readme.txt`      | setează `r--` pentru toți                                                                                                            |
 | `chmod u=rw,go=r notes.txt` | setează exact `rw-r--r--`: `=` înlocuiește permisiunile vechi în loc să le adauge la ele                                             |
-| `chmod -R g+rX project`     | pentru grup, adaugă `r` lui `project` și tuturor celor din el, iar `x` doar directoarelor și fișierelor care au deja un `x`          |
+| `chmod -R g+rX project`     | pentru grup, adaugă `r` lui `project` și tuturor celor din el, iar `x` doar directoarelor și fișierelor care au deja un `x` pentru cineva |
 
 Cu **numere**, în octal: `r` este `4`, `w` este `2`, `x` este `1`, adunate pentru fiecare dintre `u`, `g` și `o`:
 
@@ -969,7 +970,7 @@ drwxrwxrwt. 21 root root 520 Oct 27 10:00 /tmp
 
 Promptul lui `bash` se construiește din variabila de shell `PS1` (vedeți
 [Variabile de shell și `export`](/docs/labs/04#shell-variables-and-export) din laboratorul 04). Pe Fedora este
-`[\u@\h \W]\$ ` (pe Ubuntu, `\u@\h:\w\$ `, cu culori):
+`[\u@\h \W]\$ `; pe Ubuntu este mai lung, dar fără culori se reduce la `\u@\h:\w\$ `:
 
 | Secvență | Înseamnă                                              | Pentru `student` | Pentru `root` |
 | -------- | ----------------------------------------------------- | ---------------- | ------------- |
@@ -1233,11 +1234,11 @@ dacă exercițiul nu spune altfel.
 
 **Cum devenim `root`**
 
-4. **`sudo`**: Rulați comenzi ca `root`, vedeți cum ține minte `sudo` parola, scrieți într-un fișier al lui `root` și
-    porniți un shell al lui `root`.
+4. **`sudo`**: Rulați comenzi ca `root`, vedeți cum ține minte `sudo` că ați tastat parola, scrieți într-un fișier al
+    lui `root` și porniți un shell al lui `root`.
 
     1. afișați-vă utilizatorul ca `root`; repetați și observați că parola nu mai este cerută;
-    2. faceți-l pe `sudo` să uite parola și afișați-vă din nou utilizatorul ca `root`;
+    2. faceți-l pe `sudo` să uite că ați tastat parola și afișați-vă din nou utilizatorul ca `root`;
     3. încercați să afișați prima linie din `/etc/shadow` ca voi înșivă; apoi rulați **aceeași** comandă ca `root`,
        fără să o tastați din nou;
     4. creați ca `root` directorul `/srv/lab05` și fișierul gol `/srv/lab05/root.txt`; încercați să adăugați linia
@@ -1248,7 +1249,7 @@ dacă exercițiul nu spune altfel.
     💡 `man sudo`: căutați `invalidate` și `login`; `man bash`: căutați `HISTORY EXPANSION`, apoi `!!`; `man tee`:
     căutați `append`.
 
-    **Verificare:** utilizatorul este `root`; după ce `sudo` uită parola, o cere din nou. Ca voi înșivă, `/etc/shadow`
+    **Verificare:** utilizatorul este `root`; după `sudo -k`, `sudo` cere din nou parola. Ca voi înșivă, `/etc/shadow`
     dă `Permission denied`; `!!` afișează comanda în care s-a transformat, o rulează și arată linia lui `root`.
     `sudo echo` cu `>>` eșuează cu `Permission denied`: fișierul îl deschide shell-ul vostru, nu `sudo`; la final,
     fișierul conține `hello`. Shell-ul lui `root` pornește în `/root`, cu `#` în prompt. <small>→ [`sudo`](#sudo) · [Capcana redirectării](#the-redirect-trap)</small>
@@ -1392,8 +1393,8 @@ dacă exercițiul nu spune altfel.
 
     **Verificare:** `/usr/bin/passwd` este `-rwsr-xr-x` (`4755`): `s`-ul îl face să ruleze ca `root`, oricine l-ar
     porni; `/tmp` este `drwxrwxrwt` (`1777`). `bob` nu poate șterge `/tmp/student.txt` (`Operation not permitted`), deși
-    are `w` pe el: `t`-ul lui `/tmp`. `team` este `drwxrwsr-x student students`, iar `bob.txt` este
-    `-rw-r--r-- bob students`: a primit grupul directorului. <small>→ [`setuid`](#setuid) · [`setgid` pe un director](#setgid-on-a-directory) · [Bitul sticky](#the-sticky-bit)</small>
+    are `w` pe `/tmp` și chiar pe fișier: `t`-ul lui `/tmp`. `team` este `drwxrwsr-x student students`, iar `bob.txt`
+    este `-rw-r--r-- bob students`: a primit grupul directorului. <small>→ [`setuid`](#setuid) · [`setgid` pe un director](#setgid-on-a-directory) · [Bitul sticky](#the-sticky-bit)</small>
 
 **Promptul**
 
@@ -1407,9 +1408,9 @@ dacă exercițiul nu spune altfel.
 
     💡 `man bash`: căutați `PROMPTING`.
 
-    **Verificare:** promptul inițial este `[\u@\h \W]\$ ` pe Fedora (`\u@\h:\w\$ ` cu culori pe Ubuntu). Cu promptul
-    fals de `root`, utilizatorul este tot `student`, iar `/etc/shadow` este refuzat în continuare: `whoami` întreabă
-    kernelul, iar promptul este doar text. <small>→ [Promptul](#the-prompt) · [Schimbarea promptului](#changing-the-prompt)</small>
+    **Verificare:** promptul inițial este `[\u@\h \W]\$ ` pe Fedora; pe Ubuntu este mai lung, cu culori, dar afișează
+    `\u@\h:\w\$ `. Cu promptul fals de `root`, utilizatorul este tot `student`, iar `/etc/shadow` este refuzat în
+    continuare: `whoami` întreabă kernelul, iar promptul este doar text. <small>→ [Promptul](#the-prompt) · [Schimbarea promptului](#changing-the-prompt)</small>
 
 **Schimbarea unei parole**
 
@@ -1936,9 +1937,10 @@ sudo groupdel students
     **Verificare:** există câteva zeci de programe setuid, toate ale lui `root`. `rootid` afișează
     `uid=1000(student) gid=1000(student) euid=0(root) ...` (iar pentru `bob`, `uid=` al lui `bob`): `id` afișează
     `euid` când UID-ul efectiv nu este cel real. Scriptul afișează doar `uid=1000(student) ...`, fără `euid`: kernelul
-    ignoră bitul setuid pe scripturi. `cap.txt` este `-rwSr--r--` (`4644`), iar `capdir` este `drwxrwx--T` (`1770`): o
-    literă mare înseamnă că bitul este setat, dar `x`-ul de sub el nu. Pe Fedora, oricine poate rula `sudo`, ca `root`,
-    dar nimeni nu poate citi fișierul; pe Ubuntu, oricine îl poate și citi, deci și copia. <small>→ [`setuid`](#setuid) · [Permisiuni speciale](#special-permissions)</small>
+    ignoră bitul setuid pe scripturi. `cap.txt` este `-rwSr--r--` (`4644`; Ubuntu: `-rwSrw-r--`, `4664`), iar `capdir`
+    este `drwxrwx--T` (`1770`): o literă mare înseamnă că bitul este setat, dar `x`-ul de sub el nu. Pe Fedora,
+    oricine poate rula `sudo`, ca `root`, dar nimeni nu poate citi fișierul; pe Ubuntu, oricine îl poate și citi, deci
+    și copia. <small>→ [`setuid`](#setuid) · [Permisiuni speciale](#special-permissions)</small>
 
 39. **Contează UID-ul**: Arătați că un fișier îi aparține unui UID, nu unui nume, și ce se întâmplă când un UID este
     refolosit.
