@@ -58,8 +58,8 @@ the commands are the same, but some names and defaults differ:
 | the `.` after the permissions in `ls -l`, `context=` in `id` | shown: ignore them in this lab      | not shown                                              |
 | the shell of a new user made with `useradd`                  | `/bin/bash`                         | `/bin/sh`, unless you give `-s /bin/bash`              |
 | a new home directory                                         | `drwx------` (`700`)                | `drwxr-x---` (`750`)                                   |
-| `/etc/shadow`                                                | `---------- root root`              | `-rw-r----- root shadow`                               |
-| `/usr/bin/sudo`                                              | `---s--x--x` (`4111`)               | `-rwsr-xr-x` (`4755`)                                  |
+| `/etc/shadow`                                                | `----------. root root`              | `-rw-r----- root shadow`                               |
+| `/usr/bin/sudo`                                              | `---s--x--x.` (`4111`)               | `-rwsr-xr-x` (`4755`)                                  |
 | a password not set yet, or locked with `passwd -l`           | `!!` in front of the hash, or alone | `!` in front of the hash, or alone                     |
 | the `umask` of a regular user                                | `0022`                              | `0002`                                                 |
 | installing a package                                         | `sudo dnf install <PACKAGE>`        | `sudo apt install <PACKAGE>`                           |
@@ -69,9 +69,9 @@ wherever the lab says `student`.
 
 ## Users
 
-A **user** is an **account**: a name, like `student`, a password, a home directory and the program that starts when it
-logs in, usually a shell. Users keep the work of different people apart: a program that `bob` starts cannot touch the
-files of `carol`, unless she allows it.
+A **user** is an **account**: a name, like `student`, a home directory, the program that starts when the user logs in,
+usually a shell, and, if people log in with it, a password. Users keep the work of different people apart: a program
+that `bob` starts cannot touch the files of `carol`, unless she allows it.
 
 Services run as users of their own too: a bug in one of them can then touch only its own files.
 
@@ -332,7 +332,7 @@ Oct 27 10:02:20 fedora sudo[3315]:  student : TTY=pts/0 ; PWD=/home/student ; US
 | `sudo <COMMAND>`           | runs the command as `root`                                                                  |
 | `sudo -u <USER> <COMMAND>` | runs the command as another user; it asks for **your** password, not theirs                 |
 | `sudo -i`                  | starts a **login shell** of `root`, in `/root`, with the variables of `root`                |
-| `sudo -k`                  | forgets the password: the next `sudo` asks again                                            |
+| `sudo -k`                  | forgets that you typed your password: the next `sudo` asks again                            |
 | `sudo !!`                  | runs the **previous** command again, with `sudo`: `bash` replaces `!!` before `sudo` starts |
 
 `sudo` waits for its command to end and passes on the signals it receives. On Fedora, it also runs the command in a
@@ -443,8 +443,8 @@ Each line has 9 fields, separated by `:`:
 | Field | In the example   | What it is                                                                                                           |
 | ----- | ---------------- | -------------------------------------------------------------------------------------------------------------------- |
 | 1     | `student`        | the user name, the same as in `/etc/passwd`                                                                          |
-| 2     | `$y$j9T$Xr3a...` | the **hash** of the password; `!`, `!!` or `*` at the start means that the password is **locked**: no password works |
-| 3     | `20737`          | the day of the last password change, counted from 1 January 1970                                                     |
+| 2     | `$y$j9T$Xr3a...` | the **hash** of the password; `!` or `!!` in front of the hash means that it is **locked**; `!`, `!!` or `*` alone means that there is no password: no password works |
+| 3     | `20737`          | he day of the last password change, counted from 1 January 1970; `0` means that the password must be changed at the next login                                                     |
 | 4     | `0`              | the minimum number of days between two password changes                                                              |
 | 5     | `99999`          | the maximum number of days before the password **must** be changed, `99999` is never                                 |
 | 6     | `7`              | how many days before the expiry the user is warned                                                                   |
@@ -775,7 +775,7 @@ Only **one** set is used: with `----rw----`, the owner can do **nothing**, even 
 | `chmod go-rwx notes.txt`    | removes everything for the group and the others                                                                                       |
 | `chmod a=r readme.txt`      | sets `r--` for everybody                                                                                                              |
 | `chmod u=rw,go=r notes.txt` | sets exactly `rw-r--r--`: `=` replaces the old permissions instead of adding to them                                                  |
-| `chmod -R g+rX project`     | for the group, adds `r` to `project` and everything inside, and `x` only to the directories and to the files that already have an `x` |
+| `chmod -R g+rX project`     | for `project` and everything inside: adds `r` for the group, and `x` only to the directories and to the files that already have an `x` for someone |
 
 With **numbers**, in octal: `r` is `4`, `w` is `2`, `x` is `1`, added for each of `u`, `g` and `o`:
 
@@ -954,8 +954,7 @@ drwxrwxrwt. 21 root root 520 Oct 27 10:00 /tmp
 ## The Prompt
 
 The prompt of `bash` is built from the shell variable `PS1` (see
-[Shell Variables](/docs/labs/04#shell-variables-and-export) in lab 04). On Fedora, it is `[\u@\h \W]\$ ` (on
-Ubuntu, `\u@\h:\w\$ `, with colors):
+[Shell Variables](/docs/labs/04#shell-variables-and-export) in lab 04). On Fedora, it is `[\u@\h \W]\$ `; on Ubuntu, it is longer, but without the colors it comes down to `\u@\h:\w\$ `:
 
 | Escape | Meaning                                                    | For `student` | For `root` |
 | ------ | ---------------------------------------------------------- | ------------- | ---------- |
@@ -1211,11 +1210,11 @@ unless the exercise says otherwise.
 
 **Becoming `root`**
 
-4. **`sudo`**: Run commands as `root`, see how `sudo` remembers your password, write into a file of `root`, and
-    start a shell of `root`.
+4. **`sudo`**: Run commands as `root`, see how `sudo` remembers that you typed your password, write into a file of
+    `root`, and start a shell of `root`.
 
     1. print your user as `root`; do it again, and see that the password is not asked;
-    2. make `sudo` forget the password, and print your user as `root` again;
+        2. make `sudo` forget that you typed your password, and print your user as `root` again;
     3. try to print the first line of `/etc/shadow` as yourself; then run the **same** command again as `root`, without
        typing it again;
     4. create the directory `/srv/lab05` and the empty file `/srv/lab05/root.txt`, as `root`; try to add the line
@@ -1226,7 +1225,7 @@ unless the exercise says otherwise.
     💡 `man sudo`: search for `invalidate` and `login`; `man bash`: search for `HISTORY EXPANSION` and then for
     `!!`; `man tee`: search for `append`.
 
-    **Check:** the user is `root`; after `sudo` forgets the password, it asks again. As yourself, `/etc/shadow` gives
+        **Check:** the user is `root`; after `sudo -k`, `sudo` asks for the password again. As yourself, `/etc/shadow` gives
     `Permission denied`; `!!` prints the command it became, runs it, and shows the line of `root`. `sudo echo` with `>>`
     fails with `Permission denied`: your shell opens the file, not `sudo`; at the end, the file has `hello`. The shell
     of `root` starts in `/root`, with `#` in the prompt. <small>→ [`sudo`](#sudo) · [The Redirect Trap](#the-redirect-trap)</small>
@@ -1364,7 +1363,7 @@ unless the exercise says otherwise.
 
     **Check:** `/usr/bin/passwd` is `-rwsr-xr-x` (`4755`): the `s` makes it run as `root`, whoever starts it; `/tmp` is
     `drwxrwxrwt` (`1777`). `bob` cannot delete `/tmp/student.txt` (`Operation not permitted`), although he has `w` on
-    it: the `t` of `/tmp`. `team` is `drwxrwsr-x student students`, and `bob.txt` is `-rw-r--r-- bob students`: it got
+    `/tmp`, and even on the file: the `t` of `/tmp`. `team` is `drwxrwsr-x student students`, and `bob.txt` is `-rw-r--r-- bob students`: it got
     the group of the directory. <small>→ [`setuid`](#setuid) · [`setgid` on a Directory](#setgid-on-a-directory) · [The Sticky Bit](#the-sticky-bit)</small>
 
 **The prompt**
@@ -1379,9 +1378,9 @@ unless the exercise says otherwise.
 
     💡 `man bash`: search for `PROMPTING`.
 
-    **Check:** the original is `[\u@\h \W]\$ ` on Fedora (`\u@\h:\w\$ ` with colors on Ubuntu). With the fake prompt
-    of `root`, the user is still `student`, and `/etc/shadow` is still denied: `whoami` asks the kernel, and the
-    prompt is only text. <small>→ [The Prompt](#the-prompt) · [Changing the Prompt](#changing-the-prompt)</small>
+     **Check:** the original is `[\u@\h \W]\$ ` on Fedora; on Ubuntu it is longer, with the colors, but it shows
+    `\u@\h:\w\$ `. With the fake prompt of `root`, the user is still `student`, and `/etc/shadow` is still denied:
+    `whoami` asks the kernel, and the prompt is only text. <small>→ [The Prompt](#the-prompt) · [Changing the Prompt](#changing-the-prompt)</small>
 
 **Changing a password**
 
