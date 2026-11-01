@@ -53,7 +53,7 @@ the commands are the same, but some names and defaults differ:
 
 |                                                              | Fedora                              | Ubuntu                                                 |
 | ------------------------------------------------------------ | ----------------------------------- | ------------------------------------------------------ |
-| the prompt                                                   | `[student@fedora ~]$`               | `student@ubuntu:~$`, in color                          |
+| the prompt                                                   | `[student@fedora ~]$`               | `student@ubuntu:~$`                         |
 | the group of the **administrators**, who may `sudo`          | `wheel`, GID `10`                   | `sudo`, GID `27` (you are also in `adm`, `cdrom`, ...) |
 | the `.` after the permissions in `ls -l`, `context=` in `id` | shown: ignore them in this lab      | not shown                                              |
 | the shell of a new user made with `useradd`                  | `/bin/bash`                         | `/bin/sh`, unless you give `-s /bin/bash`              |
@@ -771,6 +771,7 @@ Only **one** set is used: with `----rw----`, the owner can do **nothing**, even 
 | Command                     | What it does                                                                                                                          |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `chmod u+x script.sh`       | adds `x` for the owner                                                                                                                |
+| `chmod +x script.sh`        | adds `x` for everybody, except where the [`umask`](#umask) blocks it                                   |
 | `chmod g+w,o-r notes.txt`   | adds `w` for the group and removes `r` for the others                                                                                 |
 | `chmod go-rwx notes.txt`    | removes everything for the group and the others                                                                                       |
 | `chmod a=r readme.txt`      | sets `r--` for everybody                                                                                                              |
@@ -1890,12 +1891,13 @@ sudo groupdel students
 
     💡 `man find`: search for `-perm` and for `-ls`.
 
-    **Check:** there are a few dozen setuid programs, all owned by `root`. `rootid` prints
+    **Check:** there are a few tens of setuid programs at most, all owned by `root`. `rootid` prints
     `uid=1000(student) gid=1000(student) euid=0(root) ...` (and `uid=` of `bob` for `bob`): `id` shows `euid` when the
     effective UID is not the real one. The script prints only `uid=1000(student) ...`, without `euid`: the kernel
-    ignores the setuid bit on scripts. `cap.txt` is `-rwSr--r--` (`4644`) and `capdir` is `drwxrwx--T` (`1770`): a
-    capital letter means that the bit is set, but the `x` under it is not. On Fedora, everybody may run `sudo`, as
-    `root`, but nobody may read the file; on Ubuntu, everybody may also read it, and so copy it. <small>→ [`setuid`](#setuid) · [Special Permissions](#special-permissions)</small>
+    ignores the setuid bit on scripts. `cap.txt` is `-rwSr--r--` (`4644`; Ubuntu: `-rwSrw-r--`, `4664`) and `capdir`
+    is `drwxrwx--T` (`1770`): a capital letter means that the bit is set, but the `x` under it is not. On Fedora,
+    everybody may run `sudo`, as `root`, but nobody may read the file; on Ubuntu, everybody may also read it, and so
+    copy it. <small>→ [`setuid`](#setuid) · [Special Permissions](#special-permissions)</small>
 
 39. **The UID is what matters**: Show that a file belongs to a UID, not to a name, and what happens when a UID is used
     again.
