@@ -1,6 +1,6 @@
 #import "/src/slides.typ": *
 
-#show: uso_slides.with(title: "7. Shell Scripting")
+#show: uso_slides.with(title: "8. Shell Scripting")
 
 #slide[
   == Bibliography
