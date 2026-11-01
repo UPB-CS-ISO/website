@@ -265,7 +265,8 @@
 // `notes` - one entry per field: (icon, title, body), none - the field is
 // skipped; `intro` - the card of the first step, when no field is highlighted.
 // `colors` - a color for every field (none - the usual orange)
-#let record-walk(fields, notes, intro: none, sep: ":", size: 1em, colors: none) = {
+#let record-walk(fields, notes, intro: none, sep: ":", size: 1em, colors: none, order: none) = {
+  // `order` - the indices of the fields in the order they are walked (none - left to right)
   let has-intro = intro != none
   let start = if has-intro { 2 } else { 1 }
   if has-intro {
@@ -275,7 +276,8 @@
       #intro
     ]
   }
-  let shown = notes.enumerate().filter(((i, note)) => note != none)
+  let indices = if order != none { order } else { range(notes.len()) }
+  let shown = indices.map(i => (i, notes.at(i))).filter(((i, note)) => note != none)
   for (step, (i, (icon, title, body))) in shown.enumerate() {
     let color = if colors != none and colors.at(i) != none { colors.at(i) } else { hl }
     only(start + step)[

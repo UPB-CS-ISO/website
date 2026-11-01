@@ -35,6 +35,8 @@
       - *one owner* (a user) and *one group*
       - three sets of permissions: for the *owner*, the *group* and the *others*
     ],
+    // the owner and the group first, then the permissions
+    order: (5, 6, 1, 2, 3),
     // only the permissions, the owner and the group, the other fields are skipped
     (
       none,
