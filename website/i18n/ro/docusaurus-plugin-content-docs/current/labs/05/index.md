@@ -23,8 +23,8 @@ permite ce cere procesul.
 - Să căutați utilizatori și grupuri cu `getent`
 - Să rulați comenzi ca `root` sau ca alt utilizator, cu `sudo` și `su`, și să evitați **capcana redirectării** cu `tee`
 - Să înțelegeți cum păstrează `/etc/shadow` parolele sub formă de **hash-uri** cu **salt** și cum se verifică o parolă
-- Să creați, să modificați și să ștergeți utilizatori și grupuri cu `useradd`, `passwd`, `usermod`, `groupadd`, `gpasswd`
-  și `userdel`
+- Să creați, să modificați și să ștergeți utilizatori și grupuri cu `useradd`, `passwd`, `usermod`, `groupadd`,
+  `gpasswd` și `userdel`
 - Să înțelegeți ce se întâmplă când vă **autentificați** și de ce un grup nou cere o nouă autentificare
 - Să citiți **permisiunile** unui fișier cu `ls -l` și `stat` și să înțelegeți ce înseamnă `r`, `w` și `x` pentru
   fișiere și pentru directoare
@@ -50,10 +50,8 @@ permite ce cere procesul.
 
 ## Fedora și Ubuntu {/* #fedora-and-ubuntu */}
 
-Calculatoarele din laborator rulează **Fedora**, cu managerul de ferestre **Sway**, și toate exemplele din acest
-laborator provin de pe ele. Acasă puteți folosi Fedora sau **Ubuntu**: toate comenzile din laborator merg pe amândouă,
-însă unele nume, valori implicite și rezultate diferă. Când un exemplu sau o verificare nu se potrivește cu ce vedeți
-pe Ubuntu, căutați întâi în acest tabel:
+Calculatoarele din laborator rulează **Fedora** cu **Sway**, iar exemplele provin de pe ele. Acasă puteți folosi și
+**Ubuntu**: comenzile sunt aceleași, dar unele nume și valori implicite diferă:
 
 |                                                                 | Fedora                               | Ubuntu                                                 |
 | --------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------ |
@@ -68,22 +66,19 @@ pe Ubuntu, căutați întâi în acest tabel:
 | `umask`-ul unui utilizator obișnuit                             | `0022`                               | `0002`                                                 |
 | instalarea unui pachet                                          | `sudo dnf install <PACKAGE>`         | `sudo apt install <PACKAGE>`                           |
 
-Ubuntu 25.10 și versiunile mai noi folosesc `sudo-rs`, o versiune nouă a lui `sudo`: unele dintre mesajele lui diferă
-de cele din acest laborator. Utilizatorul vostru poate avea și alt nume decât `student`: folosiți numele vostru oriunde
-laboratorul scrie `student`.
+Ubuntu 25.10 și versiunile mai noi folosesc `sudo-rs`, ale cărui mesaje diferă puțin. Dacă utilizatorul vostru nu este
+`student`, folosiți numele vostru oriunde laboratorul scrie `student`.
 
 ## Utilizatori {/* #users */}
 
-Un **utilizator** este un **cont** pe calculator: un nume, de exemplu `student`, o parolă, un director pentru fișierele
-lui și programul care pornește când se autentifică, de obicei un shell. Utilizatorii țin separată munca oamenilor
-diferiți: fișierele lui `bob` nu sunt fișierele lui `carol`, iar un program pornit de `bob` nu le poate atinge decât dacă
-ea îi permite.
+Un **utilizator** este un **cont**: un nume, de exemplu `student`, o parolă, un director propriu și programul care
+pornește când se autentifică, de obicei un shell. Utilizatorii țin separată munca oamenilor: un program pornit de `bob`
+nu poate atinge fișierele lui `carol`, decât dacă ea îi permite.
 
-Utilizatorii nu sunt doar oameni. Multe servicii ale sistemului rulează sub un utilizator propriu: dacă unul dintre ele
-are un bug sau este atacat, poate atinge doar propriile fișiere, nu și pe ale celorlalte servicii sau ale oamenilor.
+Și serviciile rulează ca utilizatori proprii: astfel, o eroare într-unul dintre ele poate atinge doar fișierele lui.
 
-Pentru voi, un utilizator este un **nume**. Pentru kernel, un utilizator este doar un **număr**, **UID**-ul
-(_User ID_). Numele se păstrează într-un fișier, iar programele le traduc în numere, și înapoi, când vorbesc cu voi.
+Pentru kernel, un utilizator este doar un **număr**, **UID**-ul (_User ID_); programele îl traduc pentru voi într-un
+nume.
 
 ### Cine sunt eu: `whoami` și `id` {/* #who-am-i-whoami-and-id */}
 
@@ -106,12 +101,9 @@ uid=1000(student) gid=1000(student) groups=1000(student),10(wheel) context=uncon
 uid=0(root) gid=0(root) groups=0(root)
 ```
 
-- `whoami` a afișat numele utilizatorului vostru, `student`.
-- `id` a afișat eticheta procesului shell-ului vostru (vedeți [Utilizatorul unui proces](#the-user-of-a-process)):
-  UID-ul `1000`, grupul primar `student`, cu GID-ul `1000`, și grupurile `student` și `wheel`. Pe Fedora, membrii lui
-  `wheel` sunt **administratorii**, cei care pot folosi `sudo` (vedeți [`sudo`](#sudo)). Ignorați `context=...`: nu
-  aveți nevoie de el în acest laborator, iar Ubuntu nu îl afișează.
-- `id root` a afișat ce știe sistemul despre utilizatorul `root`, administratorul: UID-ul `0`.
+- `id` a afișat eticheta shell-ului vostru: UID-ul, grupul primar și toate grupurile. Membrii lui `wheel` sunt
+  **administratorii**, care pot folosi [`sudo`](#sudo). Ignorați `context=...`: laboratorul nu are nevoie de el.
+- `id root` a afișat ce știe sistemul despre `root`, administratorul: UID-ul `0`.
 
 ### Intervale de UID-uri {/* #uid-ranges */}
 
@@ -122,28 +114,18 @@ uid=0(root) gid=0(root) groups=0(root)
 | `1000` - ... | **utilizatori obișnuiți**     | oameni                                                                                  | `student`                         |
 | `65534`      | `nobody`                      | fișierele al căror proprietar real nu se cunoaște și procesele care nu trebuie să aibă niciun drept | `nobody`              |
 
-Aceste intervale sunt doar o **convenție**: pentru kernel, toate UID-urile în afară de `0` sunt la fel. Ele se
-stabilesc în `/etc/login.defs`, fișierul de setări al lui `useradd` și al celorlalte comenzi care creează utilizatori,
-iar aceste comenzi iau următorul UID liber din intervalul potrivit:
-
-```shell-session
-[student@fedora ~]$ grep -E '^(UID|SYS_UID)_(MIN|MAX)' /etc/login.defs
-UID_MIN                  1000
-UID_MAX                 60000
-SYS_UID_MIN               201
-SYS_UID_MAX               999
-```
+Aceste intervale sunt doar o **convenție**, stabilită în `/etc/login.defs`: pentru kernel, toate UID-urile în afară de
+`0` sunt la fel.
 
 ### Utilizatorul unui proces {/* #the-user-of-a-process */}
 
-Fiecare **proces** poartă UID-ul utilizatorului care l-a pornit și GID-urile grupurilor sale: aceasta este **eticheta
-procesului**. Gândiți-vă la o ecusoană pe care procesul o poartă toată viața: kernelul se uită la ea de fiecare dată
-când procesul cere ceva, să deschidă un fișier sau să trimită un semnal, și decide dacă are **voie**. Un proces copil
-**moștenește** eticheta părintelui: tot ce porniți din shell-ul vostru rulează ca voi.
+Fiecare **proces** poartă UID-ul utilizatorului care l-a pornit și GID-urile grupurilor sale: **eticheta procesului**.
+Gândiți-vă la un ecuson: kernelul se uită la el de fiecare dată când procesul deschide un fișier sau trimite un semnal
+și decide dacă are **voie**. Un copil **moștenește** eticheta părintelui: tot ce porniți din shell rulează ca voi.
 
 ![Eticheta unui proces](./images/user-label.svg)
 
-`ps` afișează utilizatorul fiecărui proces în coloana `USER` (sau `UID`, ca număr):
+`ps` arată utilizatorul fiecărui proces în coloana `USER` (`UID` pentru număr):
 
 ```shell-session
 [student@fedora ~]$ ps -o user,uid,pid,ppid,comm
@@ -158,50 +140,42 @@ student   1000    3104    2817 ps
      51 student
 ```
 
-- `ps -o user,uid,pid,ppid,comm` a arătat că `bash` și `ps` rulează ca `student`: `ps` este copilul lui `bash` și i-a
-  moștenit eticheta.
-- `ps -eo user` a afișat utilizatorul **fiecărui** proces, iar `sort | uniq -c` le-a numărat (vedeți
-  [Pipe-uri](/docs/labs/03#pipes-) în laboratorul 03). Majoritatea proceselor din sistem rulează ca `root`.
+- `bash` și `ps` rulează ca `student`: `ps` este copilul lui `bash`.
+- `ps -eo user | sort | uniq -c` a numărat procesele fiecărui utilizator (vedeți [Pipe-uri](/docs/labs/03#pipes-) din
+  laboratorul 03): cele mai multe rulează ca `root`.
 
 :::info
 
-`ps` primește de la kernel doar UID-urile. Ca să afișeze un nume, caută fiecare UID în baza de date a utilizatorilor;
-dacă UID-ul nu există acolo, de exemplu pentru că utilizatorul a fost șters, afișează numărul. `ls -l`, `id` și
-promptul fac la fel.
+`ps`, `ls -l` și `id` primesc de la kernel doar numere și caută numele; un UID fără utilizator, de exemplu al unui
+utilizator șters, este afișat ca număr.
 
 :::
 
 :::note
 
-Eticheta unui proces are câteva părți în plus față de un UID și o listă de grupuri: un program ca `passwd` poate rula
-cu două UID-uri diferite în același timp. Exercițiile din laborator nu au nevoie de aceste detalii, dar exercițiile de
-acasă și provocările au: le găsiți în [Credențialele unui proces](#the-credentials-of-a-process), la finalul
-laboratorului.
+Un proces poate avea mai multe UID-uri în același timp (`passwd` are). Exercițiile de acasă și provocările au nevoie de
+aceste detalii: sunt în [Credențialele unui proces](#the-credentials-of-a-process).
 
 :::
 
 ## Grupuri {/* #groups */}
 
-Un **grup** este o mulțime de utilizatori, cu un nume și un număr, **GID**-ul (_Group ID_). Grupurile vă permit să
-partajați: un fișier își poate da permisiunile unui grup, de exemplu studenților unui proiect, fără să fie deschis
-tuturor. Un grup nu are niciun drept prin el însuși: când un fișier sau `sudo` dă drepturi unui grup, le primește
-fiecare membru.
+Un **grup** este o mulțime de utilizatori, cu un nume și un număr, **GID**-ul (_Group ID_). Un fișier poate da
+permisiuni unui grup, de exemplu studenților unui proiect, fără să se deschidă pentru toată lumea: fiecare membru le
+primește.
 
 Fiecare utilizator are:
 
-- **un singur grup primar**: fișierele noi ale utilizatorului primesc acest grup. Pe Fedora și Ubuntu, `useradd`
-  creează un grup cu același nume ca utilizatorul, doar pentru el, așa că `student` are grupul primar `student`;
+- **un grup primar**, pe care îl primesc fișierele noi ale utilizatorului; `useradd` creează unul cu același nume ca
+  utilizatorul, deci `student` are grupul primar `student`;
 - oricâte **grupuri suplimentare**, de exemplu `wheel`, grupul administratorilor.
-
-`id` și `groups` le afișează pe amândouă, așa cum ați văzut mai sus: `groups=1000(student),10(wheel)`.
 
 ## Bazele de date ale utilizatorilor și grupurilor {/* #the-users-and-groups-databases */}
 
 ### `/etc/passwd` {/* #etcpasswd */}
 
-Utilizatorii locali se păstrează în `/etc/passwd`, un fișier text cu **câte un utilizator pe fiecare linie** și
-câmpurile separate prin `:`. **Oricine** îl poate citi, pentru că orice program care afișează un nume de utilizator, cum
-sunt `ls` sau `ps`, rulează ca utilizatorul care l-a pornit și trebuie să-l poată citi.
+Utilizatorii locali sunt păstrați în `/etc/passwd`, **câte un utilizator pe linie**, cu câmpurile separate prin `:`.
+**Oricine** îl poate citi: fiecare program care afișează un nume de utilizator are nevoie de el.
 
 ```shell-session
 [student@fedora ~]$ ls -l /etc/passwd
@@ -212,10 +186,9 @@ bin:x:1:1:bin:/bin:/usr/sbin/nologin
 daemon:x:2:2:daemon:/sbin:/usr/sbin/nologin
 ```
 
-- `ls -l` a arătat că doar `root` poate modifica fișierul, dar oricine îl poate citi. Pe Fedora, ignorați `.` de după
-  permisiuni: nu aveți nevoie de el în acest laborator, iar Ubuntu nu îl afișează.
-- `head -3` a afișat primele 3 linii, ca să arate formatul. Ca să **căutați** un utilizator, nu citiți fișierul:
-  folosiți [`getent`](#getent), cum face restul laboratorului.
+- `ls -l` a arătat că doar `root` îl poate modifica, dar oricine îl poate citi (pe Fedora, ignorați `.` de după
+  permisiuni).
+- `head -3` a arătat formatul. Ca să **căutați** un utilizator, folosiți [`getent`](#getent):
 
 ```shell-session
 [student@fedora ~]$ getent passwd student
@@ -255,31 +228,27 @@ student:x:1000:
 
 :::caution
 
-Utilizatorii care au un grup ca grup **primar** **nu** apar în ultimul lui câmp: `student` este singurul membru al
-grupului `student`, dar lista este goală. Grupul primar este al 4-lea câmp din `/etc/passwd`. Ca să vedeți toate
-grupurile unui utilizator, folosiți `id <USER>`.
+Utilizatorii al căror grup **primar** este acesta **nu** apar în listă: grupul `student` are lista goală. Folosiți
+`id <USER>` ca să vedeți toate grupurile unui utilizator.
 
 :::
 
 :::danger
 
-Nu modificați `/etc/passwd`, `/etc/group` sau `/etc/shadow` cu un editor de text. Un singur `:` greșit poate împiedica
-orice utilizator, inclusiv pe `root`, să se autentifice. Modificați-le doar cu comenzile din
+Nu editați `/etc/passwd`, `/etc/group` sau `/etc/shadow` cu un editor de text: un singur `:` greșit poate împiedica
+orice utilizator, inclusiv `root`, să se autentifice. Folosiți comenzile din
 [Gestionarea utilizatorilor și a grupurilor](#managing-users-and-groups).
 
 :::
 
 ### `getent` {/* #getent */}
 
-Utilizatorii și grupurile nu se păstrează mereu în aceste fișiere: într-o universitate sau într-o firmă, se află de
-obicei pe un **server** din rețea (LDAP, Active Directory, ...), iar `systemd` poate crea și el utilizatori, pentru
-serviciile lui. De aceea, `ls`, `ps` și `id` nu deschid singure `/etc/passwd`: îi cer utilizatorul **bibliotecii C**
-(codul pe care îl folosește orice program ca să vorbească cu sistemul), care caută în toate aceste locuri, în ordinea
-scrisă în `/etc/nsswitch.conf`. Toate aceste locuri împreună formează **baza de date a utilizatorilor** și **baza de
-date a grupurilor**.
+Utilizatorii și grupurile pot veni și de pe un **server** din rețea (LDAP, Active Directory) sau de la `systemd`. De
+aceea, programele nu citesc fișierele: întreabă **biblioteca C** (codul pe care orice program îl folosește ca să
+vorbească cu sistemul), care caută în toate aceste locuri, enumerate în `/etc/nsswitch.conf`. Împreună, ele formează
+**baza de date a utilizatorilor** și **baza de date a grupurilor**.
 
-`getent` (_get entries_) întreabă biblioteca C în același fel, așa că găsește un utilizator oriunde ar fi păstrat și
-îl afișează în același format ca fișierele:
+`getent` (_get entries_) întreabă biblioteca C în același fel și afișează rezultatul în formatul fișierelor:
 
 | Comandă                            | Găsește                                                    |
 | ---------------------------------- | ---------------------------------------------------------- |
@@ -298,43 +267,27 @@ nobody:x:65534:65534:Kernel Overflow User:/:/usr/sbin/nologin
 [student@fedora ~]$
 ```
 
-- `getent passwd 0` a găsit utilizatorul cu UID-ul `0`, `root`, iar `getent passwd nobody` utilizatorul `nobody`.
+- `getent passwd 0` l-a găsit pe `root`, iar `getent passwd nobody` pe `nobody`.
 - `getent passwd alice` nu a afișat **nimic**, fără nicio eroare: nu există un astfel de utilizator.
-
-`getent` se uită și la **câmpuri**, nu la textul liniilor. `grep` doar găsește un text, oriunde într-o linie:
-
-```shell-session
-[student@fedora ~]$ grep root /etc/passwd
-root:x:0:0:Super User:/root:/bin/bash
-operator:x:11:0:operator:/root:/usr/sbin/nologin
-[student@fedora ~]$ getent passwd root
-root:x:0:0:Super User:/root:/bin/bash
-```
-
-- `grep root` l-a afișat și pe `operator`, al cărui director este `/root`.
-- `getent passwd root` l-a afișat doar pe utilizatorul al cărui **nume** este `root`.
 
 :::caution
 
 **Căutați mereu utilizatorii și grupurile cu `getent`**
 
-Folosiți `getent passwd` pentru utilizatori și `getent group` pentru grupuri, nu `cat` sau `grep` pe `/etc/passwd` și
-`/etc/group`: fișierele conțin doar conturile locale, iar `grep` se potrivește cu orice câmp. În acest laborator, **baza
-de date a utilizatorilor** înseamnă `getent passwd`, iar **baza de date a grupurilor** înseamnă `getent group`.
+Folosiți `getent passwd` și `getent group`, nu `cat` sau `grep` pe fișiere: fișierele au doar conturile locale. În acest
+laborator, **baza de date a utilizatorilor** înseamnă `getent passwd`, iar **baza de date a grupurilor** înseamnă
+`getent group`.
 
 :::
 
 ## Utilizatorul `root` {/* #the-root-user */}
 
-`root` este utilizatorul cu UID-ul `0`, administratorul. Pentru un proces cu UID-ul `0`, kernelul **sare peste**
-majoritatea verificărilor: procesul poate citi și scrie orice fișier, poate trimite semnale oricărui proces, poate
-monta discuri și poate schimba setările rețelei. Instalarea de programe și adăugarea de utilizatori cer `root` din
-același motiv: scriu fișiere care îi aparțin lui `root`, în `/usr` și în `/etc`. Directorul lui `root` este `/root`, nu
-`/home/root`, ca `root` să se poată autentifica și atunci când `/home` se află pe un alt disc, care nu funcționează.
+`root` este administratorul, utilizatorul cu UID-ul `0`. Pentru `root`, kernelul **sare peste** cele mai multe
+verificări: poate citi și scrie orice fișier, poate trimite semnale oricărui proces și poate modifica sistemul, de aceea
+instalarea programelor și crearea utilizatorilor au nevoie de el. Directorul lui propriu este `/root`.
 
-Kernelul se uită doar la **număr**: `root` este doar numele UID-ului `0`, aflat de obicei pe prima linie din
-`/etc/passwd`. Două nume de utilizator cu același UID sunt, pentru kernel, **același utilizator**: așa își poate
-ascunde un atacator un al doilea `root`.
+Kernelul se uită doar la **număr**: două nume de utilizator cu UID-ul `0` sunt amândouă `root`. Așa poate ascunde un
+atacator un al doilea `root`.
 
 :::danger
 
@@ -347,18 +300,16 @@ utilizator obișnuit și deveniți `root` doar pentru comenzile care au nevoie d
 
 ### `sudo` {/* #sudo */}
 
-`sudo` rulează **o comandă** ca `root`. Cere parola **voastră**, nu pe cea a lui `root`, și vă lasă să rulați comanda
-doar dacă sunteți **administrator**. Un utilizator este administrator dacă face parte dintr-un anumit grup, al cărui
-nume depinde de distribuție:
+`sudo` rulează **o singură comandă** ca `root`. Vă cere **parola voastră** și funcționează doar pentru
+**administratori**: membrii unui anumit grup, al cărui nume depinde de distribuție:
 
 | Distribuție                | Grupul administratorilor |
 | -------------------------- | ------------------------ |
 | Fedora, Red Hat, CentOS    | `wheel`                  |
 | Ubuntu, Debian, Linux Mint | `sudo`                   |
 
-Ca să faceți dintr-un utilizator un administrator, adăugați-l în acest grup; ca să-i luați dreptul, scoateți-l din grup
-(vedeți [Gestionarea utilizatorilor și a grupurilor](#managing-users-and-groups)). `student` este în `wheel`, deci poate
-folosi `sudo`:
+Ca să faceți un utilizator administrator, adăugați-l în acest grup (vedeți
+[Gestionarea utilizatorilor și a grupurilor](#managing-users-and-groups)). `student` este în `wheel`:
 
 ```shell-session
 [student@fedora ~]$ cat /etc/shadow
@@ -370,13 +321,12 @@ root
 root
 ```
 
-- `cat /etc/shadow` a eșuat: doar `root` poate citi acest fișier (vedeți [Parole](#passwords)).
-- `sudo whoami` a cerut parola lui `student`, apoi a pornit `whoami` ca `root`, care a afișat `root`.
-- Al doilea `sudo whoami` nu a mai cerut parola: `sudo` o ține minte câteva minute (**5** pe Fedora), în acest
-  terminal.
-- Un utilizator care nu este administrator primește `bob is not in the sudoers file.`, iar comanda nu mai pornește.
+- `cat /etc/shadow` a eșuat: doar `root` poate citi acest fișier.
+- `sudo whoami` a cerut parola lui `student`, apoi a rulat `whoami` ca `root`.
+- Al doilea `sudo` nu a mai cerut-o: `sudo` ține minte parola câteva minute (**5** pe Fedora), în acest terminal.
+- Un utilizator care nu este administrator primește `bob is not in the sudoers file.`
 
-`sudo` scrie **fiecare** comandă în jurnalul sistemului: cine a rulat ce, ca cine și din ce director.
+`sudo` înregistrează în jurnal **fiecare** comandă: cine a rulat ce, ca cine și din ce director:
 
 ```shell-session
 [student@fedora ~]$ sudo journalctl -t sudo | tail -2
@@ -392,10 +342,9 @@ Oct 27 10:02:20 fedora sudo[3315]:  student : TTY=pts/0 ; PWD=/home/student ; US
 | `sudo -k`                  | uită parola: următorul `sudo` o cere din nou                                                               |
 | `sudo !!`                  | rulează din nou comanda **anterioară**, cu `sudo`: `bash` înlocuiește `!!` înainte să pornească `sudo`     |
 
-Cât timp rulează comanda, `sudo` nu dispare: așteaptă să se termine comanda și îi transmite semnalele pe care le
-primește. Pe Fedora, `sudo` rulează comanda și într-un **pseudoterminal nou**, doar al lui (vedeți
-[Emulatoare de terminal](/docs/labs/04#terminal-emulators) în laboratorul 04), așa că există **două** procese `sudo`. Cu
-`sudo sleep 300` rulând într-un shell cu PID-ul `2817`:
+`sudo` așteaptă să se termine comanda și îi transmite semnalele pe care le primește. Pe Fedora, rulează comanda și
+într-un **pseudo-terminal nou** (vedeți [Emulatoare de terminal](/docs/labs/04#terminal-emulators) din laboratorul 04),
+deci există **două** procese `sudo`. Pentru `sudo sleep 300` pornit din shell-ul `2817`:
 
 ```shell-session
 [student@fedora ~]$ pstree -pu 2817
@@ -407,16 +356,14 @@ bash(2817)───sudo(3320,root)───sudo(3321)───sleep(3322)
    3322    3321 pts/2    sleep
 ```
 
-- `pstree -p` a afișat PID-urile, iar `-u` utilizatorul, acolo unde se schimbă: `sudo` rulează ca `root`, la fel ca tot
-  ce se află sub el.
-- `ps` a arătat că al doilea `sudo` și `sleep` sunt pe `pts/2`, nu pe `pts/0`: `ps -t pts/0` **nu** afișează comanda
-  pornită cu `sudo`. Găsiți-o în schimb cu `pstree`, cu `pgrep` sau după PPID.
+- `pstree -pu` a arătat PID-urile și, acolo unde se schimbă, utilizatorul: tot ce este sub `sudo` rulează ca `root`.
+- Al doilea `sudo` și `sleep` sunt pe `pts/2`, nu pe `pts/0`: `ps -t pts/0` **nu** le găsește; folosiți `pstree` sau
+  `pgrep`.
 
 :::info
 
-Noul pseudoterminal vă protejează: un program pornit cu `sudo` nu mai poate scrie comenzi în terminalul vostru după ce
-se termină. `sudo` 1.9.14 și versiunile mai noi îl folosesc implicit; pe sistemele mai vechi, `pstree` afișează un
-singur `sudo`.
+Pseudo-terminalul nou împiedică un program pornit cu `sudo` să tasteze comenzi în terminalul vostru după ce se termină.
+Înainte de `sudo` 1.9.14 nu era implicit, iar `pstree` arată un singur `sudo`.
 
 :::
 
@@ -424,11 +371,11 @@ singur `sudo`.
 
 `su` (_switch user_) pornește un **shell** ca alt utilizator și cere parola **acelui** utilizator:
 
-| Comandă       | Ce face                                                                                         |
-| ------------- | ----------------------------------------------------------------------------------------------- |
+| Comandă       | Ce face                                                                                               |
+| ------------- | ----------------------------------------------------------------------------------------------------- |
 | `su - <USER>` | pornește un **shell de autentificare** al utilizatorului: cu directorul, variabilele și grupurile lui |
-| `su -`        | același lucru, pentru `root`; cere parola lui `root`                                            |
-| `exit`        | iese din shell și revine în al vostru                                                           |
+| `su -`        | același lucru, pentru `root`; cere parola lui `root`                                                  |
+| `exit`        | iese din shell și revine în al vostru                                                                 |
 
 ```shell-session
 [student@fedora ~]$ su -
@@ -442,13 +389,12 @@ logout
 [student@fedora ~]$
 ```
 
-- `su -` a eșuat: pe Fedora și pe Ubuntu, `root` nu are de obicei **nicio parolă** (contul este blocat, vedeți
-  [`/etc/shadow`](#etcshadow)), dacă nu i-ați setat una la instalarea sistemului.
-- `sudo -i` a pornit un shell de `root` cu parola **voastră**; `exit` a ieșit din el.
+- `su -` a eșuat: de obicei, `root` **nu are parolă** pe Fedora și Ubuntu (este blocată, vedeți
+  [`/etc/shadow`](#etcshadow)).
+- `sudo -i` a pornit un shell al lui `root` cu parola **voastră**; `exit` l-a închis.
 
-Cu `su`, toți cei care devin `root` trebuie să știe aceeași parolă și nu îi puteți lua dreptul unuia dintre ei fără să
-o schimbați pentru toți; cu `sudo`, fiecare își folosește propria parolă, iar fiecare comandă este scrisă în jurnal.
-`su` rămâne util ca să deveniți **alt utilizator obișnuit**, cu parola lui.
+Cu `su`, toți cei care devin `root` folosesc aceeași parolă; cu `sudo`, fiecare o folosește pe a lui, iar fiecare
+comandă este înregistrată. Folosiți `su` ca să deveniți **alt utilizator obișnuit**.
 
 :::tip
 
@@ -470,16 +416,14 @@ bash: /etc/hosts: Permission denied
 
 ![Capcana redirectării](./images/redirect-trap.svg)
 
-- Pe prima linie, `bash` a încercat să deschidă `/etc/hosts` pentru `>>`, ca `student`, și a eșuat: `sudo echo` nu a
-  mai pornit deloc.
-- Pe a doua linie, `tee` a rulat ca `root`: a citit textul din pipe și l-a scris în fișier **și** pe ecran. `-a`
-  (_append_) îl adaugă la sfârșit, ca `>>`; fără această opțiune, `tee` înlocuiește conținutul fișierului, ca `>`.
+- `bash` a deschis `/etc/hosts` pentru `>>` ca `student`, înainte să pornească `sudo`, și a eșuat.
+- `tee` a rulat ca `root`: a scris textul din pipe în fișier **și** pe ecran. `-a` (_append_) adaugă la sfârșit, ca
+  `>>`; fără el, `tee` înlocuiește conținutul, ca `>`.
 
 :::tip
 
-Ca să ascundeți textul pe care îl afișează `tee`, trimiteți-i ieșirea în `/dev/null`:
-`echo "192.168.1.20 printer" | sudo tee -a /etc/hosts > /dev/null`. Și această redirectare o face shell-ul vostru, ca
-voi, dar merge: `/dev/null` este `rw-rw-rw-`, deci orice utilizator are voie să scrie în el.
+Ca să ascundeți ieșirea lui `tee`, adăugați `> /dev/null`: oricine poate scrie în `/dev/null`, deci această redirectare
+merge și ca voi.
 
 :::
 
@@ -498,25 +442,23 @@ pe care doar `root` îl poate citi:
 student:$y$j9T$Xr3aB7tPq2LkV9sD1fGh0J$9mQeT4bW1sZxH8cDr5Ny2kLpA7uVq3oEw6iFj0gHt1M:20737:0:99999:7:::
 ```
 
-- `ls -l` a arătat că pe Fedora `/etc/shadow` nu are **nicio** permisiune, `----------`: doar `root` îl poate citi,
-  pentru că pentru `root` kernelul sare peste verificări. Pe Ubuntu este `-rw-r----- root shadow`: îl poate citi și
-  grupul `shadow`, ca anumite programe să poată verifica parole fără să fie `root`.
-- `getent shadow student`, rulat ca `student`, nu a afișat nimic: nu a putut citi fișierul.
-- `sudo getent shadow student` a afișat linia lui `student`.
+- Pe Fedora, `/etc/shadow` **nu** are nicio permisiune: doar `root`, pentru care kernelul sare peste verificări, îl
+  poate citi. Pe Ubuntu este `-rw-r----- root shadow`.
+- Ca `student`, `getent shadow` nu a afișat nimic; cu `sudo`, a afișat linia.
 
 Fiecare linie are 9 câmpuri, separate prin `:`:
 
-| Câmp | În exemplu       | Ce este                                                                                                         |
-| ---- | ---------------- | --------------------------------------------------------------------------------------------------------------- |
-| 1    | `student`        | numele de utilizator, același ca în `/etc/passwd`                                                               |
-| 2    | `$y$j9T$Xr3a...` | **hash**-ul parolei; `!`, `!!` sau `*` la început înseamnă că parola este **blocată**: nu merge nicio parolă     |
-| 3    | `20737`          | ziua ultimei schimbări a parolei, numărată de la 1 ianuarie 1970                                                |
-| 4    | `0`              | numărul minim de zile între două schimbări de parolă                                                            |
-| 5    | `99999`          | numărul maxim de zile după care parola **trebuie** schimbată; `99999` înseamnă niciodată                        |
-| 6    | `7`              | cu câte zile înainte de expirare este avertizat utilizatorul                                                    |
-| 7    | _gol_            | câte zile după expirare mai poate fi folosit contul                                                             |
-| 8    | _gol_            | ziua în care expiră **contul**; gol înseamnă niciodată                                                          |
-| 9    | _gol_            | rezervat                                                                                                        |
+| Câmp | În exemplu       | Ce este                                                                                                      |
+| ---- | ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| 1    | `student`        | numele de utilizator, același ca în `/etc/passwd`                                                            |
+| 2    | `$y$j9T$Xr3a...` | **hash**-ul parolei; `!`, `!!` sau `*` la început înseamnă că parola este **blocată**: nu merge nicio parolă |
+| 3    | `20737`          | ziua ultimei schimbări a parolei, numărată de la 1 ianuarie 1970                                             |
+| 4    | `0`              | numărul minim de zile între două schimbări de parolă                                                         |
+| 5    | `99999`          | numărul maxim de zile după care parola **trebuie** schimbată; `99999` înseamnă niciodată                     |
+| 6    | `7`              | cu câte zile înainte de expirare este avertizat utilizatorul                                                 |
+| 7    | _gol_            | câte zile după expirare mai poate fi folosit contul                                                          |
+| 8    | _gol_            | ziua în care expiră **contul**; gol înseamnă niciodată                                                       |
+| 9    | _gol_            | rezervat                                                                                                     |
 
 `chage -l` (_change age_) afișează câmpurile 3 - 8 ca date calendaristice:
 
@@ -542,10 +484,9 @@ cheie tot intră. Ca să opriți **orice** autentificare, faceți contul să exp
 
 ### Hash-uri și salt {/* #hashes-and-salt */}
 
-Parola în sine **nu** se păstrează niciodată, ci doar **hash**-ul ei: rezultatul unei funcții **într-un singur sens**
-(_one-way_). Hash-ul unei parole se calculează ușor, dar din hash nu există nicio cale de a calcula parola: singurul drum
-înapoi este să **ghiciți** o parolă, să-i calculați hash-ul și să comparați. Al doilea câmp din `/etc/shadow` este format
-din părți separate prin `$`:
+Parola nu este păstrată **niciodată**, ci doar **hash**-ul ei: rezultatul unei funcții **one-way**. Hash-ul unei parole
+se calculează ușor; parola nu se poate afla din hash: singura cale este să **ghiciți** o parolă, să-i calculați hash-ul
+și să comparați. Al doilea câmp din `/etc/shadow` are părți separate prin `$`:
 
 | Parte       | În exemplu               | Ce este                                                                                             |
 | ----------- | ------------------------ | --------------------------------------------------------------------------------------------------- |
@@ -554,9 +495,8 @@ din părți separate prin `$`:
 | **salt**-ul | `Xr3aB7tPq2LkV9sD1fGh0J` | un text aleator, diferit pentru fiecare utilizator, adăugat la parolă înainte de calculul hash-ului |
 | hash-ul     | `9mQeT4bW1sZx...`        | hash-ul salt-ului și al parolei                                                                     |
 
-Ca să **verifice** o parolă, `login` (sau `sudo`, sau `passwd`) citește din `/etc/shadow` algoritmul, parametrii și
-salt-ul, calculează cu ele hash-ul parolei tastate și compară rezultatul cu hash-ul păstrat. Dacă sunt egale, parola
-este corectă.
+Ca să **verifice** o parolă, `login`, `sudo` sau `passwd` calculează hash-ul parolei tastate cu algoritmul, parametrii
+și salt-ul din `/etc/shadow` și compară rezultatul cu hash-ul păstrat.
 
 ![Verificarea unei parole](./images/password-check.svg)
 
@@ -573,19 +513,16 @@ $6$Xr3aB7tP$msVqpr1xVM/DA2zRy9MVn8yIL5iisMXZpqd3XHD5Ix0aQ5QqD8D3Q91LXVy0w9hPqQLz
 $6$Lp0wQ2zM$Uo9XUE/86KtNuRc.TcZpxeM0kWUejWZuFOaRQSujvsfACi8WRK55XpaV3Z3WE8TLEWQBF9Jgn4ByzOvO43Ukw0
 ```
 
-- Aceeași parolă cu același salt a dat întotdeauna **același** hash: așa se verifică parola.
-- O singură literă diferită, `pass124`, a dat un hash complet diferit.
-- Aceeași parolă cu alt salt a dat alt hash: doi utilizatori cu aceeași parolă au linii diferite în `/etc/shadow`.
+- Aceeași parolă și același salt au dat **același** hash: așa funcționează verificarea.
+- O literă diferită sau alt salt au dat un hash complet diferit: doi utilizatori cu aceeași parolă au linii diferite în
+  `/etc/shadow`.
 
 :::info
 
-De ce nu stă hash-ul în `/etc/passwd`, pe care îl poate citi oricine? Pentru că verificarea merge și pentru un atacator:
-cu o copie a hash-ului, poate calcula pe propriul calculator hash-ul unei parole după alta, până când una dintre ele dă
-același hash. Nimeni nu vede aceste încercări și nimic nu le încetinește, spre deosebire de `login`, care așteaptă după
-o parolă greșită și o scrie în jurnal. Un algoritm lent, cum este _yescrypt_, face ca fiecare încercare să coste mai
-mult, iar salt-ul îl obligă pe atacator să o ia de la capăt pentru fiecare utilizator, dar o parolă simplă tot se
-găsește repede. De aceea doar `root` poate citi `/etc/shadow`: programele care verifică parole, `login`, `sudo` și
-`passwd`, rulează ca `root`, deci îl pot citi.
+De ce nu este hash-ul în `/etc/passwd`? Cu o copie a hash-ului, un atacator poate încerca parole pe propriul calculator,
+cât de repede poate calcula hash-uri, fără ca cineva să vadă încercările. Un algoritm lent, ca _yescrypt_, și salt-ul îi
+îngreunează munca, dar o parolă simplă este tot găsită repede. De aceea doar `root` poate citi `/etc/shadow`, iar
+programele care verifică parolele rulează ca `root`.
 
 :::
 
@@ -608,19 +545,19 @@ refuză parolele prea scurte sau prea simple, dacă nu sunteți `root`.
 
 ## Gestionarea utilizatorilor și a grupurilor {/* #managing-users-and-groups */}
 
-Comenzile de mai jos modifică în locul vostru `/etc/passwd`, `/etc/shadow` și `/etc/group`, așa că au nevoie de `sudo`:
+Aceste comenzi modifică `/etc/passwd`, `/etc/shadow` și `/etc/group`, deci au nevoie de `sudo`:
 
-| Comandă                           | Ce face                                                                                                                                  |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Comandă                           | Ce face                                                                                                                                   |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `sudo useradd -m <USER>`          | creează un utilizator, cu un grup cu același nume; `-m` creează directorul utilizatorului, `-c` setează numele complet, iar `-s` shell-ul |
-| `sudo passwd <USER>`              | setează parola utilizatorului                                                                                                            |
-| `sudo groupadd <GROUP>`           | creează un grup                                                                                                                          |
-| `sudo usermod -aG <GROUP> <USER>` | **adaugă** utilizatorul într-un grup suplimentar                                                                                         |
-| `sudo usermod <OPTIONS> <USER>`   | **modifică** un utilizator existent; acceptă majoritatea opțiunilor lui `useradd`: `-c` numele complet, `-s` shell-ul, ...               |
-| `sudo gpasswd -a <USER> <GROUP>`  | adaugă și el utilizatorul în grup                                                                                                        |
-| `sudo gpasswd -d <USER> <GROUP>`  | scoate utilizatorul din grup                                                                                                             |
-| `sudo userdel -r <USER>`          | șterge utilizatorul și grupul lui; `-r` îi șterge și directorul                                                                          |
-| `sudo groupdel <GROUP>`           | șterge un grup; refuză dacă grupul este grupul primar al unui utilizator                                                                 |
+| `sudo passwd <USER>`              | setează parola utilizatorului                                                                                                             |
+| `sudo groupadd <GROUP>`           | creează un grup                                                                                                                           |
+| `sudo usermod -aG <GROUP> <USER>` | **adaugă** utilizatorul într-un grup suplimentar                                                                                          |
+| `sudo usermod <OPTIONS> <USER>`   | **modifică** un utilizator existent; acceptă majoritatea opțiunilor lui `useradd`: `-c` numele complet, `-s` shell-ul, ...                |
+| `sudo gpasswd -a <USER> <GROUP>`  | adaugă și el utilizatorul în grup                                                                                                         |
+| `sudo gpasswd -d <USER> <GROUP>`  | scoate utilizatorul din grup                                                                                                              |
+| `sudo userdel -r <USER>`          | șterge utilizatorul și grupul lui; `-r` îi șterge și directorul                                                                           |
+| `sudo groupdel <GROUP>`           | șterge un grup; refuză dacă grupul este grupul primar al unui utilizator                                                                  |
 
 ```shell-session
 [student@fedora ~]$ sudo useradd -m -c "Dave Brown" dave
@@ -635,13 +572,12 @@ uid=1003(dave) gid=1004(dave) groups=1004(dave),1003(students)
 drwx------. 3 dave dave 80 Oct 27 10:15 /home/dave
 ```
 
-- `useradd` l-a creat pe `dave`, cu următorul UID liber, un grup `dave` doar al lui și `/home/dave`.
-- `passwd dave` i-a setat parola; până atunci, nimeni nu se putea autentifica ca `dave`.
-- `usermod -aG` l-a adăugat în grupul `students` (grupul trebuie să existe deja, creat cu `groupadd`).
-- `id dave` și `ls -ld` au afișat rezultatul. Numerele pot fi diferite pe calculatorul vostru.
+- `useradd` l-a creat pe `dave`, cu următorul UID liber, un grup `dave` și `/home/dave`.
+- Până la `passwd dave`, nimeni nu se putea autentifica drept `dave`.
+- `usermod -aG` l-a adăugat în `students`, un grup creat înainte cu `groupadd`. Numerele pot fi altele pe calculatorul
+  vostru.
 
-Un utilizator nou **nu** este administrator. `sudo` merge pentru `student` pentru că `student` este în `wheel`; `dave`
-nu este, așa că `sudo` îl refuză, chiar dacă își dă parola corectă:
+Un utilizator nou **nu** este administrator, deci `sudo` îl refuză pe `dave`, chiar cu parola lui corectă:
 
 ```shell-session
 [student@fedora ~]$ su - dave
@@ -663,20 +599,18 @@ logout
 Removing user dave from group wheel
 ```
 
-- Primul `sudo whoami` a eșuat: `dave` nu este în `wheel`. Încercarea s-a scris totuși în jurnal.
-- După `usermod -aG wheel`, o **nouă autentificare** (`su - dave`) a avut noul grup, iar `sudo` a mers, cu parola
-  **lui**.
-- `gpasswd -d` i-a luat din nou dreptul.
+- Primul `sudo` a eșuat, iar încercarea a fost înregistrată.
+- După `usermod -aG wheel`, o **autentificare nouă** a avut grupul nou, iar `sudo` a mers cu parola **lui**.
+- `gpasswd -d` i-a luat dreptul înapoi.
 
 :::danger
 
-Nu uitați niciodată `-a` din `usermod -aG`. `usermod -G students dave` **înlocuiește** toate grupurile suplimentare ale
-lui `dave` cu `students`. Dacă o rulați pe voi înșivă, pierdeți `wheel` și, odată cu el, `sudo`.
+Nu uitați niciodată `-a` din `usermod -aG`: `usermod -G students dave` **înlocuiește** toate grupurile suplimentare ale
+lui `dave`. Dacă o rulați pe voi înșivă, pierdeți `wheel` și, odată cu el, `sudo`.
 
 :::
 
-`usermod` modifică în locul vostru câmpurile din `/etc/passwd`, iar `userdel` șterge utilizatorul, împreună cu grupul
-lui și, cu `-r`, cu directorul lui:
+`usermod` modifică câmpurile unui utilizator; `userdel -r` șterge utilizatorul, grupul și directorul lui propriu:
 
 ```shell-session
 [student@fedora ~]$ sudo usermod -c "David Brown" dave
@@ -689,13 +623,13 @@ id: 'dave': no such user
 ls: cannot access '/home/dave': No such file or directory
 ```
 
-`userdel` refuză să șteargă un utilizator care este încă autentificat sau care are procese în rulare și afișează
-`userdel: user dave is currently used by process 4321`. Închideți mai întâi sesiunea utilizatorului.
+`userdel` refuză un utilizator care încă are procese (`user dave is currently used by process 4321`): mai întâi
+deconectați utilizatorul.
 
 ## Autentificarea {/* #logging-in */}
 
-Când vă autentificați, un proces primește UID-ul și grupurile utilizatorului vostru ca etichetă. Pe un terminal text, de
-exemplu `/dev/tty3`:
+Când vă autentificați, un proces primește UID-ul și grupurile utilizatorului vostru. Pe un terminal text, de exemplu
+`/dev/tty3`:
 
 1. `systemd` pornește `agetty` pe terminal, ca `root`; `agetty` afișează `login:` și citește numele de utilizator;
 2. `agetty` **devine** `login` (rulează `exec`), tot ca `root`, și cere parola;
@@ -713,20 +647,17 @@ root        5120       1 login
 student     5191    5120 bash
 ```
 
-`login` rulează în continuare ca `root` și așteaptă să se termine shell-ul, iar shell-ul rulează ca `student`. Orice
-program pe care îl porniți din el moștenește această etichetă. O autentificare grafică, `ssh` și `su` parcurg aceiași
-pași.
+`login` rămâne `root` și așteaptă shell-ul, care rulează ca `student`. O autentificare grafică, `ssh` și `su` fac
+aceiași pași.
 
 :::info
 
 **Un grup nou cere o nouă autentificare**
 
-Grupurile se copiază din baza de date a grupurilor în eticheta unui proces doar la autentificare și prin `su` și `sudo`.
-Dacă sunteți adăugați într-un grup nou, procesele care rulează deja nu îl au, și nici copiii lor: o fereastră nouă de
-terminal este un copil al lui Sway, care și-a primit grupurile când v-ați autentificat. Ca să primiți noul grup,
-**ieșiți din sesiune și autentificați-vă din nou** sau, doar pentru un shell, porniți un shell de autentificare cu
-`su - student`. `id student` citește baza de date, așa că afișează imediat noul grup; `id` singur afișează eticheta
-procesului shell-ului vostru, fără el.
+Grupurile intră în eticheta unui proces doar la autentificare și prin `su` și `sudo`. După ce sunteți adăugați într-un
+grup, programele care rulează deja, și terminalele deschise de ele, nu îl au: **deconectați-vă și autentificați-vă din
+nou** sau porniți un shell de autentificare cu `su - student`. `id student` citește baza de date și arată imediat grupul
+nou; `id` arată eticheta shell-ului vostru.
 
 :::
 
@@ -734,10 +665,9 @@ procesului shell-ului vostru, fără el.
 
 ### Proprietar, grup și permisiuni {/* #owner-group-and-permissions */}
 
-Fiecare fișier și director are **un singur proprietar** (un utilizator), **un singur grup** și trei seturi de
-**permisiuni**: pentru **proprietar** (`u`, _user_), pentru **grup** (`g`) și pentru toți **ceilalți** (`o`, _others_).
-Proprietarul și grupul se păstrează ca numere, un UID și un GID, și sunt independente: proprietarul nu trebuie să fie
-membru al grupului. `ls -l` le afișează:
+Fiecare fișier are **un proprietar** (un utilizator), **un grup** și trei seturi de **permisiuni**: pentru
+**proprietar** (`u`, _user_), pentru **grup** (`g`) și pentru **ceilalți** (`o`). Proprietarul nu trebuie să fie în
+grup. `ls -l` le arată:
 
 ```shell-session
 [student@fedora lab05]$ ls -l notes.txt
@@ -755,7 +685,7 @@ membru al grupului. `ls -l` le afișează:
 | proprietarul | `student`  | utilizatorul căruia îi aparține fișierul, de obicei cel care l-a creat   |
 | grupul       | `students` | grupul fișierului, de obicei grupul primar al celui care l-a creat       |
 
-`stat` afișează aceleași informații, în formatul pe care îl cereți:
+`stat` le afișează în formatul cerut:
 
 ```shell-session
 [student@fedora lab05]$ stat -c '%A %a %U %G %n' notes.txt /etc/passwd /etc/shadow
@@ -779,14 +709,14 @@ Aceleași litere au alt înțeles pentru fișiere și pentru directoare:
 
 ![Un director este o listă de nume](./images/directory-list.svg)
 
-Un director este un fișier al cărui conținut este o **listă de nume**, fiecare indicând către un fișier. `r` citește
-această listă, `w` o modifică, iar `x` o folosește ca să ajungă la un fișier. De aici rezultă trei lucruri:
+Un director este o **listă de nume**: `r` citește lista, `w` o modifică, iar `x` o folosește ca să ajungă la un fișier.
+Deci:
 
-- crearea, redenumirea sau **ștergerea** unui fișier înseamnă modificarea **directorului**, nu a fișierului: cu `w` pe
-  un director puteți șterge un fișier pe care nici măcar nu îl puteți citi;
+- ștergerea sau redenumirea unui fișier modifică **directorul**, nu fișierul: cu `w` pe un director puteți șterge un
+  fișier pe care nici nu îl puteți citi;
 - ca să ajungeți la un fișier, aveți nevoie de `x` pe **fiecare** director din calea lui:
   `cat /home/student/lab05/notes.txt` are nevoie de `x` pe `/`, `/home`, `/home/student` și `/home/student/lab05`;
-- `ls -l` are nevoie și de `x`, nu doar de `r`: ajunge la fiecare fișier ca să-i citească detaliile.
+- și `ls -l` are nevoie de `x`: ajunge la fiecare fișier ca să-i citească detaliile.
 
 ```shell-session
 [student@fedora lab05]$ ls -ld noread noenter
@@ -803,23 +733,20 @@ secret.txt
 bash: cd: noenter: Permission denied
 ```
 
-- `noread` are `x`, dar nu are `r`: `ls` nu l-a putut lista, dar `cat` a deschis un fișier al cărui nume îl **știa**.
-- `noenter` are `r`, dar nu are `x`: `ls` a citit numele `secret.txt`, dar nu a putut ajunge la fișier ca să-i aleagă
-  culoarea, așa că a afișat și o eroare; `cd` nu a putut intra în el.
+- `noread` (`x`, fără `r`): `ls` a eșuat, dar `cat` a deschis un fișier al cărui nume îl **știa**.
+- `noenter` (`r`, fără `x`): `ls` a citit numele, dar nu a putut ajunge la fișier ca să-l coloreze, așa că a afișat și o
+  eroare; `cd` a eșuat.
 
 :::info
 
-Pe Fedora, directoarele utilizatorilor sunt `drwx------`: ceilalți utilizatori nici măcar nu pot intra în al vostru,
-deci nu pot ajunge la fișierele voastre, oricare ar fi permisiunile acestora. Pe Ubuntu sunt `drwxr-x---`: membrii
-grupului vostru primar îl pot și lista și pot intra în el, dar de obicei acest grup nu are alți membri. Un Ubuntu mai
-vechi, sau unul actualizat de la o versiune mai veche, poate avea încă `drwxr-xr-x`, deschis tuturor: verificați-l pe
-al vostru cu `ls -ld ~`.
+Directoarele proprii sunt `drwx------` pe Fedora: ceilalți utilizatori nu vă pot accesa deloc fișierele. Pe Ubuntu sunt
+`drwxr-x---` (un Ubuntu mai vechi poate avea `drwxr-xr-x`): verificați-l pe al vostru cu `ls -ld ~`.
 
 :::
 
 ### Ce permisiuni se aplică? {/* #which-permissions-apply */}
 
-Kernelul verifică eticheta procesului în această **ordine**, iar prima potrivire decide:
+Kernelul verifică aceste reguli în **ordine**, iar prima potrivire decide:
 
 1. dacă utilizatorul procesului este `root`, UID-ul `0`: totul este permis (în afară de rularea unui fișier care nu are
    niciun `x`);
@@ -840,15 +767,13 @@ Pentru `notes.txt` de mai sus, `-rw-r----- student students`:
 
 :::caution
 
-Se folosește **un singur** set. Cu `----rw----`, proprietarul nu poate face **nimic**, chiar dacă este în grup:
-proprietarul s-a potrivit deja la pasul 2, așa că permisiunile `g` nici nu mai sunt verificate.
+Se folosește un **singur** set: cu `----rw----`, proprietarul nu poate face **nimic**, chiar dacă este în grup.
 
 :::
 
 ### `chmod` {/* #chmod */}
 
-`chmod` (_change mode_) schimbă permisiunile. Doar **proprietarul** fișierului (sau `root`) îl poate rula. Permisiunile
-se pot scrie cu **litere**:
+`chmod` (_change mode_) schimbă permisiunile; doar **proprietarul** (sau `root`) îl poate rula. Cu **litere**:
 
 | Parte | Litere                                                                                                        |
 | ----- | ------------------------------------------------------------------------------------------------------------- |
@@ -865,8 +790,7 @@ se pot scrie cu **litere**:
 | `chmod u=rw,go=r notes.txt` | setează exact `rw-r--r--`: `=` înlocuiește permisiunile vechi în loc să le adauge la ele                                             |
 | `chmod -R g+rX project`     | pentru grup, adaugă `r` lui `project` și tuturor celor din el, iar `x` doar directoarelor și fișierelor care au deja un `x`          |
 
-sau cu **numere**, în octal: `r` este `4`, `w` este `2`, iar `x` este `1`. Adunați-le pentru fiecare dintre `u`, `g` și
-`o`:
+Cu **numere**, în octal: `r` este `4`, `w` este `2`, `x` este `1`, adunate pentru fiecare dintre `u`, `g` și `o`:
 
 | Litere      | `u`             | `g`         | `o`         | Număr |
 | ----------- | --------------- | ----------- | ----------- | ----- |
@@ -888,24 +812,22 @@ student
 -rw-------. 1 student student 18 Oct 27 10:20 myid.sh
 ```
 
-- `./myid.sh` a eșuat: scriptul nu avea `x`.
-- `chmod u+x` a adăugat `x` pentru proprietar, iar scriptul a rulat.
-- `chmod 600` a setat toate permisiunile deodată: `rw-------`.
+- `./myid.sh` a eșuat fără `x`; după `chmod u+x`, a rulat.
+- `chmod 600` a setat toate permisiunile deodată.
 
 :::tip
 
-Folosiți literele ca să **schimbați** câteva permisiuni și să le păstrați pe celelalte (`chmod g+w`), iar numerele ca să
-le **setați** pe toate deodată (`chmod 640`). Cu `-R`, folosiți literele: `chmod -R 644 box` elimină și `x`-ul
-directoarelor, iar apoi nimeni nu mai poate intra în ele, nici măcar `chmod`; `chmod -R u=rwX,go=rX box` le dă
-fișierelor `rw-r--r--`, iar directoarelor `rwxr-xr-x`.
+Folosiți literele ca să **schimbați** unele permisiuni (`chmod g+w`) și numerele ca să le **setați** pe toate
+(`chmod 640`). Cu `-R`, folosiți literele: `chmod -R 644 box` elimină și `x`-ul directoarelor, deci nimeni nu mai poate
+intra în ele; `chmod -R u=rwX,go=rX box` le dă fișierelor `rw-r--r--` și directoarelor `rwxr-xr-x`.
 
 :::
 
 ### `umask` {/* #umask */}
 
-Fișierele noi nu primesc toate permisiunile: programul care le creează cere `rw-rw-rw-` (`666`) pentru un fișier și
-`rwxrwxrwx` (`777`) pentru un director, iar kernelul **elimină** biții din **`umask`**-ul procesului. `umask` este o
-comandă internă a shell-ului (`help umask`), iar fiecare proces își moștenește `umask`-ul de la părinte.
+Un program cere `rw-rw-rw-` (`666`) pentru un fișier nou și `rwxrwxrwx` (`777`) pentru un director nou; apoi kernelul
+**elimină** biții din **`umask`**-ul procesului. `umask` este o comandă internă a shell-ului (`help umask`), moștenită
+de fiecare copil.
 
 ```shell-session
 [student@fedora lab05]$ umask
@@ -923,33 +845,22 @@ drwxr-xr-x. 2 student student 40 Oct 27 10:25 newdir
 | `umask 022` elimină | `022` `----w--w-` | `022` `----w--w-` |
 | rezultatul          | `644` `rw-r--r--` | `755` `rwxr-xr-x` |
 
-- `022` elimină `w` pentru grup și pentru ceilalți.
-- Un fișier nou nu este niciodată executabil: `umask` poate doar să **elimine** biți, iar programele nu cer `x` pentru
-  fișiere.
-- `umask 077` face privat orice fișier nou: `600` pentru fișiere și `700` pentru directoare. Setarea rămâne până la
-  închiderea shell-ului.
-
-:::info
-
-Unele sisteme folosesc `umask 002` pentru utilizatorii obișnuiți: atunci fișierele noi sunt `rw-rw-r--`. Nu este
-periculos, pentru că fiecare utilizator are un grup primar propriu, fără alți membri.
-
-:::
+- Un fișier nou nu este niciodată executabil: `umask` doar **elimină** biți.
+- `umask 077` face fișierele noi `600` și directoarele noi `700`, până se închide shell-ul.
 
 ### `chown` și `chgrp` {/* #chown-and-chgrp */}
 
-| Comandă                             | Ce face                                                                    |
-| ----------------------------------- | -------------------------------------------------------------------------- |
-| `sudo chown bob notes.txt`          | proprietarul devine `bob`                                                  |
-| `sudo chown bob:students notes.txt` | proprietarul devine `bob`, iar grupul `students`                           |
-| `chown :students notes.txt`         | doar grupul, ca `chgrp`                                                    |
-| `chgrp students notes.txt`          | doar grupul                                                                |
-| `chown -R`, `chgrp -R`              | directorul și tot ce se află în el                                         |
+| Comandă                             | Ce face                                                                         |
+| ----------------------------------- | ------------------------------------------------------------------------------- |
+| `sudo chown bob notes.txt`          | proprietarul devine `bob`                                                       |
+| `sudo chown bob:students notes.txt` | proprietarul devine `bob`, iar grupul `students`                                |
+| `chown :students notes.txt`         | doar grupul, ca `chgrp`                                                         |
+| `chgrp students notes.txt`          | doar grupul                                                                     |
+| `chown -R`, `chgrp -R`              | directorul și tot ce se află în el                                              |
 | `sudo chown 1005 notes.txt`         | proprietarul devine UID-ul `1005`, chiar dacă nu există niciun utilizator cu el |
 
-- Doar `root` poate da un fișier altui utilizator: altfel, oricine ar putea umple discul altui utilizator sau și-ar
-  putea ascunde urmele.
-- Proprietarul poate schimba grupul unui fișier, dar doar într-unul dintre grupurile **procesului** său.
+- Doar `root` poate da un fișier altui utilizator.
+- Proprietarul poate schimba grupul unui fișier doar într-unul dintre grupurile **procesului** său.
 
 ```shell-session
 [student@fedora lab05]$ chown carol notes.txt
@@ -974,8 +885,8 @@ Cu litere, aceștia sunt `u+s`, `g+s` și `+t`; cu numere, a 4-a cifră, pusă �
 
 ### `setuid` {/* #setuid */}
 
-`passwd` trebuie să scrie noul hash în `/etc/shadow`, pe care doar `root` îl poate modifica. `/usr/bin/passwd` îi
-aparține lui `root` și are bitul **setuid**: oricine l-ar porni, procesul rulează ca `root`.
+`passwd` trebuie să scrie în `/etc/shadow`, pe care doar `root` îl poate modifica. `/usr/bin/passwd` este al lui `root`
+și are bitul **setuid**: oricine l-ar porni, rulează ca `root`.
 
 ```shell-session
 [student@fedora ~]$ ls -l /usr/bin/passwd /usr/bin/sudo /usr/bin/su
@@ -984,8 +895,8 @@ aparține lui `root` și are bitul **setuid**: oricine l-ar porni, procesul rule
 ---s--x--x. 1 root root 262536 Jul 24 03:00 /usr/bin/sudo
 ```
 
-`sudo` și `su` sunt și ele programe setuid: așa pot deveni `root`. Porniți `passwd` într-un terminal (nu tastați nimic)
-și uitați-vă la el dintr-un alt terminal:
+Și `sudo` și `su` sunt programe setuid. Rulați `passwd` într-un terminal, fără să tastați nimic, și uitați-vă la el din
+altul:
 
 ```shell-session
 [student@fedora ~]$ ps -o pid,ruser,user,comm -C passwd
@@ -995,31 +906,28 @@ aparține lui `root` și are bitul **setuid**: oricine l-ar porni, procesul rule
 
 ![Bitul setuid](./images/setuid.svg)
 
-`passwd` rulează ca `root` (coloana `USER`), așa că kernelul îl lasă să scrie în `/etc/shadow`. Dar kernelul ține minte
-și cine l-a **pornit** (coloana `RUSER`, _utilizatorul real_), așa că `passwd` schimbă doar parola **voastră**.
-[Credențialele unui proces](#the-credentials-of-a-process) explică în detaliu acești doi utilizatori.
+`passwd` rulează ca `root` (`USER`), deci poate scrie în `/etc/shadow`; kernelul păstrează și cine l-a **pornit**
+(`RUSER`, _utilizatorul real_), deci `passwd` schimbă doar parola **voastră**. Vedeți
+[Credențialele unui proces](#the-credentials-of-a-process).
 
 :::danger
 
-Nu adăugați niciodată `+s` unui program care îi aparține lui `root`: va rula ca `root` pentru **oricine**, iar un singur
-bug din el îl poate face `root` pe oricine. O copie setuid a lui `bash` le dă tuturor utilizatorilor un shell de
-`root`. Lăsați bitul setuid programelor făcute pentru el: `passwd`, `su`, `sudo`.
+Nu adăugați niciodată `+s` unui program al lui `root`: rulează atunci ca `root` pentru **oricine**, iar o singură eroare
+în el îl face pe oricine `root`.
 
 :::
 
 :::info
 
-Kernelul ignoră biții setuid și setgid pe **scripturi**, cum este `myid.sh`. Un script nu rulează singur: kernelul
-pornește programul de pe prima lui linie, `/bin/bash`, iar apoi `bash` deschide scriptul după nume. Între acești doi
-pași, un utilizator ar putea pune alt fișier sub același nume, iar `bash` l-ar rula ca `root`. De aceea, biții
-funcționează doar pentru programe compilate, cum este `passwd`.
+Kernelul ignoră biții setuid și setgid pe **scripturi**: pornește `/bin/bash`, care deschide apoi scriptul după nume,
+iar între timp un utilizator ar putea înlocui fișierul.
 
 :::
 
 ### `setgid` pe un director {/* #setgid-on-a-directory */}
 
-Când mai mulți utilizatori lucrează în același director, fișierele noi ar trebui să aparțină grupului proiectului, nu
-grupului primar al fiecărui utilizator. Bitul **setgid** pus pe un director face exact acest lucru:
+Într-un director partajat, fișierele noi ar trebui să primească grupul proiectului, nu grupul primar al fiecărui
+utilizator. Bitul **setgid** pe director face asta:
 
 ```shell-session
 [student@fedora ~]$ sudo mkdir /srv/project
@@ -1033,20 +941,18 @@ total 0
 -rw-r--r--. 1 bob students 0 Oct 27 10:41 bob.txt
 ```
 
-`bob.txt` îi aparține lui `bob`, dar grupul lui este `students`, grupul directorului, nu `bob`.
+`bob.txt` a primit grupul directorului, `students`, nu `bob`.
 
 :::caution
 
-Setați bitul `setgid` ca `root`, ca mai sus, atunci când nu sunteți membri ai grupului directorului. Dacă proprietarul
-îl setează, dar nu este în grup, kernelul elimină bitul **fără** nicio eroare, iar `ls -ld` afișează `rwxrwxr-x`.
+Dacă nu sunteți în grupul directorului, setați bitul ca `root`: altfel kernelul îl elimină fără niciun mesaj.
 
 :::
 
 ### Bitul sticky {/* #the-sticky-bit */}
 
-`/tmp` trebuie să poată fi scris de oricine, așa că toată lumea are `w` pe el. Fără nimic altceva, oricine ar putea
-șterge fișierele celorlalți. Bitul **sticky**, `t`, permite ștergerea sau redenumirea unui fișier din director doar
-**proprietarului fișierului**, proprietarului directorului și lui `root`:
+Toată lumea are `w` pe `/tmp`, deci oricine ar putea șterge fișierele celorlalți. Bitul **sticky**, `t`, permite doar
+**proprietarului fișierului**, proprietarului directorului și lui `root` să șteargă sau să redenumească un fișier:
 
 ```shell-session
 [student@fedora ~]$ ls -ld /tmp
@@ -1110,9 +1016,8 @@ Nu vă bazați pe prompt ca să aflați cine sunteți. `whoami` și `id` îi cer
 
 :::tip
 
-O schimbare a lui `PS1` durează până la închiderea shell-ului. Ca s-o păstrați, adăugați linia `PS1='...'` la sfârșitul
-lui `~/.bashrc`; `bash` îl citește când pornește (`source ~/.bashrc` îl citește imediat). `root` are propriul
-`/root/.bashrc`.
+O schimbare a lui `PS1` durează până se închide shell-ul; ca s-o păstrați, adăugați `PS1='...'` la sfârșitul lui
+`~/.bashrc`.
 
 :::
 
@@ -1127,10 +1032,8 @@ Nu aveți nevoie de această secțiune pentru exercițiile din laborator, 🧪 P
 
 :::
 
-Eticheta unui proces înseamnă mai mult decât un UID și o listă de grupuri. Pentru fiecare proces, kernelul păstrează o
-mică înregistrare, **credențialele** procesului (_credentials_): **patru** UID-uri, **patru** GID-uri și lista
-**grupurilor suplimentare**. Această înregistrare o ține **kernelul**, nu procesul: procesul nu o poate modifica după
-bunul plac.
+Pentru fiecare proces, kernelul păstrează **credențialele** lui: **patru** UID-uri, **patru** GID-uri și **grupurile
+suplimentare**. Doar kernelul le schimbă, după reguli stricte.
 
 ![Credențialele unui proces](./images/credentials.svg)
 
@@ -1142,14 +1045,13 @@ bunul plac.
 | UID-ul și GID-ul **sistemului de fișiere** | folosite doar pentru fișiere; pe Linux urmează mereu valorile efective, așa că le puteți ignora                                                                 |
 | **grupurile suplimentare**                 | celelalte grupuri ale procesului, verificate împreună cu GID-ul efectiv; se copiază din baza de date a grupurilor la autentificare, precum și de `su` și `sudo` |
 
-Pentru shell-ul vostru, cele patru UID-uri sunt toate `1000`, iar cele patru GID-uri sunt toate `1000`. De ce păstrează
-kernelul patru copii ale aceluiași număr? Pentru că **nu sunt mereu** egale: un program cu bitul `setuid`, cum este
-`passwd`, schimbă UID-ul efectiv și pe cel salvat, dar îl păstrează pe cel real. `login`, `su` și `sudo` fac altceva:
-le schimbă pe **toate**, pentru shell-ul sau comanda pe care o pornesc.
+Pentru shell-ul vostru, toate UID-urile și GID-urile sunt `1000`. Diferă în două cazuri: un program `setuid` schimbă
+UID-ul efectiv și pe cel salvat, dar nu pe cel real; `login`, `su` și `sudo` le schimbă pe **toate** pentru programul pe
+care îl pornesc.
 
 ### Ce credențiale se verifică {/* #which-credentials-are-checked */}
 
-Kernelul nu se uită de fiecare dată la toate credențialele. Depinde de ce cere procesul:
+Ce verifică kernelul depinde de ce cere procesul:
 
 ![Ce credențiale se verifică](./images/credentials-check.svg)
 
@@ -1164,16 +1066,15 @@ Kernelul nu se uită de fiecare dată la toate credențialele. Depinde de ce cer
 
 ### Cum se schimbă credențialele {/* #how-the-credentials-change */}
 
-Un proces își primește credențialele de la părinte. Tabelul de mai jos arată ce se întâmplă cu ele la fiecare pas din
-viața unui proces:
+Ce se întâmplă cu UID-urile la fiecare pas din viața unui proces:
 
 ![Cum se schimbă credențialele](./images/credentials-change.svg)
 
-| Când                                                                              | Ce se întâmplă cu UID-urile                                                                                                                                                                                                    |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `fork`, un copil nou                                                              | copilul primește o **copie** a credențialelor părintelui                                                                                                                                                                       |
-| `exec` al unui program obișnuit                                                   | **nu** se schimbă nimic                                                                                                                                                                                                        |
-| `exec` al unui program cu bitul `setuid`                                          | UID-ul efectiv și cel salvat devin **proprietarul** fișierului; UID-ul real nu se schimbă; bitul `setgid` face la fel pentru GID-uri, cu **grupul** fișierului                                                                 |
+| Când                                                                              | Ce se întâmplă cu UID-urile                                                                                                                                                                                                         |
+| --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fork`, un copil nou                                                              | copilul primește o **copie** a credențialelor părintelui                                                                                                                                                                            |
+| `exec` al unui program obișnuit                                                   | **nu** se schimbă nimic                                                                                                                                                                                                             |
+| `exec` al unui program cu bitul `setuid`                                          | UID-ul efectiv și cel salvat devin **proprietarul** fișierului; UID-ul real nu se schimbă; bitul `setgid` face la fel pentru GID-uri, cu **grupul** fișierului                                                                      |
 | un proces cu UID-ul efectiv `0` apelează `setgid()`, `initgroups()` și `setuid()` | se schimbă **toate** GID-urile, grupurile suplimentare și **toate** UID-urile, în această ordine: așa îi dau `login`, `su` și `sudo` unui proces eticheta unui utilizator (vedeți [Autentificarea](#logging-in) și [`sudo`](#sudo)) |
 
 ### Cum vedem credențialele {/* #seeing-the-credentials */}
@@ -1196,8 +1097,8 @@ Groups:	10 1000
   fișiere; linia `Groups:` conține grupurile suplimentare (`man 5 proc`). Oricine poate citi fișierul `status` al
   oricărui proces.
 
-Încercați să faceți un proces `root` fără niciun ajutor. `python3` îi poate cere kernelului UID-urile, cu
-`os.getresuid()` (_get real, effective and saved UID_), și le poate schimba, cu `os.setuid()`:
+Un proces nu se poate face singur `root`. `python3` își poate citi UID-urile cu `os.getresuid()` și poate încerca să le
+schimbe cu `os.setuid()`:
 
 ```shell-session
 [student@fedora ~]$ python3 -c 'import os; print(os.getresuid()); os.setuid(0)'
@@ -1209,15 +1110,15 @@ Traceback (most recent call last):
 PermissionError: [Errno 1] Operation not permitted
 ```
 
-Kernelul a refuzat: `0` nu este niciunul dintre cele trei UID-uri ale procesului. Singurul mod de a obține `root` este
-să porniți un program **setuid** al lui `root`, cum sunt `sudo`, `su` sau `passwd`, sau să fiți pornit de un proces
-care rulează deja ca `root`, cum este `login`.
+Kernelul a refuzat: `0` nu este niciunul dintre UID-urile procesului. Ca să devină `root`, un proces trebuie să
+pornească un program setuid al lui `root` (`sudo`, `su`, `passwd`) sau să fie pornit de un proces care rulează deja ca
+`root` (`login`).
 
 ### UID-ul salvat {/* #the-saved-uid */}
 
-Un program setuid scris cu grijă nu lucrează tot timpul ca `root`: lucrează ca **voi** și folosește `root` doar pentru
-puținii pași care au nevoie de el, astfel încât un bug în restul programului să poată face doar ce ați fi putut face
-oricum. UID-ul **salvat** face acest lucru posibil. După `exec`, linia `Uid:` a programului este `1000 0 0 0`:
+Un program setuid atent lucrează ca **voi** și folosește `root` doar pentru pașii care au nevoie de el, ca o eroare în
+rest să poată face doar ce ați putea face și voi. UID-ul **salvat** face asta posibil. După `exec`, linia lui `Uid:`
+este `1000 0 0 0`:
 
 1. programul își setează UID-ul **efectiv** la cel real, `1000` (`Uid: 1000 1000 0 1000`): `root` rămâne doar în
    UID-ul salvat;
@@ -1230,24 +1131,24 @@ oricum. UID-ul **salvat** face acest lucru posibil. După `exec`, linia `Uid:` a
 
 ## Depanare {/* #troubleshooting */}
 
-| Problemă                                                            | Soluție                                                                                                                                                          |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Un utilizator afișat de `ps` sau `ls` nu este în `/etc/passwd`      | Nu este un utilizator local: căutați mereu utilizatorii cu `getent passwd` și grupurile cu `getent group`                                                        |
-| `Permission denied` la un fișier                                    | Rulați `ls -l` pe fișier și `id`: aflați ce set vi se aplică (proprietar, grup sau ceilalți) și ce permite                                                       |
-| `Permission denied` la un fișier care are `r` pentru voi            | Unul dintre directoarele din cale nu are `x` pentru voi: rulați `ls -ld` pe fiecare                                                                              |
-| `./script.sh: Permission denied`                                    | Fișierul nu are `x`: `chmod u+x script.sh`                                                                                                                       |
-| `Operation not permitted` la `chmod` sau `chown`                    | Doar proprietarul poate rula `chmod` și doar `root` poate schimba proprietarul: folosiți `sudo`                                                                  |
+| Problemă                                                            | Soluție                                                                                                                                                                                               |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Un utilizator afișat de `ps` sau `ls` nu este în `/etc/passwd`      | Nu este un utilizator local: căutați mereu utilizatorii cu `getent passwd` și grupurile cu `getent group`                                                                                             |
+| `Permission denied` la un fișier                                    | Rulați `ls -l` pe fișier și `id`: aflați ce set vi se aplică (proprietar, grup sau ceilalți) și ce permite                                                                                            |
+| `Permission denied` la un fișier care are `r` pentru voi            | Unul dintre directoarele din cale nu are `x` pentru voi: rulați `ls -ld` pe fiecare                                                                                                                   |
+| `./script.sh: Permission denied`                                    | Fișierul nu are `x`: `chmod u+x script.sh`                                                                                                                                                            |
+| `Operation not permitted` la `chmod` sau `chown`                    | Doar proprietarul poate rula `chmod` și doar `root` poate schimba proprietarul: folosiți `sudo`                                                                                                       |
 | `student is not in the sudoers file.`                               | Utilizatorul nu este administrator: nu este în `wheel` (Fedora) sau în `sudo` (Ubuntu); un administrator trebuie să ruleze `sudo usermod -aG wheel student`, apoi utilizatorul se autentifică din nou |
-| `sudo echo ... > file`: `Permission denied`                         | Redirectarea o face shell-ul vostru, înainte de `sudo`: folosiți `echo ... \| sudo tee file`                                                                     |
-| `su: Authentication failure` la `su -`                              | Pe Fedora și pe Ubuntu, `root` nu are parolă: folosiți `sudo -i`                                                                                                 |
-| Un grup nou nu apare în `id`                                        | Grupurile se citesc la autentificare: autentificați-vă din nou sau porniți un shell de autentificare nou cu `su - <USER>`                                        |
-| `usermod -G` mi-a șters grupurile                                   | Ați uitat `-a`; adăugați-le la loc cu `sudo usermod -aG <GROUP> <USER>`                                                                                          |
-| `passwd`: `BAD PASSWORD: The password is shorter than 8 characters` | Alegeți o parolă mai lungă și mai puțin simplă; ca `root`, o puteți seta oricum                                                                                  |
-| `useradd: user 'bob' already exists`                                | Utilizatorul există deja: verificați cu `id bob`                                                                                                                 |
-| `userdel: user bob is currently used by process 1234`               | `bob` are încă procese: opriți-le sau închideți mai întâi sesiunea lui `bob`                                                                                     |
-| `rm: remove write-protected regular file?`                          | Nu aveți `w` pe fișier, dar îl aveți pe director: răspundeți `y` ca să-l ștergeți oricum                                                                         |
-| `rm: cannot remove ... Operation not permitted` în `/tmp`           | Bitul sticky: doar proprietarul fișierului îl poate șterge                                                                                                       |
-| Un fișier afișează în `ls -l` un număr în loc de proprietar         | Utilizatorul a fost șters, dar fișierul are încă UID-ul lui                                                                                                      |
+| `sudo echo ... > file`: `Permission denied`                         | Redirectarea o face shell-ul vostru, înainte de `sudo`: folosiți `echo ... \| sudo tee file`                                                                                                          |
+| `su: Authentication failure` la `su -`                              | Pe Fedora și pe Ubuntu, `root` nu are parolă: folosiți `sudo -i`                                                                                                                                      |
+| Un grup nou nu apare în `id`                                        | Grupurile se citesc la autentificare: autentificați-vă din nou sau porniți un shell de autentificare nou cu `su - <USER>`                                                                             |
+| `usermod -G` mi-a șters grupurile                                   | Ați uitat `-a`; adăugați-le la loc cu `sudo usermod -aG <GROUP> <USER>`                                                                                                                               |
+| `passwd`: `BAD PASSWORD: The password is shorter than 8 characters` | Alegeți o parolă mai lungă și mai puțin simplă; ca `root`, o puteți seta oricum                                                                                                                       |
+| `useradd: user 'bob' already exists`                                | Utilizatorul există deja: verificați cu `id bob`                                                                                                                                                      |
+| `userdel: user bob is currently used by process 1234`               | `bob` are încă procese: opriți-le sau închideți mai întâi sesiunea lui `bob`                                                                                                                          |
+| `rm: remove write-protected regular file?`                          | Nu aveți `w` pe fișier, dar îl aveți pe director: răspundeți `y` ca să-l ștergeți oricum                                                                                                              |
+| `rm: cannot remove ... Operation not permitted` în `/tmp`           | Bitul sticky: doar proprietarul fișierului îl poate șterge                                                                                                                                            |
+| Un fișier afișează în `ls -l` un număr în loc de proprietar         | Utilizatorul a fost șters, dar fișierul are încă UID-ul lui                                                                                                                                           |
 
 ## Exerciții {/* #exercises */}
 
@@ -1317,22 +1218,18 @@ dacă exercițiul nu spune altfel.
     3. afișați liniile grupurilor `wheel` (Ubuntu: `sudo`) și `student` din baza de date a grupurilor; apoi afișați
        grupurile utilizatorului `student` cu `id`;
     4. găsiți utilizatorul cu UID-ul `0` și grupul cu GID-ul `10` (Ubuntu: `27`), după **numerele** lor;
-    5. căutați utilizatorul `root` în două feluri: cu `grep` în `/etc/passwd` și în baza de date a utilizatorilor;
-       comparați;
-    6. afișați utilizatorii al căror shell **nu** este `nologin`.
+    5. afișați utilizatorii al căror shell **nu** este `nologin`.
 
     💡 `man getent`: bazele de date (`DATABASES`) sunt `passwd`, `group`, `shadow`, ...; `man 5 passwd` și
     `man 5 group` explică câmpurile; `man grep`: căutați `invert`.
 
-    **Verificare:** ambele fișiere sunt `-rw-r--r-- root root`: oricine le poate citi. Linia voastră este
-    `student:x:1000:1000:Student:/home/student:/bin/bash`: numele, `x` (parola este în altă parte), UID-ul, GID-ul
+    **Verificare:** ambele fișiere sunt `-rw-r--r-- root root`. Linia voastră este
+    `student:x:1000:1000:Student:/home/student:/bin/bash`: numele, parola (`x`: este în altă parte), UID-ul, GID-ul
     grupului primar, numele complet, directorul propriu și shell-ul. `wheel` este `wheel:x:10:student`, dar `student`
-    este `student:x:1000:`, fără membri, deși `id` arată că `student` este în el: membrii unui grup **primar** nu sunt
-    listați. UID-ul `0` este `root`, iar GID-ul `10` este `wheel` (Ubuntu: `27` este `sudo`). Pe Fedora, `grep` afișează
-    două linii, `root` și `operator` (al cărui director propriu este `/root`; Ubuntu îl are doar pe `root`); baza de
-    date a utilizatorilor îl dă doar pe `root`. În afară de `root` și `student`, doar câțiva utilizatori de sistem au
-    alt program decât `nologin`, de exemplu `/bin/sync` (Ubuntu mai are câțiva cu `/bin/false`): niciunul nu dă un
-    shell. <small>→ [`/etc/passwd`](#etcpasswd) · [`/etc/group`](#etcgroup) · [`getent`](#getent)</small>
+    este `student:x:1000:`: membrii unui grup **primar** nu sunt listați. UID-ul `0` este `root`, GID-ul `10` este
+    `wheel` (Ubuntu: `27`, `sudo`). În afară de `root` și `student`, doar câțiva utilizatori de sistem au alt program
+    decât `nologin`: `sync` (`/bin/sync`), iar pe Fedora și `shutdown` și `halt` (pe Ubuntu, unii au `/bin/false`);
+    niciunul nu dă un shell. <small>→ [`/etc/passwd`](#etcpasswd) · [`/etc/group`](#etcgroup) · [`getent`](#getent)</small>
 
 **Cum devenim `root`**
 
@@ -1351,11 +1248,10 @@ dacă exercițiul nu spune altfel.
     💡 `man sudo`: căutați `invalidate` și `login`; `man bash`: căutați `HISTORY EXPANSION`, apoi `!!`; `man tee`:
     căutați `append`.
 
-    **Verificare:** utilizatorul este `root`; după ce parola a fost uitată, este cerută din nou. Ca voi înșivă,
-    `/etc/shadow` dă `Permission denied`; cu `!!`, `bash` afișează comanda în care s-a transformat `!!`, apoi o rulează,
-    și vedeți linia lui `root`. `sudo echo` cu `>>` eșuează cu `Permission denied`, pentru că fișierul îl deschide
-    shell-ul vostru, nu `sudo`; la final, fișierul conține `hello`. Shell-ul lui `root` pornește în `/root`, cu `#` în
-    prompt. <small>→ [`sudo`](#sudo) · [Capcana redirectării](#the-redirect-trap)</small>
+    **Verificare:** utilizatorul este `root`; după ce `sudo` uită parola, o cere din nou. Ca voi înșivă, `/etc/shadow`
+    dă `Permission denied`; `!!` afișează comanda în care s-a transformat, o rulează și arată linia lui `root`.
+    `sudo echo` cu `>>` eșuează cu `Permission denied`: fișierul îl deschide shell-ul vostru, nu `sudo`; la final,
+    fișierul conține `hello`. Shell-ul lui `root` pornește în `/root`, cu `#` în prompt. <small>→ [`sudo`](#sudo) · [Capcana redirectării](#the-redirect-trap)</small>
 
 **Gestionarea utilizatorilor și a grupurilor**
 
@@ -1428,10 +1324,11 @@ dacă exercițiul nu spune altfel.
 
     💡 `man ls`: căutați `directories themselves`; `man stat`: căutați `%a`, `%A`, `%U`, `%G` și `--format`.
 
-    **Verificare:** `notes.txt` este `-rw-r--r-- student student` (`644`; Ubuntu: `-rw-rw-r--`, `664`); `~` este
-    `drwx------` (`700`) pe Fedora și `drwxr-x---` (`750`) pe Ubuntu. Cu `umask`-ul `0022`, `new.txt` este `rw-r--r--`,
-    iar `newdir` este `rwxr-xr-x` (Ubuntu, `0002`: `rw-rw-r--` și `rwxrwxr-x`); cu `077`, `private.txt` este
-    `rw-------`. <small>→ [Proprietar, grup și permisiuni](#owner-group-and-permissions) · [`umask`](#umask)</small>
+    **Verificare:** `notes.txt` este `-rw-r--r-- student student` (`644`; Ubuntu: `-rw-rw-r--`, `664`); `/etc/passwd`
+    este `-rw-r--r-- root root` (`644`); `/etc/shadow` este `---------- root root` (`0`; Ubuntu:
+    `-rw-r----- root shadow`, `640`); `~` este `drwx------` (`700`) pe Fedora și `drwxr-x---` (`750`) pe Ubuntu. Cu
+    `umask`-ul `0022`, `new.txt` este `rw-r--r--`, iar `newdir` este `rwxr-xr-x` (Ubuntu, `0002`: `rw-rw-r--` și
+    `rwxrwxr-x`); cu `077`, `private.txt` este `rw-------`. <small>→ [Proprietar, grup și permisiuni](#owner-group-and-permissions) · [`umask`](#umask)</small>
 
 9. **`chmod`**: Schimbați permisiunile pe rând, cu litere, sau pe toate deodată, cu un număr, și vedeți că un program
     are nevoie de `x` ca să ruleze.
@@ -1493,10 +1390,10 @@ dacă exercițiul nu spune altfel.
     că schimbați grupul **și** permisiunile lui `team` ca `root` (vedeți
     [`setgid` pe un director](#setgid-on-a-directory)).
 
-    **Verificare:** `/usr/bin/passwd` este `-rwsr-xr-x` (`4755`): `s`-ul proprietarului îl face să ruleze ca `root`,
-    oricine l-ar porni; `/tmp` este `drwxrwxrwt` (`1777`). `bob` nu poate șterge `/tmp/student.txt`
-    (`Operation not permitted`), deși are `w` pe el: `t`-ul lui `/tmp`. `team` este `drwxrwsr-x student students`, iar
-    `bob.txt` este `-rw-r--r-- bob students`: a primit grupul directorului, nu grupul `bob`. <small>→ [`setuid`](#setuid) · [`setgid` pe un director](#setgid-on-a-directory) · [Bitul sticky](#the-sticky-bit)</small>
+    **Verificare:** `/usr/bin/passwd` este `-rwsr-xr-x` (`4755`): `s`-ul îl face să ruleze ca `root`, oricine l-ar
+    porni; `/tmp` este `drwxrwxrwt` (`1777`). `bob` nu poate șterge `/tmp/student.txt` (`Operation not permitted`), deși
+    are `w` pe el: `t`-ul lui `/tmp`. `team` este `drwxrwsr-x student students`, iar `bob.txt` este
+    `-rw-r--r-- bob students`: a primit grupul directorului. <small>→ [`setuid`](#setuid) · [`setgid` pe un director](#setgid-on-a-directory) · [Bitul sticky](#the-sticky-bit)</small>
 
 **Promptul**
 
@@ -1521,23 +1418,22 @@ dacă exercițiul nu spune altfel.
 
     1. afișați linia lui `bob` din `/etc/shadow`, ca `root`;
     2. deveniți `bob` cu un shell de autentificare și încercați să afișați linia lui din `/etc/shadow`;
-    3. tot ca `bob`, schimbați-i parola: încercați întâi `bob123`, apoi `Lab05-k7Qx-2026`; ieșiți din shell-ul lui `bob`;
-    4. afișați din nou linia lui, ca `root`, și comparați salt-ul, hash-ul și al 3-lea câmp cu cele de la pasul 1;
+    3. tot ca `bob`, schimbați-i parola în `bob123`; dacă `passwd` o refuză și se termină, rulați-l din nou cu
+       `Lab05-k7Qx-2026`; ieșiți din shell-ul lui `bob`;
+    4. afișați din nou linia lui, ca `root`, și comparați salt-ul și hash-ul cu cele de la pasul 1;
     5. readuceți parola lui `bob` la `uso2026`, ca `root`: exercițiile de acasă au nevoie de ea.
 
     💡 [Schimbarea parolei](#changing-a-password-passwd); uitați-vă la permisiunile lui `/usr/bin/passwd`.
 
-    **Verificare:** ca `bob`, `getent shadow bob` nu afișează nimic: nu poate citi fișierul. `passwd` îi cere întâi
-    parola curentă, `uso2026`, și refuză `bob123`, cu un mesaj care spune de ce (pe Fedora, `BAD PASSWORD: ...`). După
-    schimbare, salt-ul și hash-ul sunt altele, iar al 3-lea câmp este ziua de azi, numărată de la 1 ianuarie 1970. `bob`
-    a putut modifica `/etc/shadow` fără să-l poată citi, pentru că `/usr/bin/passwd` are `s`-ul proprietarului: rulează
-    ca `root`, oricine l-ar porni. <small>→ [Schimbarea parolei](#changing-a-password-passwd) · [Hash-uri și salt](#hashes-and-salt) · [`setuid`](#setuid)</small>
+    **Verificare:** ca `bob`, `getent shadow bob` nu afișează nimic. `passwd` îi cere parola curentă, `uso2026`, și
+    refuză `bob123`, spunând de ce (pe Fedora, `BAD PASSWORD: ...`). După schimbare, salt-ul și hash-ul sunt altele.
+    `bob` a modificat un fișier pe care nu îl poate citi pentru că `/usr/bin/passwd` are `s`-ul proprietarului: rulează
+    ca `root`. <small>→ [Schimbarea parolei](#changing-a-password-passwd) · [Hash-uri și salt](#hashes-and-salt) · [`setuid`](#setuid)</small>
 
 ### 🏠 Mai departe {/* #going-further */}
 
-Fiecare exercițiu începe cu **obiectivul** lui: ce trebuie să fie adevărat la final sau ce trebuie să aflați. Pașii vă
-duc până acolo, dar comenzile le alegeți voi. La final, verificați obiectivul în sine, nu doar că fiecare comandă a
-mers. Exercițiile folosesc `bob`, `carol`, `students` și `/srv/lab05` din Primii pași.
+Fiecare exercițiu începe cu **scopul** lui; comenzile le alegeți voi. La final, verificați scopul, nu doar că fiecare
+comandă a mers. Exercițiile folosesc `bob`, `carol`, `students` și `/srv/lab05` din Primii pași.
 
 **Eticheta unui proces**
 
@@ -1585,12 +1481,11 @@ mers. Exercițiile folosesc `bob`, `carol`, `students` și `/srv/lab05` din Prim
     `ps -t` cu terminalul celui de-al doilea shell nu îl găsește pe `sleep`. Pentru `kill`, folosiți regula din
     [Ce credențiale se verifică](#which-credentials-are-checked).
 
-    **Verificare:** arborele este `bash───sudo───sudo───sleep`. Primul `sudo` seamănă cu `passwd`, `1000 0 0 0`,
-    pentru că este un program setuid; `sleep` este `0 0 0 0`: `sudo`, ca `root`, a setat **toate** UID-urile copilului
-    său. Așadar nu puteți opri `sleep` (`Operation not permitted`), dar **puteți** opri primul `sudo`, al cărui UID real
-    este al vostru, iar `sudo` transmite semnalul mai departe: se oprește și `sleep`. `sleep`-ul lui `bob` are de 4 ori
-    UID-ul lui `bob` și GID-urile lui `bob` și `students`, ca după o autentificare: `bob` îl poate opri, voi nu. Puteți
-    opri `passwd`-ul vostru, `bob` nu poate. <small>→ [Ce credențiale se verifică](#which-credentials-are-checked) · [`sudo`](#sudo)</small>
+    **Verificare:** arborele este `bash───sudo───sudo───sleep`. Primul `sudo` este `1000 0 0 0`, ca `passwd`: este un
+    program setuid; `sleep` este `0 0 0 0`: `sudo`, ca `root`, a setat **toate** UID-urile copilului său. Deci nu puteți
+    opri `sleep` (`Operation not permitted`), dar **puteți** opri primul `sudo`, al cărui UID real este al vostru, iar
+    `sudo` transmite semnalul lui `sleep`. `sleep`-ul lui `bob` are de 4 ori UID-ul lui `bob` și GID-urile lui `bob` și
+    `students`: `bob` îl poate opri, voi nu. Vă puteți opri `passwd`-ul; `bob` nu. <small>→ [Ce credențiale se verifică](#which-credentials-are-checked) · [`sudo`](#sudo)</small>
 
 17. **Jucați rolul unui program setuid**: Vedeți cum îi permite UID-ul salvat unui program setuid să lase `root`
     deoparte și să-l ia înapoi, comportându-vă chiar voi ca un astfel de program, ca în [UID-ul salvat](#the-saved-uid).
@@ -1632,11 +1527,11 @@ mers. Exercițiile folosesc `bob`, `carol`, `students` și `/srv/lab05` din Prim
     💡 `man useradd`: căutați `shell`, `comment` și `groups`; `man usermod`; `man userdel`; grupul administratorilor
     se află în tabelul din [`sudo`](#sudo).
 
-    **Verificare:** după pasul 1, `id erin` arată `students`, iar linia ei conține `Erin Gray` și `/bin/bash`. La pasul
-    3, `id erin` arată `wheel`, pentru că citește baza de date, dar `id` și `Groups:` nu îl au (nu apare `10`): eticheta
-    vechiului shell a fost setată la autentificare, iar `sudo` o refuză în continuare. După o nouă autentificare, `sudo`
-    merge, cu parola lui `erin`. După pasul 4 s-a schimbat doar câmpul 5. La final, `id erin`, `getent group erin` și
-    `ls -d /home/erin` nu găsesc nimic. <small>→ [Autentificarea](#logging-in) · [Gestionarea utilizatorilor și a grupurilor](#managing-users-and-groups)</small>
+    **Verificare:** după pasul 1, `id erin` arată `students`, iar linia ei are `Erin Gray` și `/bin/bash`. La pasul 3,
+    `id erin` arată `wheel` (Ubuntu: `sudo`), pentru că citește baza de date, dar `id` și `Groups:` nu (fără `10`;
+    Ubuntu: `27`): eticheta shell-ului vechi a fost setată la autentificare, deci `sudo` tot o refuză. După o
+    autentificare nouă, `sudo` merge, cu parola ei. Pasul 4 schimbă doar al 5-lea câmp. La final, `id erin`,
+    `getent group erin` și `ls -d /home/erin` nu găsesc nimic. <small>→ [Autentificarea](#logging-in) · [Gestionarea utilizatorilor și a grupurilor](#managing-users-and-groups)</small>
 
 **Utilizatori și parole**
 
@@ -1755,11 +1650,11 @@ mers. Exercițiile folosesc `bob`, `carol`, `students` și `/srv/lab05` din Prim
 
     💡 `man 5 proc`: căutați `Umask`.
 
-    **Verificare:** `private2.txt` este `rw-------`, iar `privdir` este `rwx------`; copilul afișează același `umask` ca
-    părintele: kernelul păstrează un `umask` pentru fiecare proces, iar un copil îl moștenește, la fel ca pe etichetă;
-    noul terminal are din nou vechiul `umask`. <small>→ [`umask`](#umask)</small>
+    **Verificare:** `private2.txt` este `rw-------`, iar `privdir` este `rwx------`; copilul afișează `0077`, ca
+    părintele, iar linia `Umask:` este `0077`: kernelul păstrează un `umask` pentru fiecare proces, iar un copil îl
+    moștenește, la fel ca pe etichetă; noul terminal are din nou vechiul `umask`. <small>→ [`umask`](#umask)</small>
 
-**Puzzle-uri cu permisiuni**: În fiecare exercițiu, setați permisiunile (și grupul, dacă e nevoie) astfel încât
+**Puzzle-uri cu permisiuni**: În fiecare exercițiu, setați permisiunile (și grupul, dacă este nevoie) astfel încât
 **exact** utilizatorii indicați să poată face lucrurile indicate și nimic în plus. Nu sunteți membri ai grupului
 `students`, așa că pentru a da unui fișier acest grup aveți nevoie de `root`. Apoi testați fiecare utilizator
 (`student`, `bob` și `carol`), citind, listând, scriind sau rulând fișierele.
@@ -1901,15 +1796,16 @@ sudo groupdel students
        ```
 
        știți că parola este una dintre `123456`, `password`, `qwerty`, `dragon` și `letmein`; aflați care, cu **o
-       singură** linie de comandă.
+       singură** linie de comandă;
+    3. explicați de ce `/etc/shadow` nu trebuie să poată fi citit de oricine.
 
     💡 `man openssl-passwd`: căutați `SHA512` și `salt`; o singură comandă poate calcula hash-urile mai multor parole.
     Găsiți algoritmul și salt-ul în hash-ul lui `mallory`; `man grep`: căutați `line-number`.
 
     **Verificare:** la pasul 1, primele două hash-uri sunt identice; cu alt salt sau cu o singură literă diferită,
     hash-ul este complet diferit. La pasul 2, linia voastră de comandă afișează exact un hash, cel al lui `mallory`, cu
-    numărul liniei lui; numărul liniei vă spune parola. Explicați de ce `/etc/shadow` nu trebuie să poată fi citit de
-    oricine. <small>→ [Hash-uri și salt](#hashes-and-salt)</small>
+    numărul liniei lui; numărul liniei vă spune parola. Oricine poate citi un hash poate încerca parole pe el, offline
+    și fără să fie văzut: de aceea doar `root` poate citi `/etc/shadow`. <small>→ [Hash-uri și salt](#hashes-and-salt)</small>
 
 34. **Prevedeți credențialele**: Prevedeți toate UID-urile și GID-urile a trei procese, verificați-le cu o singură
     comandă și găsiți toate procesele care au puterea lui `root` și au fost pornite dintr-un terminal.
@@ -2030,7 +1926,8 @@ sudo groupdel students
     3. ca `root`, creați scriptul `/srv/exam/rootid.sh`, cu cele două linii `#!/bin/bash` și `id`, cu aceleași
        permisiuni; rulați-l ca voi înșivă;
     4. creați `/tmp/cap.txt` și dați-i bitul setuid **fără** `x` pentru proprietar; creați directorul `/tmp/capdir` cu
-       `rwxrwx---` și bitul sticky, cu **un singur** număr; afișați permisiunile amândurora, cu litere și ca numere;
+       `rwxrwx---` și bitul sticky, cu **un singur** număr; afișați permisiunile amândurora, sub formă de litere și de
+       numere;
     5. explicați de ce `/usr/bin/sudo` este `---s--x--x` pe Fedora și ce permite în plus `-rwsr-xr-x` pe Ubuntu;
     6. ștergeți `rootid`, `rootid.sh`, `cap.txt` și `capdir`.
 
