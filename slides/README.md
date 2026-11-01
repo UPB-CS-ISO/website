@@ -68,6 +68,7 @@ slides/
     ├── ai-prompt.typ   # #ai-prompt and #ai-prompt-overlay boxes
     ├── highlight.typ   # #highlight-code: step-by-step line highlighting
     ├── kbd.typ         # #kbd: keyboard keys (like <kbd> in Docusaurus)
+    ├── shell.typ       # drawings shared by 06 and 07 (word chips, exit codes, debug-run, ...)
     ├── 01_intro/       # one folder per lecture
     └── 02_file_management/
         ├── main.typ    # deck entry point
@@ -77,6 +78,10 @@ slides/
 
 Every sub-folder of `src/` is treated as a deck, so keep only lecture folders
 there.
+
+`shell.typ` is not re-exported by `slides.typ`: its short names (`w`, `label`,
+`arrow`, ...) would clash with the helpers of other decks. The shell decks
+import it from their `common.typ` with `#import "/src/shell.typ": *`.
 
 ## Adding a lecture
 

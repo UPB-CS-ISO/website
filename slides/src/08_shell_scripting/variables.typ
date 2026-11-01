@@ -2,7 +2,7 @@
 #import "common.typ": *
 
 #slide[
-  = Variables and Arithmetic #text(size: 10pt, weight: "regular")[\ _Everything is text_]
+  = Variables #text(size: 10pt, weight: "regular")[\ _Everything is text_]
 ]
 
 #slide[
@@ -12,212 +12,187 @@
   #set text(size: 0.9em)
   + *Brian Ward*, _How LINUX Works_, 3#super[rd] Edition, No Starch Press, 2021
     - Chapter 11 - _Introduction to Shell Scripts_
-      - Section 11.7 - _Command Substitution_
-      - Section 11.10 - _Important Shell Script Utilities_ (`expr`)
   + *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
     - Chapter 13 - _Automatizarea sarcinilor_
       - Section 13.3.1 - _Variabile_
 ]
 
+// ----- the variables of the shell, drawn -----
+
+// a variable of the shell: its name, its value, and a badge if it is
+// exported; `state`: "new" (orange - changed on this step), "gone"
+// (deleted: struck out, red) or none
+#let var-row(name, value, exported: false, state: none) = {
+  let color = if state == "new" { changed } else if state == "gone" { fail-color } else { black }
+  let t(body) = if state == "gone" { strike(text(fill: color, body)) } else { text(fill: color, body) }
+  box(inset: (x: 0.4em, y: 0.3em), radius: 0.2em, fill: if state == "new" { changed-fill } else { none }, {
+    set text(font: mono, size: 0.85em)
+    t(name)
+    t(" = ")
+    t("\"" + value + "\"")
+    if exported {
+      h(0.5em)
+      box(fill: if state == "new" { changed } else { accent }, inset: (x: 0.3em, y: 0.15em), radius: 0.2em,
+        text(font: "Libertinus Serif", size: 0.8em, fill: white, weight: "bold")[exported])
+    }
+  })
+}
+
+// a process with its variables: `title` (content), `label-text` - what
+// the list is, `rows` - var-row()s, or none for an empty list
+#let process-vars(title, label-text, rows, width: 100%) = block(
+  width: width,
+  stroke: 0.8pt + luma(150),
+  radius: 0.3em,
+  fill: white,
+  inset: 0pt,
+  clip: true,
+  {
+    block(width: 100%, fill: luma(235), inset: (x: 0.6em, y: 0.3em), below: 0pt, text(size: 0.8em, weight: "bold", title))
+    block(width: 100%, inset: (x: 0.6em, y: 0.4em), above: 0pt, height: 2.2em, {
+      label(label-text)
+      h(0.6em)
+      if rows == none { text(size: 0.8em, fill: luma(150), style: "italic")[none] } else { rows }
+    })
+  },
+)
+
 #slide[
-  == Defining Variables
-  ```bash NAME=value```, read it with ```bash $NAME```
+  == Variable Syntax
+  Define, use, change, delete and export a variable
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.85em)
-    #reveal-terminal(before: none, lines: (3, 5, 7, 9), full: false)[```terminal
-    $ greeting="Hello"
-    $ echo "$greeting, alice"
-    Hello, alice
-    $ greeting = "Hello"
-    bash: greeting: command not found
-    $ echo "$greetings, alice"
-    , alice
-    $ echo "${greeting}s, alice"
-    Hellos, alice
-    ```]
+  #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.5em)[
+    #set text(size: 1em)
+    #highlight-code(("all", (1,), (2,), (3,), (4,), (5,), (6,), "all"))[```bash
+name="alice"
+echo "Hi, $name"
+echo "${name}_notes.txt"
+name="bob"
+unset name
+export name="carol"
+```]
+    #set text(size: 0.8em)
+    #uncover("2-")[#block[- `NAME=value` - *define*, no spaces around `=`]]
+    #uncover("3-")[#block[- ```bash $NAME``` - *use*: the value takes its place]]
+    #uncover("4-")[#block[- ```bash ${NAME}``` - *use*, when letters follow the name]]
+    #uncover("5-")[#block[- `NAME=value` again - *change* it]]
+    #uncover("6-")[#block[- `unset NAME` - *delete* it]]
+    #uncover("7-")[#block[- `export NAME` - *export*: put it in the _environment_]]
   ][
-    #set text(size: 0.9em)
-    #only(1)[
-      - the value is *text*, there are no types
-      - the shell replaces ```bash $greeting``` with its value *before* running the command
-    ]
-    #only(2)[
-      ⚠️ *no spaces* around `=`
-
-      #shell-first[with spaces it is a command line: the command `greeting`, with the parameters `=` and `Hello`]
-    ]
-    #only(3)[
-      ⚠️ a misspelled or missing variable is *empty*, without any error
-
-      💡 there is no variable `greetings`
-    ]
-    #only("4-")[
-      💡 ```bash ${NAME}``` shows where the name ends
-    ]
+    // the drawing on step `i`
+    #let drawing(i) = {
+      let shell-rows = if i == 2 { var-row("name", "alice", state: "new") } else if i in (3, 4) {
+        var-row("name", "alice")
+      } else if i == 5 { var-row("name", "bob", state: "new") } else if i == 6 {
+        var-row("name", "bob", state: "gone")
+      } else if i >= 7 { var-row("name", "carol", exported: true, state: if i == 7 { "new" } else { none }) } else { none }
+      process-vars([`bash` - the shell], [variables], shell-rows)
+      v(0.4em)
+      block(height: 7.5em, width: 100%, {
+        if i == 3 {
+          // using the variable: the shell replaces it, then runs the command
+          set text(size: 0.9em)
+          label[the shell replaces ```bash $name```, then runs]
+          v(-0.2em)
+          align(center, words(("echo", "cmd"), ("Hi, alice", "new")))
+          v(-0.2em)
+          terminal("$ echo \"Hi, $name\"\nHi, alice")
+        } else if i == 4 {
+          // the braces: where the name of the variable ends
+          set text(size: 0.9em)
+          label[without `{}`, the name goes on: the variable `name_notes` does not exist]
+          v(-0.2em)
+          terminal("$ echo \"$name_notes.txt\"\n.txt\n$ echo \"${name}_notes.txt\"\nalice_notes.txt")
+        } else if i == 6 {
+          set text(size: 0.9em)
+          label[a deleted variable is *empty*, no error]
+          v(-0.2em)
+          terminal("$ echo \"Hi, $name\"\nHi, ")
+        } else if i >= 7 {
+          // exporting: a child process gets a copy of the environment
+          align(center, [#box(rotate(90deg, reflow: true, draw-arrow(length: 1.5em, color: if i == 7 { changed } else { luma(150) }))) #h(0.4em) #box(baseline: -0.6em, label[a child process starts with a *copy* of the environment])])
+          process-vars([`python3` - a child process], [environment], var-row("name", "carol", state: if i == 7 { "new" } else { none }))
+        }
+      })
+    }
+    #for i in range(1, 9) {
+      only(i, drawing(i))
+    }
   ]
 ]
 
+#let vars-code = "#!/bin/bash
+name=\"alice\"
+greeting=\"Hello, $name\"
+echo \"$greeting!\"
+name=\"bob\"
+echo \"$greeting!\""
+
 #slide[
-  == Command Substitution
-  ```bash $(command)``` - the output of a command, as text
+  == 🐞 Variables Hold Text
+  ```bash NAME=value``` stores the text, ```bash $NAME``` puts it back
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.85em)
-    #reveal-terminal(before: none, lines: (3, 5, 7), full: false)[```terminal
-    $ count=$(wc -l < fruits.txt)
-    $ echo "$count fruits"
-    7 fruits
-    $ echo "today is $(date +%A)"
-    today is Tuesday
-    $ files=$(ls *.txt); echo $files
-    fruits.txt notes.txt words.txt
-    ```]
-  ][
-    #set text(size: 0.9em)
-    - the shell runs the command, then puts its *output* in its place
-    #uncover("2-")[#block[- works anywhere in a command line, not only in ```bash NAME=...```]]
-    #uncover("3-")[#block[- the last _newline_ of the output is removed]]
-  ]
-
-  #v(0.5em)
-  #uncover("2-")[
-    #shell-first[the way to get a result from a command is to *capture its output*: commands print text]
-  ]
+  #debug-run(vars-code, command: "./vars.sh", (
+    (line: 2, run: "name=\"alice\"", vars: (name: "alice"),
+      note: [💡 `name` holds the text `alice`]),
+    (line: 3, run: "greeting=\"Hello, alice\"", vars: (greeting: "Hello, alice"),
+      note: [💡 the shell replaces ```bash $name``` *now*: `greeting` holds plain text]),
+    (line: 4, run: "echo \"Hello, alice!\"", status: 0, out: ("Hello, alice!",)),
+    (line: 5, run: "name=\"bob\"", vars: (name: "bob")),
+    (line: 6, run: "echo \"Hello, alice!\"", status: 0, out: ("Hello, alice!",),
+      note: [💡 `greeting` did not change: it is text, not a formula]),
+  ))
 ]
 
 #slide[
-  == Adding Two Numbers?
-  ```bash a=2``` and ```bash b=3```
+  == Wrong Definitions
+  A space splits the line into words
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
     #set text(size: 0.85em)
-    #reveal-terminal(before: none, lines: (3, 5, 7, 9), full: false)[```terminal
-    $ a=2; b=3
-    $ echo $a+$b
-    2+3
-    $ echo $a + $b
-    2 + 3
-    $ $a + $b
-    bash: 2: command not found
-    $ c=$a+$b; echo $c
-    2+3
+    #reveal-terminal(before: none, lines: (2, 4, 6, 8, 11), full: false)[```terminal
+    $ name = "alice"
+    bash: name: command not found
+    $ name ="alice"
+    bash: name: command not found
+    $ name= "alice"
+    bash: alice: command not found
+    $ name=alice smith
+    bash: smith: command not found
+    $ name="alice smith"
+    $ echo "$name"
+    alice smith
     ```]
   ][
     #set text(size: 0.9em)
-    #only(1)[
-      #label[the shell replaces the variables, `echo` receives] \
-      #words(("echo", "cmd"), ("2+3", "new"))
-
-      💡 *one* word: `$a`, the text `+`, `$b`
+    // how the shell splits the line on every step: the command dark, a
+    // `NAME=value` before it dashed (a variable only for that command)
+    #let case(chips, body) = [
+      #label[the shell sees the words] \
+      #v(-0.2em)
+      #align(center, text(size: 1.15em, chips))
+      #v(0.2em)
+      #body
     ]
-    #only(2)[
-      #label[the shell replaces the variables, `echo` receives] \
-      #words(("echo", "cmd"), ("2", "new"), ("+", "new"), ("3", "new"))
-
-      💡 *three* words, `echo` prints them with a space between
-    ]
-    #only(3)[
-      #label[the shell replaces the variables and runs] \
-      #words(("2", "cmd"), "+", "3")
-
-      💡 the first word is the *command*: there is no program `2`
-    ]
-    #only("4-")[
-      💡 a variable holds *text*: `c` is the text `2+3`
-    ]
+    #only(1)[#case(words(("name", "cmd"), "=", "alice"))[
+      ❌ the command `name`, with the parameters `=` and `alice`
+    ]]
+    #only(2)[#case(words(("name", "cmd"), "=alice"))[
+      ❌ the command `name`, with the parameter `=alice`
+    ]]
+    #only(3)[#case(words(("name=", "redir"), ("alice", "cmd")))[
+      ❌ `name=` - an *empty* variable, only for the command `alice`
+    ]]
+    #only(4)[#case(words(("name=alice", "redir"), ("smith", "cmd")))[
+      ❌ the space ends the value: `name=alice` only for the command `smith`
+    ]]
+    #only("5-")[#case(words(("name=alice smith", "new")))[
+      ✅ one word: *no spaces* around `=`, the quotes keep the space in the value
+    ]]
   ]
 
-  #v(0.5em)
+  #v(0.3em)
   #uncover("3-")[
-    #shell-first[bash was made to run commands, not to do math: `+` is just a character and a line always starts with a command]
-  ]
-]
-
-#slide[
-  == Arithmetic Expansion
-  ```bash $(( expression ))``` - the shell computes it
-
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.85em)
-    #reveal-terminal(before: none, lines: (3, 5, 7, 9, 11), full: false)[```terminal
-    $ a=2; b=3
-    $ echo $((a + b))
-    5
-    $ sum=$((a * b + 1)); echo $sum
-    7
-    $ echo $((7 / 2))
-    3
-    $ echo $((2 ** 10))
-    1024
-    $ echo $((3.5 * 2))
-    bash: 3.5 * 2: syntax error: invalid arithmetic operator (error token is ".5 * 2")
-    ```]
-  ][
-    #set text(size: 0.9em)
-    #only(1)[
-      - inside `$(( ))` the rules are *different*: C-like math
-      - spaces are allowed, `$` is not needed
-    ]
-    #only(2)[💡 `+ - * / % **` and `( )`, like in C]
-    #only(3)[💡 *integers* only: `7 / 2` is `3`]
-    #only(4)[💡 `**` is the power]
-    #only("5-")[
-      ⚠️ no decimals in `bash`
-
-      💡 use the `bc` calculator: \ `echo "3.5 * 2" | bc` prints `7.0`
-    ]
-  ]
-
-  #v(0.5em)
-  #uncover("2-")[
-    #shell-first[`$(( ))` is a small C-like language added *inside* the command line, the result is replaced back as *text*]
-  ]
-]
-
-#slide[
-  == The Old Way: `expr`
-  A *program* that computes, before `$(( ))` existed
-
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.85em)
-    #reveal-terminal(before: none, lines: (3, 5, 7, 9), full: false)[```terminal
-    $ a=2; b=3
-    $ expr $a + $b
-    5
-    $ expr $a+$b
-    2+3
-    $ expr $a \* $b
-    6
-    $ expr $a * $b
-    expr: syntax error: unexpected argument ‘fruits.txt’
-    ```]
-  ][
-    #set text(size: 0.9em)
-    #only(1)[
-      #words(("expr", "cmd"), ("2", "new"), ("+", "new"), ("3", "new"))
-
-      💡 three parameters: a number, an operator, a number
-    ]
-    #only(2)[
-      #words(("expr", "cmd"), ("2+3", "new"))
-
-      💡 *one* parameter: nothing to compute, `expr` prints it back
-    ]
-    #only(3)[
-      #words(("expr", "cmd"), "2", ("*", "new"), "3")
-
-      💡 `\*`: the `*` is a character, not a glob
-    ]
-    #only("4-")[
-      #words(("expr", "cmd"), "2", ("fruits.txt", "new"), ("notes.txt", "new"), ("...", "new"), "3")
-
-      ⚠️ the shell *globs* `*` into the file names, before `expr` starts
-    ]
-  ]
-
-  #v(0.5em)
-  #uncover("4-")[
-    #shell-first[the shell does not know that `expr` wants math: it expands the command line the same way for every command]
+    #shell-first[a line starts with a *command*; a `NAME=value` word before it is a variable only for that command]
   ]
 ]

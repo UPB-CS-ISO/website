@@ -19,6 +19,75 @@
 ]
 
 #slide[
+  == Parameter Syntax
+  The words of the command line, as variables
+
+  #align(center)[
+    #set text(size: 1.1em)
+    #grid(
+      columns: 4,
+      column-gutter: 0.5em,
+      row-gutter: 0.6em,
+      align: center,
+      w("./params.sh", kind: "cmd"), w("alice"), w("Alice Smith"), w("bob"),
+      ..("$0", "$1", "$2", "$3").enumerate().map(((k, v)) => uncover(str(k + 2) + "-", text(fill: changed, raw(v)))),
+    )
+  ]
+
+  #v(0.5em)
+  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
+    #set text(size: 0.85em)
+    #uncover("2-")[#block[- ```bash $0``` - the name of the script, as you typed it]]
+    #uncover("3-")[#block[- ```bash $1```, ```bash $2```, ... - the parameters, ```bash ${10}``` after `9`]]
+    #uncover("5-")[#block[- ```bash $#``` - how many parameters: `3`]]
+    #uncover("6-")[#block[- ```bash "$@"``` - all the parameters, every one a separate word]]
+  ][
+    #set text(size: 0.85em)
+    #uncover("2-")[#terminal("$ ./params.sh alice \"Alice Smith\" bob")]
+  ]
+]
+
+#let params-code = "#!/bin/bash
+echo \"script: $0\"
+echo \"hello, $1 and $2\"
+echo \"$# parameters\""
+
+#slide[
+  == 🐞 Script Parameters
+  The words after the name of the script are ```bash $1```, ```bash $2```, ...
+
+  #debug-run(params-code, command: "./params.sh alice bob", (
+    (line: 2, run: "echo \"script: ./params.sh\"", status: 0, out: ("script: ./params.sh",),
+      vars: ("$0": "./params.sh", "$1": "alice", "$2": "bob", "$#": "2"),
+      note: [💡 ```bash $0``` - the name of the script, as you typed it]),
+    (line: 3, run: "echo \"hello, alice and bob\"", status: 0, out: ("hello, alice and bob",),
+      note: [💡 ```bash $1``` and ```bash $2``` - the first and second word after it]),
+    (line: 4, run: "echo \"2 parameters\"", status: 0, out: ("2 parameters",),
+      note: [💡 ```bash $#``` - how many parameters]),
+  ))
+]
+
+#let show-code = "#!/bin/bash
+for p in \"$@\"; do
+    echo \"[$p]\"
+done"
+
+#slide[
+  == 🐞 Going Over the Parameters
+  ```bash "$@"``` - the parameters, every one a word
+
+  #debug-run(show-code, command: "./show.sh \"Alice Smith\" bob", columns: (1fr, 1fr), (
+    (line: 2, info: [expands to `"Alice Smith" "bob"`],
+      vars: ("$1": "Alice Smith", "$2": "bob", "$#": "2"),
+      note: [💡 two words, the space inside `Alice Smith` is kept]),
+    (line: 2, expand: "p ", run: "p=\"Alice Smith\"", vars: (p: "Alice Smith")),
+    (line: 3, run: "echo \"[Alice Smith]\"", status: 0, out: ("[Alice Smith]",)),
+    (line: 2, expand: "p ", run: "p=\"bob\"", vars: (p: "bob")),
+    (line: 3, run: "echo \"[bob]\"", status: 0, out: ("[bob]",)),
+  ))
+]
+
+#slide[
   == Positional Parameters
   ```bash $0```, ```bash $1```, ```bash $2```, ... - the words of the command line
 
@@ -97,46 +166,4 @@
   #uncover("2-")[
     #shell-first[```bash $@``` is replaced by text, and unquoted text is split at the spaces - the same rule as for any variable]
   ]
-]
-
-#slide[
-  == Putting It Together
-  Check the parameters, use a function, exit with a code
-
-  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
-    #set text(size: 0.75em)
-    #highlight-code(("all", lines-range(4, 7), lines-range(9, 11), (13,), lines-range(14, 18), "all"))[```bash
-    #!/bin/bash
-    # count.sh FRUIT FILE - how many times FRUIT is in FILE
-
-    if [ $# -ne 2 ]; then
-        echo "usage: $0 FRUIT FILE" >&2
-        exit 1
-    fi
-
-    count() {
-        grep -c "^$1\$" "$2"
-    }
-
-    n=$(count "$1" "$2")
-    if [ "$n" -eq 0 ]; then
-        echo "no $1 in $2"
-    else
-        echo "$n x $1"
-    fi
-    ```]
-  ][
-    #set text(size: 0.78em)
-    #let session = "$ ./count.sh apple\nusage: ./count.sh FRUIT FILE\n$ echo $?\n1\n$ ./count.sh apple fruits.txt\n3 x apple\n$ ./count.sh mango fruits.txt\nno mango in fruits.txt"
-    // the usage error first (steps 2 - 4), then the whole session
-    #only("2-4")[#terminal(session.split("\n").slice(0, 4).join("\n"))]
-    #only("5-")[#terminal(session)]
-  ]
-
-  #v(0.3em)
-  #set text(size: 0.9em)
-  #only(2)[💡 not 2 parameters: print how to use it on `stderr` (`>&2`) and end with an error]
-  #only(3)[💡 a function that prints the number of lines that are exactly ```bash $1```]
-  #only(4)[💡 capture the output of the function in `n`]
-  #only("5-")[💡 decide with `[`, on the text that `grep` printed]
 ]

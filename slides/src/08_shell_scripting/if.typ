@@ -19,251 +19,103 @@
 ]
 
 #slide[
-  == `if` Runs a Command
-  The condition is a *command*: exit code `0` means _true_
+  == `if` Syntax
+  The condition is a *command*
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.85em)
-    ```bash
-    if command; then
-        # runs if command ended with 0
-    elif other_command; then
-        # runs if other_command ended with 0
-    else
-        # runs otherwise
-    fi
-    ```
-    #uncover("3-")[
-      💡 `fi` is `if` written backwards, `elif` and `else` are optional
-    ]
-  ][
-    #set text(size: 0.85em)
-    #uncover("2-")[
-      ```bash
-      if grep -q kiwi fruits.txt; then
-          echo "we have kiwi"
-      else
-          echo "no kiwi"
-      fi
-      ```
-      #terminal("$ ./kiwi.sh\nwe have kiwi")
-    ]
-  ]
-
-  #v(0.3em)
-  #only(2)[💡 `grep -q` prints nothing, `if` only looks at its exit code]
-  #only("3-")[
-    #shell-first[`if` does not compute anything: it *runs* the command and checks `$?`, like `&&` and `||`]
-  ]
-]
-
-#slide[
-  == A C-like Condition?
-  ```bash a=2; b=3``` - is `a` bigger than `b`?
-
-  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
-    #set text(size: 0.8em)
-    #reveal-terminal(before: none, lines: (3, 5, 6), full: false)[```terminal
-    $ if $a > $b; then echo "yes"; else echo "no"; fi
-    bash: 2: command not found
-    no
-    $ ls 3
-    3
-    $ cat 3
-    ```]
-  ][
-    #set text(size: 0.9em)
-    #label[the condition is the command line] \
-    #words(("$a", "cmd"), (">", "redir"), ("$b", "redir"))
-
-    #uncover("2-")[
-      #label[after replacing the variables] \
-      #words(("2", "cmd"), (">", "redir"), ("3", "redir"))
-      - runs the command `2`: not found, exit code `127`, _false_
-      - `> 3` - its output goes to a *new file* named `3`
-    ]
-  ]
-
-  #v(0.3em)
-  #only(1)[💡 it looks right, it even prints something that makes sense]
-  #only(2)[💡 `>` is a *redirect*, not a comparison]
-  #only("3-")[
-    #shell-first[`if` takes a command line, so `>` means what it always means in a command line: write the output to a file]
-  ]
-]
-
-#slide[
-  == `test`
-  A command that checks a condition and only sets its exit code
-
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.8em)
-    #table(
-      columns: (auto, 1fr),
-      table.header([Test], [True (`0`) if]),
-      [`N -eq M`, `-ne`], [the numbers are #strong[eq]ual, #strong[n]ot #strong[e]qual],
-      [`N -lt M`, `-le`], [#strong[l]ess #strong[t]han, #strong[l]ess or #strong[e]qual],
-      [`N -gt M`, `-ge`], [#strong[g]reater #strong[t]han, #strong[g]reater or #strong[e]qual],
-      [`S = T`, `S != T`], [the texts are equal, different],
-      [`-z S`, `-n S`], [the text is empty, not empty],
-      [`-e F`, `-f F`, `-d F`], [`F` exists, is a file, is a directory],
-      [`! E`, `E -a E`, `E -o E`], [not, and, or],
-    )
-  ][
-    #set text(size: 0.85em)
-    #reveal-terminal(before: none, lines: (2, 4, 6, 8), full: false)[```terminal
-    $ test $a -lt $b; echo $?
-    0
-    $ test $a -gt $b; echo $?
-    1
-    $ test -f fruits.txt; echo $?
-    0
-    $ if test $a -lt $b; then echo "smaller"; fi
-    smaller
-    ```]
-  ]
-
-  #v(0.3em)
-  #only(1)[💡 `2 -lt 3`: true, `test` ends with `0`]
-  #only(2)[💡 `2 -gt 3`: false, `test` ends with `1`]
-  #only("4-")[
-    #shell-first[`<` and `>` are redirects, so the comparisons are *options*: `-lt`, `-gt`, ...]
-  ]
-]
-
-#slide[
-  == `[` Is a Program
-  `[ ... ]` is `test`, with a `]` at the end - nicer to read
-
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.72em)
-    #reveal-terminal(before: none, lines: (4, 6, 8, 11, 14), full: false)[```terminal
-    $ type -a [
-    [ is a shell builtin
-    [ is /usr/bin/[
-    [ is /bin/[
-    $ ls -l /usr/bin/[
-    -rwxr-xr-x 1 root root 55744 Aug 25 18:09 /usr/bin/[
-    $ [ $a -lt $b ]; echo $?
-    0
-    $ [$a -lt $b]; echo $?
-    bash: [2: command not found
-    127
-    $ [ $a -lt $b; echo $?
-    bash: [: missing `]'
-    2
-    ```]
-  ][
-    #set text(size: 0.9em)
-    #only(1)[💡 a built-in command of `bash`, and a program too, for the other shells]
-    #only(2)[💡 a real executable file, named `[`]
-    #only(3)[
-      #words(("[", "cmd"), "2", "-lt", "3", ("]", "new"))
-
-      💡 `]` is just the *last parameter* of `[`
-    ]
-    #only(4)[
-      #words(("[2", "cmd"), "-lt", "3]")
-
-      ⚠️ *spaces are mandatory*: without them the command is named `[2`
-    ]
-    #only("5-")[
-      ⚠️ `[` checks that its last parameter is `]`
-    ]
-  ]
-
-  #v(0.3em)
-  #uncover("5-")[
-    #shell-first[`if [ $a -lt $b ]` looks like C, but it is the command `[` with four parameters]
-  ]
-]
-
-#slide[
-  == Spaces and Quotes Matter
-  `[` only sees *words*
-
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.8em)
-    #reveal-terminal(before: none, lines: (2, 5, 7), full: false)[```terminal
-    $ [ $a-lt$b ]; echo $?
-    0
-    $ x=""
-    $ [ $x = "abc" ]
-    bash: [: =: unary operator expected
-    $ [ "$x" = "abc" ]; echo $?
-    1
-    ```]
-  ][
-    #set text(size: 0.9em)
-    #only(1)[
-      #words(("[", "cmd"), ("2-lt3", "new"), "]")
-
-      ⚠️ one word: _"is the text `2-lt3` not empty?"_ - always true
-    ]
-    #only(2)[
-      #words(("[", "cmd"), "=", "abc", "]")
-
-      ⚠️ the empty variable disappears, `[` gets 3 parameters
-    ]
-    #only("3-")[
-      #words(("[", "cmd"), ("\"\"", "new"), "=", "abc", "]")
-
-      💡 with quotes, an empty variable is still a word
-    ]
-  ]
-
-  #v(0.5em)
-  #uncover("3-")[
-    #shell-first[the shell splits the line into words *before* `[` starts, `[` cannot know what you meant: always quote the variables, ```bash "$x"```]
-  ]
-]
-
-#slide[
-  == `[[ ]]` and `(( ))`
-  Later, `bash` added real syntax for conditions
-
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.85em)
-    - `[[ ... ]]` - like `[`, but a _keyword_ of `bash`: no word splitting, ```bash $x``` may be empty
-    #uncover("2-")[#block[- `(( ... ))` - the C-like math of `$(( ))`, as a condition: not `0` is _true_]]
-    #uncover("3-")[#block[- they work only in `bash` (and `zsh`), not in `sh`]]
-  ][
-    #set text(size: 0.85em)
-    #reveal-terminal(before: none, lines: (2, 4), full: false)[```terminal
-    $ if [[ $a -lt $b ]]; then echo "smaller"; fi
-    smaller
-    $ if (( a < b )); then echo "smaller"; fi
-    smaller
-    ```]
-  ]
-
-  #v(0.5em)
-  #uncover("2-")[
-    #shell-first[finally a C-like condition: because the shell does not split `(( ))` into words, `<` is not a redirect here]
-  ]
-]
-
-#let if-code = "#!/bin/bash
-age=20
-if [ $age -ge 18 ]; then
-    echo \"adult\"
+    #set text(size: 1.15em)
+    #highlight-code(("all", (1,), (2,), lines-range(3, 4), lines-range(5, 6), (7,), "all", "all"))[```bash
+if command; then
+    commands
+elif other_command; then
+    commands
 else
-    echo \"minor\"
+    commands
 fi
-echo \"done\""
+```]
+  ][
+    #set text(size: 0.9em)
+    #uncover("2-")[#block[- `if` runs the command and looks at its *exit code*]]
+    #uncover("3-")[#block[- `then` - the commands that run if it ended with `0` (_true_)]]
+    #uncover("4-")[#block[- `elif` - another command to try, optional, as many as needed]]
+    #uncover("5-")[#block[- `else` - when no command ended with `0`, optional]]
+    #uncover("6-")[#block[- `fi` - `if` backwards, the end]]
+  ]
+
+  #v(0.3em)
+  #only("7-")[#one-liner(("if command; then commands; elif command; then commands; else commands; fi",), ("if grep -q kiwi fruits.txt; then echo kiwi; elif grep -q apple fruits.txt; then echo apple; fi",))]
+
+  // the usual mistake: in the shell, 0 is true
+  #only("8-")[
+    #popup[
+      #align(center, text(size: 1.6em, weight: "bold", fill: fail-color)[⚠️ in the shell, `0` is _true_!])
+      #v(-0.2em)
+      #align(center, grid(
+        columns: (auto, auto, auto),
+        column-gutter: 0.8em,
+        row-gutter: 0.5em,
+        align: horizon,
+        code-badge(0, size: 2em), draw-arrow(length: 1.5em, color: ok-color), text(size: 1.2em, fill: ok-color)[*true* - success, `then` runs],
+        code-badge(1, size: 2em), draw-arrow(length: 1.5em, color: fail-color), text(size: 1.2em, fill: fail-color)[*false* - an error (`1` ... `255`)],
+      ))
+      #v(-0.2em)
+      #align(center, label[the opposite of C, where `0` is false])
+    ]
+  ]
+]
+
+#let kiwi-code = "#!/bin/bash
+if grep -q kiwi fruits.txt; then
+    echo \"we have kiwi\"
+else
+    echo \"no kiwi\"
+fi"
 
 #slide[
-  == 🐞 `if`, Step by Step
-  The lines that run, as a debugger shows them
+  == 🐞 `if` Runs a Command
+  The condition is a command, its exit code chooses the branch
 
-  #debug-run(if-code, (
-    (line: 2, run: "age=20", vars: (age: "20"), changed: ("age",),
-      note: [💡 a variable, the text `20`]),
-    (line: 3, run: "[ 20 -ge 18 ]", status: 0, vars: (age: "20"),
-      note: [💡 the shell replaces ```bash $age``` and runs the command `[`: it ends with `0`, _true_]),
-    (line: 4, run: "echo \"adult\"", status: 0, vars: (age: "20"), out: ("adult",),
-      note: [💡 the `then` branch runs, the `else` branch is skipped]),
-    (line: 8, run: "echo \"done\"", status: 0, vars: (age: "20"), out: ("done",),
-      note: [💡 after `fi`, the script goes on]),
+  #debug-run(kiwi-code, command: "./kiwi.sh", blocks: true, files: (("fruits.txt", fruits-lines),), (
+    (line: 2, part: "grep -q kiwi fruits.txt", run: "grep -q kiwi fruits.txt", match: "kiwi", status: 0,
+      note: [💡 `grep -q` prints nothing, `if` only looks at its exit code]),
+    (line: 3, run: "echo \"we have kiwi\"", status: 0, out: ("we have kiwi",),
+      note: [💡 `0` - found, the `then` branch runs]),
   ))
+]
+
+#let compare-code = "#!/bin/bash
+a=7
+b=3
+if $a > $b; then
+    echo \"a is bigger\"
+else
+    echo \"a is not bigger\"
+fi"
+
+#slide[
+  == 🐞 Comparing Variables?
+  What you might expect to work
+
+  #debug-run(compare-code, command: "./compare.sh", blocks: true, (
+    (line: 2, run: "a=7", vars: (a: "7")),
+    (line: 3, run: "b=3", vars: (b: "3"),
+      note: [💡 in C, `a > b` would be true: we expect `then`]),
+    (line: 4, part: "$a > $b", run: "7 > 3", status: 127, out: ("./compare.sh: line 4: 7: command not found",),
+      note: [❌ the condition is a *command line*: the command `7`, its output redirected (`>`) to a *new file* named `3`]),
+    (line: 7, run: "echo \"a is not bigger\"", status: 0, out: ("a is not bigger",),
+      note: [❌ *wrong*: `7` is bigger, but the condition failed - there is no program `7`]),
+  ))
+
+  // why: bash was made to run commands
+  #only("5-")[
+    #popup(color: accent, fill: white)[
+      #align(center, text(size: 1.5em, weight: "bold", fill: accent)[🐚 `bash` was made to *run commands*])
+      #v(-0.3em)
+      #align(center, text(size: 1.1em)[every line is a command line: the first word is the *command*, `>` is a *redirect*])
+      #v(-0.3em)
+      #align(center, box(text(size: 1.2em, words(("7", "cmd"), (">", "redir"), ("3", "redir")))))
+      #v(-0.3em)
+      #align(center, label[comparing numbers came later: with commands (`test`, `[`) or with `(( ))`])
+    ]
+  ]
 ]

@@ -19,118 +19,250 @@
 ]
 
 #slide[
-  == Defining a Function
-  A new command, made of other commands
+  == Function Syntax
+  Define a new command
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
+    #set text(size: 1em)
+    #highlight-code(("all", (1,), (2,), (3,), (4,), (5,), (6,), "all", "all", "all"))[```bash
+greet() {
+    local who="$1"
+    echo "Hello, $who!"
+    return 0
+}
+greet alice
+```]
     #set text(size: 0.85em)
-    ```bash
-    greet() {
-        echo "Hello, $1!"
-    }
-    ```
-    - called like any command: `greet alice`
-    #uncover("2-")[#block[- the parameters are ```bash $1```, ```bash $2```, ..., their count ```bash $#```]]
-    #uncover("3-")[#block[- the `()` are *always empty*: there is no list of parameters]]
-    #uncover("4-")[#block[- `function greet { ... }` - the same thing]]
-  ][
-    #set text(size: 0.8em)
-    #reveal-terminal(before: none, lines: (2, 4, 10), full: false)[```terminal
+    #reveal-terminal(before: none, lines: (4,), start: 9, full: false)[```terminal
     $ greet alice
     Hello, alice!
     $ greet
     Hello, !
-    $ type greet
-    greet is a function
-    greet ()
-    {
-        echo "Hello, $1!"
-    }
     ```]
+  ][
+    #set text(size: 0.9em)
+    #uncover("2-")[#block[- `name() {` - the start, the `()` are *always empty*]]
+    #uncover("3-")[#block[- inside: ```bash $1```, ```bash $2```, ... the parameters, ```bash $#``` how many; `local` - a variable only for the function]]
+    #uncover("4-")[#block[- the _body_: any commands]]
+    #uncover("5-")[#block[- `return N` - leave the function with the *exit code* `N` #exit-code(0), like `exit` for a script]]
+    #uncover("6-")[#block[- `}` - the end, the function is now defined]]
+    #uncover("7-")[#block[- call it *like any command*: the name, then the words]]
   ]
 
   #v(0.3em)
-  #only(2)[💡 a missing parameter is just *empty*, no error]
-  #only("3-")[
+  #set text(size: 0.9em)
+  #only(8)[💡 define it *before* calling it, `function greet { ... }` is the same thing #bash-tag]
+  #only("9-")[
+    💡 called like any command; a missing parameter is just *empty*, no error
     #shell-first[a function is called exactly like a program: the command name, then the words - so it gets its parameters the same way a script does]
   ]
-]
 
-#slide[
-  == Returning a Value
-  `return` sets the *exit code*, the result is the *output*
-
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.8em)
-    #reveal-terminal(before: none, lines: (4, 7, 10), full: false)[```terminal
-    $ add() { echo $(( $1 + $2 )); }
-    $ sum=$(add 2 3)
-    $ echo "sum is $sum"
-    sum is 5
-    $ big() { return 300; }
-    $ big; echo $?
-    44
-    $ f() { return 5; }
-    $ x=$(f); echo "[$x] $?"
-    [] 5
-    ```]
-  ][
-    #set text(size: 0.9em)
-    #only(1)[💡 the function *prints* the result, ```bash $(...)``` captures it, like for any command]
-    #only(2)[⚠️ `return N` is an exit code: `0` - `255`, `300` becomes `300 % 256 = 44`]
-    #only("3-")[💡 `return 5` prints nothing: the output is empty, only ```bash $?``` is `5`]
-  ]
-
-  #v(0.3em)
-  #uncover("3-")[
-    #shell-first[a function is a command, and commands have two ways to answer: an *exit code* (yes / no) and an *output* (text)]
-  ]
-]
-
-#slide[
-  == Local Variables
-  Variables are *global*, unless you say `local`
-
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.8em)
-    #reveal-terminal(before: none, lines: (3, 6), full: false)[```terminal
-    $ setname() { name="bob"; }
-    $ name=alice; setname; echo $name
-    bob
-    $ setname2() { local name="bob"; }
-    $ name=alice; setname2; echo $name
-    alice
-    ```]
-  ][
-    #set text(size: 0.9em)
-    #only(1)[⚠️ the function changed the variable of the script]
-    #only("2-")[💡 `local` - the variable exists only inside the function]
+  // bash runs commands: a function is one more command
+  #only("10-")[
+    #popup(color: accent, fill: white, angle: -2deg)[
+      #align(center)[
+        #text(size: 1.3em, weight: "bold", fill: accent)[🐚 `bash` runs *commands*] \
+        #text(size: 1.1em)[a function is a command, defined by the script]
+        #v(0.2em)
+        #text(size: 1.1em)[a command only *prints* text and ends with an *exit code* #exit-code(0)]
+      ]
+    ]
   ]
 ]
 
 #let func-code = "#!/bin/bash
 greet() {
+    if [ $# -eq 0 ]; then
+        return 1
+    fi
     echo \"Hello, $1!\"
-    return 0
 }
-greet alice
-greet bob
-echo \"status $?\""
+greet alice && echo \"ok\"
+greet || echo \"nobody to greet\""
 
 #slide[
-  == 🐞 Functions, Step by Step
-  The lines that run, as a debugger shows them
+  == 🐞 Functions
+  A new command: it gets parameters and ends with an exit code
 
-  #debug-run(func-code, (
-    (line: 6, run: "greet alice", vars: ("$1": "alice"), changed: ("$1",),
-      note: [💡 lines 2 - 5 only *define* `greet`, the call jumps into it with ```bash $1``` = `alice`]),
-    (line: 3, run: "echo \"Hello, alice!\"", status: 0, vars: ("$1": "alice"), out: ("Hello, alice!",)),
-    (line: 4, run: "return 0", status: 0, vars: ("$1": "alice"),
-      note: [💡 back to the line after the call, ```bash $1``` is the one of the script again]),
-    (line: 7, run: "greet bob", vars: ("$1": "bob"), changed: ("$1",)),
-    (line: 3, run: "echo \"Hello, bob!\"", status: 0, vars: ("$1": "bob"), out: ("Hello, bob!",)),
-    (line: 4, run: "return 0", status: 0, vars: ("$1": "bob")),
-    (line: 8, run: "echo \"status 0\"", status: 0, out: ("status 0",),
-      note: [💡 ```bash $?``` is the exit code of `greet bob`, set by `return 0`]),
+  #debug-run(func-code, command: "./greet.sh", blocks: true, (
+    (line: 2, run: "greet() { ... }",
+      note: [💡 lines 2 - 7 only *define* the command `greet`, nothing runs]),
+    (line: 8, part: "greet alice", run: "greet alice",
+      note: [💡 called like any command, the words after the name become its parameters: #param-map("greet", ("alice",))]),
+    (line: 3, part: "[ $# -eq 0 ]", also: ((8, "alice"),), run: "[ 1 -eq 0 ]", status: 1, vars: ("$1": "alice", "$#": "1"),
+      note: [💡 inside the function: ```bash $1``` and ```bash $#``` come from the call]),
+    (line: 6, also: ((8, "alice"),), run: "echo \"Hello, alice!\"", status: 0, out: ("Hello, alice!",),
+      note: [💡 no `return`: `greet` ends with the exit code of its last command, `0`]),
+    (line: 8, part: "echo \"ok\"", run: "echo \"ok\"", status: 0, unset: ("$1", "$#"), out: ("ok",),
+      note: [💡 `greet` ended with `0`: `&&` runs the next command]),
+    (line: 9, part: "greet", run: "greet",
+      note: [💡 no words after the name, no parameters: #param-map("greet", ())]),
+    (line: 3, part: "[ $# -eq 0 ]", run: "[ 0 -eq 0 ]", status: 0, vars: ("$#": "0")),
+    (line: 4, run: "return 1", status: 1,
+      note: [💡 `return 1`: leave the function with the exit code `1`, an error]),
+    (line: 9, part: "echo \"nobody to greet\"", run: "echo \"nobody to greet\"", status: 0, unset: ("$#",), out: ("nobody to greet",),
+      note: [💡 `greet` ended with `1`: `||` runs the next command - a function answers like any command]),
   ))
+]
+
+#let local-code = "#!/bin/bash
+update() {
+    local name=\"bob\"
+    count=1
+}
+name=\"alice\"
+count=0
+update
+echo \"$name $count\""
+
+#slide[
+  == 🐞 Local Variables
+  `local` - a variable that exists only while the function runs
+
+  #debug-run(local-code, command: "./update.sh", blocks: true, (
+    (line: 2, run: "update() { ... }",
+      note: [💡 lines 2 - 5 only define the function]),
+    (line: 6, run: "name=alice", vars: (name: "alice")),
+    (line: 7, run: "count=0", vars: (count: "0")),
+    (line: 8, run: "update"),
+    (line: 3, run: "local name=bob", vars: ("name (local)": "bob"),
+      note: [💡 `local`: a *new* `name`, inside the function - the one of the script is not touched]),
+    (line: 4, run: "count=1", vars: (count: "1"),
+      note: [💡 no `local`: `count` is the variable of the script, *global*]),
+    (line: 9, run: "echo \"alice 1\"", status: 0, unset: ("name (local)",), out: ("alice 1",),
+      note: [💡 the local `name` is gone with the function, the global `count` keeps `1`]),
+  ))
+]
+
+#slide[
+  == Output or Exit Code
+  `bash` runs commands: a command only *prints* and ends with an *exit code*
+
+  // a box of the drawing: a title on top, the content under it
+  #let part(title, body, color: accent) = block(stroke: 1pt + color.lighten(30%), radius: 0.35em, inset: (x: 0.7em, y: 0.5em), fill: white,
+    align(center)[#text(size: 0.75em, weight: "bold", fill: color, title) \ #body])
+  #let to(t, color: luma(130)) = align(center + horizon)[#text(size: 0.75em, fill: luma(110), style: "italic", t) \ #draw-arrow(length: 2.2em, color: color, thickness: 1.5pt)]
+
+  #v(0.5em)
+  #align(center, grid(
+    columns: 5,
+    column-gutter: 0.6em,
+    row-gutter: 1.2em,
+    align: center + horizon,
+    // the command
+    grid.cell(rowspan: 2, part([a function, a command], text(size: 1.2em, words(("greet", "cmd"), "alice")))),
+    // the output
+    to([prints]),
+    part([the *output*: text on `stdout`], text(font: mono, fill: changed)[Hello, alice!]),
+    to([goes to]),
+    part([the screen, or a variable], [
+      #text(font: mono, size: 0.9em)[Hello, alice!] \
+      #raw("msg=$(greet alice)", lang: "bash")
+    ]),
+    // the exit code
+    to([ends with], color: ok-color),
+    part([the *exit code*: `0` - `255`], code-badge(0, size: 2.2em), color: ok-color),
+    to([is checked by], color: ok-color),
+    part([success or error?], [`if`, `&&`, `||`, ```bash $?``` \ #raw("greet alice && echo ok", lang: "bash")], color: ok-color),
+  ))
+
+  #v(0.8em)
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 1em,
+    block(width: 100%, inset: 0.5em, radius: 0.3em, fill: changed-fill)[
+      #text(weight: "bold", fill: changed)[the data, the result] - `echo` it, the caller captures it: ```bash sum=$(add 2 3)```
+    ],
+    block(width: 100%, inset: 0.5em, radius: 0.3em, fill: ok-color.lighten(88%))[
+      #text(weight: "bold", fill: ok-color)[success or error] - ```bash return N``` - *not* the data
+    ],
+  )
+]
+
+#let add-code = "#!/bin/bash
+add() {
+    echo $(( $1 + $2 ))
+}
+full_name() {
+    echo \"$2, $1\"
+}
+sum=$(add 2 3)
+name=$(full_name Alice Smith)
+echo \"$name: $sum\""
+
+#slide[
+  == 🐞 Returning a Value
+  The function *prints* the result, ```bash $(...)``` captures it as text
+
+  #debug-run(add-code, command: "./values.sh", blocks: true, size: 0.88em, columns: (5fr, 3fr), (
+    (line: 2, note: [💡 lines 2 - 7 only *define* `add` and `full_name`, nothing runs]),
+    (line: 8, part: "add 2 3", who: "copy", run: "add 2 3",
+      note: [💡 inside ```bash $(...)```: a copy of `bash` calls the function, its output will be captured]),
+    (line: 3, compute: "$(( $1 + $2 ))", also: ((8, "2"), (8, "3")), vars: ("$1": "2", "$2": "3"), info: [computes `2 + 3` = `5`]),
+    (line: 3, also: ((8, "2"), (8, "3")), run: "echo 5", status: 0, info: [prints `5`, captured],
+      note: [💡 the number is *printed*, as text - not shown on the screen, ```bash $(...)``` takes it]),
+    (line: 8, run: "sum=5", vars: (sum: "5"), unset: ("$1", "$2")),
+    (line: 9, part: "full_name Alice Smith", who: "copy", run: "full_name Alice Smith"),
+    (line: 6, also: ((9, "Alice"), (9, "Smith")), vars: ("$1": "Alice", "$2": "Smith"), run: "echo \"Smith, Alice\"", status: 0, info: [prints `Smith, Alice`, captured],
+      note: [💡 a number or a text: for the shell, both are just *text*]),
+    (line: 9, run: "name=\"Smith, Alice\"", vars: (name: "Smith, Alice"), unset: ("$1", "$2")),
+    (line: 10, run: "echo \"Smith, Alice: 5\"", status: 0, out: ("Smith, Alice: 5",)),
+  ))
+]
+
+#slide[
+  == Function Pitfalls
+  A function is a command: it prints and ends with an exit code, nothing more
+
+  // one pitfall: the wrong command line, its problem highlighted in red,
+  // and the correct one, the fix highlighted in green, each with what it
+  // prints (pieces: text, or (text, true) for the highlighted part)
+  #let line(pieces, color) = {
+    show raw.where(block: false): it => it.lines.join()
+    box(text(size: 1.25em, pieces.map(p => if type(p) == array {
+      box(fill: color.lighten(88%), outset: (y: 3pt), radius: 2pt,
+        underline(stroke: 2pt + color, offset: 4pt, raw(p.at(0), lang: "bash")))
+    } else { raw(p, lang: "bash") }).join()))
+  }
+  #let out(t) = box(fill: luma(235), inset: (x: 0.6em, y: 0.35em), radius: 0.3em, text(font: mono, size: 1.05em, fill: luma(80), t))
+  #let pitfall(wrong, wrong-out, right, right-out, body) = {
+    grid(
+      columns: (auto, 1fr),
+      column-gutter: 0.8em,
+      row-gutter: 0.5em,
+      align: (center + horizon, left + horizon),
+      text(size: 1.4em)[❌], line(wrong, fail-color),
+      [], [#arrow #out(wrong-out)],
+      grid.cell(colspan: 2, v(0.3em)),
+      text(size: 1.4em)[✅], line(right, ok-color),
+      [], [#arrow #out(right-out)],
+    )
+    v(0.6em)
+    text(size: 1.1em, body)
+  }
+
+  #only(1)[#pitfall(
+    ("big() { ", ("return 300", true), "; }; big; echo $?"), "44",
+    ("big() { ", ("echo 300", true), "; }; n=", ("$(big)", true), "; echo $n"), "300")[
+    ❌ an exit code is only `0` - `255`: `300` becomes `300 % 256 = 44` \
+    💡 *print* numbers, capture them with ```bash $(...)```
+  ]]
+  #only(2)[#pitfall(
+    ("f() { ", ("return 5", true), "; }; ", ("x=$(f)", true), "; echo \"[$x] $?\""), "[] 5",
+    ("f() { ", ("echo 5", true), "; }; x=$(f); echo \"[$x] $?\""), "[5] 0")[
+    ❌ `return 5` prints nothing: `x` is *empty*, only ```bash $?``` is #exit-code(5) \
+    💡 `return` is not the data: *print* the data
+  ]]
+  #only(3)[#pitfall(
+    (("welcome alice", true), "; welcome() { echo \"Hi, $1!\"; }"), "bash: welcome: command not found",
+    ("welcome() { echo \"Hi, $1!\"; }; ", ("welcome alice", true)), "Hi, alice!")[
+    ❌ called *before* it is defined: the shell does not know the command `welcome` yet \
+    💡 define the functions at the top of the script
+  ]]
+  #only("4-")[#pitfall(
+    ("set_x() { x=1; }; x=0; y=", ("$(set_x)", true), "; echo $x"), "0",
+    ("set_x() { x=1; }; x=0; ", ("set_x", true), "; echo $x"), "1")[
+    ❌ ```bash $(...)``` runs the function in a *copy* of `bash`: the `x` it sets is lost \
+    💡 call it directly, a function called in ```bash $(...)``` can only *print*
+  ]]
 ]

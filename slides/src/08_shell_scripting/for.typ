@@ -19,40 +19,30 @@
 ]
 
 #slide[
-  == `for` Goes Over Words
-  The variable takes every word of the list, one after another
+  == `for` Syntax
+  Once for every word of a list
 
-  #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.5em)[
-    #set text(size: 0.85em)
-    ```bash
-    for NAME in word1 word2 ...; do
-        # runs once for every word,
-        # $NAME is the word
-    done
-    ```
-    #uncover("2-")[#block[- the words can come from anything that makes words:]]
-    #uncover("3-")[#block[- a _glob_]]
-    #uncover("4-")[#block[- the output of a command, ```bash $(...)```]]
+  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
+    #set text(size: 1em)
+    #highlight-code(("all", (1,), (2,), (3,), (4,), (5,), (6,), "all"))[```bash
+for NAME in word1 word2 word3; do
+    commands
+done
+for f in *.txt; do ...; done
+for w in $(cat fruits.txt); do ...; done
+for i in {1..5}; do ...; done
+```]
   ][
-    #set text(size: 0.78em)
-    #reveal-terminal(before: none, lines: (4, 8, 10), start: 2, full: false)[```terminal
-    $ for fruit in apple kiwi cherry; do echo "I like $fruit"; done
-    I like apple
-    I like kiwi
-    I like cherry
-    $ for f in *.txt; do echo "file: $f"; done
-    file: fruits.txt
-    file: notes.txt
-    file: words.txt
-    $ for w in $(cat fruits.txt); do echo -n "$w "; done; echo
-    banana apple cherry apple kiwi banana apple
-    ```]
+    #set text(size: 0.9em)
+    #uncover("2-")[#block[- the variable `NAME` takes every word after `in`, one by one]]
+    #uncover("3-")[#block[- `do` - the _body_, runs once for every word, with ```bash $NAME``` the word]]
+    #uncover("4-")[#block[- `done` - go back and take the next word]]
+    #uncover("5-")[#block[- the words can come from a _glob_]]
+    #uncover("6-")[#block[- or from the output of a command]]
+    #uncover("7-")[#block[- or from _brace expansion_ #bash-tag]]
   ]
 
-  #v(0.3em)
-  #uncover("3-")[
-    #shell-first[`for` does not know about files or lines: the shell expands the line first (globs, variables, ```bash $(...)```), then `for` gets *words*]
-  ]
+  #only("8-")[#one-liner(("for NAME in word1 word2; do commands; done",), ("for f in apple kiwi; do echo \"I like $f\"; done",))]
 ]
 
 #let for-code = "#!/bin/bash
@@ -62,106 +52,99 @@ done
 echo \"done\""
 
 #slide[
-  == 🐞 `for`, Step by Step
-  The lines that run, as a debugger shows them
+  == 🐞 `for`
+  Run the body once for every word of the list
 
-  #debug-run(for-code, (
-    (line: 2, run: "for fruit in apple kiwi cherry", vars: (fruit: "apple"), changed: ("fruit",),
-      note: [💡 the first word goes into `fruit`]),
-    (line: 3, run: "echo \"I like apple\"", status: 0, vars: (fruit: "apple"), out: ("I like apple",)),
-    (line: 2, run: "for fruit in apple kiwi cherry", vars: (fruit: "kiwi"), changed: ("fruit",),
-      note: [💡 `done` jumps back, `fruit` gets the next word]),
-    (line: 3, run: "echo \"I like kiwi\"", status: 0, vars: (fruit: "kiwi"), out: ("I like kiwi",)),
-    (line: 2, run: "for fruit in apple kiwi cherry", vars: (fruit: "cherry"), changed: ("fruit",)),
-    (line: 3, run: "echo \"I like cherry\"", status: 0, vars: (fruit: "cherry"), out: ("I like cherry",)),
-    (line: 5, run: "echo \"done\"", status: 0, vars: (fruit: "cherry"), out: ("done",),
-      note: [💡 no more words, the loop ends - `fruit` keeps the last word]),
+  #debug-run(for-code, command: "./fruits.sh", (
+    (line: 2, expand: "apple", run: "fruit=apple", vars: (fruit: "apple"),
+      note: [💡 `fruit` takes the first word]),
+    (line: 3, run: "echo \"I like apple\"", status: 0, out: ("I like apple",)),
+    (line: 2, expand: "kiwi", run: "fruit=kiwi", vars: (fruit: "kiwi"),
+      note: [💡 `done` jumps back, `fruit` takes the next word]),
+    (line: 3, run: "echo \"I like kiwi\"", status: 0, out: ("I like kiwi",)),
+    (line: 2, expand: "cherry", run: "fruit=cherry", vars: (fruit: "cherry")),
+    (line: 3, run: "echo \"I like cherry\"", status: 0, out: ("I like cherry",)),
+    (line: 5, run: "echo \"done\"", status: 0, out: ("done",),
+      note: [💡 no more words, the loop ends]),
+  ))
+]
+
+#let glob-code = "#!/bin/bash
+for f in *.txt; do
+    echo \"file: $f\"
+done"
+
+#slide[
+  == 🐞 `for` With a Glob
+  The shell makes the list of words first
+
+  #debug-run(glob-code, command: "./files.sh", (
+    (line: 2, expand: "*.txt", info: [expands `*.txt` to `fruits.txt notes.txt words.txt`],
+      note: [💡 before the loop starts, the shell replaces the glob with the file names]),
+    (line: 2, expand: "f ", run: "f=fruits.txt", vars: (f: "fruits.txt")),
+    (line: 3, run: "echo \"file: fruits.txt\"", status: 0, out: ("file: fruits.txt",)),
+    (line: 2, expand: "f ", run: "f=notes.txt", vars: (f: "notes.txt")),
+    (line: 3, run: "echo \"file: notes.txt\"", status: 0, out: ("file: notes.txt",)),
+    (line: 2, expand: "f ", run: "f=words.txt", vars: (f: "words.txt")),
+    (line: 3, run: "echo \"file: words.txt\"", status: 0, out: ("file: words.txt",),
+      note: [💡 `for` only sees words, it does not know they are files]),
   ))
 ]
 
 #slide[
   == Counting With a Step
-  Make the list of numbers first
+  Make the list of numbers first, with `seq`
 
   #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.5em)[
     #set text(size: 0.85em)
-    - `{1..10..3}` - _brace expansion_: from `1` to `10`, step `3`
-    #uncover("2-")[#block[- `seq 1 3 10` - a *program* that prints the numbers: first, step, last]]
-    #uncover("3-")[#block[⚠️ `{1..$n}` does not work: braces are expanded *before* the variables]]
-    #uncover("4-")[#block[- `seq` works with variables, it runs after they are replaced]]
+    - `seq first step last` - a *program* that prints the numbers
+    #uncover("2-")[#block[- it works with variables: `seq` runs *after* the shell replaced them]]
+    #uncover("3-")[#block[- the output of `seq` becomes the words of `for`]]
   ][
-    #set text(size: 0.78em)
-    #reveal-terminal(before: none, lines: (2, 4, 6, 8), full: false)[```terminal
-    $ for i in {1..10..3}; do echo -n "$i "; done; echo
-    1 4 7 10
+    #set text(size: 0.8em)
+    #reveal-terminal(before: none, lines: (2, 4), full: false)[```terminal
     $ for i in $(seq 1 3 10); do echo -n "$i "; done; echo
     1 4 7 10
-    $ n=10; for i in {1..$n}; do echo "$i"; done
-    {1..10}
-    $ for i in $(seq 1 $n); do echo -n "$i "; done; echo
-    1 2 3 4 5 6 7 8 9 10
+    $ n=5; for i in $(seq 1 $n); do echo -n "$i "; done; echo
+    1 2 3 4 5
     ```]
   ]
 
   #v(0.3em)
   #uncover("3-")[
-    #shell-first[`for` still goes over *words*: someone has to write the numbers - the shell (`{ }`) or a command (`seq`)]
+    #shell-first[`for` still goes over *words*: a command (`seq`) writes the numbers]
   ]
-]
-
-#slide[
-  == The C-like `for`
-  ```bash for (( init; condition; step ))``` - the math of `$(( ))`
-
-  #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.5em)[
+  #uncover("4-")[
     #set text(size: 0.85em)
-    ```bash
-    for ((i = 0; i < 6; i += 2)); do
-        echo "i is $i"
-    done
-    ```
-    - `i = 0` - runs once, at the start
-    - `i < 6` - checked before every round
-    - `i += 2` - the _step_, after every round
-  ][
-    #set text(size: 0.78em)
-    #reveal-terminal(before: none, lines: (4, 6), full: false)[```terminal
-    $ for ((i = 0; i < 6; i += 2)); do echo "i is $i"; done
-    i is 0
-    i is 2
-    i is 4
-    $ for ((i = 10; i > 0; i -= 4)); do echo -n "$i "; done; echo
-    10 6 2
-    ```]
-  ]
-
-  #v(0.3em)
-  #uncover("2-")[
-    #shell-first[added later to `bash`, `(( ))` is not split into words: `<` is a comparison here, not a redirect]
+    💡 `bash` can also write them: `{1..10..3}` #bash-tag - but not with variables, `{1..$n}` stays as it is \
+    💡 and it has a C-like `for`: ```bash for ((i = 1; i <= 10; i += 3)); do ...; done``` #bash-tag
   ]
 ]
 
-#let step-code = "#!/bin/bash
-for ((i = 0; i < 6; i += 2)); do
-    echo \"i is $i\"
+#let seq-code = "#!/bin/bash
+n=3
+for i in $(seq 1 $n); do
+    echo \"round $i\"
 done
 echo \"done\""
 
 #slide[
-  == 🐞 C-like `for`, Step by Step
-  The lines that run, as a debugger shows them
+  == 🐞 Counting With `seq`
+  `seq` writes the numbers, `for` goes over them
 
-  #debug-run(step-code, (
-    (line: 2, run: "((i = 0)); ((i < 6))", status: 0, vars: (i: "0"), changed: ("i",),
-      note: [💡 _init_ once, then the _condition_: `0 < 6` is true]),
-    (line: 3, run: "echo \"i is 0\"", status: 0, vars: (i: "0"), out: ("i is 0",)),
-    (line: 2, run: "((i += 2)); ((i < 6))", status: 0, vars: (i: "2"), changed: ("i",),
-      note: [💡 the _step_, then the _condition_ again]),
-    (line: 3, run: "echo \"i is 2\"", status: 0, vars: (i: "2"), out: ("i is 2",)),
-    (line: 2, run: "((i += 2)); ((i < 6))", status: 0, vars: (i: "4"), changed: ("i",)),
-    (line: 3, run: "echo \"i is 4\"", status: 0, vars: (i: "4"), out: ("i is 4",)),
-    (line: 2, run: "((i += 2)); ((i < 6))", status: 1, vars: (i: "6"), changed: ("i",),
-      note: [💡 `6 < 6` is false, `(( ))` ends with `1`: the loop ends]),
-    (line: 5, run: "echo \"done\"", status: 0, vars: (i: "6"), out: ("done",)),
+  #debug-run(seq-code, command: "./rounds.sh", blocks: true, (
+    (line: 2, run: "n=3", vars: (n: "3")),
+    (line: 3, part: "seq 1 $n", who: "copy", run: "seq 1 3", status: 0, info: [prints `1`, `2`, `3`, one per line],
+      note: [💡 first, a copy of `bash` runs `seq`, its output takes the place of ```bash $(...)```]),
+    (line: 3, run: "i=1", vars: (i: "1"), expand: "i ",
+      note: [💡 the list is now the words `1 2 3`: `i` takes the first one]),
+    (line: 4, run: "echo \"round 1\"", status: 0, out: ("round 1",)),
+    (line: 3, run: "i=2", vars: (i: "2"), expand: "i ",
+      note: [💡 `done` jumps back, `i` takes the next word - `seq` does not run again]),
+    (line: 4, run: "echo \"round 2\"", status: 0, out: ("round 2",)),
+    (line: 3, run: "i=3", vars: (i: "3"), expand: "i in"),
+    (line: 4, run: "echo \"round 3\"", status: 0, out: ("round 3",)),
+    (line: 6, run: "echo done", status: 0, out: ("done",),
+      note: [💡 no more words, the loop ends]),
   ))
 ]
