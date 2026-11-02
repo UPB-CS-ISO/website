@@ -272,3 +272,44 @@
     only((beginning: start + windows.len() - 1), render-window(0, content.split("\n").len()))
   }
 }
+
+// ---------------------------------------------------------------------------
+// Shell commands in the text
+// ---------------------------------------------------------------------------
+
+// the programs whose commands are highlighted when written as inline code
+// (`grep -q kiwi`, `sort | uniq -c`, `make clean`), like the commands of a
+// terminal; a deck adds its own with `shell-commands.with(extra: (...))`
+#let shell-programs = (
+  // files and processes
+  "ls", "cd", "cat", "rm", "cp", "mv", "mkdir", "touch", "file", "less", "man",
+  "echo", "printf", "which", "sudo", "bash", "sh", "ssh", "sleep", "kill", "ps",
+  "chmod", "id", "find", "xargs", "tee", "yes", "true", "false", "exit", "set", "export",
+  // text processing
+  "grep", "head", "tail", "sort", "uniq", "wc", "tac", "rev", "nl", "cut", "tr", "sed", "awk",
+  // editors
+  "nano", "pico", "vi", "vim", "nvim", "vimtutor", "emacs", "helix", "hx", "code",
+  // software development
+  "make", "gcc", "clang", "cc", "gdb", "lldb", "objdump", "nm", "ldd", "git", "bear",
+  "python3", "java", "javac", "node", "strace", "readelf", "apt",
+)
+
+// true if `t` is a command line: a known program, alone or with
+// arguments, or ./program; a prompt in front ("$ gdb ./app") is allowed
+#let is-shell-command(t, programs: shell-programs) = {
+  let t = if t.starts-with("$ ") { t.slice(2) } else { t }
+  t.split(" ").first() in programs or t.starts-with("./")
+}
+
+// show rule: inline code (no language) that is a command line gets the
+// terminal colors; the theme still draws the inline code background.
+// Inline code with a language (```bash $PATH```) is left alone.
+// usage, once in main.typ, after the template: #show: shell-commands
+#let shell-commands(body, extra: ()) = {
+  show raw.where(block: false, lang: none): it => if is-shell-command(it.text, programs: shell-programs + extra) {
+    // color the line of this inline code, the element itself is kept
+    show raw.line: l => if l.text.starts-with("$ ") { render-terminal-line(l.text) } else { highlight-shell(l.text) }
+    it
+  } else { it }
+  body
+}
