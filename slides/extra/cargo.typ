@@ -1,5 +1,9 @@
 #import "/src/slides.typ": *
-#import "common.typ": *
+#import "/src/07_software_development/common.typ": *
+
+// Building with cargo, written for 7. Software Development (after the make
+// sections) and kept here for later use. Include it from a deck with
+// #include "/extra/cargo.typ".
 
 #slide[
   = Building with `cargo` #text(size: 10pt, weight: "regular")[\ _The build system and package manager of Rust_]

@@ -1,7 +1,9 @@
 #import "/src/slides.typ": *
-#import "common.typ": ward, uso-book, make-manual, rust-book, lsp-spec
+#import "common.typ": ward, uso-book, make-manual, lsp-spec, dap-spec, shell-commands
 
 #show: uso_slides.with(title: "7. Software Development")
+// command lines in inline code get the terminal colors
+#show: shell-commands
 
 #slide[
   == Bibliography
@@ -19,9 +21,8 @@
       #colbreak()
       3. #make-manual
         - Chapter 2 - _An Introduction to Makefiles_
-      + #rust-book
-        - Chapter 1.3 - _Hello, Cargo!_
       + #lsp-spec
+      + #dap-spec
     ]
   ]
   #v(0pt)
@@ -49,32 +50,37 @@
     #columns(2)[
       - Compiled & Interpreted Languages
         - compiler, interpreter, bytecode
-      - Graphical Editors
-        - VS Code / VSCodium, Zed
       - Integrated Development Environments
       - Language Servers
       - Debuggers
+      - Debug Adapters
       #colbreak()
       - From an Editor to an IDE
         - LSP + DAP
       - The C Compilation Pipeline
         - preprocessor, compiler, assembler, linker
       - Building with `make`
-        - a `Makefile`, step by step
-      - Building with `cargo`
+        - rules, step by step
+      - A `Makefile` for a Project
+        - automatic variables, pattern rules
+      - Special Targets
+        - `.PHONY`, `clean`, `all`, `run`
+      - Header Dependencies
     ]
   ]
 ]
 
 #include "languages.typ"
-#include "gui-editors.typ"
 #include "ide.typ"
 #include "lsp.typ"
 #include "debugger.typ"
+#include "dap.typ"
 #include "editor-ide.typ"
 #include "compiling.typ"
 #include "make.typ"
-#include "cargo.typ"
+#include "make-project.typ"
+#include "make-special.typ"
+#include "make-headers.typ"
 
 #slide[
   == We talked about
@@ -83,21 +89,22 @@
     #columns(2)[
       - Compiled & Interpreted Languages
         - compiler, interpreter, bytecode
-      - Graphical Editors
-        - VS Code / VSCodium, Zed
       - Integrated Development Environments
       - Language Servers
       - Debuggers
+      - Debug Adapters
       #colbreak()
       - From an Editor to an IDE
         - LSP + DAP
       - The C Compilation Pipeline
         - preprocessor, compiler, assembler, linker
       - Building with `make`
-        - a `Makefile`, step by step
-      - Building with `cargo`
+        - rules, step by step
+      - A `Makefile` for a Project
+        - automatic variables, pattern rules
+      - Special Targets
+        - `.PHONY`, `clean`, `all`, `run`
+      - Header Dependencies
     ]
   ]
 ]
-
-#include "languages-extra.typ"

@@ -18,73 +18,18 @@
 
 // ----- m x n versus m + n -----
 
-#let lsp-editors = ("vim", "emacs", "VS Code", "Zed", "helix")
-#let lsp-langs = ("C", "Rust", "Python", "Go", "Java")
-#let lsp-servers = ("clangd", "rust-analyzer", "pyright", "gopls", "jdtls")
-
-#let mn-drawing(with-lsp) = drawing(width: 440pt, height: 182pt, {
-  let ys = range(5).map(i => 16pt + i * 32pt)
-  let (xl, xr) = (40pt, 400pt)
-  if not with-lsp {
-    // every editor carries its own plugin for every language
-    let short = lsp-langs
-    pin(264pt, -5pt, text(size: 7pt, fill: changed)[a plugin for each language, in each editor])
-    for a in ys {
-      place(top + left, dx: 0pt, dy: a - 14pt, box(width: 424pt, height: 28pt, radius: 0.4em, fill: luma(248), stroke: (paint: luma(190), thickness: 0.6pt, dash: "dashed")))
-      for (j, l) in short.enumerate() {
-        pin(140pt + j * 62pt, a, box(
-          width: 54pt,
-          height: 22pt,
-          radius: 0.2em,
-          fill: changed-fill,
-          stroke: 0.8pt + changed,
-          align(center + horizon, text(size: 9pt, fill: changed, weight: "bold")[#l]),
-        ))
-      }
-    }
-    pin(220pt, 172pt, text(size: 8pt, fill: changed)[*5 × 5 = 25* plugins, each one writes its own C parser, Rust parser, ...])
-  } else {
-    // LSP is an interface: editors plug in on one side, servers on the other
-    let (cx, bw) = (220pt, 46pt) // center and width of the interface
-    let (bl, br) = (cx - bw / 2, cx + bw / 2)
-    let srv-left = xr - 10pt - 42pt
-    let cable = (paint: accent, thickness: 2pt, cap: "round")
-    // a plug: a body and two prongs, pointing towards the interface
-    let plug(x, y, dir) = {
-      // dir = 1: plugs in from the left, dir = -1: from the right
-      let (body-w, body-h, prong) = (9pt, 14pt, 5pt)
-      let bx = if dir == 1 { x - prong - body-w } else { x + prong }
-      place(top + left, dx: bx, dy: y - body-h / 2, box(width: body-w, height: body-h, radius: 2pt, fill: accent))
-      let px = if dir == 1 { x - prong } else { x }
-      for d in (-3.5pt, 3.5pt) {
-        place(top + left, dx: px, dy: y + d - 1pt, box(width: prong, height: 2pt, fill: luma(110)))
-      }
-    }
-    for a in ys {
-      place(top + left, line(start: (xl + 32pt, a), end: (bl - 14pt, a), stroke: cable))
-      place(top + left, line(start: (br + 14pt, a), end: (srv-left, a), stroke: cable))
-    }
-    // the interface: a strip of sockets
-    place(top + left, dx: bl, dy: 0pt, box(width: bw, height: 160pt, radius: 0.5em, fill: rgb("eef3f5"), stroke: 1.5pt + accent))
-    for a in ys {
-      for (x, dir) in ((bl, 1), (br, -1)) {
-        plug(x, a, dir)
-      }
-    }
-    pin(cx, 80pt, rotate(-90deg, reflow: true, text(size: 15pt, fill: accent, weight: "bold", tracking: 2pt)[LSP]))
-    pin((xl + 32pt + bl) / 2, ys.at(0) - 8pt, text(size: 6.5pt, fill: luma(100), style: "italic")[LSP client])
-    pin((br + srv-left) / 2, ys.at(0) - 8pt, text(size: 6.5pt, fill: luma(100), style: "italic")[LSP server])
-    pin(220pt, 172pt, text(size: 8pt, fill: accent)[*5 + 5 = 10*: every editor and every server talk through the same interface])
-  }
-  for (i, e) in lsp-editors.enumerate() {
-    pin(xl, ys.at(i), file-box(e, width: 64pt))
-  }
-  if with-lsp {
-    for (i, l) in lsp-langs.enumerate() {
-      pin(xr - 10pt, ys.at(i), tool-box(lsp-servers.at(i), sub: l, width: 84pt))
-    }
-  }
-})
+#let mn-drawing(with-lsp) = many-to-many(
+  with-lsp,
+  editors: ("vim", "emacs", "VS Code", "Zed", "helix"),
+  chips: ("C", "Rust", "Python", "Go", "Java"),
+  servers: (("clangd", "C"), ("rust-analyzer", "Rust"), ("pyright", "Python"), ("gopls", "Go"), ("jdtls", "Java")),
+  protocol: "LSP",
+  client: [LSP client],
+  server: [LSP server],
+  note: [a plugin for each language, in each editor],
+  before: [*5 × 5 = 25* plugins, each one writes its own C parser, Rust parser, ...],
+  after: [*5 + 5 = 10*: every editor and every server talk through the same interface],
+)
 
 #slide[
   == The Problem
@@ -189,28 +134,7 @@
   == A Conversation with `clangd`
   File events and requests
 
-  // kind: "event" (no answer), "request" (has an id), "answer" (same id)
-  #let msg(to-server, kind, method, body) = block(
-    width: 100%,
-    fill: if to-server { rgb("eef3f5") } else { changed-fill },
-    stroke: 0.8pt + if to-server { accent } else { changed },
-    radius: 0.4em,
-    inset: 0.5em,
-    below: 0.5em,
-    {
-      text(size: 0.8em, weight: "bold", fill: if to-server { accent } else { changed })[
-        #if to-server [editor #sym.arrow `clangd`] else [`clangd` #sym.arrow editor]: #raw(method)
-      ]
-      h(1fr)
-      box(
-        fill: if kind == "event" { luma(120) } else { accent },
-        radius: 0.6em,
-        inset: (x: 0.45em, y: 0.15em),
-        text(size: 0.6em, fill: white, weight: "bold", kind),
-      )
-      block(above: 0.4em, text(font: mono, size: 0.7em, raw(body.join("\n"), block: true)))
-    },
-  )
+  #let msg = protocol-msg.with(server: [`clangd`])
 
   #toolbox.side-by-side(columns: (5fr, 6fr), gutter: 1.2em)[
     #set text(size: 0.85em)
