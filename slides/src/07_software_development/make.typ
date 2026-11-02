@@ -195,7 +195,7 @@
 ]
 
 #slide[
-  == `make`, Step by Step: Nothing Changed
+  == `make`, Step by Step: Up to Date
   Run `make` again, right after the first build
 
   #toolbox.side-by-side(columns: (165pt, 165pt, 1fr), gutter: 1.2em)[

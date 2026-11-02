@@ -141,10 +141,11 @@ Breakpoint 1, sum (n=10) at lib.c:3
 (gdb) print n
 $1 = 10"
 
-// (the last line of the session shown, the lines of lib.c highlighted, the note)
+// (the last line of the session shown, the current lines of lib.c for
+// debug-code, () for none, the note)
 #let session-steps = (
-  (2, "all", [start the program *under* `gdb`, it does not run yet]),
-  (4, (1,), [`break`: a *breakpoint* at the function `sum`, i.e. at its first line]),
+  (2, (), [start the program *under* `gdb`, it does not run yet]),
+  (4, (3,), [`break`: a *breakpoint* at the function `sum`, i.e. at the first line of its body, line 3]),
   (8, (3,), [`run`: the program starts and stops at the breakpoint, *before* line 3 runs]),
   (10, (1, 3), [`print`: the value of a variable, or of any C expression (`n * 2`)]),
 )
@@ -156,8 +157,7 @@ $1 = 10"
   #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1em)[
     // small enough that the `for` line does not wrap
     #set text(size: 0.8em)
-    #text(fill: luma(110))[`lib.c`]
-    #highlight-code(session-steps.map(s => s.at(1)))[#lib-c]
+    #debug-code(name: "lib.c", session-steps.map(s => s.at(1)), lib-c)
   ][
     #set text(size: 0.92em)
     #for (i, (upto, _, _)) in session-steps.enumerate() {
@@ -187,7 +187,11 @@ $1 = 10"
     rows.push(("│" + body + "│", n == current))
   }
   rows.push(("└" + "─" * (width - 2) + "┘", false))
-  rows.push((pad("native process 6201 In: sum", width - 24) + pad("L" + str(current), 6) + "PC: 0x555555555188", false))
+  // the address of the first instruction of each line (gcc -O0, x86-64,
+  // PIE loaded at 0x555555554000): sum starts at 0x117d, line 3 is +0xb
+  // (gdb: "Breakpoint 1 at 0x1188"), line 4 is +0x12, line 5 is +0x1b
+  let pc = ("3": "0x555555555188", "4": "0x55555555518f", "5": "0x555555555198").at(str(current))
+  rows.push((pad("native process 6201 In: sum", width - 24) + pad("L" + str(current), 6) + "PC: " + pc, false))
   block(width: 100%, fill: rgb("1e1e1e"), radius: 0.3em, inset: 0.5em, {
     set text(font: mono, size: 0.52em, fill: luma(225), top-edge: "ascender", bottom-edge: "descender")
     set par(leading: 0em)

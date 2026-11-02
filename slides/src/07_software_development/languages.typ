@@ -34,7 +34,7 @@
 
 #slide[
   == Machine Code
-  A program is a text file, the processor does not understand text
+  We write the source code as text, the processor runs only bytes
 
   #v(0.5em)
   #align(center)[
@@ -71,11 +71,6 @@
   #v(1fr)
   #only(1)[💡 every processor has its own *instruction set*: x86-64, ARM64, RISC-V, ...]
   #only(2)[💡 someone has to *translate* the source code to machine code: *who* does it and *when*?]
-  #only("3-")[
-    #callout[
-      a *compiler* translates *before* the program runs #h(1em) | #h(1em) an *interpreter* translates *while* it runs
-    ]
-  ]
 ]
 
 #slide[
@@ -103,14 +98,14 @@
       Hello, 1!
       Hello, 2!
       $ file hello
-      hello: ELF 64-bit LSB pie executable
+      hello: ELF 64-bit LSB pie executable, ...
       ```
     ]
   ][
     #set text(size: 0.9em)
     #uncover("3-")[#block[
       ✅ *fast*: the CPU runs the program directly\
-      ✅ errors are found *before* running\
+      ✅ many errors (syntax, types) are found *before* running\
       ✅ ship only the executable, not the source
     ]]
     #uncover("4-")[#block[
@@ -186,9 +181,9 @@
   let small(body) = text(size: 6.5pt, fill: luma(100), style: "italic", body)
   // the script: just text
   lines-file(0pt, 2pt, 112pt, "hello.sh", (
+    text(fill: luma(120))[\#!/bin/bash],
     highlight-shell("echo \"Hello!\""),
-    highlight-shell("x=$((6 * 7))"),
-    highlight-shell("echo \"x is $x\""),
+    highlight-shell("echo \"x is $((6 * 7))\""),
   ), on: 1)
   pin(56pt, 71pt, small[source code (text)])
   line-arrow((112pt, 39pt), (150pt, 27pt), color: changed, thickness: 1.2pt)
@@ -263,16 +258,17 @@
   #interpreter-picture
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
+    // smaller, so the `file /bin/bash` line does not wrap
     #uncover("2-")[
+      #set text(size: 0.85em)
       ```terminal
       $ ./hello.sh
-      Hello, 0!
-      Hello, 1!
-      Hello, 2!
+      Hello!
+      x is 42
       $ file hello.sh
-      hello.sh: Bourne-Again shell script
+      hello.sh: Bourne-Again shell script, ...
       $ file /bin/bash
-      /bin/bash: ELF 64-bit LSB pie executable
+      /bin/bash: ELF 64-bit LSB pie executable, ...
       ```
     ]
   ][
@@ -544,7 +540,7 @@
 #let compare-rows = (
   ([When is the code translated?], [once, before it runs], [every time it runs], none),
   ([How fast does it run?], [fast], [slower (a JIT helps)], "compiled"),
-  ([When do you find errors?], [before it runs], [only when that line runs], "compiled"),
+  ([When do you find errors?], [syntax and types: before it runs], [many only when that line runs], "compiled"),
   ([You changed the code?], [compile again, then run], [run it right away], "interpreted"),
   ([Another CPU or OS?], [compile again for it], [runs if it has the interpreter], "interpreted"),
   ([What do you give to users?], [the executable], [the source (or bytecode)], none),

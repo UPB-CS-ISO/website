@@ -41,7 +41,7 @@
     ]
 
     #v(0.5em)
-    Brian Kernighan, _The Elements of Programming Style_
+    Brian Kernighan and P. J. Plauger, _The Elements of Programming Style_
   ]
 ]
 
@@ -69,7 +69,7 @@
         - `.PHONY`, `clean`, `all`, `run`
       - Header Dependencies
       - Version Control with Git
-        - commits, branches, commit vs push
+        - commits, commit vs push, branches
     ]
   ]
 ]
@@ -111,7 +111,7 @@
         - `.PHONY`, `clean`, `all`, `run`
       - Header Dependencies
       - Version Control with Git
-        - commits, branches, commit vs push
+        - commits, commit vs push, branches
     ]
   ]
 ]
