@@ -131,7 +131,7 @@
       [⚠️ `uniq` only compares a line with the *previous* one: no two `apple` lines are next to each other, nothing is removed]),
     (cmd-line(w("sort", kind: "cmd"), w("fruits.txt"), pipe-sym, w("uniq", kind: "cmd")),
       line-map(height: 106pt, out-width: 175pt, ((sorted-header, fruits-sorted),), "sort fruits.txt | uniq", ("apple", "banana", "cherry", "kiwi"),
-        ((0, 0), (1, 0), (2, 0), (3, 1), (4, 1), (5, 2), (6, 3))),
+        ((0, 0), (1, 0), (2, 0), (3, 1), (4, 1), (5, 2), (6, 3)), keep: (0,)),
       none, none,
       [💡 `sort` first, so the identical lines are next to each other]),
     (cmd-line(w("sort", kind: "cmd"), w("fruits.txt"), pipe-sym, w("uniq", kind: "cmd"), param("-c", color: changed, means: [count])),
@@ -142,7 +142,7 @@
       [💡 `-c` - how many times every line shows up]),
     (cmd-line(w("sort", kind: "cmd"), w("fruits.txt"), pipe-sym, w("uniq", kind: "cmd"), param("-d", color: changed, means: [only repeated])),
       line-map(height: 106pt, out-width: 175pt, ((sorted-header, fruits-sorted),), "sort fruits.txt | uniq -d", ("apple", "banana"),
-        ((0, 0), (1, 0), (2, 0), (3, 1), (4, 1))),
+        ((0, 0), (1, 0), (2, 0), (3, 1), (4, 1)), keep: (0,)),
       none, none,
       [💡 `-d` - only the lines that are repeated; `cherry` and `kiwi` show up once, they are dropped]),
   ))

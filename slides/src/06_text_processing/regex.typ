@@ -271,8 +271,11 @@
 // the regex in pieces, the size of the drawing); the last one stays on
 // the next steps (e.g. under a popup)
 // the matches were checked against the real `grep` output
-#let rx-examples(steps) = {
-  let at(i) = if i == steps.len() - 1 { str(i + 1) + "-" } else { i + 1 }
+// `hold` - the index of a step that stays one more step (e.g. under a
+// popup), the next steps come one step later
+#let rx-examples(steps, hold: none) = {
+  let start(i) = if hold != none and i > hold { i + 2 } else { i + 1 }
+  let at(i) = if i == steps.len() - 1 { str(start(i)) + "-" } else if i == hold { str(start(i)) + "-" + str(start(i) + 1) } else { start(i) }
   toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
     #set text(size: 0.85em)
     #for (i, (cmd, pattern, explain, pieces, size)) in steps.enumerate() {
@@ -320,11 +323,11 @@
       ), 2.2em),
     ("grep '\\.' words.txt", rx-seq(("\\.", "esc")), [`\` makes the next character *literal*: a real dot, `.` alone matches every line],
       (("\\.", "esc", [a real dot]),), 2.4em),
-  ))
+  ), hold: 6)
 
   // the usual mistake: reading a regex as a glob (lecture 4)
-  // above the note of the last example (`\.`), so it can still be read
-  #only("10-")[
+  // right after the first `*` (`go*al`, held one more step under it)
+  #only(8)[
     #popup(dx: 1em, dy: -4.4em)[
       #align(center, text(size: 1.5em, weight: "bold", fill: fail-color)[⚠️ `*` in a regex is *not* `*` in a glob!])
       #v(-0.2em)

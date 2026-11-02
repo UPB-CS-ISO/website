@@ -414,6 +414,8 @@
 //   same output line (`uniq`), a line with no link is dropped (faded, as the
 //   fields `cut` does not keep)
 // - `new` - output lines drawn orange even if they stay in place
+// - `keep` - output lines drawn gray even if other lines merge into them
+//   (`uniq`: the first line stays, the others join it)
 // - `in-new` - input lines drawn orange (e.g. a line added to a log)
 // - `after` - terminal lines after the output, drawn gray (e.g. "^D")
 // - `colored` - every input line gets its own color, used by its arrow and
@@ -426,7 +428,7 @@
 // stays where it was
 // #line-map(((file("fruits.txt"), fruits),), "tac fruits.txt", fruits.rev(),
 //   range(7).map(i => (i, 6 - i)))
-#let line-map(inputs, cmd, outs, links, new: (), in-new: (), after: (), row: 11.5pt, size: 8.5pt,
+#let line-map(inputs, cmd, outs, links, new: (), keep: (), in-new: (), after: (), row: 11.5pt, size: 8.5pt,
   in-width: 120pt, out-width: 150pt, gap: 85pt, height: 0pt, colored: false, at-top: false) = {
   let palette = (rgb("1565c0"), rgb("c62828"), rgb("2e7d46"), rgb("7b1fa2"), rgb("e65100"), rgb("00838f"), rgb("8d6e00"))
   let line-color(i) = palette.at(calc.rem(i, palette.len()))
@@ -439,7 +441,7 @@
   let linked = links.map(((i, j)) => i)
   let some-dropped = range(n-in).any(i => i not in linked)
   let moved(i, j) = i != j or j in new
-  let hot = links.filter(((i, j)) => moved(i, j)).map(((i, j)) => j) + new
+  let hot = (links.filter(((i, j)) => moved(i, j)).map(((i, j)) => j) + new).filter(j => j not in keep)
 
   // the input cards, one under the other, and where every line is (y)
   let cards = ()
@@ -489,10 +491,14 @@
   box(width: in-width + gap + out-width, height: total-h, {
     for (cy, c) in cards { place(top + left, dy: dy-in + cy, c) }
     place(top + left, dx: in-width + gap, dy: dy-out, term)
-    // the gray arrows first, so the orange ones are drawn on top
-    for hot-pass in (false, true) {
+    // the gray arrows first, so the orange ones are drawn on top; the gray
+    // arrows of the `keep` lines last, so they stay visible over the orange
+    // ones that merge into the same line
+    let pass(i, j) = if moved(i, j) { 1 } else if j in keep { 2 } else { 0 }
+    for p in (0, 1, 2) {
       for (i, j) in links {
-        if moved(i, j) == hot-pass {
+        let hot-pass = moved(i, j)
+        if pass(i, j) == p {
           link-arrow(
             (in-width + 4pt, dy-in + in-y.at(i)),
             (in-width + gap - 3pt, dy-out + out-y(j)),

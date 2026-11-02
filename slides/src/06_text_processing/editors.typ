@@ -71,7 +71,7 @@
     $ nano main.c
     ```
   ][
-    #key-table(size: 0.88em, gap: 0.22em, (
+    #key-table(size: 0.8em, gap: 0.38em, (
       ([move], none),
       ([#kbd("←") #kbd("↓") #kbd("↑") #kbd("→")], [the arrow keys]),
       ([#ctrl("A") / #ctrl("E")], [start / end of the line]),
