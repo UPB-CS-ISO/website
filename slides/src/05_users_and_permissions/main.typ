@@ -56,6 +56,7 @@
   - Becoming `root`
   - File Permissions
   - Special Permissions
+  - The Label of a Process
   - The Prompt
   - Managing Users and Groups
 ]
@@ -69,6 +70,7 @@
 #include "sudo.typ"
 #include "permissions.typ"
 #include "special.typ"
+#include "credentials.typ"
 #include "prompt.typ"
 
 #slide[
@@ -83,5 +85,6 @@
   - Becoming `root`
   - File Permissions
   - Special Permissions
+  - The Label of a Process
   - The Prompt
 ]
