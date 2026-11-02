@@ -56,7 +56,7 @@ fi
         row-gutter: 0.5em,
         align: horizon,
         code-badge(0, size: 2em), draw-arrow(length: 1.5em, color: ok-color), text(size: 1.2em, fill: ok-color)[*true* - success, `then` runs],
-        code-badge(1, size: 2em), draw-arrow(length: 1.5em, color: fail-color), text(size: 1.2em, fill: fail-color)[*false* - an error (`1` ... `255`)],
+        code-badge(1, size: 2em), draw-arrow(length: 1.5em, color: fail-color), text(size: 1.2em, fill: fail-color)[*false* - a warning or an error (`1` ... `255`)],
       ))
       #v(-0.2em)
       #align(center, label[the opposite of C, where `0` is false])
