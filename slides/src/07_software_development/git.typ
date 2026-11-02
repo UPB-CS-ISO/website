@@ -218,6 +218,125 @@
 ]
 
 #slide[
+  == From the Editor to the Server
+  A change goes through four places
+
+  // the four places in a row; on its step(s), the orange box is drawn over
+  // the gray one (same size, so nothing moves)
+  #let stage(name, sub, steps) = box(width: 100%, {
+    tool-box(name, sub: sub, width: 100%)
+    only(steps, place(top + left, tool-box(name, sub: sub, on: true, width: 100%)))
+  })
+  // an arrow with the command that moves the change above it
+  #let step-arrow(cmd) = stack(
+    spacing: 0.25em,
+    text(font: mono, size: 0.6em, fill: accent, weight: "bold", cmd),
+    draw-arrow(length: 2.6em),
+  )
+  #block(width: 100%, {
+    set text(size: 0.8em)
+    grid(
+      columns: (1fr, auto, 1fr, auto, 1fr, auto, 1fr),
+      column-gutter: 0.4em,
+      align: center + horizon,
+      stage("working directory", [the files you edit], 1),
+      step-arrow("git add"),
+      stage("staging area", [the next commit], 2),
+      step-arrow("git commit"),
+      stage("local repository", [`.git/`, your computer], 3),
+      step-arrow("git push"),
+      stage("remote repository", [GitHub, GitLab, ...], "4-"),
+    )
+  })
+
+  #v(0.6em)
+  #let files = ("Makefile", "main.c")
+  #git-grid(
+    {
+      set text(size: 0.85em)
+      [- you *edit* the files]
+      uncover("2-")[#block[- `git add`: pick what goes in the commit]]
+      uncover("3-")[#block[- `git commit`: save in the *local* repository]]
+      uncover("4-")[#block[- `git push`: send to the *remote*]]
+      uncover("5-")[#block[- `git pull`: get the others' commits]]
+    },
+    // here the picture is the row above: commands and tree on the right
+    align(left, {
+      only(1, git-cmd("(edit main.c in the editor)"))
+      only(2, git-cmd("$ git add main.c"))
+      only(3, git-cmd("$ git commit -m \"Fix typo\""))
+      only(4, git-cmd("$ git push"))
+      only("5-", git-cmd("$ git pull\nAlready up to date."))
+      v(0.4em)
+      only(1, git-tree("project", files, states: ("main.c": edited), rows: 3))
+      only(2, git-tree("project", files, states: ("main.c": staged), rows: 3))
+      only(3, git-tree("project", files, states: ("main.c": committed), rows: 3))
+      only(4, git-tree("project", files, states: ("main.c": pushed), rows: 3))
+      only("5-", git-tree("project", files, states: ("main.c": pushed), rows: 3))
+    }),
+    [],
+    [],
+  )
+
+  #v(1fr)
+  #only("1-3")[💡 the first three places are on *your computer*; `git status` shows what is in each]
+  #only(4)[💡 the remote is *shared*: now your colleagues can get your commit]
+  #only("5-")[💡 `git pull` brings the commits your colleagues pushed; here there are none yet]
+]
+
+#slide[
+  == Commit vs Push
+  A commit stays on your computer until you push it
+
+  #grid(
+    columns: (2fr, 3fr),
+    column-gutter: 1.5em,
+    row-gutter: 0.8em,
+    {
+      set text(size: 0.85em)
+      [=== `git commit`]
+      [- saves a snapshot in the *local* repository]
+      [- works *offline*, only you see it]
+      [=== `git push`]
+      [- sends the commits to the *remote*]
+      [- now the others can `git pull` them]
+    },
+    stack(spacing: 0.6em, block(width: 100%, text(size: 0.7em)[
+      #reveal-terminal(before: none, lines: (8, 11, 11), full: false)[```terminal
+      $ git add main.c
+      $ git commit -m "Fix typo"
+      [main c845fb9] Fix typo
+       1 file changed, 1 insertion(+), 1 deletion(-)
+      $ git status
+      On branch main
+      Your branch is ahead of 'origin/main' by 1 commit.
+        (use "git push" to publish your local commits)
+      $ git push
+      To github.com:alice/project.git
+         e5f6e0f..c845fb9  main -> main
+      ```]
+    ]), {
+      only(1, git-tree("project", ("Makefile", "main.c"), states: ("main.c": not-pushed)))
+      only("2-", git-tree("project", ("Makefile", "main.c"), states: ("main.c": pushed)))
+    }),
+  )
+
+  #v(1fr)
+  #only(2)[💡 `e5f6e0f..c845fb9`: the server moved `main` to your commit]
+  #only(1)[💡 _ahead by 1 commit_: `c845fb9` is only on your computer, the server does not have it]
+
+  // the takeaway, as a popup in the middle of the slide, on its own step
+  // (overlay: last in the body)
+  #only(3, place(center + horizon, popup(width: 320pt)[Commit vs Push][
+    #icon-rows((
+      ("💾", [*commit* = save, on your computer]),
+      ("📤", [*push* = share, on the server]),
+      ("⚠️", [not pushed: your colleagues do not see it]),
+    ))
+  ]))
+]
+
+#slide[
   == Branches
   A branch is a name that points to a commit
 
@@ -276,125 +395,6 @@
   #only(1)[💡 `git switch -c` makes a branch and moves `HEAD` to it]
   #only(2)[💡 back on `main`, `lib.c` and `lib.h` are not in the folder]
   #only("3-")[💡 the merge commit has two parents; `main` now has `lib.c` too]
-]
-
-#slide[
-  == From the Editor to the Server
-  A change goes through four places
-
-  // the four places in a row; on its step(s), the orange box is drawn over
-  // the gray one (same size, so nothing moves)
-  #let stage(name, sub, steps) = box(width: 100%, {
-    tool-box(name, sub: sub, width: 100%)
-    only(steps, place(top + left, tool-box(name, sub: sub, on: true, width: 100%)))
-  })
-  // an arrow with the command that moves the change above it
-  #let step-arrow(cmd) = stack(
-    spacing: 0.25em,
-    text(font: mono, size: 0.6em, fill: accent, weight: "bold", cmd),
-    draw-arrow(length: 2.6em),
-  )
-  #block(width: 100%, {
-    set text(size: 0.8em)
-    grid(
-      columns: (1fr, auto, 1fr, auto, 1fr, auto, 1fr),
-      column-gutter: 0.4em,
-      align: center + horizon,
-      stage("working directory", [the files you edit], 1),
-      step-arrow("git add"),
-      stage("staging area", [the next commit], 2),
-      step-arrow("git commit"),
-      stage("local repository", [`.git/`, your computer], 3),
-      step-arrow("git push"),
-      stage("remote repository", [GitHub, GitLab, ...], "4-"),
-    )
-  })
-
-  #v(0.6em)
-  #let files = ("Makefile", "main.c")
-  #git-grid(
-    {
-      set text(size: 0.85em)
-      [- you *edit* the files]
-      uncover("2-")[#block[- `git add`: pick what goes in the commit]]
-      uncover("3-")[#block[- `git commit`: save in the *local* repository]]
-      uncover("4-")[#block[- `git push`: send to the *remote*]]
-      uncover("5-")[#block[- `git pull`: get the others' commits]]
-    },
-    // here the picture is the row above: commands and tree on the right
-    align(left, {
-      only(1, git-cmd("(edit main.c in the editor)"))
-      only(2, git-cmd("$ git add main.c"))
-      only(3, git-cmd("$ git commit -m \"Fix typo\""))
-      only(4, git-cmd("$ git push"))
-      only("5-", git-cmd("$ git pull"))
-      v(0.4em)
-      only(1, git-tree("project", files, states: ("main.c": edited), rows: 3))
-      only(2, git-tree("project", files, states: ("main.c": staged), rows: 3))
-      only(3, git-tree("project", files, states: ("main.c": committed), rows: 3))
-      only(4, git-tree("project", files, states: ("main.c": pushed), rows: 3))
-      only("5-", git-tree("project", files + ("lib.c",), states: ("main.c": pushed, "lib.c": pulled), rows: 3))
-    }),
-    [],
-    [],
-  )
-
-  #v(1fr)
-  #only("1-3")[💡 the first three places are on *your computer*; `git status` shows what is in each]
-  #only(4)[💡 the remote is *shared*: now your colleagues can get your commit]
-  #only("5-")[💡 a colleague pushed `lib.c`, `git pull` brought it]
-]
-
-#slide[
-  == Commit vs Push
-  A commit stays on your computer until you push it
-
-  #grid(
-    columns: (2fr, 3fr),
-    column-gutter: 1.5em,
-    row-gutter: 0.8em,
-    {
-      set text(size: 0.85em)
-      [=== `git commit`]
-      [- saves a snapshot in the *local* repository]
-      [- works *offline*, only you see it]
-      [=== `git push`]
-      [- sends the commits to the *remote*]
-      [- now the others can `git pull` them]
-    },
-    stack(spacing: 0.6em, block(width: 100%, text(size: 0.7em)[
-      #reveal-terminal(before: none, lines: (8, 11, 11), full: false)[```terminal
-      $ git add main.c
-      $ git commit -m "Fix typo"
-      [main c845fb9] Fix typo
-       1 file changed, 1 insertion(+), 1 deletion(-)
-      $ git status
-      On branch main
-      Your branch is ahead of 'origin/main' by 1 commit.
-        (use "git push" to publish your local commits)
-      $ git push
-      To github.com:alice/project.git
-         e5f6e0f..c845fb9  main -> main
-      ```]
-    ]), {
-      only(1, git-tree("project", ("Makefile", "main.c"), states: ("main.c": not-pushed)))
-      only("2-", git-tree("project", ("Makefile", "main.c"), states: ("main.c": pushed)))
-    }),
-  )
-
-  #v(1fr)
-  #only(2)[💡 `e5f6e0f..c845fb9`: the server moved `main` to your commit]
-  #only(1)[💡 _ahead by 1 commit_: `c845fb9` is only on your computer, the server does not have it]
-
-  // the takeaway, as a popup in the middle of the slide, on its own step
-  // (overlay: last in the body)
-  #only(3, place(center + horizon, popup(width: 320pt)[Commit vs Push][
-    #icon-rows((
-      ("💾", [*commit* = save, on your computer]),
-      ("📤", [*push* = share, on the server]),
-      ("⚠️", [not pushed: your colleagues do not see it]),
-    ))
-  ]))
 ]
 
 #slide[

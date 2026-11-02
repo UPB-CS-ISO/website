@@ -138,7 +138,7 @@
         stroke: (x, y) => (bottom: 0.4pt + luma(220)),
         [*VS Code, VSCodium*], [its own file],
         [*Zed*], [if there is no `.zed/debug.json`],
-        [*`neovim`* + `nvim-dap`], [automatically],
+        [*`neovim`* + `nvim-dap`], [the configurations, but not `preLaunchTask`: run `make` yourself first],
       )
     },
   ))]
@@ -157,7 +157,7 @@
 )
 
 #slide[
-  == The `.editor` Folder
+  == Editor Settings in the Project
   The settings of one editor, saved inside the project
   #counter(footnote).update(0)
 

@@ -318,7 +318,7 @@
 
 // one protocol message, as a card
 // - to-server: true from the editor to the server, false the other way
-// - kind: "event" (no answer), "request" (has an id), "answer" / "response"
+// - kind: "notification" (LSP) / "event" (DAP): no answer; "request" (has an id), "answer" / "response"
 // - method: the name of the message, body: its fields, one string per line
 // - server: the name of the other side
 // e.g. #protocol-msg(true, "request", "textDocument/hover", ("id: 2",), server: [`clangd`])
@@ -335,7 +335,7 @@
     ]
     h(1fr)
     box(
-      fill: if kind == "event" { luma(120) } else { accent },
+      fill: if kind in ("event", "notification") { luma(120) } else { accent },
       radius: 0.6em,
       inset: (x: 0.45em, y: 0.15em),
       text(size: 0.6em, fill: white, weight: "bold", kind),

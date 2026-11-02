@@ -132,7 +132,7 @@
 
 #slide[
   == A Conversation with `clangd`
-  File events and requests
+  Notifications and requests
 
   #let msg = protocol-msg.with(server: [`clangd`])
 
@@ -144,12 +144,12 @@
     #only("3-")[#text(size: 0.9em, fill: accent)[the cursor: line 6, column 17 \ LSP counts from 0: `line 5`, `character 16`]]
   ][
     #only("1-2")[
-      #text(size: 0.85em, weight: "bold", fill: luma(90))[File events: something happened, no answer]
-      #msg(true, "event", "textDocument/didOpen", (
+      #text(size: 0.85em, weight: "bold", fill: luma(90))[Notifications: something happened, no answer]
+      #msg(true, "notification", "textDocument/didOpen", (
         "uri:  file:///home/student/project/main.c",
         "text: \"#include \\\"lib.h\\\"\\n#include ...\"  (the whole file)",
       ))
-      #uncover("2-", msg(false, "event", "textDocument/publishDiagnostics", (
+      #uncover("2-", msg(false, "notification", "textDocument/publishDiagnostics", (
         "uri:     file:///home/student/project/main.c",
         "range:   line 6, characters 24 - 28",
         "message: \"Use of undeclared identifier 'totl';",

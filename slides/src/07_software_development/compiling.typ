@@ -27,9 +27,10 @@
   ("hello.o", [object file], "-c"),
   ("hello", [executable], ""),
 )
-// (tool, the program gcc runs)
+// (tool, the program gcc runs): `cc1` does both the preprocessor and the
+// compiler steps, in one run (`gcc -v` shows only `cc1`, `as`, `collect2`)
 #let pipe-tools = (
-  ([preprocessor], "cpp"),
+  ([preprocessor], "cc1"),
   ([compiler], "cc1"),
   ([assembler], "as"),
   ([linker], "ld"),
@@ -70,17 +71,23 @@
   align(center, grid(columns: cells.len(), column-gutter: 0.25em, align: center + horizon, ..cells))
 }
 
-// the four programs gcc runs, as chips joined by arrows (from pipe-tools)
+// the programs gcc runs for the four steps, as chips joined by arrows:
+// `cc1` does the first two steps (preprocessor + compiler) in one run
+#let gcc-programs = (
+  ([preprocessor + compiler], "cc1"),
+  ([assembler], "as"),
+  ([linker], "ld"),
+)
 #let gcc-steps = {
   let cells = ()
-  for (i, (tool, prog)) in pipe-tools.enumerate() {
+  for (i, (tool, prog)) in gcc-programs.enumerate() {
     cells.push(stack(
       spacing: 0.3em,
       box(fill: changed-fill, stroke: 1pt + changed, radius: 0.25em, inset: (x: 0.5em, y: 0.3em),
         text(font: mono, weight: "bold", fill: changed, prog)),
       text(size: 0.75em, fill: luma(90), tool),
     ))
-    if i < pipe-tools.len() - 1 {
+    if i < gcc-programs.len() - 1 {
       // pushed down to the middle of the chips
       cells.push(pad(top: 0.45em, draw-arrow(length: 1.4em, color: changed)))
     }
@@ -127,7 +134,7 @@ int main(void)
     #place(bottom + right, dy: -0.3em, popup(width: 330pt)[
       🔍 Behind the scenes
     ][
-      `gcc hello.c -o hello` runs *four* commands, one after the other
+      `gcc hello.c -o hello` does *four* steps, with *three* programs
       #v(0.3em)
       #gcc-steps
     ])
@@ -136,7 +143,7 @@ int main(void)
 
 #slide[
   == 0. The C Source: `hello.c`
-  One command, four programs
+  One command, four steps
 
   #pipeline(on: 0, flags: false)
 
@@ -155,7 +162,7 @@ int main(void)
   ]
 
   #v(1fr)
-  💡 behind one `gcc` command, *four* programs run, one after the other
+  💡 behind one `gcc` command, *four* steps: `cc1` does the first two, `as` and `ld` the others
 ]
 
 #slide[
@@ -176,8 +183,7 @@ int main(void)
     ```
   ][
     #set text(size: 0.8em)
-    `tail hello.i`
-    ```c
+    #code-file("hello.i (the last lines)")[```c
     # 5 "hello.c"
     int main(void)
     {
@@ -187,7 +193,7 @@ int main(void)
         }
         return 0;
     }
-    ```
+    ```]
   ]
 
   #v(1fr)
@@ -213,8 +219,7 @@ int main(void)
     - `printf` is only *called*, its code is not here
   ][
     #set text(size: 0.68em)
-    `hello.s` (excerpt)
-    ```asm
+    #code-file("hello.s (excerpt)")[```asm
     main:
         ...
         movl    $0, -4(%rbp)
@@ -226,7 +231,7 @@ int main(void)
     .L2:
         cmpl    $2, -4(%rbp)
         jle     .L3
-    ```
+    ```]
   ]
 ]
 
@@ -503,6 +508,8 @@ int main(void)
     set text(size: 1em)
     // the error message itself, in red
     show regex("(fatal )?error: .*|undefined reference to .*"): set text(fill: bad-color, weight: "bold")
+    // a warning: the build goes on, but the program may be wrong
+    show regex("warning: .*"): set text(fill: changed, weight: "bold")
     session
   })),
 )
@@ -522,8 +529,8 @@ int main(void)
     main.c: fatal error: lib.h: No such file or directory
     ```, [fix `#include` or `-I dir`]),
     ..error-row(2, [missing prototype], [compiler, `gcc -S`], ```terminal
-    $ gcc -c main.c
-    main.c: error: implicit declaration of function ‘sum’
+    $ gcc -c main.c      # GCC 14 and later: an error
+    main.c: warning: implicit declaration of function ‘sum’
     ```, [declare it in `lib.h`]),
     ..error-row(3, [missing `.o`], [linker, `ld`], ```terminal
     $ gcc main.o print.o -o app

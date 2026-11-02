@@ -109,7 +109,7 @@
   ([understands], [text], [the language, the project]),
   ([languages], [any], [one or a few]),
   ([build, run, debug], [in a terminal], [buttons and panels]),
-  ([resources], [✅ small, starts instantly], [❌ large, slow to start]),
+  ([resources], [small, starts instantly], [large, slow to start]),
   ([examples], [`vim`, `nano`, `emacs`], [Visual Studio, IntelliJ IDEA]),
 )
 

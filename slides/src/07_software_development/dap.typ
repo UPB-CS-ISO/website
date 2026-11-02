@@ -53,7 +53,8 @@
 
 // the editor starts the adapter, the adapter starts the program, step by step:
 // 1. only the editor, 2. it starts the adapter, 3. the two pipes,
-// 4. the adapter starts the program and controls it
+// 4. the debugger in the adapter starts the program and controls it (on
+//    Linux, lldb does it through lldb-server, the real parent of the program)
 #let editor-adapter-processes(step) = drawing(width: 440pt, height: 92pt, {
   let (ex, ax, px, y) = (60pt, 225pt, 385pt, 44pt)
   let starts = (paint: luma(120), thickness: 1pt, dash: "dashed")
@@ -76,7 +77,7 @@
     place(top + left, line(start: (ax, y + 17pt), end: (ax, 84pt), stroke: starts))
     place(top + left, line(start: (ax, 84pt), end: (px, 84pt), stroke: starts))
     line-arrow((px, 84pt), (px, y + 18pt), color: luma(120))
-    pin((ax + px) / 2, 91pt, text(size: 8pt, fill: luma(90))[starts it: a *child* of the adapter])
+    pin((ax + px) / 2, 91pt, text(size: 8pt, fill: luma(90))[the debugger starts it (on Linux, through `lldb-server`)])
     line-arrow((ax + 48pt, y), (px - 40pt, y), color: accent, thickness: 1.5pt, head: 6pt)
     pin((ax + px) / 2 - 4pt, y - 9pt, text(size: 7.5pt, fill: accent)[`ptrace`])
   }
@@ -106,7 +107,7 @@
     + you start debugging in the editor
     + #uncover("2-")[the editor *starts* the adapter, e.g. `lldb-dap`]
     + #uncover("3-")[two *pipes* connect them, as for LSP]
-    + #uncover("4-")[the adapter *starts* `app` and controls it with `ptrace`]
+    + #uncover("4-")[its debugger *starts* `app` and controls it with `ptrace` (on Linux, `lldb` uses a helper, `lldb-server`)]
   ][
     #uncover("5-")[#block[
       === The adapter knows
