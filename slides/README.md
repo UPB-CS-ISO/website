@@ -68,6 +68,7 @@ slides/
     ├── ai-prompt.typ   # #ai-prompt and #ai-prompt-overlay boxes
     ├── highlight.typ   # #highlight-code: step-by-step line highlighting
     ├── kbd.typ         # #kbd: keyboard keys (like <kbd> in Docusaurus)
+    ├── shell.typ       # drawings shared by 06 and 07 (word chips, exit codes, debug-run, ...)
     ├── 01_intro/       # one folder per lecture
     └── 02_file_management/
         ├── main.typ    # deck entry point
@@ -77,6 +78,10 @@ slides/
 
 Every sub-folder of `src/` is treated as a deck, so keep only lecture folders
 there.
+
+`shell.typ` is not re-exported by `slides.typ`: its short names (`w`, `label`,
+`arrow`, ...) would clash with the helpers of other decks. The shell decks
+import it from their `common.typ` with `#import "/src/shell.typ": *`.
 
 ## Adding a lecture
 
@@ -143,6 +148,13 @@ $ echo "hello" | wc -c
 ````
 
 `#terminal("$ ls\nfile.txt")` builds the same block from a string.
+
+**Commands in the text** — add `#show: shell-commands` once in `main.typ`,
+after the template: inline code that starts with a known program
+(`` `grep -q kiwi` ``, `` `sort | uniq -c` ``, `` `./app` ``) gets the terminal
+colors. The programs are in `shell-programs` (`src/terminal.typ`); a deck adds
+its own with `#show: shell-commands.with(extra: ("cargo",))`. Inline code with
+a language (```` ```bash $PATH``` ````) is not changed.
 
 **Highlighting lines** — `#highlight-code` walks through an existing listing
 (a directory tree, a man page, ...) step by step: every step shows the whole
