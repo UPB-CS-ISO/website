@@ -66,54 +66,78 @@
   #only("7-")[💡 an editor edits text, an IDE knows *the language* and *the project*]
 ]
 
+// an IDE as a card: its name, what it is for, who makes it
+#let ide-card(name, what, who) = box(
+  width: 100%,
+  height: 3em,
+  inset: (x: 0.6em, y: 0.5em),
+  radius: 0.4em,
+  fill: rgb("eef3f5"),
+  stroke: (left: 3pt + accent),
+  {
+    text(weight: "bold", fill: accent, name)
+    h(1fr)
+    text(size: 0.75em, fill: luma(110), who)
+    linebreak()
+    text(size: 0.85em, what)
+  },
+)
+
 #slide[
   == Examples of IDEs
   Usually made for one language or one platform
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.2em)[
-    #set text(size: 0.72em)
-    #table(
-      columns: (auto, 1fr),
-      inset: 0.32em,
-      stroke: (x, y) => if y == 0 { (bottom: 0.8pt + luma(150)) } else { (bottom: 0.4pt + luma(220)) },
-      table.header([*IDE*], [*for*]),
-      [Visual Studio], [C++, C\# on Windows (Microsoft)],
-      [IntelliJ IDEA], [Java, Kotlin (JetBrains)],
-      [CLion, PyCharm, RustRover], [C/C++, Python, Rust (JetBrains)],
-      [Android Studio], [Android apps (Google, based on IntelliJ)],
-      [Xcode], [macOS and iOS apps, Swift (Apple)],
-      [Eclipse], [Java, C/C++ (open source)],
-      [Qt Creator], [C++ with the Qt library],
-      [Code::Blocks], [C/C++ (open source, small)],
-    )
-  ][
-    #uncover("2-")[
-      #align(center, screenshot("img/book/xcode-interface.png", height: 5cm))
-      #text(size: 0.7em)[Xcode: the window of the application is drawn with the mouse, the IDE writes the code (from the USO book)]
-    ]
-  ]
+  #v(0.3em)
+  #set text(size: 0.85em)
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 1em,
+    row-gutter: 0.5em,
+    ide-card[Visual Studio][C++ and C\# on Windows][Microsoft],
+    ide-card[IntelliJ IDEA][Java, Kotlin][JetBrains],
+    ide-card[CLion, PyCharm, RustRover][C/C++, Python, Rust][JetBrains],
+    ide-card[Android Studio][Android apps][Google],
+    ide-card[Xcode][macOS and iOS apps, Swift][Apple],
+    ide-card[Eclipse][Java, C/C++][open source],
+    ide-card[Qt Creator][C++ with the Qt library][Qt],
+    ide-card[Code::Blocks][C/C++, small][open source],
+  )
 ]
+
+// the comparison table: a row is (what, editor, IDE)
+#let compare-rows = (
+  ([understands], [text], [the language, the project]),
+  ([languages], [any], [one or a few]),
+  ([build, run, debug], [in a terminal], [buttons and panels]),
+  ([resources], [✅ small, starts instantly], [❌ large, slow to start]),
+  ([examples], [`vim`, `nano`, `emacs`], [Visual Studio, IntelliJ IDEA]),
+)
 
 #slide[
   == Editor or IDE?
+  An editor edits text, an IDE knows the language and the project
 
-  #set text(size: 0.95em)
-  #align(center)[
-    #table(
-      columns: (auto, 1fr, 1fr),
-      align: (left, center, center),
-      inset: 0.5em,
-      table.header([], [*Text editor*], [*IDE*]),
-      [understands], [text], [the language and the project],
-      [languages], [any], [one or a few],
-      [build, run, debug], [in a terminal], [buttons and panels],
-      [resources], [✅ small, starts instantly], [❌ large, slow to start],
-      [examples], [`vim`, `nano`, `emacs`], [Visual Studio, IntelliJ, Xcode],
+  #v(0.5em)
+  #align(center, block(width: 100%, {
+    set text(size: 0.95em)
+    table(
+      columns: (auto, 1fr, 1.2fr),
+      align: (left + horizon, center + horizon, center + horizon),
+      inset: (x: 0.6em, y: 0.45em),
+      stroke: none,
+      fill: (x, y) => if y == 0 { none } else if x == 0 { none } else if calc.odd(y) { luma(246) } else { white },
+      table.header(
+        [],
+        table.cell(fill: luma(225))[*Text editor*],
+        table.cell(fill: accent, text(fill: white)[*IDE*]),
+      ),
+      ..compare-rows.map(((what, ed, ide)) => (text(fill: luma(110), style: "italic", what), ed, ide)).flatten(),
+      table.hline(stroke: 0.8pt + luma(200)),
     )
-  ]
+  }))
 
   #v(1fr)
   #uncover("2-")[
-    #callout[Today the line is blurry: with the right *plugins*, an editor becomes an IDE. How? 👉 *language servers* and *debug adapters*]
+    #callout[an editor + *plugins* = an IDE. How? 👉 *language servers* and *debug adapters*]
   ]
 ]
