@@ -30,14 +30,19 @@
 )
 
 // the pipeline so far, the last command in orange, and the kind of the
-// last command under it
-#let so-far(cmds, kind) = {
+// last command under it, as a label (like the meaning of a parameter)
+#let so-far(cmds, kind) = context {
   let (name, color) = kinds.at(kind)
-  grid(columns: 2, column-gutter: 1em, align: horizon,
-    chain(cmds),
-    box(inset: (x: 0.6em, y: 0.25em), radius: 0.3em, fill: color.lighten(88%), stroke: 1pt + color,
-      text(weight: "bold", fill: color, name)),
-  )
+  let c = chain(cmds)
+  let cw = measure(c).width
+  let pw = measure(process(cmds.last(), new: true)).width
+  let lab = text(size: 0.8em, weight: "bold", fill: color, name)
+  let ls = measure(lab)
+  align(center, stack(dir: ttb, spacing: 0.4em,
+    c,
+    // centered under the last command
+    box(width: cw, height: ls.height, place(top + left, dx: cw - pw / 2 - ls.width / 2, lab)),
+  ))
 }
 
 // the text that a command writes, as a box like a file

@@ -318,9 +318,10 @@
 }
 
 // a parameter of a command, as a chip with what it means under it
-#let param(t, color: accent, means: none) = stack(spacing: 0.3em,
-  box(inset: (x: 0.35em, y: 0.28em), radius: 0.2em, fill: color.lighten(88%), stroke: 1pt + color,
-    text(font: mono, weight: "bold", fill: color, t)),
+// the same size as a word (`w`), so the chips of a command line line up
+#let param(t, color: accent, means: none) = stack(spacing: 0.3em + 1pt,
+  box(inset: (x: 0.35em, y: 0.28em), outset: (y: 1pt), radius: 0.2em, fill: color.lighten(88%), stroke: 1pt + color,
+    text(font: mono, size: 0.85em, weight: "bold", fill: color, t)),
   if means != none { text(size: 0.7em, weight: "bold", fill: color, means) },
 )
 
