@@ -207,9 +207,8 @@
   "}",
 )
 
-// main.c with a block cursor at `at` = (row, column), from 0, and the
-// previous place of the cursor `from`, drawn as an orange outline
-#let cursor-code(at, from: none) = block(
+// main.c with a block cursor at `at` = (row, column), from 0
+#let cursor-code(at) = block(
   fill: luma(240),
   radius: 0.3em,
   inset: 0.6em,
@@ -223,8 +222,6 @@
         let ch = if c < chars.len() { chars.at(c) } else { " " }
         if (r, c) == at {
           box(fill: changed, outset: (y: 2pt), text(fill: white, ch))
-        } else if from != none and (r, c) == from {
-          box(stroke: 1pt + changed, outset: (y: 1.5pt), ch)
         } else { ch }
       }
       linebreak()
@@ -264,7 +261,6 @@
     - #kbd("h") #kbd("j") #kbd("k") #kbd("l") also work in `helix`, and in VS Code and Zed with their `vim` modes; in `less` and `man`, only #kbd("j") #kbd("k") (scroll)
   ][
     #for (i, (k, at, note)) in move-steps.enumerate() {
-      let from = if i > 0 { move-steps.at(i - 1).at(1) } else { none }
       only(if i == move-steps.len() - 1 { str(i + 1) + "-" } else { i + 1 })[
         // the key pressed at this step, large and highlighted
         #let arrow-of = (h: "←", j: "↓", k: "↑", l: "→")
@@ -280,7 +276,7 @@
           text(size: 0.8em, fill: luma(110))[#if k == none [start] else [pressed:]], pressed,
         )
         #v(0.2em)
-        #cursor-code(at, from: from)
+        #cursor-code(at)
         #note
       ]
     }
