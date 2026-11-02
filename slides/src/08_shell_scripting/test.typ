@@ -206,13 +206,13 @@ fi"
 ]
 
 #let if-code = "#!/bin/bash
-age=15
-if [ $age -ge 18 ]; then
-    echo \"adult\"
-elif [ $age -ge 13 ]; then
-    echo \"teenager\"
+name=fruits.txt
+if [ -d \"$name\" ]; then
+    echo \"a directory\"
+elif [ -f \"$name\" ]; then
+    echo \"a file\"
 else
-    echo \"child\"
+    echo \"not found\"
 fi
 echo \"done\""
 
@@ -220,13 +220,13 @@ echo \"done\""
   == 🐞 `if`, `elif`, `else`
   The first command that ends with `0` chooses the branch
 
-  #debug-run(if-code, size: 1.1em, columns: (3fr, 2fr), command: "./age.sh", (
-    (line: 2, run: "age=15", vars: (age: "15")),
-    (line: 3, part: "[ $age -ge 18 ]", run: "[ 15 -ge 18 ]", status: 1,
-      note: [💡 the condition is the *command* `[`: it ends with `1`, _false_]),
-    (line: 5, part: "[ $age -ge 13 ]", run: "[ 15 -ge 13 ]", status: 0,
-      note: [💡 so `elif` runs its command: `0`, _true_]),
-    (line: 6, run: "echo \"teenager\"", status: 0, out: ("teenager",),
+  #debug-run(if-code, size: 1.1em, columns: (3fr, 2fr), command: "./kind.sh", (
+    (line: 2, run: "name=fruits.txt", vars: (name: "fruits.txt")),
+    (line: 3, part: "[ -d \"$name\" ]", run: "[ -d fruits.txt ]", status: 1,
+      note: [💡 the condition is the *command* `[`: not a directory, it ends with `1`, _false_]),
+    (line: 5, part: "[ -f \"$name\" ]", run: "[ -f fruits.txt ]", status: 0,
+      note: [💡 so `elif` runs its command: a file, `0`, _true_]),
+    (line: 6, run: "echo \"a file\"", status: 0, out: ("a file",),
       note: [💡 only this branch runs, `else` is skipped]),
     (line: 10, run: "echo \"done\"", status: 0, out: ("done",),
       note: [💡 after `fi`, the script goes on]),
