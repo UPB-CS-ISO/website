@@ -42,7 +42,7 @@
     #uncover("5-")[#block[- ```bash $#``` - how many parameters: `3`]]
     #uncover("6-")[#block[- ```bash "$@"``` - all the parameters, every one a separate word]]
   ][
-    #set text(size: 0.85em)
+    #set text(size: 1.05em)
     #uncover("2-")[#terminal("$ ./params.sh alice \"Alice Smith\" bob")]
   ]
 ]
@@ -56,7 +56,7 @@ echo \"$# parameters\""
   == 🐞 Script Parameters
   The words after the name of the script are ```bash $1```, ```bash $2```, ...
 
-  #debug-run(params-code, command: "./params.sh alice bob", (
+  #debug-run(params-code, size: 1.25em, columns: (3fr, 2fr), command: "./params.sh alice bob", (
     (line: 2, run: "echo \"script: ./params.sh\"", status: 0, out: ("script: ./params.sh",),
       vars: ("$0": "./params.sh", "$1": "alice", "$2": "bob", "$#": "2"),
       note: [💡 ```bash $0``` - the name of the script, as you typed it]),
@@ -76,7 +76,7 @@ done"
   == 🐞 Going Over the Parameters
   ```bash "$@"``` - the parameters, every one a word
 
-  #debug-run(show-code, command: "./show.sh \"Alice Smith\" bob", columns: (1fr, 1fr), (
+  #debug-run(show-code, size: 1.35em, columns: (1fr, 1fr), command: "./show.sh \"Alice Smith\" bob", (
     (line: 2, info: [expands to `"Alice Smith" "bob"`],
       vars: ("$1": "Alice Smith", "$2": "bob", "$#": "2"),
       note: [💡 two words, the space inside `Alice Smith` is kept]),
@@ -92,7 +92,7 @@ done"
   ```bash $0```, ```bash $1```, ```bash $2```, ... - the words of the command line
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.75em)
+    #set text(size: 0.95em)
     ```bash
     #!/bin/bash
     echo "script: $0"
@@ -101,6 +101,7 @@ done"
     echo "count:  $#"
     echo "all:    $@"
     ```
+    #set text(size: 0.8em)
     #table(
       columns: (auto, 1fr),
       inset: (x: 0.4em, y: 0.3em),
@@ -111,7 +112,7 @@ done"
       [```bash $@```], [all the parameters],
     )
   ][
-    #set text(size: 0.78em)
+    #set text(size: 0.95em)
     #reveal-terminal(before: none, lines: (6, 12), full: false)[```terminal
     $ ./params.sh alice bob
     script: ./params.sh
@@ -136,10 +137,10 @@ done"
 
 #slide[
   == `"$@"` Keeps the Words
-  Without quotes, the parameters are split again
+  Without quotes, the parameters are cut again at the characters of `IFS`
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.8em)
+    #set text(size: 1.1em)
     ```bash
     #!/bin/bash
     # show.sh
@@ -149,7 +150,7 @@ done"
     ```
     #terminal("$ ./show.sh \"Alice Smith\" bob\n[Alice Smith]\n[bob]")
   ][
-    #set text(size: 0.8em)
+    #set text(size: 1.1em)
     #uncover("2-")[
       ```bash
       #!/bin/bash
@@ -164,6 +165,26 @@ done"
 
   #v(0.3em)
   #uncover("2-")[
-    #shell-first[```bash $@``` is replaced by text, and unquoted text is split at the spaces - the same rule as for any variable]
+    #shell-first[```bash $@``` is replaced by text, unquoted text is cut at the characters of `IFS` - the same rule as for any variable]
+  ]
+
+  // how the unquoted $@ is cut, as a popup on top of the slide
+  #only("3-")[
+    #popup(color: accent, fill: white, angle: -2deg)[
+      #align(center, text(size: 1.3em, weight: "bold", fill: accent)[✂️ unquoted ```bash $@``` is cut at `IFS`])
+      #v(-0.2em)
+      #align(center, text(size: 1.1em, ifs-chips("space", "tab", "newline")))
+      #v(-0.1em)
+      #align(center, text(size: 1.2em, grid(
+        columns: 3,
+        column-gutter: 0.8em,
+        align: horizon,
+        ifs-line("Alice Smith bob", blank),
+        draw-arrow(length: 1.5em, color: changed),
+        words(("Alice", "new"), ("Smith", "new"), ("bob", "new")),
+      )))
+      #v(-0.1em)
+      #align(center, label[```bash "$@"``` - every parameter stays one word: #words("Alice Smith", "bob")])
+    ]
   ]
 ]

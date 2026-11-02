@@ -22,8 +22,8 @@
   == `test`
   A command that checks a condition and only sets its exit code
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.8em)
+  #toolbox.side-by-side(columns: (9fr, 11fr), gutter: 1.5em)[
+    #set text(size: 0.75em)
     #table(
       columns: (auto, 1fr),
       table.header([Test], [True (`0`) if]),
@@ -36,7 +36,7 @@
       [`! E`, `E -a E`, `E -o E`], [not, and, or],
     )
   ][
-    #set text(size: 0.85em)
+    #set text(size: 1em)
     #reveal-terminal(before: none, lines: (3, 5, 7, 9), full: false)[```terminal
     $ a=2; b=3
     $ test $a -lt $b; echo $?
@@ -69,7 +69,7 @@ fi"
   == 🐞 Comparing With `test`
   `test` compares, it only sets its exit code
 
-  #debug-run(test-code, command: "./smaller.sh", blocks: true, (
+  #debug-run(test-code, size: 1.35em, columns: (3fr, 2fr), command: "./smaller.sh", blocks: true, (
     (line: 2, run: "a=2", vars: (a: "2")),
     (line: 3, run: "b=3", vars: (b: "3")),
     (line: 4, part: "test $a -lt $b", run: "test 2 -lt 3", status: 0,
@@ -82,8 +82,8 @@ fi"
   == `[` Is a Program
   `[ ... ]` is `test`, with a `]` at the end - nicer to read
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.72em)
+  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
+    #set text(size: 0.95em)
     #reveal-terminal(before: none, lines: (4, 6, 9), full: false)[```terminal
     $ type -a [
     [ is a shell builtin
@@ -117,8 +117,8 @@ fi"
   == The Pitfalls of `[`
   `[` only sees *words*
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.72em)
+  #toolbox.side-by-side(columns: (11fr, 9fr), gutter: 1.5em)[
+    #set text(size: 0.82em)
     #reveal-terminal(before: none, lines: (4, 7, 9, 12, 14), full: false)[```terminal
     $ a=2; b=3; x=""
     $ [$a -lt $b]; echo $?
@@ -195,7 +195,7 @@ fi"
   == 🐞 `[` Needs Spaces
   Without them, `[` is glued to the next word
 
-  #debug-run(bracket-code, command: "./smaller.sh", blocks: true, (
+  #debug-run(bracket-code, size: 1.05em, columns: (9fr, 11fr), command: "./smaller.sh", blocks: true, (
     (line: 2, run: "a=2", vars: (a: "2")),
     (line: 3, run: "b=3", vars: (b: "3")),
     (line: 4, part: "[$a -lt $b]", run: "[2 -lt 3]", status: 127, out: ("./smaller.sh: line 4: [2: command not found",),
@@ -220,7 +220,7 @@ echo \"done\""
   == 🐞 `if`, `elif`, `else`
   The first command that ends with `0` chooses the branch
 
-  #debug-run(if-code, command: "./age.sh", (
+  #debug-run(if-code, size: 1.1em, columns: (3fr, 2fr), command: "./age.sh", (
     (line: 2, run: "age=15", vars: (age: "15")),
     (line: 3, part: "[ $age -ge 18 ]", run: "[ 15 -ge 18 ]", status: 1,
       note: [💡 the condition is the *command* `[`: it ends with `1`, _false_]),
@@ -237,12 +237,12 @@ echo \"done\""
   == `[[ ]]` and `(( ))`
   Later, `bash` added real syntax for conditions
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
+  #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.5em)[
     #set text(size: 0.85em)
     - `[[ ... ]]` - like `[`, but a _keyword_ of `bash`: no word splitting, ```bash $x``` may be empty
     #uncover("2-")[#block[- `(( ... ))` - the C-like math of `$(( ))`, as a condition: not `0` is _true_]]
   ][
-    #set text(size: 0.85em)
+    #set text(size: 1.05em)
     #reveal-terminal(before: none, lines: (2, 4), full: false)[```terminal
     $ if [[ $a -lt $b ]]; then echo "smaller"; fi
     smaller

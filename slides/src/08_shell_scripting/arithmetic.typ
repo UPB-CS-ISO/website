@@ -29,7 +29,7 @@ $a + $b"
   == 🐞 Adding Two Numbers?
   What you might expect to work
 
-  #debug-run(naive-code, command: "./math.sh", blocks: true, (
+  #debug-run(naive-code, size: 1.25em, columns: (2fr, 3fr), command: "./math.sh", blocks: true, (
     (line: 2, run: "a=2", vars: (a: "2")),
     (line: 3, run: "b=3", vars: (b: "3")),
     (line: 4, run: "sum=2+3", vars: (sum: "2+3"),
@@ -46,7 +46,7 @@ $a + $b"
   ```bash a=2``` and ```bash b=3```
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.85em)
+    #set text(size: 1.3em)
     #reveal-terminal(before: none, lines: (3, 5, 7, 9), full: false)[```terminal
     $ a=2; b=3
     $ echo $a+$b
@@ -99,7 +99,7 @@ echo $sum"
   == 🐞 Computing With `expr`
   A *program* that computes, it works in every shell
 
-  #debug-run(expr-code, command: "./expr.sh", blocks: true, (
+  #debug-run(expr-code, size: 1.35em, columns: (3fr, 2fr), command: "./expr.sh", blocks: true, (
     (line: 2, run: "a=2", vars: (a: "2")),
     (line: 3, run: "b=3", vars: (b: "3")),
     (line: 4, part: "expr $a + $b", who: "copy", run: "expr 2 + 3", status: 0, info: [prints `5`],
@@ -115,8 +115,10 @@ echo $sum"
   == `expr` Pitfalls
   The shell expands the parameters of `expr` first
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.85em)
+  // the session takes all the width (its error message is long), what
+  // `expr` gets is under it
+  #[
+    #set text(size: 1.12em)
     #reveal-terminal(before: none, lines: (3, 5, 7, 9), full: false)[```terminal
     $ a=2; b=3
     $ expr $a + $b
@@ -128,31 +130,24 @@ echo $sum"
     $ expr $a * $b
     expr: syntax error: unexpected argument ‘fruits.txt’
     ```]
-  ][
+  ]
+  #[
     #set text(size: 0.9em)
     #only(1)[
-      #words(("expr", "cmd"), ("2", "new"), ("+", "new"), ("3", "new"))
-
-      💡 three parameters: a number, an operator, a number
+      #words(("expr", "cmd"), ("2", "new"), ("+", "new"), ("3", "new")) #h(0.8em) 💡 three parameters: a number, an operator, a number
     ]
     #only(2)[
-      #words(("expr", "cmd"), ("2+3", "new"))
-
-      💡 *one* parameter: nothing to compute, `expr` prints it back
+      #words(("expr", "cmd"), ("2+3", "new")) #h(0.8em) 💡 *one* parameter: nothing to compute, `expr` prints it back
     ]
     #only(3)[
-      #words(("expr", "cmd"), "2", ("*", "new"), "3")
-
-      💡 `\*`: the `*` is a character, not a glob
+      #words(("expr", "cmd"), "2", ("*", "new"), "3") #h(0.8em) 💡 `\*`: the `*` is a character, not a glob
     ]
     #only("4-")[
-      #words(("expr", "cmd"), "2", ("fruits.txt", "new"), ("notes.txt", "new"), ("...", "new"), "3")
-
-      ⚠️ the shell *globs* `*` into the file names, before `expr` starts
+      #words(("expr", "cmd"), "2", ("fruits.txt", "new"), ("notes.txt", "new"), ("...", "new"), "3") #h(0.8em) ⚠️ the shell *globs* `*` into the file names, before `expr` starts
     ]
   ]
 
-  #v(0.5em)
+  #v(0.2em)
   #uncover("4-")[
     #shell-first[the shell does not know that `expr` wants math: it expands the command line the same way for every command]
   ]
@@ -163,7 +158,7 @@ echo $sum"
   The shell computes only inside `(( ))`
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 1.15em)
+    #set text(size: 1.35em)
     #highlight-code(((1,), (2,), (3,), (4,), "all"))[```bash
 ((n = n - 1))
 ((count++))
@@ -171,7 +166,7 @@ sum=$((a + b))
 echo $((a * 2 + 1))
 ```]
     #uncover("3-")[
-      #set text(size: 0.75em)
+      #set text(size: 0.65em)
       #v(0.3em)
       #grid(
         columns: (auto, auto, auto),
@@ -227,7 +222,7 @@ echo \"$a + $b = $((a + b))\""
   == 🐞 Arithmetic
   The shell computes inside ```bash $(( ))```, no program is started
 
-  #debug-run(arith-code, command: "./math.sh", (
+  #debug-run(arith-code, size: 1.35em, columns: (3fr, 2fr), command: "./math.sh", (
     (line: 2, run: "a=2", vars: (a: "2")),
     (line: 3, run: "b=3", vars: (b: "3")),
     (line: 4, compute: "$((a + b))", info: [computes `2 + 3` = `5`],
@@ -252,14 +247,14 @@ echo \"$a + $b = $((a + b))\""
   #let side(title, typed, steps, runs, out) = [
     #text(weight: "bold", fill: accent, title)
     #v(-0.2em)
-    #align(center, text(size: 1.2em, typed))
+    #align(center, text(size: 1.4em, typed))
     #v(-0.2em)
     #for (who, what) in steps [
       #label(who) #h(0.3em) #what \
     ]
     #label[then the shell runs] #h(0.3em) #box(runs)
     #v(-0.2em)
-    #set text(size: 0.85em)
+    #set text(size: 1.1em)
     #terminal(out)
   ]
 
@@ -282,19 +277,24 @@ echo \"$a + $b = $((a + b))\""
   ]
 
   #v(0.3em)
-  #only(3)[
+  #only("3-")[
     #takeaway[```bash $(command)``` - the *output* of a command, ```bash $((expression))``` - the *result* of a computation][]
   ]
+
+  // the mistake, as a popup on top of the slide
   #only("4-")[
-    #takeaway[the mistake: the program `expr` is missing in ```bash $(a+b)```, with it, the two are the same][
-      #set text(size: 1.05em)
-      #grid(
+    #popup(color: accent, fill: white, angle: -2deg)[
+      #align(center, text(size: 1.3em, weight: "bold", fill: accent)[🎯 the mistake: the program `expr` is missing in ```bash $(a+b)```])
+      #v(-0.2em)
+      #align(center)[with it, the two are the same]
+      #v(-0.1em)
+      #align(center, text(size: 1.3em, grid(
         columns: 5,
         column-gutter: 0.8em,
         align: horizon,
         raw("$(expr $a + $b)", lang: "bash"), text(size: 1.3em, weight: "bold", fill: accent)[$equiv$], raw("$((a+b))", lang: "bash"),
         draw-arrow(length: 1.5em), text(font: mono, fill: changed)[5],
-      )
+      )))
     ]
   ]
 ]

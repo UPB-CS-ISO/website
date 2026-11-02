@@ -25,6 +25,8 @@
 
   - Shell Scripts
   - Variables
+  - Variables Expansion
+  - Reading Input: `read` and `IFS`
   - Command Substitution
   - Arithmetic
   - Operators and Decimals
@@ -33,13 +35,15 @@
   - Conditions: `case`
   - Loops: `while`
   - Loops: `for`
-  - Quoting
+  - Using `IFS` with `for`
   - Functions
   - Script Parameters
 ]
 
 #include "scripts.typ"
 #include "variables.typ"
+#include "quoting.typ"
+#include "reading.typ"
 #include "substitution.typ"
 #include "arithmetic.typ"
 #include "decimals.typ"
@@ -48,7 +52,7 @@
 #include "case.typ"
 #include "while.typ"
 #include "for.typ"
-#include "quoting.typ"
+#include "ifs-for.typ"
 #include "functions.typ"
 #include "parameters.typ"
 
@@ -57,6 +61,8 @@
 
   - Shell Scripts
   - Variables
+  - Variables Expansion
+  - Reading Input: `read` and `IFS`
   - Command Substitution
   - Arithmetic
   - Operators and Decimals
@@ -65,7 +71,7 @@
   - Conditions: `case`
   - Loops: `while`
   - Loops: `for`
-  - Quoting
+  - Using `IFS` with `for`
   - Functions
   - Script Parameters
 ]

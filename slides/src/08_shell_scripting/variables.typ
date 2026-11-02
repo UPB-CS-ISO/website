@@ -62,7 +62,7 @@
   Define, use, change, delete and export a variable
 
   #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.5em)[
-    #set text(size: 1em)
+    #set text(size: 1.1em)
     #highlight-code(("all", (1,), (2,), (3,), (4,), (5,), (6,), "all"))[```bash
 name="alice"
 echo "Hi, $name"
@@ -71,7 +71,7 @@ name="bob"
 unset name
 export name="carol"
 ```]
-    #set text(size: 0.8em)
+    #set text(size: 0.73em)
     #uncover("2-")[#block[- `NAME=value` - *define*, no spaces around `=`]]
     #uncover("3-")[#block[- ```bash $NAME``` - *use*: the value takes its place]]
     #uncover("4-")[#block[- ```bash ${NAME}``` - *use*, when letters follow the name]]
@@ -88,10 +88,10 @@ export name="carol"
       } else if i >= 7 { var-row("name", "carol", exported: true, state: if i == 7 { "new" } else { none }) } else { none }
       process-vars([`bash` - the shell], [variables], shell-rows)
       v(0.4em)
-      block(height: 7.5em, width: 100%, {
+      block(height: 8.5em, width: 100%, {
         if i == 3 {
           // using the variable: the shell replaces it, then runs the command
-          set text(size: 0.9em)
+          set text(size: 1.1em)
           label[the shell replaces ```bash $name```, then runs]
           v(-0.2em)
           align(center, words(("echo", "cmd"), ("Hi, alice", "new")))
@@ -99,12 +99,12 @@ export name="carol"
           terminal("$ echo \"Hi, $name\"\nHi, alice")
         } else if i == 4 {
           // the braces: where the name of the variable ends
-          set text(size: 0.9em)
+          set text(size: 1.1em)
           label[without `{}`, the name goes on: the variable `name_notes` does not exist]
           v(-0.2em)
           terminal("$ echo \"$name_notes.txt\"\n.txt\n$ echo \"${name}_notes.txt\"\nalice_notes.txt")
         } else if i == 6 {
-          set text(size: 0.9em)
+          set text(size: 1.1em)
           label[a deleted variable is *empty*, no error]
           v(-0.2em)
           terminal("$ echo \"Hi, $name\"\nHi, ")
@@ -132,7 +132,7 @@ echo \"$greeting!\""
   == 🐞 Variables Hold Text
   ```bash NAME=value``` stores the text, ```bash $NAME``` puts it back
 
-  #debug-run(vars-code, command: "./vars.sh", (
+  #debug-run(vars-code, size: 1.35em, columns: (3fr, 2fr), command: "./vars.sh", (
     (line: 2, run: "name=\"alice\"", vars: (name: "alice"),
       note: [💡 `name` holds the text `alice`]),
     (line: 3, run: "greeting=\"Hello, alice\"", vars: (greeting: "Hello, alice"),
@@ -148,8 +148,8 @@ echo \"$greeting!\""
   == Wrong Definitions
   A space splits the line into words
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.85em)
+  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
+    #set text(size: 1.05em)
     #reveal-terminal(before: none, lines: (2, 4, 6, 8, 11), full: false)[```terminal
     $ name = "alice"
     bash: name: command not found

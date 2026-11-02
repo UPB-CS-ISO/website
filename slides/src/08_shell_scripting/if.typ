@@ -23,7 +23,7 @@
   The condition is a *command*
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 1.15em)
+    #set text(size: 1.35em)
     #highlight-code(("all", (1,), (2,), lines-range(3, 4), lines-range(5, 6), (7,), "all", "all"))[```bash
 if command; then
     commands
@@ -75,7 +75,7 @@ fi"
   == 🐞 `if` Runs a Command
   The condition is a command, its exit code chooses the branch
 
-  #debug-run(kiwi-code, command: "./kiwi.sh", blocks: true, files: (("fruits.txt", fruits-lines),), (
+  #debug-run(kiwi-code, size: 1.3em, columns: (3fr, 2fr), command: "./kiwi.sh", blocks: true, files: (("fruits.txt", fruits-lines),), (
     (line: 2, part: "grep -q kiwi fruits.txt", run: "grep -q kiwi fruits.txt", match: "kiwi", status: 0,
       note: [💡 `grep -q` prints nothing, `if` only looks at its exit code]),
     (line: 3, run: "echo \"we have kiwi\"", status: 0, out: ("we have kiwi",),
@@ -96,7 +96,7 @@ fi"
   == 🐞 Comparing Variables?
   What you might expect to work
 
-  #debug-run(compare-code, command: "./compare.sh", blocks: true, (
+  #debug-run(compare-code, size: 1.05em, columns: (9fr, 11fr), command: "./compare.sh", blocks: true, (
     (line: 2, run: "a=7", vars: (a: "7")),
     (line: 3, run: "b=3", vars: (b: "3"),
       note: [💡 in C, `a > b` would be true: we expect `then`]),

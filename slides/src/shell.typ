@@ -380,6 +380,8 @@
 //   vars   - the variables changed on this step, a dictionary, e.g.
 //            (n: "2"); the others keep their values (optional)
 //   unset  - the names of the variables that disappear (optional)
+//   tags   - a small italic note next to a variable, kept on the next
+//            steps, e.g. (IFS: "default"); none removes it (optional)
 //   match  - the lines of the files that contain it are highlighted
 //            (what `grep` finds on this step) (optional)
 //   read   - the numbers (1-based) of the lines of the files that are
@@ -388,22 +390,22 @@
 //   note   - a tip for this step, shown under the debugger (optional)
 // `start`: the subslide of the first step
 // `columns`: the widths of the script and of the output
-// `size`: the size of the text, `auto` - smaller for a longer script
+// `size`: the size of the text of the script, the variables and the
+//   output; `auto` - smaller for a longer script; "fit" - as large as the
+//   slide allows (see below). "fit" is slow: use it to find the size, then
+//   write it down (`typst query --input fit=1 ... '<debug-run-size>'`
+//   lists the size "fit" picks for every `auto` debugger)
+// `max-size`: the largest size "fit" may choose
 //
 // #debug-run("x=1\necho $x", command: "./x.sh", (
 //   (line: 1, run: "x=1", vars: (x: "1")),
 //   (line: 2, part: "$x", run: "echo 1", status: 0, out: ("1",), note: [💡 ...]),
 // ))
-#let debug-run(code, command: none, file: auto, blocks: false, files: (), steps, start: 1, columns: (3fr, 2fr), size: auto, note-size: 0.9em) = {
+#let debug-run(code, command: none, file: auto, blocks: false, files: (), steps, start: 1, columns: (3fr, 2fr), size: auto, max-size: 1.4em, note-size: 0.9em) = {
   let all-out = steps.map(s => s.at("out", default: ())).flatten()
   let session = (if command != none { ("$ " + command,) } else { () }) + all-out
   if session.len() == 0 { session = (" ",) }
   let first-out = if command != none { 2 } else { 1 }
-  // big for a short script, smaller for a long one, so it fits on the slide
-  if size == auto {
-    let n = code.split("\n").len()
-    size = if n <= 6 { 1.25em } else if n <= 8 { 1.1em } else { 0.95em }
-  }
   // the name of the file: the first word of the command, without "./"
   if file == auto {
     file = if command != none { command.split(" ").first().replace(regex("^\\./"), "") } else { "script.sh" }
@@ -413,13 +415,22 @@
   let names = ()
   let vars-at = ()
   let vars = (:)
+  let tags-at = ()
+  let tags = (:)
   for s in steps {
-    for n in s.at("unset", default: ()) { let _ = vars.remove(n, default: none) }
+    for n in s.at("unset", default: ()) {
+      let _ = vars.remove(n, default: none)
+      let _ = tags.remove(n, default: none)
+    }
     for (n, v) in s.at("vars", default: (:)) {
       vars.insert(n, v)
       if n not in names { names.push(n) }
     }
+    for (n, t) in s.at("tags", default: (:)) {
+      if t == none { let _ = tags.remove(n, default: none) } else { tags.insert(n, t) }
+    }
     vars-at.push(vars)
+    tags-at.push(tags)
   }
 
   // the command line the shell runs on a step
@@ -445,7 +456,16 @@
     }
   })
 
-  let render(i) = {
+  // one step; `only-col` (used to check that no line wraps): "script" -
+  // only the script panel, "strip" - only the command line, "vars" - only
+  // the variables, "out" - only the output; "grid" - without the tip
+  // the tip under the debugger (its size does not depend on `size`)
+  let note(s) = if "note" in s {
+    v(0.2em)
+    text(size: note-size, s.note)
+  }
+
+  let render(i, size, cols: columns, only-col: none) = {
     let s = steps.at(i)
     let cur = s.line
     let part = s.at("part", default: none)
@@ -456,13 +476,10 @@
     let old = steps.slice(0, i).map(p => p.at("out", default: ())).flatten().len()
     let new = s.at("out", default: ()).len()
 
-    grid(
-      columns: columns,
-      column-gutter: 1em,
-      {
+    let lines = code.split("\n")
+    // the script, as a file: a bordered panel with its name on top
+    let script = {
         set text(size: size)
-        // the script, as a file: a bordered panel with its name on top
-        let lines = code.split("\n")
         debug-panel(raw(file), {
           show raw.where(block: false): it => it.lines.join()
           // the part is boxed by drawing a frame on top of the line: the
@@ -538,7 +555,7 @@
           grid(
             columns: (0.8em, 1.2em, 1fr),
             column-gutter: (0em, 0.6em),
-            inset: (x: 0.1em, y: 0.24em),
+            inset: (x: 0.1em, y: 0.16em),
             fill: (x, y) => if y + 1 == cur and part == none and compute == none { changed-fill } else { none },
             ..lines
               .enumerate()
@@ -553,18 +570,21 @@
               .flatten(),
           )
         })
-        // the command line of this step, in a block as high as the
-        // highest of all the steps (a long command wraps), so nothing moves
+    }
+    // the command line of this step, under the script, in a block as high
+    // as the highest of all the steps (a long command wraps), so nothing
+    // moves; its size does not grow with `size`, so it fits on one line
+    let command-line = {
         layout(area => {
           let strips = steps.map(strip)
           let h = calc.max(..strips.map(x => measure(x, width: area.width).height))
           block(height: h, above: 0.6em, strip(s))
         })
-      },
-      {
+    }
+    let right-col = {
         set text(size: size)
         // the variables
-        if names.len() > 0 {
+        let vars-panel = if names.len() > 0 {
           let vars = vars-at.at(i)
           let changed-now = s.at("vars", default: (:)).keys()
           debug-panel([variables], {
@@ -591,7 +611,9 @@
                       fill: if now { changed-fill } else { luma(242) },
                       stroke: 0.5pt + if now { changed.lighten(40%) } else { luma(200) },
                       text(fill: if now { changed } else { black }, if value == "" { hide("x") } else { value }),
-                    )),
+                    )) + if n in tags-at.at(i) {
+                      h(0.4em) + text(font: "Libertinus Serif", style: "italic", fill: luma(110), tags-at.at(i).at(n))
+                    },
                   )
                 })
                 .flatten(),
@@ -613,27 +635,87 @@
         }
         let out = raw(session.join("\n"), lang: none, block: true)
         // the files the script uses, next to the output
-        if files.len() == 0 { out } else {
-          grid(columns: (1fr, auto), column-gutter: 0.5em, out,
-            stack(spacing: 0.4em, ..files.map(((name, lines)) => {
-              // the lines that contain `match` of the step, highlighted
-              let m = s.at("match", default: none)
-              let hl = if m == none { () } else { range(lines.len()).filter(k => lines.at(k).contains(m)) }
-              // the lines read on this step, by their numbers
-              hl += s.at("read", default: ()).map(k => k - 1)
-              file-view(name, lines, size: 0.6em, hl: hl)
-            })))
+        let files-view = stack(spacing: 0.4em, ..files.map(((name, lines)) => {
+          // the lines that contain `match` of the step, highlighted
+          let m = s.at("match", default: none)
+          let hl = if m == none { () } else { range(lines.len()).filter(k => lines.at(k).contains(m)) }
+          // the lines read on this step, by their numbers
+          hl += s.at("read", default: ()).map(k => k - 1)
+          file-view(name, lines, size: 0.6em, hl: hl)
+        }))
+        if only-col == "vars" { vars-panel } else if only-col == "out" {
+          // only the output, next to an empty space as wide as the files
+          if files.len() == 0 { out } else {
+            context grid(columns: (1fr, auto), column-gutter: 0.5em, out, box(width: measure(files-view).width))
+          }
+        } else {
+          vars-panel
+          if files.len() == 0 { out } else { grid(columns: (1fr, auto), column-gutter: 0.5em, out, files-view) }
         }
-      },
-    )
-    if "note" in s {
-      v(0.2em)
-      text(size: note-size, s.note)
     }
+    if only-col == "script" { return grid(columns: cols, column-gutter: 1em, script, []) }
+    if only-col == "strip" { return grid(columns: cols, column-gutter: 1em, strip(s), []) }
+    if only-col in ("vars", "out") { return grid(columns: cols, column-gutter: 1em, [], right-col) }
+    grid(columns: cols, column-gutter: 1em, { script; command-line }, right-col)
+    if only-col != "grid" { note(s) }
   }
 
-  for i in range(steps.len()) {
+  let show-steps(size, cols: columns) = for i in range(steps.len()) {
     // the last step stays on the next subslides (e.g. under a popup)
-    if i == steps.len() - 1 { only(str(start + i) + "-", render(i)) } else { only(start + i, render(i)) }
+    if i == steps.len() - 1 { only(str(start + i) + "-", render(i, size, cols: cols)) } else { only(start + i, render(i, size, cols: cols)) }
   }
+  let fit = size == "fit" or (size == auto and sys.inputs.at("fit", default: "") == "1")
+  // big for a short script, smaller for a long one
+  let n = code.split("\n").len()
+  let base = if n <= 6 { 1.25em } else if n <= 8 { 1.1em } else { 0.95em }
+  if size == auto and not fit { size = base }
+  if not fit { return show-steps(size) }
+
+  // "fit": the debugger takes the space left on the slide (a block of
+  // height 1fr) and uses the largest size (and the split of the columns)
+  // at which every step fits in it and no line wraps: not in the script,
+  // not in the output, not in the command line the shell runs (a line wraps
+  // if the column is taller than when it has all the width it needs)
+  block(height: 1fr, width: 100%, layout(area => {
+    let high(body, w) = measure(block(width: w, body)).height
+    let no-wrap(i, size, cols, col) = {
+      let body = render(i, size, cols: cols, only-col: col)
+      high(body, area.width) <= high(render(i, size, cols: cols, only-col: col), area.width * 10) + 0.1pt
+    }
+    // the steps differ only in their tips and in the command line, all the
+    // rest keeps its space: the step with the highest tip is the highest
+    let note-hs = steps.map(s => high(note(s), area.width))
+    let tallest = note-hs.position(x => x == calc.max(..note-hs))
+    let last = steps.len() - 1
+    let fits(size, cols) = (no-wrap(last, size, cols, "script") and range(steps.len()).all(i => no-wrap(i, size, cols, "vars")) and no-wrap(last, size, cols, "out")
+      and high(render(tallest, size, cols: cols), area.width) <= area.height - 2pt)
+    // the sizes, 0.05em apart; binary search for the largest that fits
+    let sizes = range(14, int(max-size / 0.05em) + 1).map(k => k * 0.05em)
+    let best(cols, strict) = {
+      let (lo, hi) = (0, sizes.len() - 1)
+      // the command line does not depend on the size
+      if strict and not range(steps.len()).all(i => no-wrap(i, 1em, cols, "strip")) { return -1 }
+      if not fits(sizes.at(0), cols) { return -1 }
+      while lo < hi {
+        let mid = calc.div-euclid(lo + hi + 1, 2)
+        if fits(sizes.at(mid), cols) { lo = mid } else { hi = mid - 1 }
+      }
+      lo
+    }
+    // the script gets 1/2 to 7/10 of the width (the default first: it is
+    // kept when the others are not better)
+    let splits = (columns, (3fr, 2fr), (11fr, 9fr), (7fr, 3fr), (1fr, 1fr), (9fr, 11fr), (2fr, 3fr)).dedup()
+    // `--input fit-split=N`: try only the split N (less memory)
+    let only-split = sys.inputs.at("fit-split", default: none)
+    if only-split != none { splits = (splits.at(int(only-split), default: columns),) }
+    let pick(strict) = splits.map(c => (best(c, strict), c)).fold((-1, columns), (a, b) => if b.at(0) > a.at(0) { b } else { a })
+    // a command line too long for one line may wrap, if nothing else fits
+    let (k, cols) = pick(true)
+    if k < 0 { (k, cols) = pick(false) }
+    // nothing fits without wrapping: the default size, as before
+    let size = if k < 0 { base } else { sizes.at(k) }
+    if k < 0 { cols = columns }
+    [#metadata((file: file, size: repr(size), columns: repr(cols), ok: k >= 0))<debug-run-size>]
+    show-steps(size, cols: cols)
+  }))
 }

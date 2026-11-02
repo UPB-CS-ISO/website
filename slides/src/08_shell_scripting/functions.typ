@@ -23,7 +23,7 @@
   Define a new command
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 1em)
+    #set text(size: 1.05em)
     #highlight-code(("all", (1,), (2,), (3,), (4,), (5,), (6,), "all", "all", "all"))[```bash
 greet() {
     local who="$1"
@@ -32,7 +32,7 @@ greet() {
 }
 greet alice
 ```]
-    #set text(size: 0.85em)
+    #set text(size: 0.8em)
     #reveal-terminal(before: none, lines: (4,), start: 9, full: false)[```terminal
     $ greet alice
     Hello, alice!
@@ -84,7 +84,7 @@ greet || echo \"nobody to greet\""
   == 🐞 Functions
   A new command: it gets parameters and ends with an exit code
 
-  #debug-run(func-code, command: "./greet.sh", blocks: true, (
+  #debug-run(func-code, size: 1.1em, columns: (3fr, 2fr), command: "./greet.sh", blocks: true, (
     (line: 2, run: "greet() { ... }",
       note: [💡 lines 2 - 7 only *define* the command `greet`, nothing runs]),
     (line: 8, part: "greet alice", run: "greet alice",
@@ -119,7 +119,7 @@ echo \"$name $count\""
   == 🐞 Local Variables
   `local` - a variable that exists only while the function runs
 
-  #debug-run(local-code, command: "./update.sh", blocks: true, (
+  #debug-run(local-code, size: 1.15em, columns: (3fr, 2fr), command: "./update.sh", blocks: true, (
     (line: 2, run: "update() { ... }",
       note: [💡 lines 2 - 5 only define the function]),
     (line: 6, run: "name=alice", vars: (name: "alice")),
@@ -194,7 +194,7 @@ echo \"$name: $sum\""
   == 🐞 Returning a Value
   The function *prints* the result, ```bash $(...)``` captures it as text
 
-  #debug-run(add-code, command: "./values.sh", blocks: true, size: 0.88em, columns: (5fr, 3fr), (
+  #debug-run(add-code, size: 1.1em, columns: (7fr, 3fr), command: "./values.sh", blocks: true, (
     (line: 2, note: [💡 lines 2 - 7 only *define* `add` and `full_name`, nothing runs]),
     (line: 8, part: "add 2 3", who: "copy", run: "add 2 3",
       note: [💡 inside ```bash $(...)```: a copy of `bash` calls the function, its output will be captured]),

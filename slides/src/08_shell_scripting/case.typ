@@ -69,7 +69,7 @@ esac"
   == 🐞 `case` Compares Text
   No command runs for the condition
 
-  #debug-run(case-code, command: "./color.sh", blocks: true, size: 0.92em, files: (("fruits.txt", fruits-lines),), (
+  #debug-run(case-code, size: 1em, columns: (7fr, 3fr), command: "./color.sh", blocks: true, files: (("fruits.txt", fruits-lines),), (
     (line: 2, part: "head -n 1 fruits.txt", who: "copy", run: "head -n 1 fruits.txt", status: 0, info: [prints `banana`],
       read: (1,)),
     (line: 2, run: "fruit=banana", vars: (fruit: "banana")),
@@ -154,7 +154,7 @@ echo \"done\""
   == 🐞 Pitfall: `a*` Comes First
   The first pattern that matches wins
 
-  #debug-run(order-code, command: "./order.sh", blocks: true, (
+  #debug-run(order-code, size: 1.35em, columns: (3fr, 2fr), command: "./order.sh", blocks: true, (
     (line: 2, run: "fruit=apple", vars: (fruit: "apple")),
     (line: 3, info: [compares the text `apple` with the patterns, *top to bottom*]),
     (line: 4, expand: "a*", info: [`apple` matches `a*`],
@@ -187,7 +187,7 @@ echo \"exit code: $?\""
   == 🐞 When Nothing Matches
   When no pattern matches, nothing runs
 
-  #debug-run(nomatch-code, command: "./nomatch.sh", blocks: true, (
+  #debug-run(nomatch-code, size: 1.35em, columns: (3fr, 2fr), command: "./nomatch.sh", blocks: true, (
     (line: 2, run: "fruit=kiwi", vars: (fruit: "kiwi")),
     (line: 3, info: [compares the text `kiwi` with the patterns]),
     (line: 4, expand: "apple", info: [`kiwi` does not match]),

@@ -71,7 +71,7 @@ echo \"times 10: $((whole * 10))\""
   == 🐞 Decimals With `bc`
   The shell builds the text of the expression, `bc` computes it
 
-  #debug-run(bc-code, command: "./total.sh", blocks: true, columns: (2fr, 1fr), size: 1.1em, (
+  #debug-run(bc-code, size: 1.35em, columns: (7fr, 3fr), command: "./total.sh", blocks: true, (
     (line: 2, run: "price=3.5", vars: (price: "3.5"),
       note: [💡 for the shell, `3.5` is just text]),
     (line: 3, run: "count=2", vars: (count: "2")),

@@ -23,7 +23,7 @@
   Once for every word of a list
 
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
-    #set text(size: 1em)
+    #set text(size: 1.15em)
     #highlight-code(("all", (1,), (2,), (3,), (4,), (5,), (6,), "all"))[```bash
 for NAME in word1 word2 word3; do
     commands
@@ -55,7 +55,7 @@ echo \"done\""
   == 🐞 `for`
   Run the body once for every word of the list
 
-  #debug-run(for-code, command: "./fruits.sh", (
+  #debug-run(for-code, size: 1.35em, columns: (7fr, 3fr), command: "./fruits.sh", (
     (line: 2, expand: "apple", run: "fruit=apple", vars: (fruit: "apple"),
       note: [💡 `fruit` takes the first word]),
     (line: 3, run: "echo \"I like apple\"", status: 0, out: ("I like apple",)),
@@ -78,7 +78,7 @@ done"
   == 🐞 `for` With a Glob
   The shell makes the list of words first
 
-  #debug-run(glob-code, command: "./files.sh", (
+  #debug-run(glob-code, size: 1.35em, columns: (3fr, 2fr), command: "./files.sh", (
     (line: 2, expand: "*.txt", info: [expands `*.txt` to `fruits.txt notes.txt words.txt`],
       note: [💡 before the loop starts, the shell replaces the glob with the file names]),
     (line: 2, expand: "f ", run: "f=fruits.txt", vars: (f: "fruits.txt")),
@@ -95,19 +95,22 @@ done"
   == Counting With a Step
   Make the list of numbers first, with `seq`
 
-  #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.5em)[
-    #set text(size: 0.85em)
-    - `seq first step last` - a *program* that prints the numbers
-    #uncover("2-")[#block[- it works with variables: `seq` runs *after* the shell replaced them]]
-    #uncover("3-")[#block[- the output of `seq` becomes the words of `for`]]
-  ][
-    #set text(size: 0.8em)
+  // the session takes all the width (its lines are long), the
+  // explanation under it
+  #[
+    #set text(size: 1.1em)
     #reveal-terminal(before: none, lines: (2, 4), full: false)[```terminal
     $ for i in $(seq 1 3 10); do echo -n "$i "; done; echo
     1 4 7 10
     $ n=5; for i in $(seq 1 $n); do echo -n "$i "; done; echo
     1 2 3 4 5
     ```]
+  ]
+  #[
+    #set text(size: 0.85em)
+    - `seq first step last` - a *program* that prints the numbers
+    #uncover("2-")[#block[- it works with variables: `seq` runs *after* the shell replaced them]]
+    #uncover("3-")[#block[- the output of `seq` becomes the words of `for`]]
   ]
 
   #v(0.3em)
@@ -132,7 +135,7 @@ echo \"done\""
   == 🐞 Counting With `seq`
   `seq` writes the numbers, `for` goes over them
 
-  #debug-run(seq-code, command: "./rounds.sh", blocks: true, (
+  #debug-run(seq-code, size: 1.35em, columns: (3fr, 2fr), command: "./rounds.sh", blocks: true, (
     (line: 2, run: "n=3", vars: (n: "3")),
     (line: 3, part: "seq 1 $n", who: "copy", run: "seq 1 3", status: 0, info: [prints `1`, `2`, `3`, one per line],
       note: [💡 first, a copy of `bash` runs `seq`, its output takes the place of ```bash $(...)```]),

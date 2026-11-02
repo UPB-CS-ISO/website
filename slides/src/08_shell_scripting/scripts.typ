@@ -31,7 +31,7 @@
     #uncover("3-")[#block[- variables, conditions, loops and functions were added *on top* of this]]
     #uncover("4-")[#block[- so *everything* is still a command line: words, separated by spaces]]
   ][
-    #set text(size: 0.75em)
+    #set text(size: 0.85em)
     #label[you type the commands, one by one]
     ```terminal
     $ mkdir -p ~/backup
@@ -87,8 +87,8 @@
   == Script Syntax
   A text file, one command line after another
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 1.15em)
+  #toolbox.side-by-side(columns: (11fr, 9fr), gutter: 1.5em)[
+    #set text(size: 1.35em)
     #highlight-code(("all", (1,), (2,), (3,), (4,), lines-range(5, 6), "all"))[```bash
 #!/bin/bash
 # backup.sh - back up the notes
@@ -176,6 +176,7 @@ cp ~/notes.txt \
         }
       },
       {
+        set text(size: 1.15em)
         debug-panel(raw("backup.sh"), {
           show raw.where(block: false): it => it.lines.join()
           block(width: 100%, above: 0pt, below: 0.4em, inset: (y: 0.3em), stroke: (bottom: 0.5pt + luma(200)),
@@ -260,6 +261,8 @@ cp ~/notes.txt \
 // a script in another language: the file, how you run it, and what the
 // kernel runs after reading `#!`
 #let other-script(file, lang, code, kernel-runs) = {
+  // the code larger than the text around it
+  set text(size: 1.15em)
   debug-panel(raw(file), {
     show raw.where(block: false): it => it.lines.join()
     let ls = code.split("\n")
@@ -273,6 +276,7 @@ cp ~/notes.txt \
   v(0.3em)
   terminal("$ ./" + file + "\nHello, alice!")
   v(0.2em)
+  set text(size: 0.8em)
   label[the kernel runs]
   linebreak()
   kernel-runs
@@ -321,7 +325,7 @@ echo \"done\""
   == 🐞 A Script Runs Line by Line
   A file with command lines, the shell runs them one after another
 
-  #debug-run(backup-code, command: "./backup.sh", (
+  #debug-run(backup-code, size: 1.35em, columns: (3fr, 2fr), command: "./backup.sh", (
     (line: 1, expand: "/bin/bash", run: "/bin/bash ./backup.sh", info: [started by the kernel],
       note: [💡 `#!` - the program that runs the script, for `bash` the line is a comment]),
     (line: 2, run: "echo \"backing up\"", status: 0, out: ("backing up",)),

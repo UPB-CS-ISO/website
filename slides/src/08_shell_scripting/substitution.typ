@@ -82,13 +82,13 @@
   ```bash $(command)``` - replaced by the output of the command
 
   #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.5em)[
-    #set text(size: 1em)
-    #highlight-code(("all", (1,), (1,), (1,), (1,), (2,), (3,), "all"))[```bash
+    #set text(size: 1.15em)
+    #highlight-code(("all", (1,), (1,), (1,), (1,), (2,), (3,)))[```bash
 VAR=$(command arg1 arg2)
 command1 $(command2 arg)
 VAR=`command arg1 arg2`
 ```]
-    #set text(size: 0.8em)
+    #set text(size: 0.7em)
     #uncover("2-")[#block[- ```bash $(command)``` - run the command, put its *output* in its place]]
     #uncover("6-")[#block[- anywhere in a command line, also inside `"..."`]]
     #uncover("7-")[#block[- #raw("`command`", lang: "bash") - the old way to write it]]
@@ -127,7 +127,7 @@ echo \"$count fruits on $today\""
   == 🐞 Command Substitution
   ```bash $(command)``` is replaced by the output of the command
 
-  #debug-run(subst-code, command: "./fruits.sh", blocks: true, files: (("fruits.txt", fruits-lines),), (
+  #debug-run(subst-code, size: 1.15em, columns: (11fr, 9fr), command: "./fruits.sh", blocks: true, files: (("fruits.txt", fruits-lines),), (
     (line: 2, part: "wc -l < fruits.txt", who: "copy", run: "wc -l < fruits.txt", status: 0, info: [prints `7`],
       note: [💡 first, a copy of `bash` runs the command, its output is captured, nothing reaches the screen]),
     (line: 2, run: "count=7", vars: (count: "7"),
@@ -142,8 +142,8 @@ echo \"$count fruits on $today\""
   == Command Substitution
   ```bash $(command)``` - the output of a command, as text
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #set text(size: 0.85em)
+  #toolbox.side-by-side(columns: (11fr, 9fr), gutter: 1.5em)[
+    #set text(size: 0.95em)
     #grid(columns: (1fr, auto), column-gutter: 0.5em, [
     #reveal-terminal(before: luma(170), lines: (1, 3, 5, 7), full: false)[```terminal
     $ count=$(wc -l < fruits.txt)
