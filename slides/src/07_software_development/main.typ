@@ -1,5 +1,5 @@
 #import "/src/slides.typ": *
-#import "common.typ": ward, uso-book, make-manual, lsp-spec, dap-spec, shell-commands
+#import "common.typ": ward, uso-book, make-manual, lsp-spec, dap-spec, pro-git, shell-commands
 
 #show: uso_slides.with(title: "7. Software Development")
 // command lines in inline code get the terminal colors
@@ -23,6 +23,8 @@
         - Chapter 2 - _An Introduction to Makefiles_
       + #lsp-spec
       + #dap-spec
+      + #pro-git
+        - Chapters 1 - 3
     ]
   ]
   #v(0pt)
@@ -54,11 +56,11 @@
       - Language Servers
       - Debuggers
       - Debug Adapters
-      #colbreak()
       - From an Editor to an IDE
         - LSP + DAP
       - The C Compilation Pipeline
         - preprocessor, compiler, assembler, linker
+      #colbreak()
       - Building with `make`
         - rules, step by step
       - A `Makefile` for a Project
@@ -66,6 +68,8 @@
       - Special Targets
         - `.PHONY`, `clean`, `all`, `run`
       - Header Dependencies
+      - Version Control with Git
+        - commits, branches, commit vs push
     ]
   ]
 ]
@@ -81,6 +85,7 @@
 #include "make-project.typ"
 #include "make-special.typ"
 #include "make-headers.typ"
+#include "git.typ"
 
 #slide[
   == We talked about
@@ -93,11 +98,11 @@
       - Language Servers
       - Debuggers
       - Debug Adapters
-      #colbreak()
       - From an Editor to an IDE
         - LSP + DAP
       - The C Compilation Pipeline
         - preprocessor, compiler, assembler, linker
+      #colbreak()
       - Building with `make`
         - rules, step by step
       - A `Makefile` for a Project
@@ -105,6 +110,8 @@
       - Special Targets
         - `.PHONY`, `clean`, `all`, `run`
       - Header Dependencies
+      - Version Control with Git
+        - commits, branches, commit vs push
     ]
   ]
 ]

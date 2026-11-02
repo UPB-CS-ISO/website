@@ -31,6 +31,7 @@
 #let rust-book = [*Steve Klabnik, Carol Nichols*, _The Rust Programming Language_, #link("https://doc.rust-lang.org/book/")[online]]
 #let lsp-spec = [_Language Server Protocol Specification_, #link("https://microsoft.github.io/language-server-protocol/")[online]]
 #let dap-spec = [_Debug Adapter Protocol Specification_, #link("https://microsoft.github.io/debug-adapter-protocol/")[online]]
+#let pro-git = [*Scott Chacon, Ben Straub*, _Pro Git_, 2#super[nd] Edition, Apress, 2014, #link("https://git-scm.com/book/en/v2")[online]]
 
 // ---------------------------------------------------------------------------
 // Small helpers
@@ -372,7 +373,8 @@
 // the files of a project, drawn like the output of `tree`
 // - root: the folder, files: the files in it (sorted like `ls`)
 // - states: file -> "changed" (we edited it, orange), "new" (we created it,
-//   orange), "built" (make created or rebuilt it, green), "deleted" (red)
+//   orange), "built" (make created or rebuilt it, green), "deleted" (red),
+//   or a custom (color, fill, note) array
 // - times: file -> its modification time, shown next to the name
 // - rows: the number of file lines to reserve (empty lines at the end), so
 //   the drawing keeps the same height while files appear or disappear
@@ -390,7 +392,9 @@
   for (i, f) in files.enumerate() {
     let branch = if i == files.len() - 1 { "└── " } else { "├── " }
     let st = states.at(f, default: none)
-    let (ink, fill, note) = if st == none { (black, none, []) } else { style.at(st) }
+    let (ink, fill, note) = if st == none { (black, none, []) } else if type(st) == array { st } else {
+      style.at(st)
+    }
     let name = box(fill: fill, outset: (x: 1pt, y: 1.5pt), radius: 1pt, text(fill: ink, f))
     cells.push(text(fill: luma(150), branch) + name)
     cells.push(text(fill: if st in ("changed", "built") { ink } else { luma(110) }, times.at(f, default: "")))
