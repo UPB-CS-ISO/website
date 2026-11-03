@@ -5,8 +5,7 @@ will work with what is **inside** most of these files: **text**. You will meet t
 read lines and write lines: `cat`, `head`, `tail` and `sort` work with whole lines, `grep` finds the lines that match a
 **regular expression**, `cut`, `tr` and `sed` change the inside of every line, and `wc` and `awk` count and compute.
 You will join them into **pipelines** that answer a question in one line, find out if a command worked from its
-**exit code**, and chain commands with `&&` and `||`. At the end you will edit text files in the terminal, with `nano`
-and `vim`.
+**exit code**, and chain commands with `&&` and `||`. At the end, you will edit text files in the terminal with `nano` and `vim`, and try a newer editor, Helix (`hx`).
 
 The most important idea of this lab is that text is the **common language** of the commands. Every filter reads lines
 of text, does **one** small thing with them, and writes lines of text, so the output of any filter can be the input of
@@ -23,7 +22,7 @@ prints the answer. Every command also ends with a number, its **exit code**, tha
 - Change, delete and squeeze characters with `tr`, and replace text with `sed`
 - Count lines, words and characters with `wc`, and compute sums and averages with `awk`
 - Find out if a command worked from its **exit code**, and chain commands with `&&` and `||`
-- Edit a text file in the terminal with `nano` and with `vim`
+- Edit a text file in the terminal with `nano` and with `vim` and try `hx`
 
 ## Resources
 
@@ -50,14 +49,15 @@ the commands of this lab are the same, with a few differences:
 
 |                          | Fedora                                      | Ubuntu                                                 |
 | ------------------------ | ------------------------------------------- | ------------------------------------------------------ |
-| the prompt               | `[student@fedora ~]$`                       | `student@ubuntu:~$`, in color                          |
+| the prompt               | `[student@fedora ~]$`                       | `student@ubuntu:~$`                         |
 | the program behind `awk` | GNU `awk` (`gawk`)                          | `mawk`, a smaller `awk`: this lab works the same on it |
 | `vim` and `vimtutor`     | if missing: `sudo dnf install vim-enhanced` | if missing: `sudo apt install vim`                     |
+| install Helix (`hx`)           | `sudo dnf install helix`              | `sudo snap install --classic helix`                           |
 
 ## Filters
 
-A **filter** is a command that reads text, from the files that it gets as parameters or from its standard input when
-it gets none, changes the text, and writes the result to its standard output. In
+A **filter** is a command that reads text, does **one** job with it, and writes the result to its standard output. It
+reads the files that it gets as parameters or, when it gets none, its standard input. In
 [Pipes](/docs/labs/03#pipes-) in lab 03 you joined a few of them with `|`: `sort fruits.txt | uniq -c`. A chain of
 commands joined by pipes is a **pipeline**.
 
@@ -66,12 +66,12 @@ does not know what is before it or after it: only its input and its output.
 
 The filters of this lab do four kinds of jobs, and a typical pipeline uses them in this order:
 
-| Kind               | It decides                      | Commands                                     |
-| ------------------ | ------------------------------- | -------------------------------------------- |
-| **line filters**   | which lines, and in which order | `cat`, `tac`, `head`, `tail`, `sort`, `uniq` |
-| **search**         | which lines match a pattern     | `grep`                                       |
-| **column filters** | which parts of every line       | `cut`, `tr`, `sed`, `rev`, `nl`              |
-| **compute**        | a count, a sum, an average      | `wc`, `uniq -c`, `awk`                       |
+| Kind               | What it does                                 | Commands                                     |
+| ------------------ | -------------------------------------------- | -------------------------------------------- |
+| **line filters**   | chooses which lines to keep, and their order | `cat`, `tac`, `head`, `tail`, `sort`, `uniq` |
+| **search**         | keeps the lines that match a pattern         | `grep`                                       |
+| **column filters** | changes what is inside every line            | `cut`, `tr`, `sed`, `rev`, `nl`              |
+| **compute**        | turns the lines into a count, a sum, ...     | `wc`, `uniq -c`, `awk`                       |
 
 ![A typical pipeline](./images/pipeline.svg)
 
@@ -88,8 +88,9 @@ The filters of this lab do four kinds of jobs, and a typical pipeline uses them 
 
 **Build a pipeline one command at a time**
 
-Run the first command and look at its output; then press <kbd>↑</kbd>, add `|` and the next command, and look again.
-When the output is long, add `| head` at the end while you work.
+Run the first command and look at its output. Then press <kbd>↑</kbd>, add `|` and the next command, and look again:
+each step should bring the text a little closer to the answer. While you work, add `| head` at the end to see only the
+first lines of a long output, and remove it when you are done.
 
 :::
 
@@ -144,7 +145,7 @@ a^Ib $
 | --------------------- | ------------------------------------------------------------------------------------------------------ |
 | `head -n <N> <FILE>`  | the first `N` lines; without `-n`, the first 10                                                        |
 | `tail -n <N> <FILE>`  | the last `N` lines; without `-n`, the last 10                                                          |
-| `tail -n +<N> <FILE>` | everything **from** line `N` to the end                                                                |
+| `tail -n +<N> <FILE>` | the lines **from** line `N` to the end: `-n +2` skips only the first line                                                                |
 | `tail -f <FILE>`      | the last lines, then every new line written to the file, until <kbd>Ctrl</kbd>+<kbd>C</kbd> (_follow_) |
 
 ```shell-session
@@ -180,7 +181,7 @@ running in a terminal, and you see every new line the moment it is written.
 | `-n`         | compares the lines as **numbers**: `9` before `10`                  |
 | `-u`         | prints every line only **once** (_unique_)                          |
 | `-t <C>`     | the fields are separated by the character `C` (the default: spaces) |
-| `-k <N>,<N>` | sorts by field `N` only; `-k 2,2n` sorts by field `2`, as a number  |
+| `-k <N>,<N>` | sorts by field `N` only; `-k 2,2n`: by field `2`, as a number; `-k 2`: from field `2` to the end  |
 
 ```shell-session
 [student@fedora lab06]$ sort numbers.txt
@@ -234,9 +235,10 @@ lines:
 
 ## Regular Expressions
 
-A **regular expression** (_regex_) is a pattern that describes some text: "a `c`, then any character, then an `l`"
-is `c.l`. Most programs that search text understand them: `grep`, `sed`, `awk`, the search with <kbd>/</kbd> in
-`less`, `man` and `vim`, and every programming language.
+A **regular expression** (_regex_) is a pattern that describes some text. For example, `c.l` means "a `c`, then any
+character, then an `l`": it matches `col` in `color` and `cal` in `call`. Most programs that search text understand
+regular expressions: `grep`, `sed` and `awk`, the search with <kbd>/</kbd> in `less`, `man` and `vim`, and almost
+every programming language.
 
 Think of a description of a person that you give to a friend at the station: you do not know the name, but "tall,
 with a red hat" finds the right person in the crowd. A regex finds the lines that match the description.
@@ -281,7 +283,7 @@ quotes**: without them, the shell may expand it as a glob, before `grep` starts.
 | `^`      | the **start** of the line                            | `^ca`    | `cat`, `category`, `call ...`           |
 | `$`      | the **end** of the line                              | `r$`     | `color`, `colour`                       |
 | `[abc]`  | **one** of the characters inside (a **class**)       | `[0-9]`  | `2026-10-04`, `call ...`                |
-| `[^abc]` | one character that is **not** inside                 | `^[^c]`  | every line that does not start with `c` |
+| `[^abc]` | one character that is **not** inside; `^` means _not_ only right after `[`                 | `^[^c]`  | every line that does not start with `c` |
 | `*`      | the **previous** item, **0 or more** times           | `go*al`  | `gal`, `goal`, `gooooal`                |
 | `.*`     | any characters, or none                              | `^c.*e$` | `concatenate`                           |
 | `\`      | the next character is plain text: `\.` is a real dot | `\.`     | `notes.txt`                             |
@@ -305,7 +307,8 @@ notes.txt
 
 ### Extended Regular Expressions
 
-With `grep -E`, five more characters are special, and they make the regex shorter:
+With `grep -E`, five more characters are special: `+`, `?`, `{ }`, `( )` and `|`, and they make the regex shorter. The
+table also shows `\b`, which GNU `grep` understands with or without `-E`:
 
 | Regex | Matches                                                   | Example    | Matches in `words.txt`                  |
 | ----- | --------------------------------------------------------- | ---------- | --------------------------------------- |
@@ -345,9 +348,9 @@ Without `-E`, `grep` uses the **basic** regular expressions, where `+`, `?`, `{`
 | `-i`   | ignores upper and lower case                                                             |
 | `-v`   | prints the lines that do **not** match                                                   |
 | `-n`   | prints the number of every line in front of it                                           |
-| `-c`   | prints only how many lines match                                                         |
+| `-c`   | prints only the number of matching lines; a line with two matches counts once                                                         |
 | `-o`   | prints only the **matching part**, every match on its own line                           |
-| `-w`   | matches only whole **words**, like `\b...\b`                                             |
+| `-w`   | matches only whole **words**, like `\b...\b` around the regex                                             |
 | `-q`   | prints nothing (_quiet_): the answer is in its exit code (see [Exit Codes](#exit-codes)) |
 | `-r`   | searches all the files of a directory, and of its subdirectories                         |
 
@@ -428,11 +431,11 @@ age,city
 `tr` (_translate_) changes single **characters**, not words. It reads **only** its standard input: give it a file
 with `<` or with a pipe.
 
-| Command            | What it does                                                                            |
-| ------------------ | --------------------------------------------------------------------------------------- |
-| `tr <SET1> <SET2>` | changes every character of `SET1` into the character at the **same position** in `SET2` |
-| `tr -d <SET>`      | **deletes** the characters of `SET`                                                     |
-| `tr -s <SET>`      | **squeezes** a run of the same character of `SET` into one                              |
+| Command            | What it does                                                                            | Example                         |
+| ------------------ | --------------------------------------------------------------------------------------- | ------------------------------- |
+| `tr <SET1> <SET2>` | changes every character of `SET1` into the character at the **same position** in `SET2` | `tr abc xyz`: `cab` → `zxy`     |
+| `tr -d <SET>`      | **deletes** every character of `SET`                                                    | `tr -d a`: `banana` → `bnn`     |
+| `tr -s <SET>`      | **squeezes** a run of the same character of `SET` into one                              | `tr -s o`: `gooooal` → `goal`   |
 
 A set is a list of characters, `aeiou`, or a range, `a-z`, `0-9`; `'\n'` is the end of a line and `'\t'` a tab.
 
@@ -557,8 +560,8 @@ true for the line. A condition is optional; `END` is a condition that is true on
 | -------------------------- | --------------------------------------------------------------------------- |
 | `-F,`                      | the delimiter is `,`; without `-F`, any run of spaces and tabs              |
 | `$1`, `$2`, ..., `$NF`     | the fields; `$NF` is the last one; `$0` is the whole line                   |
-| `NF`, `NR`                 | the number of fields of the line; the number of the line                    |
-| `==`, `!=`, `<`, `>=`, ... | compare two values: numbers as numbers, text as text                        |
+| `NF`, `NR`                 | the number of fields of the line; the number of the line, from `1`                   |
+| `==`, `!=`, `<`, `>=`, ... | compare two values: numbers as numbers, text as text; text goes between `"`: `$2 == "apple"`                       |
 | `~ /regex/`, `!~ /regex/`  | matches, does not match a regex                                             |
 | `&&`, `\|\|`, `!`          | and, or, not                                                                |
 | `{ print $1, $3 }`         | prints fields 1 and 3, separated by a space                                 |
@@ -670,7 +673,7 @@ A command killed by a signal (lab 04) ends with `128` plus the number of the sig
 
 | Written as | What it does                                                          |
 | ---------- | --------------------------------------------------------------------- |
-| `a ; b`    | runs `a`, then `b`, whatever happened                                 |
+| `a ; b`    | runs `a`, then `b`, whether `a` worked or not; like two separate lines                                |
 | `a && b`   | runs `b` only if `a` ended with `0`: "`a`, **and then** `b`"          |
 | `a \|\| b` | runs `b` only if `a` did **not** end with `0`: "`a`, **or else** `b`" |
 
@@ -708,20 +711,21 @@ cut: nope.csv: No such file or directory
 ```
 
 - In the first line, `grep -q` found `kiwi` in the column of the fruits: the pipeline ended with `0`.
-- In the second, `cut` failed, but `sort`, the last command, worked: the pipeline ended with `0`, and the error was
-  hidden. [How a Pipeline Runs](#how-a-pipeline-runs) shows how to see it.
+- In the second, `cut` failed, but `sort`, the last command, worked: the pipeline ended with `0`. The error message is
+  on the screen, but `$?`, `&&` and `||` see only the `0`. [How a Pipeline Runs](#how-a-pipeline-runs) shows how to
+  catch the failure.
 
 ## Text Editors
 
 You edit text files all the time: settings in `/etc` and in `~/.config`, programs, notes. On a server, over the
 network, or on a virtual terminal (lab 04), there is no window: you need an editor that runs **inside the terminal**.
 
-| Editor              | What it is like                                                                                                 |
-| ------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `nano`              | simple: you type, and the keys are written at the bottom of the screen; the default editor of Fedora and Ubuntu |
-| `vi`, `vim`, `nvim` | **modal**: the keys are commands until you start typing; installed on every Unix system                         |
-| `emacs`             | every command is a <kbd>Ctrl</kbd> or <kbd>Alt</kbd> combination; it can be extended without end                |
-| `helix` (`hx`)      | modal like `vim`, newer, and it understands programming languages without settings                              |
+| Editor              | What it is like                                                                                                                   |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `nano`              | simple: what you type goes into the text, and the bottom of the screen lists the keys; the default editor of Fedora and Ubuntu    |
+| `vi`, `vim`, `nvim` | **modal**: the keys are commands, and you type text only in Insert mode; `vi` is on every Unix system, `nvim` is a newer `vim`    |
+| `emacs`             | not modal: every command is a <kbd>Ctrl</kbd> or <kbd>Alt</kbd> combination; it can be extended with programs in its own language |
+| `helix` (`hx`)      | modal like `vim`, but you select first, then act; it knows programming languages without any settings                             |
 
 ### `nano`
 
@@ -730,8 +734,8 @@ You met `nano` in [lab 02](/docs/labs/02#nano). The bottom of the screen lists i
 
 | Key                           | Action                                    |
 | ----------------------------- | ----------------------------------------- |
-| <kbd>Ctrl</kbd>+<kbd>O</kbd>  | save (_write out_), then <kbd>Enter</kbd> |
-| <kbd>Ctrl</kbd>+<kbd>X</kbd>  | exit                                      |
+| <kbd>Ctrl</kbd>+<kbd>O</kbd>  | save (_write out_), then <kbd>Enter</kbd> to keep the name |
+| <kbd>Ctrl</kbd>+<kbd>X</kbd>  | exit; if the file changed, it asks to save: <kbd>Y</kbd> or <kbd>N</kbd>                                      |
 | <kbd>Ctrl</kbd>+<kbd>K</kbd>  | cut the line                              |
 | <kbd>Ctrl</kbd>+<kbd>U</kbd>  | paste the lines that you cut              |
 | <kbd>Alt</kbd>+<kbd>U</kbd>   | undo                                      |
@@ -742,17 +746,20 @@ You met `nano` in [lab 02](/docs/labs/02#nano). The bottom of the screen lists i
 ### `vim`
 
 `vim` (_Vi IMproved_) is **modal**: the same key does different things in different **modes**. It starts in the
-**Normal** mode, where the keys are **commands**: <kbd>d</kbd> does not type a `d`, it deletes. You type text only in
-the **Insert** mode.
+**Normal** mode, where every key is a **command**: <kbd>j</kbd> does not type a `j`, it moves the cursor down, and
+<kbd>x</kbd> deletes a character. To type text, press <kbd>i</kbd> to enter the **Insert** mode; press <kbd>Esc</kbd>
+to go back to the Normal mode. It takes some time to get used to, but it is also the strength of `vim`: when you edit,
+you spend most of the time moving and changing text, not typing it, and in the Normal mode every letter is a command,
+with no <kbd>Ctrl</kbd> to hold.
 
 ![The modes of vim](./images/vim-modes.svg)
 
 | Mode         | What the keys do                   | Enter it with                                   | The last line shows |
 | ------------ | ---------------------------------- | ----------------------------------------------- | ------------------- |
 | Normal       | move, delete, copy, paste          | <kbd>Esc</kbd>, from any other mode             | nothing             |
-| Insert       | type text                          | <kbd>i</kbd>, <kbd>a</kbd>, <kbd>o</kbd>        | `-- INSERT --`      |
-| Command line | run a command: save, quit, replace | <kbd>:</kbd> (or <kbd>/</kbd> to search)        | `:` and the command |
-| Visual       | select text                        | <kbd>v</kbd> (characters), <kbd>V</kbd> (lines) | `-- VISUAL --`      |
+| Insert       | type text                          | from Normal: <kbd>i</kbd>, <kbd>a</kbd>, <kbd>o</kbd>       | `-- INSERT --`      |
+| Command line | type a command: save, quit, replace; <kbd>Enter</kbd> runs it  | <kbd>:</kbd> (or <kbd>/</kbd> to search)        | `:` (or `/`) and what you type |
+| Visual       | select text, then act on it: <kbd>d</kbd> deletes, <kbd>y</kbd> copies                        | <kbd>v</kbd> (characters), <kbd>V</kbd> (lines) | `-- VISUAL --`, `-- VISUAL LINE --`      |
 
 | In Normal mode                                                     | Action                                                      |
 | ------------------------------------------------------------------ | ----------------------------------------------------------- |
@@ -762,12 +769,12 @@ the **Insert** mode.
 | <kbd>g</kbd><kbd>g</kbd>, <kbd>G</kbd>                             | the first line, the last line                               |
 | <kbd>i</kbd>, <kbd>a</kbd>                                         | Insert mode, before, after the cursor                       |
 | <kbd>o</kbd>, <kbd>O</kbd>                                         | a new line below, above, in Insert mode                     |
-| <kbd>x</kbd>, <kbd>d</kbd><kbd>d</kbd>                             | delete a character, delete the line                         |
+| <kbd>x</kbd>, <kbd>d</kbd><kbd>d</kbd>                             | delete a character, delete (cut) the line: <kbd>p</kbd> pastes it back                          |
 | <kbd>y</kbd><kbd>y</kbd>, <kbd>p</kbd>                             | copy (_yank_) the line, paste it below                      |
 | <kbd>u</kbd>, <kbd>Ctrl</kbd>+<kbd>R</kbd>                         | undo, redo                                                  |
 | <kbd>/</kbd>`text`, <kbd>n</kbd>                                   | search forward, go to the next match                        |
 | `:w`, `:q`, `:wq`, `:q!`                                           | save, quit, save and quit, quit **without** saving          |
-| `:%s/old/new/g`                                                    | replace in every line, like `sed` (`%` means all the lines) |
+| `:%s/old/new/g`                                                    | replace in every line, like `sed`: `old` is a regex, `%` means all the lines |
 
 A number in front of a command repeats it: <kbd>5</kbd><kbd>j</kbd> goes 5 lines down,
 <kbd>3</kbd><kbd>d</kbd><kbd>d</kbd> deletes 3 lines. The keys <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd>
@@ -828,7 +835,7 @@ The pipes of a process are in its directory in `/proc` (see
 
 | Setting                | What it does                                                                                                       |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `set -o pipefail`      | the exit code of a pipeline is the one of the **last command that failed**, or `0`; `set +o pipefail` turns it off |
+| `set -o pipefail`      | the exit code of a pipeline is the one of the **rightmost command that failed**, or `0` if none failed; `set +o pipefail` turns it off |
 | `grep --line-buffered` | `grep` writes every line at once; without it, when its output is a pipe, it waits until it has 4 KiB of text       |
 
 ```shell-session
@@ -874,8 +881,8 @@ cut: nope.csv: No such file or directory
 :::danger
 
 The filters only print: the files change only with `>`, `sed -i` or an editor. Before you write the result over a
-file, look at it on the screen, and never redirect the output of a command into its own input file
-(`sort f.txt > f.txt` leaves `f.txt` empty).
+file, look at it on the screen, and never redirect the output of a command into its own input file:
+`sort f.txt > f.txt` leaves `f.txt` empty, because the shell empties the file for `>` before `sort` starts reading it.
 
 :::
 
@@ -972,8 +979,8 @@ unless the exercise says otherwise.
     1. find the lines that have a `g`, **one** or more `o`, then `al`;
     2. find the lines that are exactly `cat` or exactly `dog`;
     3. find the lines with a phone number: 4 digits, a space, 3 digits, a space, 3 digits;
-    4. create the empty file `banana.txt`; **first** guess what `grep ba* words.txt` and `grep 'ba*' words.txt` print,
-       then run them; delete `banana.txt`.
+        4. create the empty file `banana.txt`, and check with `ls` that no other file starts with `ba`; **first** guess
+       what `grep ba* words.txt` and `grep 'ba*' words.txt` print, then run them; delete `banana.txt`.
 
     💡 The table of [Extended Regular Expressions](#extended-regular-expressions); for step 4, print the words that
     `grep` receives with `echo grep ba* words.txt`.
@@ -995,7 +1002,8 @@ unless the exercise says otherwise.
     up the users with `getent passwd` (lab 05).
 
     **Check:** the settings are lines like `UID_MIN 1000`, a few dozen of them; `UMASK` is `022`. Most users have
-    `/usr/sbin/nologin`, and only a few have `/bin/bash`. `cat` is in 3 lines, but it is a whole word only in `cat`.
+    `nologin` (`/sbin/nologin` on Fedora, `/usr/sbin/nologin` on Ubuntu), and only a few have `/bin/bash`. `cat` is in
+    3 lines, but it is a whole word only in `cat`.
     <small>→ [`grep` Options](#grep-options)</small>
 
 **Column filters**
@@ -1059,7 +1067,8 @@ unless the exercise says otherwise.
     4. print the orders of at least 2 fruits, then count them;
     5. print the name and the UID of the users whose UID is at least `1000`, from the users database.
 
-    💡 [Computing: `awk`](#computing-awk) has all you need; the UID is field 3 of the users database.
+        💡 [Computing: `awk`](#computing-awk) has all you need; the UID is field 3 of the users database. Skip the header
+    with `NR > 1`: `awk` compares the text `count` with a number as text, and `"count" >= 2` is true.
 
     **Check:** `alice 3`, `bob 1`, ...; `10`; `2`; 4 orders; `student 1000`, and also `nobody 65534`. <small>→ [Computing: `awk`](#computing-awk)</small>
 
@@ -1162,8 +1171,8 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
 
     💡 `man sort`: search for `KEYDEF` and for `human`; `man ls`: search for `human`.
 
-    **Check:** the same 5 files in steps 1 and 3, in the same order; in step 3, `sort -n` alone would put `900K` after
-    `2.1M`, because it reads only the number. <small>→ [Sorting: `sort`](#sorting-sort) · [Computing: `awk`](#computing-awk)</small>
+        **Check:** the same 5 files in steps 1 and 3, in the same order; in step 3, `sort -n` alone would read `900K` as
+    `900` and `2.1M` as `2.1`, and think that `900K` is the larger one. <small>→ [Sorting: `sort`](#sorting-sort) · [Computing: `awk`](#computing-awk)</small>
 
 18. **A sign-up form**: A form saved everything people typed, without checking it. Keep only the valid phone numbers
     and e-mail addresses.
@@ -1190,7 +1199,7 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     2. accept also the numbers written with `+4` in front;
     3. print the e-mail addresses: lowercase letters, digits, `.` or `_`, then **one** `@`, then a domain of lowercase
        letters and dots, which ends with a `.` and some letters;
-    4. count the lines that are neither a phone number nor an e-mail address, with **one** `grep`.
+        4. count the lines that are neither a phone number, as in step 2, nor an e-mail address, with **one** `grep`.
 
     💡 [Extended Regular Expressions](#extended-regular-expressions); a `+` that is a plain character is written `\+`.
 
@@ -1237,8 +1246,9 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     2. add up their memory, and print it in MiB;
     3. print the 3 processes of the system that use the most memory.
 
-    💡 `man ps`: search for `rss` (the unit is KiB) and for `args`; a tab of Firefox is a process too, whose name is
-    not `firefox`, but whose command line has it.
+        💡 `man ps`: search for `rss` (the unit is KiB) and for `args`; a tab of Firefox is a process too, whose name is
+    not `firefox`, but whose command line has it. `grep firefox` has `firefox` in its own command line, so it finds
+    itself; `grep '[f]irefox'` matches the same processes, but not itself.
 
     **Check:** Firefox has several processes, one for every few tabs; together they use a few hundred MiB. Firefox is
     usually among the 3 largest processes. <small>→ [Computing: `awk`](#computing-awk) · [Listing Processes](/docs/labs/03#listing-processes-ps)</small>
@@ -1254,7 +1264,9 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     3. the largest grade, and the student who got it;
     4. the names of the students who did not pass, in alphabetical order.
 
-    💡 A variable can remember the largest value so far: `$2 > max { max = $2 }`.
+        💡 Skip the header in every step, with `NR > 1`: `awk` compares the text `grade` with a number as text, so it
+    would pass, and even become the largest grade. A variable can remember the largest value so far:
+    `NR > 1 && $2 > max { max = $2 }`.
 
     **Check:** `5`; `6.28571` and `7.4`; `dave 10`; `bob` and `erin`. <small>→ [Computing: `awk`](#computing-awk)</small>
 
@@ -1269,9 +1281,9 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
 
     💡 `man login.defs`: search for `UID_MAX`; `awk` conditions can use `&&`.
 
-    **Check:** `/usr/sbin/nologin` is the most used shell; there are a few dozen system users; the regular users are
-    `student` and every user from lab 05 that is still there, with a home directory in `/home`. `nobody` (`65534`) is
-    not a regular user. <small>→ [Computing: `awk`](#computing-awk) · [Cutting Columns: `cut`](#cutting-columns-cut)</small>
+    **Check:** `nologin` is the most used shell; there are a few dozen system users; the regular users are `student`
+    and every user from lab 05 that is still there, with a home directory in `/home`. `nobody` (`65534`) is not a
+    regular user. <small>→ [Computing: `awk`](#computing-awk) · [Cutting Columns: `cut`](#cutting-columns-cut)</small>
 
 **Exit codes**
 
@@ -1285,9 +1297,9 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     4. `false || false && echo C; echo $?`
     5. `true && false || echo D`
 
-    **Check:** `A`; `B`; `B`; nothing, then `1`; `D`. The shell reads from left to right, and each `&&` or `||` looks
-    only at the exit code of what is before it: in line 5, `D` is printed although the first command worked.
-    <small>→ [Chaining Commands](#chaining-commands--and-)</small>
+        **Check:** `A`; `B`; `B`; nothing, then `1`; `D`. The shell reads from left to right, and each `&&` or `||` looks
+    at the exit code of the last command that ran before it: in line 5, `D` is printed although the first command
+    worked. <small>→ [Chaining Commands](#chaining-commands--and-)</small>
 
 25. **What the numbers mean**: Find out what the exit codes say, besides "success" and "error".
 
@@ -1296,7 +1308,8 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
        `kill -9`;
     3. run `bash -c 'exit 42'` and print its exit code; then `bash -c 'exit 300'`.
 
-    💡 `man ls`: search for `Exit status`; `kill -l 15` prints the name of signal `15`; an exit code is one byte.
+        💡 `man ls`: search for `Exit status`; hide the long output of `ls -R` with `> /dev/null 2>&1`; `kill -l 15`
+    prints the name of signal `15`; an exit code is one byte.
 
     **Check:** `ls /nope` ends with `2`; `ls -R /etc` ends with `1`, because some directories inside it cannot be
     read. `kill` gives `143` (`128 + 15`, `SIGTERM`), `kill -9` gives `137` (`128 + 9`, `SIGKILL`). `42`, then `44`:
@@ -1362,11 +1375,13 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
 30. **A failure in the middle**: Every night, a pipeline counts the customers of the shop. One night the file was
     missing, and the report said `0`, with no error. Make the pipeline tell the truth.
 
-    1. run `cut -d, -f1 nope.csv | sort -u | wc -l`, then print its exit code, and the exit codes of every command;
+        1. run `cut -d, -f1 nope.csv | sort -u | wc -l`; then, with **one** `echo`, print its exit code and the exit codes
+       of every command;
     2. add `&& echo ok || echo failed` after the pipeline;
     3. turn on `pipefail`, and run step 2 again; then turn it off.
 
-    💡 [How a Pipeline Runs](#how-a-pipeline-runs).
+        💡 [How a Pipeline Runs](#how-a-pipeline-runs); `echo` is a command too: after it, `$?` and `PIPESTATUS` describe
+    the `echo`, not the pipeline.
 
     **Check:** the pipeline prints `0` and ends with `0`, but `PIPESTATUS` is `1 0 0`; without `pipefail` it says `ok`,
     with `pipefail` it says `failed`. <small>→ [How a Pipeline Runs](#how-a-pipeline-runs) · [The Exit Code of a Pipeline](#the-exit-code-of-a-pipeline)</small>
