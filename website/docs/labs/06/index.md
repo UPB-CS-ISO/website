@@ -9,8 +9,9 @@ You will join them into **pipelines** that answer a question in one line, find o
 
 The most important idea of this lab is that text is the **common language** of the commands. Every filter reads lines
 of text, does **one** small thing with them, and writes lines of text, so the output of any filter can be the input of
-any other one. A pipe joins them into a **pipeline**, where each command changes the text a little, until the last one
-prints the answer. Every command also ends with a number, its **exit code**, that tells the shell if it worked.
+any other one. Pipes join filters into a **pipeline**: each command hands its text to the next one, a step closer to
+the answer, and the last one prints it. Besides its text, every command also gives back a number, its **exit code**,
+which tells the shell if it worked.
 
 ## Objectives
 
@@ -144,6 +145,7 @@ a^Ib $
 | Command               | What it prints                                                                                         |
 | --------------------- | ------------------------------------------------------------------------------------------------------ |
 | `head -n <N> <FILE>`  | the first `N` lines; without `-n`, the first 10                                                        |
+| `head -n -<N> <FILE>`  | all the lines, except the last `N` lines;                                                        |
 | `tail -n <N> <FILE>`  | the last `N` lines; without `-n`, the last 10                                                          |
 | `tail -n +<N> <FILE>` | the lines **from** line `N` to the end: `-n +2` skips only the first line                                                                |
 | `tail -f <FILE>`      | the last lines, then every new line written to the file, until <kbd>Ctrl</kbd>+<kbd>C</kbd> (_follow_) |
@@ -276,7 +278,7 @@ quotes**: without them, the shell may expand it as a glob, before `grep` starts.
 
 ### Basic Regular Expressions
 
-| Regex    | Matches                                              | Example  | Matches in `words.txt`                  |
+| Regex    | Matches (It means)                                              | Example  | Matches in `words.txt` (Lines of `words.txt` it matches)                 |
 | -------- | ---------------------------------------------------- | -------- | --------------------------------------- |
 | `abc`    | the text `abc`, anywhere in the line                 | `cat`    | `cat`, `category`, `concatenate`        |
 | `.`      | **any** single character                             | `c.l`    | `color`, `colour`, `call ...`           |
@@ -401,9 +403,9 @@ between the spaces, and `25` is field `4`, not `2`.
 | Command                   | What it prints                                                         |
 | ------------------------- | ---------------------------------------------------------------------- |
 | `cut -d<C> -f<N> <FILE>`  | field `N` of every line; the fields are separated by the character `C` |
-| `cut -d<C> -f1,3`         | fields 1 and 3, separated by the same `C`                              |
+| `cut -d<C> -f1,3`         | fields 1 and 3, separated by the same `C`, in the order of the line: `-f3,1` also prints field 1 first |
 | `cut -d<C> -f2-4`, `-f2-` | fields 2 to 4; from field 2 to the end                                 |
-| `cut -f<N>`               | without `-d`, the delimiter is the **tab**                             |
+| `cut -f<N>`               | without `-d`, the delimiter is the **tab**; a line with no tab is printed whole, whatever `N` is |
 | `cut -c<N>-<M> <FILE>`    | the characters `N` to `M` of every line, counted from `1`              |
 
 ```shell-session
@@ -463,7 +465,10 @@ call
 
 ### Replacing Text: `sed`
 
-`sed` (_stream editor_) changes the text of every line. Its most used command is `s` (_substitute_):
+`sed` (_stream editor_) changes the text as it passes through, like a worker on the assembly line: it reads a line,
+changes it, prints it, and goes on to the next one. The file itself does not change. Unlike `tr`, `sed` works with
+words and regular expressions, not with single characters. Its most used command is `s` (_substitute_), which replaces
+the text that a regex matches:
 
 ```text
 sed 's/<REGEX>/<NEW TEXT>/<FLAGS>' <FILE>
@@ -559,12 +564,12 @@ true for the line. A condition is optional; `END` is a condition that is true on
 | Written as                 | What it is                                                                  |
 | -------------------------- | --------------------------------------------------------------------------- |
 | `-F,`                      | the delimiter is `,`; without `-F`, any run of spaces and tabs              |
-| `$1`, `$2`, ..., `$NF`     | the fields; `$NF` is the last one; `$0` is the whole line                   |
+| `$1`, `$2`, ..., `$NF`     | the fields; `$NF` is the last one, not to be confused with `NF`; `$0` is the whole line |
 | `NF`, `NR`                 | the number of fields of the line; the number of the line, from `1`                   |
 | `==`, `!=`, `<`, `>=`, ... | compare two values: numbers as numbers, text as text; text goes between `"`: `$2 == "apple"`                       |
 | `~ /regex/`, `!~ /regex/`  | matches, does not match a regex                                             |
 | `&&`, `\|\|`, `!`          | and, or, not                                                                |
-| `{ print $1, $3 }`         | prints fields 1 and 3, separated by a space                                 |
+| `{ print $1, $3 }`         | prints fields 1 and 3, separated by a space; `print $1 $3`, without the `,`, prints `alice3` |
 | `{ s += $3; n++ }`         | adds field 3 to the variable `s`, and adds 1 to `n`; variables start at `0` |
 
 The examples use `orders.csv`, a header and 6 orders:
@@ -695,6 +700,9 @@ saved
 `a && b || c` is **not** "if `a`, then `b`, else `c`": the shell reads it from left to right, so `c` also runs when
 `a` works but `b` fails. It is safe when `b` cannot fail, like `echo`.
 
+`a && b || c` is **not** "if `a`, then `b`, else `c`". The shell reads it from left to right, and `||` looks at the
+exit code of the last command that ran before it: when `a` works, that is `b`. So `c` also runs when `a` works but `b` fails: `true && false || echo C` prints `C`. You can use `a && b || c` as "if
+`a`, then `b`, else `c`" only when `b` cannot fail, like `echo`: then `c` runs only when `a` fails.
 :::
 
 ### The Exit Code of a Pipeline
@@ -1001,6 +1009,7 @@ unless the exercise says otherwise.
     💡 `man grep`: search for `invert`, `line-number`, `only-matching` and `word-regexp`; an empty line is `^$`. Look
     up the users with `getent passwd` (lab 05).
 
+    **Check:** the settings are lines like `UID_MIN 1000`, a few dozen of them; `UMASK` is `022`. Most users have
     **Check:** the settings are lines like `UID_MIN 1000`, a few dozen of them; `UMASK` is `022`. Most users have
     `nologin` (`/sbin/nologin` on Fedora, `/usr/sbin/nologin` on Ubuntu), and only a few have `/bin/bash`. `cat` is in
     3 lines, but it is a whole word only in `cat`.
