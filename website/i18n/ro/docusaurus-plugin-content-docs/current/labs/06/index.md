@@ -68,12 +68,12 @@ mai departe. Un filtru nu știe ce este înaintea lui sau după el: doar intrare
 
 Filtrele din acest laborator fac patru feluri de treburi, iar un pipeline obișnuit le folosește în această ordine:
 
-| Fel                   | Decide                            | Comenzi                                      |
-| --------------------- | --------------------------------- | -------------------------------------------- |
-| **filtre de linii**   | ce linii și în ce ordine          | `cat`, `tac`, `head`, `tail`, `sort`, `uniq` |
-| **căutare**           | ce linii se potrivesc cu un tipar | `grep`                                       |
-| **filtre de coloane** | ce părți din fiecare linie        | `cut`, `tr`, `sed`, `rev`, `nl`              |
-| **calcul**            | un număr, o sumă, o medie         | `wc`, `uniq -c`, `awk`                       |
+| Fel                      | Decide                            | Comenzi                                      |
+| ------------------------ | --------------------------------- | -------------------------------------------- |
+| **filtre de linii**      | ce linii și în ce ordine          | `cat`, `tac`, `head`, `tail`, `sort`, `uniq` |
+| **căutare**              | ce linii se potrivesc cu un tipar | `grep`                                       |
+| **modificarea textului** | ce părți din fiecare linie        | `cut`, `tr`, `sed`, `rev`, `nl`              |
+| **calcul**               | un număr, o sumă, o medie         | `wc`, `uniq -c`, `awk`                       |
 
 ![Un pipeline obișnuit](./images/pipeline.svg)
 
@@ -375,7 +375,7 @@ completă este în `man 7 regex`.
 - `-o` a afișat fiecare număr din `words.txt` pe linia lui, fără restul liniei.
 - `-v -c` a numărat liniile care **nu** conțin `apple`.
 
-## Filtre de coloane {/* #column-filters */}
+## Modificarea textului {/* #change-text */}
 
 ### Câmpuri și delimitatori {/* #fields-and-delimiters */}
 
@@ -1013,7 +1013,7 @@ dacă exercițiul nu spune altfel.
     au `/usr/sbin/nologin` și doar câțiva au `/bin/bash`. `cat` apare în 3 linii, dar este un cuvânt întreg doar în
     `cat`. <small>→ [Opțiunile lui `grep`](#grep-options)</small>
 
-**Filtre de coloane**
+**Modificarea textului**
 
 7. **Tăiați coloane**: Păstrați doar unele câmpuri, sau unele caractere, din fiecare linie.
 

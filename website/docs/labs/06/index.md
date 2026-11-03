@@ -67,12 +67,12 @@ does not know what is before it or after it: only its input and its output.
 
 The filters of this lab do four kinds of jobs, and a typical pipeline uses them in this order:
 
-| Kind               | What it does                                 | Commands                                     |
-| ------------------ | -------------------------------------------- | -------------------------------------------- |
-| **line filters**   | chooses which lines to keep, and their order | `cat`, `tac`, `head`, `tail`, `sort`, `uniq` |
-| **search**         | keeps the lines that match a pattern         | `grep`                                       |
-| **column filters** | changes what is inside every line            | `cut`, `tr`, `sed`, `rev`, `nl`              |
-| **compute**        | turns the lines into a count, a sum, ...     | `wc`, `uniq -c`, `awk`                       |
+| Kind             | What it does                                 | Commands                                     |
+| ---------------- | -------------------------------------------- | -------------------------------------------- |
+| **line filters** | chooses which lines to keep, and their order | `cat`, `tac`, `head`, `tail`, `sort`, `uniq` |
+| **search**       | keeps the lines that match a pattern         | `grep`                                       |
+| **change text**  | changes what is inside every line            | `cut`, `tr`, `sed`, `rev`, `nl`              |
+| **compute**      | turns the lines into a count, a sum, ...     | `wc`, `uniq -c`, `awk`                       |
 
 ![A typical pipeline](./images/pipeline.svg)
 
@@ -375,7 +375,7 @@ Without `-E`, `grep` uses the **basic** regular expressions, where `+`, `?`, `{`
 - `-o` printed every number of `words.txt` on its own line, without the rest of the line.
 - `-v -c` counted the lines that do **not** contain `apple`.
 
-## Column Filters
+## Change Text
 
 ### Fields and Delimiters
 
@@ -1015,7 +1015,7 @@ unless the exercise says otherwise.
     3 lines, but it is a whole word only in `cat`.
     <small>→ [`grep` Options](#grep-options)</small>
 
-**Column filters**
+**Change text**
 
 7. **Cut columns**: Keep only some fields, or some characters, of every line.
 
