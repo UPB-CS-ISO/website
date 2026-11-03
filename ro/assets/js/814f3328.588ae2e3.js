@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkcourses=self.webpackChunkcourses||[]).push([["833"],{5513(s){s.exports=JSON.parse('{"title":"Recent posts","items":[]}')}}]);
