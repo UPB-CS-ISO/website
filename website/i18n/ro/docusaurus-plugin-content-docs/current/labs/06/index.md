@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # 06. Prelucrarea textului
 
 În laboratorul 5 ați aflat ce utilizator rulează fiecare program și cine poate citi și scrie fiecare fișier. În acest
@@ -109,7 +112,7 @@ rulează. Exercițiile de acasă și provocările au nevoie de detalii: sunt în
 ## Filtre de linii {/* #line-filters */}
 
 Filtrele de linii lucrează cu **linii întregi**: aleg ce linii păstrează și în ce ordine, dar nu le schimbă. Exemplele
-folosesc fișierele pe care [exercițiul 1](#first-steps) le creează în `~/lab06`; `fruits.txt` are 7 linii: `banana`,
+folosesc fișierele pe care [exercițiul 2](#first-steps) le creează în `~/lab06`; `fruits.txt` are 7 linii: `banana`,
 `apple`, `cherry`, `apple`, `kiwi`, `banana` și `apple`.
 
 ### Afișarea unui fișier: `cat` și `tac` {/* #showing-a-file-cat-and-tac */}
@@ -878,10 +881,10 @@ cut: nope.csv: No such file or directory
 
 - 🧪 [Primii pași](#first-steps) (exercițiile 1 - 15): câte o idee pe rând, în ordinea laboratorului, de făcut în
   laborator;
-- 🏠 [Mai departe](#going-further) (exercițiile 16 - 33): exerciții mai lungi, de făcut acasă; unele dintre ele se uită
+- 🏠 [Mai departe](#going-further) (exercițiile 16 - 34): exerciții mai lungi, de făcut acasă; unele dintre ele se uită
   la felul în care rulează împreună comenzile unui pipeline, explicat în
   [Cum rulează un pipeline](#how-a-pipeline-runs);
-- 📝 [Provocări](#challenges) (exercițiile 34 - 39): cele mai grele, ca cele de la examen.
+- 📝 [Provocări](#challenges) (exercițiile 35 - 40): cele mai grele, ca cele de la examen.
 
 :::danger
 
@@ -897,7 +900,30 @@ Faceți aceste exerciții în ordine, în timpul laboratorului. Fiecare începe 
 idee din laborator: dacă vă blocați, citiți secțiunea indicată la finalul exercițiului. Rulați comenzile în `~/lab06`,
 dacă exercițiul nu spune altfel.
 
-1. **Arborele de exerciții**: Creați fișierele folosite de celelalte exerciții, în `~/lab06`.
+1. **Editorul vostru**: Alegeți `vim`, `nvim` (Neovim), `hx` (Helix) sau `emacs` și începeți să-l învățați cu
+    propriul lui tutorial, timp de 20 de minute. Continuați tutorialul acasă, în [exercițiul 16](#going-further).
+
+    1. alegeți unul dintre cele patru editoare și instalați-l dacă lipsește:
+
+       | Editor  | Pe Fedora                       | Pe Ubuntu                           | Tutorialul                        |
+       | ------- | ------------------------------- | ----------------------------------- | --------------------------------- |
+       | `vim`   | `sudo dnf install vim-enhanced` | `sudo apt install vim`              | `vimtutor`                        |
+       | `nvim`  | `sudo dnf install neovim`       | `sudo apt install neovim`           | `nvim +Tutor`                     |
+       | `hx`    | `sudo dnf install helix`        | `sudo snap install --classic helix` | `hx --tutor`                      |
+       | `emacs` | `sudo dnf install emacs`        | `sudo apt install emacs`            | `emacs -nw -f help-with-tutorial` |
+
+    2. porniți-i tutorialul și urmați-l timp de 20 de minute: este un fișier text pe care îl modificați în timp ce îl
+       citiți;
+    3. rețineți lecția la care v-ați oprit și ieșiți din tutorial fără să salvați.
+
+    💡 Fiecare tutorial începe cu felul în care vă mutați și ieșiți. Helix selectează întâi, apoi acționează:
+    <kbd>x</kbd> selectează o linie, <kbd>d</kbd> o șterge. În Emacs,
+    <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd> iese; `-nw` îl păstrează în terminal.
+
+    **Verificare:** tutorialul se deschide în editor, la prima lecție; după 20 de minute vă puteți muta, puteți
+    insera, șterge și ieși fără să vă uitați în el. <small>→ [Editoare de text](#text-editors)</small>
+
+2. **Arborele de exerciții**: Creați fișierele folosite de celelalte exerciții, în `~/lab06`.
 
     1. rulați aceste comenzi (copiați-le din browser cu <kbd>Ctrl</kbd>+<kbd>C</kbd> și lipiți-le în terminal cu
        <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>):
@@ -932,7 +958,7 @@ dacă exercițiul nu spune altfel.
 
 **Filtre de linii**
 
-2. **Cele două capete ale unui fișier**: Uitați-vă la părți dintr-un fișier, fără să-l afișați pe tot.
+3. **Cele două capete ale unui fișier**: Uitați-vă la părți dintr-un fișier, fără să-l afișați pe tot.
 
     1. afișați `fruits.txt` cu numărul fiecărei linii; apoi afișați-l de la ultima linie la prima;
     2. afișați primele 3 linii din `/etc/passwd`, apoi doar ultima lui linie;
@@ -948,7 +974,7 @@ dacă exercițiul nu spune altfel.
     `/etc/passwd` este linia lui `root`; al 5-lea fruct este `kiwi`; fără antet, `students.csv` începe cu
     `Alice,30,Paris`. Fiecare linie apare în al doilea terminal în clipa în care o adăugați. <small>→ [Afișarea unui fișier](#showing-a-file-cat-and-tac) · [Primele și ultimele linii](#the-first-and-the-last-lines-head-and-tail)</small>
 
-3. **Sortați și numărați**: Puneți liniile în ordinea potrivită și găsiți liniile care se repetă.
+4. **Sortați și numărați**: Puneți liniile în ordinea potrivită și găsiți liniile care se repetă.
 
     1. sortați `numbers.txt` ca text, apoi ca numere, apoi ca numere de la cel mai mare;
     2. afișați studenții din `students.csv`, fără antet, de la cel mai în vârstă la cel mai tânăr; apoi sortați-i după
@@ -964,7 +990,7 @@ dacă exercițiul nu spune altfel.
 
 **Expresii regulate**
 
-4. **Expresii regulate de bază**: Descrieți linii cu un tipar și găsiți-le în `words.txt` cu `grep`.
+5. **Expresii regulate de bază**: Descrieți linii cu un tipar și găsiți-le în `words.txt` cu `grep`.
 
     Pentru fiecare, scrieți **întâi** regex-ul pe hârtie, apoi verificați-l. Găsiți liniile care:
 
@@ -979,7 +1005,7 @@ dacă exercițiul nu spune altfel.
     **Verificare:** `gal`, `goal`, `gooooal`; `2026-10-04`; `concatenate`, `orange`, `notes.txt`; `cat`, `dog`, `bat`,
     `gal`; `notes.txt` (`.`), `2026-10-04` (`-`) și `call 0722 123 456` (spațiile). <small>→ [Expresii regulate de bază](#basic-regular-expressions)</small>
 
-5. **Expresii regulate extinse**: Scrieți tipare mai scurte cu `grep -E` și vedeți de ce un regex are nevoie de
+6. **Expresii regulate extinse**: Scrieți tipare mai scurte cu `grep -E` și vedeți de ce un regex are nevoie de
     ghilimele.
 
     1. găsiți liniile care au un `g`, **unul** sau mai mulți `o`, apoi `al`;
@@ -995,7 +1021,7 @@ dacă exercițiul nu spune altfel.
     ghilimele, shell-ul a transformat `ba*` în `banana.txt`, iar `grep` a căutat textul `banana.txt`: nimic. Cu
     ghilimele, `grep` a primit `ba*`, un `b` și oricâți `a`: `banana` și `bat`. <small>→ [Expresii regulate extinse](#extended-regular-expressions) · [Expresii regulate](#regular-expressions)</small>
 
-6. **Opțiunile lui `grep`**: Faceți-l pe `grep` să afișeze exact ce vă trebuie: alte linii, doar o parte din ele sau
+7. **Opțiunile lui `grep`**: Faceți-l pe `grep` să afișeze exact ce vă trebuie: alte linii, doar o parte din ele sau
     doar un număr.
 
     1. afișați setările din `/etc/login.defs` (laboratorul 05), fără comentarii (liniile care încep cu `#`) și fără
@@ -1015,7 +1041,7 @@ dacă exercițiul nu spune altfel.
 
 **Modificarea textului**
 
-7. **Tăiați coloane**: Păstrați doar unele câmpuri, sau unele caractere, din fiecare linie.
+8. **Tăiați coloane**: Păstrați doar unele câmpuri, sau unele caractere, din fiecare linie.
 
     1. afișați numele și orașele din `students.csv`, fără antet;
     2. afișați numele și shell-ul fiecărui utilizator, din baza de date a utilizatorilor;
@@ -1027,7 +1053,7 @@ dacă exercițiul nu spune altfel.
     **Verificare:** `Alice,Paris`, `Bob,London`, `Carol,Bucharest`; linii ca `student:/bin/bash`; `ban`, `app`, `che`,
     ...; `lab06`. <small>→ [Tăierea coloanelor: `cut`](#cutting-columns-cut) · [Inversarea și numerotarea](#reversing-and-numbering-rev-and-nl)</small>
 
-8. **Schimbați caractere**: Schimbați, ștergeți și comprimați caractere cu `tr`.
+9. **Schimbați caractere**: Schimbați, ștergeți și comprimați caractere cu `tr`.
 
     1. afișați `fruits.txt` cu litere mari;
     2. afișați fructele fără vocale;
@@ -1040,7 +1066,7 @@ dacă exercițiul nu spune altfel.
     **Verificare:** `BANANA`, ...; `bnn`, `ppl`, `chrry`, `ppl`, `kw`, `bnn`, `ppl`; 4 linii; `30` și `25`; câte un
     director pe linie, printre ele `/usr/bin`. <small>→ [Schimbarea caracterelor: `tr`](#changing-characters-tr)</small>
 
-9. **Înlocuiți text**: Schimbați cuvinte și părți din linii cu `sed`, fără să schimbați fișierele.
+10. **Înlocuiți text**: Schimbați cuvinte și părți din linii cu `sed`, fără să schimbați fișierele.
 
     1. înlocuiți `apple` cu `pear` în `fruits.txt`; apoi verificați că `fruits.txt` nu s-a schimbat;
     2. afișați linia cu telefonul din `words.txt`, cu fiecare cifră înlocuită de `#`;
@@ -1056,7 +1082,7 @@ dacă exercițiul nu spune altfel.
 
 **Numărare și calcule**
 
-10. **Numărați**: Numărați liniile, cuvintele și caracterele unui text.
+11. **Numărați**: Numărați liniile, cuvintele și caracterele unui text.
 
     1. numărați liniile, cuvintele și octeții din `words.txt`; apoi doar liniile, fără numele fișierului;
     2. numărați utilizatorii sistemului;
@@ -1067,7 +1093,7 @@ dacă exercițiul nu spune altfel.
     **Verificare:** `15 18 116 words.txt`, apoi `15`; câteva zeci de utilizatori; `Iași` și sfârșitul liniei sunt 5
     caractere, dar 6 octeți: `ș` ocupă 2 octeți. <small>→ [Numărarea: `wc`](#counting-wc)</small>
 
-11. **Calcule cu `awk`**: Răspundeți cu `awk` la întrebări despre comenzile din `orders.csv`.
+12. **Calcule cu `awk`**: Răspundeți cu `awk` la întrebări despre comenzile din `orders.csv`.
 
     1. afișați numele și cantitatea fiecărei comenzi, fără antet;
     2. calculați câte fructe a comandat `alice` în total;
@@ -1081,7 +1107,7 @@ dacă exercițiul nu spune altfel.
 
 **Un pipeline**
 
-12. **Citiți un log**: Răspundeți la întrebări despre cererile din `access.log`, cu pipeline-uri pe care le construiți
+13. **Citiți un log**: Răspundeți la întrebări despre cererile din `access.log`, cu pipeline-uri pe care le construiți
     câte o comandă pe rând.
 
     1. afișați pagina fiecărei cereri (al treilea câmp);
@@ -1096,7 +1122,7 @@ dacă exercițiul nu spune altfel.
 
 **Coduri de ieșire**
 
-13. **A mers?**: Citiți codul de ieșire al unei comenzi și rulați o comandă doar dacă alta a mers sau a eșuat.
+14. **A mers?**: Citiți codul de ieșire al unei comenzi și rulați o comandă doar dacă alta a mers sau a eșuat.
 
     1. ghiciți **întâi** codul de ieșire al fiecărei comenzi, apoi verificați-l: `grep -q apple fruits.txt`,
        `grep -q mango fruits.txt`, `grep apple nope.txt`, `ls /nope`, `true` și `false`;
@@ -1114,7 +1140,7 @@ dacă exercițiul nu spune altfel.
 
 **Editoare de text**
 
-14. **Două editoare**: Scrieți un fișier cu `nano`, apoi schimbați-l cu `vim`.
+15. **Două editoare**: Scrieți un fișier cu `nano`, apoi schimbați-l cu `vim`.
 
     1. cu `nano`, creați `todo.txt` cu trei linii: `buy milk`, `learn vim` și `call bob`; tăiați ultima linie și
        lipiți-o deasupra primei; salvați și ieșiți;
@@ -1127,38 +1153,43 @@ dacă exercițiul nu spune altfel.
 
     **Verificare:** `todo.txt` are 4 linii: `call bob`, `buy bread`, `learn vim` și `practice awk`. <small>→ [`nano`](#nano) · [`vim`](#vim)</small>
 
-15. **Editorul vostru**: Alegeți `vim`, `nvim` (Neovim) sau `hx` (Helix) și învățați-l cu propriul lui tutorial,
-    timp de 30 de minute.
-
-    1. alegeți unul dintre cele trei editoare și instalați-l dacă lipsește:
-
-       | Editor | Pe Fedora                       | Pe Ubuntu                           | Tutorialul    |
-       | ------ | ------------------------------- | ----------------------------------- | ------------- |
-       | `vim`  | `sudo dnf install vim-enhanced` | `sudo apt install vim`              | `vimtutor`    |
-       | `nvim` | `sudo dnf install neovim`       | `sudo apt install neovim`           | `nvim +Tutor` |
-       | `hx`   | `sudo dnf install helix`        | `sudo snap install --classic helix` | `hx --tutor`  |
-
-    2. porniți-i tutorialul și urmați-l timp de 30 de minute: este un fișier text pe care îl modificați în timp ce îl
-       citiți;
-    3. ieșiți din tutorial fără să salvați;
-    4. deschideți `todo.txt` din exercițiul 14 cu editorul vostru, adăugați la final linia `use vim` (sau `use nvim`,
-       `use hx`), salvați și ieșiți; afișați `todo.txt`.
-
-    💡 Fiecare tutorial începe cu felul în care vă mutați și ieșiți. Helix selectează întâi, apoi acționează:
-    <kbd>x</kbd> selectează o linie, <kbd>d</kbd> o șterge.
-
-    **Verificare:** tutorialul se deschide în editor, la prima lecție; după 30 de minute vă puteți muta, puteți
-    insera, șterge, da undo, salva și ieși fără să vă uitați în el. `todo.txt` se termină cu linia editorului vostru,
-    după `practice awk`. <small>→ [Editoare de text](#text-editors) · [`vim`](#vim)</small>
-
 ### 🏠 Mai departe {/* #going-further */}
 
 Fiecare exercițiu începe cu **scopul** lui; comenzile le alegeți voi. La final, verificați scopul, nu doar că fiecare
 comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași.
 
+16. **Editorul vostru, esențialul**: Continuați tutorialul editorului ales în exercițiul 1, până știți destul cât să-l
+    folosiți în fiecare zi, apoi folosiți-l pe un fișier adevărat.
+
+    1. instalați editorul dacă lipsește de pe calculatorul vostru:
+
+       | Editor  | Pe Fedora                       | Pe Ubuntu                           | Tutorialul                        |
+       | ------- | ------------------------------- | ----------------------------------- | --------------------------------- |
+       | `vim`   | `sudo dnf install vim-enhanced` | `sudo apt install vim`              | `vimtutor`                        |
+       | `nvim`  | `sudo dnf install neovim`       | `sudo apt install neovim`           | `nvim +Tutor`                     |
+       | `hx`    | `sudo dnf install helix`        | `sudo snap install --classic helix` | `hx --tutor`                      |
+       | `emacs` | `sudo dnf install emacs`        | `sudo apt install emacs`            | `emacs -nw -f help-with-tutorial` |
+
+    2. porniți din nou tutorialul, mergeți la lecția la care v-ați oprit în laborator și urmați-l până la finalul
+       acestor lecții; restul tutorialului nu vă trebuie încă:
+       - `vim`, `nvim`: lecțiile 1 - 6, până știți `o`, `y` și `p` (lecția 7 este despre ajutor și setări);
+       - `hx`: capitolele 1 - 6, până știți comanda de înlocuire, <kbd>r</kbd>;
+       - `emacs`: secțiunile până la _Searching_, inclusiv;
+    3. ieșiți din tutorial fără să salvați;
+    4. deschideți `todo.txt` din exercițiul 15 cu editorul vostru, adăugați la final linia `use vim` (sau `use nvim`,
+       `use hx`, `use emacs`), salvați și ieșiți; afișați `todo.txt`.
+
+    💡 Fiecare tutorial începe cu felul în care vă mutați și ieșiți. Helix selectează întâi, apoi acționează:
+    <kbd>x</kbd> selectează o linie, <kbd>d</kbd> o șterge. În Emacs,
+    <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd> iese; `-nw` îl păstrează în terminal.
+
+    **Verificare:** ați făcut lecțiile editorului vostru și vă puteți muta, puteți insera, șterge, copia, lipi, da
+    undo, căuta, salva și ieși fără să vă uitați în tutorial. `todo.txt` se termină cu linia editorului vostru, după `practice awk`.
+    <small>→ [Editoare de text](#text-editors)</small>
+
 **Filtre de linii și căutare**
 
-16. **Comenzile voastre preferate**: Folosiți terminalul de șase săptămâni. Aflați ce 5 comenzi rulați cel mai des.
+17. **Comenzile voastre preferate**: Folosiți terminalul de șase săptămâni. Aflați ce 5 comenzi rulați cel mai des.
 
     1. afișați istoricul shell-ului și găsiți câmpul care conține numele comenzii;
     2. afișați cele mai folosite 5 comenzi, fiecare cu de câte ori ați rulat-o, cea mai folosită prima.
@@ -1169,7 +1200,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
     Fiecare terminal își adaugă comenzile în `~/.bash_history` când este închis, așa că un terminal nou nu știe
     comenzile celor încă deschise. <small>→ [Numărarea liniilor repetate](#counting-repeated-lines-uniq) · [Calcule: `awk`](#computing-awk)</small>
 
-17. **Cele mai mari programe**: Discul calculatorului este aproape plin. Găsiți cele mai mari 5 fișiere din `/usr/bin`,
+18. **Cele mai mari programe**: Discul calculatorului este aproape plin. Găsiți cele mai mari 5 fișiere din `/usr/bin`,
     cu dimensiuni ușor de citit.
 
     1. listați `/usr/bin` în format lung și sortați liniile după dimensiune, câmpul 5, ca număr; păstrați cele mai mari
@@ -1182,7 +1213,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
     **Verificare:** aceleași 5 fișiere la pașii 1 și 3, în aceeași ordine; la pasul 3, `sort -n` singur ar pune `900K`
     după `2.1M`, pentru că citește doar numărul. <small>→ [Sortarea: `sort`](#sorting-sort) · [Calcule: `awk`](#computing-awk)</small>
 
-18. **Un formular de înscriere**: Un formular a salvat tot ce au scris oamenii, fără să verifice. Păstrați doar numerele
+19. **Un formular de înscriere**: Un formular a salvat tot ce au scris oamenii, fără să verifice. Păstrați doar numerele
     de telefon și adresele de e-mail valide.
 
     Creați `contacts.txt`:
@@ -1216,7 +1247,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
 
 **Coloane și calcule**
 
-19. **Numele de la secretariat**: Secretariatul a exportat numele ca `Popescu, Ana`, dar sistemul nou vrea
+20. **Numele de la secretariat**: Secretariatul a exportat numele ca `Popescu, Ana`, dar sistemul nou vrea
     `Ana Popescu` și o adresă pentru fiecare student.
 
     Creați `names.txt` cu `printf '%s\n' 'Popescu, Ana' 'Ionescu, Mihai' 'Georgescu, Ioana' > names.txt`:
@@ -1231,7 +1262,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
     **Verificare:** `Ana Popescu`, `Mihai Ionescu`, `Ioana Georgescu`; sortate: `Ana`, `Ioana`, `Mihai`;
     `ana.popescu@upb.ro`, `mihai.ionescu@upb.ro`, `ioana.georgescu@upb.ro`. <small>→ [Înlocuirea textului: `sed`](#replacing-text-sed) · [Schimbarea caracterelor: `tr`](#changing-characters-tr)</small>
 
-20. **Cuvintele manualului**: Ce cuvinte folosește cel mai des manualul lui `bash` și câte cuvinte diferite are?
+21. **Cuvintele manualului**: Ce cuvinte folosește cel mai des manualul lui `bash` și câte cuvinte diferite are?
 
     1. afișați textul din `man bash`, câte un cuvânt pe linie: fiecare succesiune de caractere care nu sunt litere
        devine un sfârșit de linie;
@@ -1243,7 +1274,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
     **Verificare:** `the` este primul, la mare distanță; urmează cuvinte mici ca `a`, `is`, `to` și `of`. Sunt câteva
     mii de cuvinte diferite. <small>→ [Schimbarea caracterelor: `tr`](#changing-characters-tr) · [Numărarea liniilor repetate](#counting-repeated-lines-uniq)</small>
 
-21. **Memoria browserului**: Calculatorul merge greu și îl bănuiți pe Firefox. Aflați câtă memorie folosesc împreună
+22. **Memoria browserului**: Calculatorul merge greu și îl bănuiți pe Firefox. Aflați câtă memorie folosesc împreună
     toate procesele lui.
 
     Deschideți Firefox cu câteva tab-uri, apoi:
@@ -1259,7 +1290,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
     **Verificare:** Firefox are mai multe procese, câte unul pentru câteva tab-uri; împreună folosesc câteva sute de
     MiB. Firefox este de obicei printre cele mai mari 3 procese. <small>→ [Calcule: `awk`](#computing-awk) · [Listarea proceselor](/docs/labs/03#listing-processes-ps)</small>
 
-22. **Notele de la examen**: Asistentul are nevoie de un raport al examenului, dintr-un fișier cu note.
+23. **Notele de la examen**: Asistentul are nevoie de un raport al examenului, dintr-un fișier cu note.
 
     Creați `grades.csv` cu
     `printf '%s\n' name,grade ana,9 bob,4 carol,7 dave,10 erin,3 grace,5 mallory,6 > grades.csv`, apoi calculați, cu
@@ -1274,7 +1305,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
 
     **Verificare:** `5`; `6.28571` și `7.4`; `dave 10`; `bob` și `erin`. <small>→ [Calcule: `awk`](#computing-awk)</small>
 
-23. **Un audit al utilizatorilor**: Scrieți raportul utilizatorilor sistemului, așa cum l-ar face un administrator în
+24. **Un audit al utilizatorilor**: Scrieți raportul utilizatorilor sistemului, așa cum l-ar face un administrator în
     fiecare lună.
 
     Din baza de date a utilizatorilor:
@@ -1291,7 +1322,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
 
 **Coduri de ieșire**
 
-24. **Ghiciți lanțul**: Învățați să citiți `&&` și `||` fără să rulați comenzile.
+25. **Ghiciți lanțul**: Învățați să citiți `&&` și `||` fără să rulați comenzile.
 
     Scrieți **întâi** pe hârtie ce afișează fiecare linie, apoi verificați:
 
@@ -1305,7 +1336,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
     `||` se uită doar la codul de ieșire al celor dinaintea lui: la linia 5, `D` este afișat deși prima comandă a mers.
     <small>→ [Înlănțuirea comenzilor](#chaining-commands--and-)</small>
 
-25. **Ce înseamnă numerele**: Aflați ce spun codurile de ieșire, pe lângă „succes” și „eroare”.
+26. **Ce înseamnă numerele**: Aflați ce spun codurile de ieșire, pe lângă „succes” și „eroare”.
 
     1. găsiți în manual ce înseamnă `1` și `2` pentru `ls` și obțineți-le pe fiecare;
     2. porniți `sleep 100`, opriți-l cu `kill` dintr-un alt terminal și afișați-i codul de ieșire; refaceți totul cu
@@ -1318,7 +1349,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
     pot fi citite. `kill` dă `143` (`128 + 15`, `SIGTERM`), `kill -9` dă `137` (`128 + 9`, `SIGKILL`). `42`, apoi `44`:
     `300` nu încape într-un octet și se păstrează doar `300 - 256`. <small>→ [Coduri de ieșire](#exit-codes) · [Semnale](/docs/labs/04#signals)</small>
 
-26. **O schimbare atentă**: Trebuie să schimbați `kiwi` în `mango` în `orders.csv`, direct în fișier. Faceți-o așa
+27. **O schimbare atentă**: Trebuie să schimbați `kiwi` în `mango` în `orders.csv`, direct în fișier. Faceți-o așa
     încât să puteți reveni oricând.
 
     1. cu **o singură** linie: copiați `orders.csv` în `orders.bak`; doar dacă copierea a mers, schimbați fișierul cu
@@ -1335,7 +1366,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
 
 **Cum rulează un pipeline**
 
-27. **Procesele unui pipeline**: Vedeți că, într-un pipeline, comenzile rulează împreună, ca un singur job.
+28. **Procesele unui pipeline**: Vedeți că, într-un pipeline, comenzile rulează împreună, ca un singur job.
 
     1. în al doilea terminal, afișați PID-ul shell-ului, apoi rulați `sleep 300 | sleep 301 | cat`;
     2. în primul terminal, afișați arborele de procese al celui de-al doilea shell, cu PID-urile; listați aceste
@@ -1349,7 +1380,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
     procese: PID-ul primului `sleep`. Toate sunt `S` (așteaptă); după <kbd>Ctrl</kbd>+<kbd>Z</kbd>, toate sunt `T`
     (oprite); <kbd>Ctrl</kbd>+<kbd>C</kbd> le termină pe toate trei. <small>→ [Cum rulează un pipeline](#how-a-pipeline-runs) · [Foreground și background](/docs/labs/04#foreground-and-background)</small>
 
-28. **Urmăriți pipe-ul**: Găsiți în `/proc` pipe-ul dintre două comenzi.
+29. **Urmăriți pipe-ul**: Găsiți în `/proc` pipe-ul dintre două comenzi.
 
     1. în al doilea terminal, rulați `sleep 300 | cat`;
     2. în primul terminal, găsiți PID-urile lui `sleep` și `cat` și afișați unde duc intrările (`0`) și ieșirile (`1`)
@@ -1361,7 +1392,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
     **Verificare:** ieșirea lui `sleep` și intrarea lui `cat` sunt același `pipe:[...]`, cu același număr; intrarea lui
     `sleep` și ieșirea lui `cat` sunt terminalul, `/dev/pts/...`. <small>→ [Cum rulează un pipeline](#how-a-pipeline-runs) · [Sistemul de fișiere `/proc`](/docs/labs/03#the-proc-file-system)</small>
 
-29. **Cine termină primul**: Aflați ce se întâmplă cu o comandă al cărei cititor s-a oprit din citit.
+30. **Cine termină primul**: Aflați ce se întâmplă cu o comandă al cărei cititor s-a oprit din citit.
 
     Pentru fiecare linie, ghiciți **întâi** codurile de ieșire ale celor două comenzi, apoi afișați-le cu `PIPESTATUS`:
 
@@ -1375,7 +1406,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
     înaintea lui `sleep`. `141 0`: aproximativ 575 KiB nu încap, așa că `seq` a așteptat un cititor; când `sleep` s-a
     terminat fără să citească, `seq` a primit `SIGPIPE`. <small>→ [Cum rulează un pipeline](#how-a-pipeline-runs)</small>
 
-30. **Un eșec la mijloc**: În fiecare noapte, un pipeline numără clienții magazinului. Într-o noapte fișierul lipsea,
+31. **Un eșec la mijloc**: În fiecare noapte, un pipeline numără clienții magazinului. Într-o noapte fișierul lipsea,
     iar raportul a spus `0`, fără nicio eroare. Faceți pipeline-ul să spună adevărul.
 
     1. rulați `cut -d, -f1 nope.csv | sort -u | wc -l`, apoi afișați-i codul de ieșire și codurile de ieșire ale
@@ -1388,7 +1419,7 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
     **Verificare:** pipeline-ul afișează `0` și se termină cu `0`, dar `PIPESTATUS` este `1 0 0`; fără `pipefail`
     spune `ok`, cu `pipefail` spune `failed`. <small>→ [Cum rulează un pipeline](#how-a-pipeline-runs) · [Codul de ieșire al unui pipeline](#the-exit-code-of-a-pipeline)</small>
 
-31. **Urmăriți un log în timp real**: Urmăriți cererile care se termină cu `404` pe măsură ce sosesc și doar adresele
+32. **Urmăriți un log în timp real**: Urmăriți cererile care se termină cu `404` pe măsură ce sosesc și doar adresele
     lor.
 
     1. în al doilea terminal, urmăriți `live.log` și păstrați doar liniile care conțin `404`;
@@ -1404,23 +1435,75 @@ comandă a mers. Exercițiile folosesc fișierele din `~/lab06` din Primii pași
 
 **Editoare de text**
 
-32. **Învățați `vim`**: Petreceți o jumătate de oră cu tutorialul lui `vim`, apoi folosiți-l pe un fișier adevărat.
+33. **Editorul vostru pe un fișier adevărat**: Schimbați un fișier cu editorul învățat în exercițiile 1 și 16, fără
+    să rescrieți liniile care rămân.
 
-    1. rulați `vimtutor` și faceți lecțiile 1 și 2;
-    2. copiați `students.csv` în `class.csv` și deschideți-l cu `vim`;
-    3. adăugați linia `Dave,27,Cluj` la final; copiați linia lui `Bob` și lipiți copia sub ea; schimbați copia în
-       `Erin,24,Iasi`;
+    1. copiați `students.csv` în `class.csv` și deschideți-l cu editorul vostru;
+    2. adăugați linia `Dave,27,Cluj` la final;
+    3. copiați linia lui `Bob` și lipiți copia sub ea; schimbați copia în `Erin,24,Iasi`;
     4. înlocuiți fiecare `,` cu `;`, cu **o singură** comandă; salvați, ieșiți și afișați fișierul.
 
-    💡 Tabelul din [`vim`](#vim); <kbd>y</kbd><kbd>y</kbd> copiază o linie, <kbd>p</kbd> o lipește sub cursor; `:s`
-    fără `%` schimbă doar linia curentă.
+    💡 Alegeți editorul vostru:
+
+    <Tabs groupId="editor">
+    <TabItem value="vim" label="vim">
+
+    | Pas | Taste |
+    | --- | --- |
+    | deschideți fișierul | `vim class.csv` |
+    | adăugați o linie la final | <kbd>G</kbd> merge la ultima linie, <kbd>o</kbd> deschide o linie nouă dedesubt; scrieți-o, <kbd>Esc</kbd> |
+    | copiați o linie și lipiți-o dedesubt | pe `Bob`: <kbd>y</kbd><kbd>y</kbd> copiază linia, <kbd>p</kbd> o lipește dedesubt |
+    | schimbați o linie întreagă | pe copie: <kbd>c</kbd><kbd>c</kbd> șterge textul liniei; scrieți-l pe cel nou, <kbd>Esc</kbd> |
+    | înlocuiți în tot fișierul | `:%s/,/;/g`; `:s` fără `%` schimbă doar linia curentă |
+    | salvați și ieșiți | `:wq` |
+
+    </TabItem>
+    <TabItem value="nvim" label="nvim">
+
+    Neovim are tastele lui `vim`.
+
+    | Pas | Taste |
+    | --- | --- |
+    | deschideți fișierul | `nvim class.csv` |
+    | adăugați o linie la final | <kbd>G</kbd> merge la ultima linie, <kbd>o</kbd> deschide o linie nouă dedesubt; scrieți-o, <kbd>Esc</kbd> |
+    | copiați o linie și lipiți-o dedesubt | pe `Bob`: <kbd>y</kbd><kbd>y</kbd> copiază linia, <kbd>p</kbd> o lipește dedesubt |
+    | schimbați o linie întreagă | pe copie: <kbd>c</kbd><kbd>c</kbd> șterge textul liniei; scrieți-l pe cel nou, <kbd>Esc</kbd> |
+    | înlocuiți în tot fișierul | `:%s/,/;/g`; `:s` fără `%` schimbă doar linia curentă |
+    | salvați și ieșiți | `:wq` |
+
+    </TabItem>
+    <TabItem value="hx" label="hx">
+
+    | Pas | Taste |
+    | --- | --- |
+    | deschideți fișierul | `hx class.csv` |
+    | adăugați o linie la final | <kbd>g</kbd><kbd>e</kbd> merge la ultima linie, <kbd>o</kbd> deschide o linie nouă dedesubt; scrieți-o, <kbd>Esc</kbd> |
+    | copiați o linie și lipiți-o dedesubt | pe `Bob`: <kbd>x</kbd> selectează linia, <kbd>y</kbd> o copiază, <kbd>p</kbd> o lipește dedesubt |
+    | schimbați o linie întreagă | pe copie: <kbd>x</kbd> selectează linia, <kbd>_</kbd> lasă deoparte sfârșitul ei, <kbd>c</kbd> o șterge; scrieți-o pe cea nouă, <kbd>Esc</kbd> |
+    | înlocuiți în tot fișierul | <kbd>%</kbd> selectează tot fișierul, <kbd>s</kbd> `,` <kbd>Enter</kbd> selectează fiecare `,` din el, <kbd>r</kbd><kbd>;</kbd> le înlocuiește pe toate |
+    | salvați și ieșiți | `:wq` |
+
+    </TabItem>
+    <TabItem value="emacs" label="emacs">
+
+    | Pas | Taste |
+    | --- | --- |
+    | deschideți fișierul | `emacs -nw class.csv` |
+    | adăugați o linie la final | <kbd>Alt</kbd>+<kbd>&gt;</kbd> merge la finalul fișierului; scrieți-o |
+    | copiați o linie și lipiți-o dedesubt | la începutul lui `Bob` (<kbd>Ctrl</kbd>+<kbd>A</kbd>): <kbd>Ctrl</kbd>+<kbd>K</kbd> de două ori taie linia, <kbd>Ctrl</kbd>+<kbd>Y</kbd> de două ori o lipește la loc, plus o copie |
+    | schimbați o linie întreagă | pe copie (<kbd>Ctrl</kbd>+<kbd>P</kbd> urcă), la începutul ei: <kbd>Ctrl</kbd>+<kbd>K</kbd> taie textul; scrieți-l pe cel nou |
+    | înlocuiți în tot fișierul | <kbd>Alt</kbd>+<kbd>&lt;</kbd> merge la început, <kbd>Alt</kbd>+<kbd>%</kbd> `,` <kbd>Enter</kbd> `;` <kbd>Enter</kbd> întreabă la fiecare potrivire; <kbd>!</kbd> le înlocuiește pe toate |
+    | salvați și ieșiți | <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>S</kbd>, apoi <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd> |
+
+    </TabItem>
+    </Tabs>
 
     **Verificare:** `class.csv` are 6 linii: `name;age;city`, `Alice;30;Paris`, `Bob;25;London`, `Erin;24;Iasi`,
-    `Carol;22;Bucharest` și `Dave;27;Cluj`. <small>→ [`vim`](#vim)</small>
+    `Carol;22;Bucharest` și `Dave;27;Cluj`. <small>→ [Editoare de text](#text-editors)</small>
 
 **Curățenie**
 
-33. **Curățenie**: Lăsați directorul home așa cum era înainte de laborator.
+34. **Curățenie**: Lăsați directorul home așa cum era înainte de laborator.
 
     1. ștergeți `~/lab06`;
     2. dacă `set -o pipefail` este încă activ într-un shell, închideți acel terminal.
@@ -1471,7 +1554,7 @@ printf '%s\n' '# the settings of the exam server' port=8080 '# host=localhost' \
 
 Când terminați toate provocările, ștergeți totul cu `rm -rf ~/exam`.
 
-34. **Cele mai active adrese**: Aflați cine folosește cel mai mult serverul și cât trimite acesta.
+35. **Cele mai active adrese**: Aflați cine folosește cel mai mult serverul și cât trimite acesta.
 
     Cu **un singur** pipeline pentru fiecare:
 
@@ -1489,7 +1572,7 @@ Când terminați toate provocările, ștergeți totul cu `rm -rf ~/exam`.
 
     apoi `1486950`, apoi `739123`. <small>→ [Filtre](#filters) · [Calcule: `awk`](#computing-awk)</small>
 
-35. **Cine ghicește parole**: O autentificare eșuată este o cerere `POST` pentru `/login` care se termină cu `401`.
+36. **Cine ghicește parole**: O autentificare eșuată este o cerere `POST` pentru `/login` care se termină cu `401`.
     Găsiți adresele care au eșuat la autentificare de cel puțin 3 ori și cât de ocupat a fost serverul în fiecare oră.
 
     1. afișați fiecare adresă cu cel puțin 3 autentificări eșuate, cu numărul ei de eșecuri;
@@ -1506,7 +1589,7 @@ Când terminați toate provocările, ștergeți totul cu `rm -rf ~/exam`.
 
     <small>→ [Calcule: `awk`](#computing-awk) · [Tăierea coloanelor: `cut`](#cutting-columns-cut)</small>
 
-36. **Numere de înmatriculare**: Păstrați doar numerele de înmatriculare valide din `plates.txt`, cu **un singur**
+37. **Numere de înmatriculare**: Păstrați doar numerele de înmatriculare valide din `plates.txt`, cu **un singur**
     `grep` și **o singură** expresie regulată.
 
     Un număr valid are, separate prin câte un spațiu:
@@ -1520,7 +1603,7 @@ Când terminați toate provocările, ștergeți totul cu `rm -rf ~/exam`.
     **Verificare:** comanda afișează exact `B 123 ABC`, `B 12 XYZ`, `IF 07 UPB` și `TM 05 LNX`, iar aceeași comandă cu
     `-c` afișează `4`. <small>→ [Expresii regulate extinse](#extended-regular-expressions)</small>
 
-37. **Notele finale**: `grades.csv` are, pentru fiecare student, nota de la laborator și nota de la examen. Nota finală
+38. **Notele finale**: `grades.csv` are, pentru fiecare student, nota de la laborator și nota de la examen. Nota finală
     este suma lor. Un student promovează cu o notă finală de cel puțin `5` **și** o notă la examen de cel puțin `2.5`.
 
     Cu **un singur** pipeline, afișați numele și nota finală ale fiecărui student care a promovat, cea mai mare notă
@@ -1529,7 +1612,7 @@ Când terminați toate provocările, ștergeți totul cu `rm -rf ~/exam`.
     **Verificare:** ieșirea este exact `dave 9.5`, `ana 8`, `carol 7` și `mallory 6.5`; `grace` are `4.5`, iar `bob`,
     `erin` au mai puțin, așa că nu sunt afișați. <small>→ [Calcule: `awk`](#computing-awk) · [Sortarea: `sort`](#sorting-sort)</small>
 
-38. **Ghiciți codurile de ieșire**: Ghiciți ce afișează fiecare linie și codurile ei de ieșire, apoi dovediți fiecare
+39. **Ghiciți codurile de ieșire**: Ghiciți ce afișează fiecare linie și codurile ei de ieșire, apoi dovediți fiecare
     răspuns.
 
     În `~/exam`, completați **întâi** tabelul pe hârtie; apoi rulați fiecare linie, urmată de `echo $?`, sau de
@@ -1561,7 +1644,7 @@ Când terminați toate provocările, ștergeți totul cu `rm -rf ~/exam`.
 
     <small>→ [Coduri de ieșire](#exit-codes) · [Înlănțuirea comenzilor](#chaining-commands--and-) · [Cum rulează un pipeline](#how-a-pipeline-runs)</small>
 
-39. **Configurați cu `vim`**: Schimbați `settings.conf` doar cu `vim`, fără să rescrieți liniile care rămân.
+40. **Configurați cu `vim`**: Schimbați `settings.conf` doar cu `vim`, fără să rescrieți liniile care rămân.
 
     La final, fișierul trebuie să aibă exact aceste linii, în această ordine:
 
