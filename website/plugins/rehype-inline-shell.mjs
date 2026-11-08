@@ -15,6 +15,10 @@ const PROGRAMS = new Set([
   "id", "whoami", "groups", "getent", "passwd", "useradd", "usermod", "userdel", "groupadd", "gpasswd",
   "export", "source", "env", "type", "history", "readlink", "ln", "du", "df", "tar", "xargs",
   "vi", "tac", "column", "rev", "nl", "jq", "set",
+  "gzip", "gunzip", "zip", "unzip", "bzip2", "bunzip2", "xz", "unxz",
+  "trap", "unset", "shopt", "alias", "unalias", "command", "help", "exit", "true", "false",
+  "seq", "printenv", "ip", "uname", "date", "nohup", "yes", "chage", "systemctl", "coredumpctl", "openssl",
+  "yazi", "swaylock", "grim",
 ]);
 const SUDO = new Set(["sudo", "doas"]);
 const SUDO_ARG_OPTIONS = new Set(["-u", "-g", "-U", "-C", "-D", "-p", "-r", "-t", "-T"]);
