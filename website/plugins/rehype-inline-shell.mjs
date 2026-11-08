@@ -14,6 +14,7 @@ const PROGRAMS = new Set([
   "ps", "pstree", "pgrep", "kill", "killall", "top", "htop", "jobs", "fg", "bg", "sleep", "tee", "tree",
   "id", "whoami", "groups", "getent", "passwd", "useradd", "usermod", "userdel", "groupadd", "gpasswd",
   "export", "source", "env", "type", "history", "readlink", "ln", "du", "df", "tar", "xargs",
+  "vi", "tac", "column", "rev", "nl", "jq",
 ]);
 const SUDO = new Set(["sudo", "doas"]);
 const SUDO_ARG_OPTIONS = new Set(["-u", "-g", "-U", "-C", "-D", "-p", "-r", "-t", "-T"]);
