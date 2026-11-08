@@ -929,7 +929,7 @@ older name for the same choice: if it is set, it wins.
 | `less`, the key <kbd>v</kbd>                                            | the file you are reading                                          |
 | `sudoedit <FILE>`                                                       | a copy of a system file, put back in place when the editor quits |
 | `crontab -e`                                                            | the list of the commands that run on a schedule                   |
-| `git commit`                                                            | the message of the commit (lab 07)                                |
+| `git commit`                                                            | the message of the commit                                |
 
 ```shell-session
 [student@fedora ~]$ echo "[$EDITOR] [$VISUAL]"
