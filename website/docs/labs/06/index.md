@@ -9,7 +9,7 @@ read lines and write lines: `cat`, `head`, `tail` and `sort` work with whole lin
 **regular expression**, `cut`, `tr` and `sed` change the inside of every line, and `wc` and `awk` count and compute.
 You will join them into **pipelines** that answer a question in one line, find out if a command worked from its
 **exit code**, and chain commands with `&&` and `||`. At the end, you will meet the three kinds of
-terminal editors, `nano`, `vim` and Emacs, and start learning one of them.
+terminal editors, `nano`, `vim` and `emacs`, and start learning one of them.
 
 The most important idea of this lab is that text is the **common language** of the commands. Every filter reads lines
 of text, does **one** small thing with them, and writes lines of text, so the output of any filter can be the input of
@@ -760,7 +760,7 @@ You edit text files all the time: settings in `/etc` and in `~/.config`, program
 network, or on a virtual terminal (lab 04), there is no window: you need an editor that runs **inside the terminal**.
 
 Terminal editors come in three kinds. In a **simple** editor, `nano`, what you type goes into the text. In a **modal**
-editor, `vim`, `nvim` or Helix (`hx`), the keys are commands, and you type text only in one of its modes. Emacs is in
+editor, `vim`, `nvim` or Helix (`hx`), the keys are commands, and you type text only in one of its modes. `emacs` is in
 between: what you type goes into the text, as in `nano`, but every command is a **chord**, keys held down together,
 and it can do almost anything. Think of it as a much more powerful `nano`.
 
@@ -803,7 +803,7 @@ Look at the last line to know the mode. Press <kbd>Esc</kbd> a few times to get 
 
 ### Chorded: `emacs` {/* #emacs */}
 
-Emacs has no modes: what you type goes into the text. Every command is a **chord**: <kbd>Ctrl</kbd>+<kbd>X</kbd>
+`emacs`(_Editor MACroS_) has no modes: what you type goes into the text. Every command is a **chord**: <kbd>Ctrl</kbd>+<kbd>X</kbd>
 <kbd>Ctrl</kbd>+<kbd>S</kbd> saves, <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd> quits. Its manual writes
 <kbd>Ctrl</kbd> as `C-` and <kbd>Alt</kbd> as `M-` (_Meta_): `C-x C-s`. Start it with `emacs -nw` (_no window_) to
 keep it in the terminal, and press <kbd>Ctrl</kbd>+<kbd>G</kbd> to cancel a command that you started by mistake.
