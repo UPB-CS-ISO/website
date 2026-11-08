@@ -380,6 +380,99 @@ int main(void)
   #takeaway[💡 runs *without* `libc.so.6`, but *every program* carries its own copy of `printf`]
 ]
 
+// our own static library: ar packs lib.o into libsum.a; ld copies sum
+// from it into app, nothing is loaded at run time
+#let static-lib-drawing = drawing(width: 290pt, height: 150pt, {
+  let gray = luma(120)
+  pin(48pt, 28pt, file-box("lib.o", sub: [`sum`], width: 96pt))
+  pin(145pt, 28pt, tool-box("ar", sub: [archive]))
+  pin(245pt, 28pt, file-box("libsum.a", sub: [`lib.o`, ...], on: true, width: 82pt))
+  line-arrow((98pt, 28pt), (122pt, 28pt), color: gray)
+  line-arrow((168pt, 28pt), (202pt, 28pt), color: changed, thickness: 1.5pt)
+  pin(48pt, 110pt, file-box("main.o", sub: [calls `sum`], width: 96pt))
+  pin(145pt, 110pt, tool-box("ld", sub: [`-lsum`]))
+  pin(245pt, 110pt, file-box("app", sub: [`main` + `sum`], width: 82pt))
+  line-arrow((98pt, 110pt), (122pt, 110pt), color: gray)
+  line-arrow((168pt, 110pt), (202pt, 110pt), color: gray)
+  // the code of sum is copied into app (solid)
+  line-arrow((225pt, 46pt), (165pt, 92pt), color: changed, thickness: 1.5pt)
+  pin(232pt, 68pt, arrow-label[copied in])
+})
+
+#slide[
+  == Static Library: `ar`
+  Our own `.a`, an archive of object files, copied into every program
+
+  #pipeline(on: 4, flags: false)
+
+  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.2em)[
+    #set text(size: 0.8em)
+    #show regex("^(ar|rcs|-lsum)$"): mark-option
+    ```terminal
+    $ gcc -c lib.c -o lib.o
+    $ ar rcs libsum.a lib.o
+    $ ar t libsum.a
+    lib.o
+    $ gcc main.o -L. -lsum -o app
+    $ ./app
+    sum: 55
+    ```
+  ][
+    #layout(size => scale(calc.min(80%, size.width / 290pt * 100%), origin: top + left, reflow: true, static-lib-drawing))
+  ]
+
+  #v(1fr)
+  #takeaway[💡 `app` runs without `libsum.a`; change `lib.c`: rebuild `libsum.a` *and* link `app` again]
+]
+
+// our own shared library: ld -shared turns lib.o into libsum.so; app only
+// records that it needs libsum.so, the loader finds it when app runs
+#let shared-linker-drawing = drawing(width: 290pt, height: 150pt, {
+  let gray = luma(120)
+  pin(48pt, 28pt, file-box("lib.o", sub: [`sum`, `-fPIC`], width: 96pt))
+  pin(145pt, 28pt, tool-box("ld", sub: [`-shared`]))
+  pin(245pt, 28pt, file-box("libsum.so", sub: [`sum`], on: true, width: 82pt))
+  line-arrow((98pt, 28pt), (122pt, 28pt), color: gray)
+  line-arrow((168pt, 28pt), (202pt, 28pt), color: changed, thickness: 1.5pt)
+  pin(48pt, 110pt, file-box("main.o", sub: [calls `sum`], width: 96pt))
+  pin(145pt, 110pt, tool-box("ld", sub: [`-lsum`]))
+  pin(245pt, 110pt, file-box("app", sub: [`main`, needs `libsum.so`], width: 82pt))
+  line-arrow((98pt, 110pt), (122pt, 110pt), color: gray)
+  line-arrow((168pt, 110pt), (202pt, 110pt), color: gray)
+  // app is not given a copy: libsum.so is loaded at run time (dashed)
+  line-arrow((245pt, 46pt), (245pt, 90pt), color: gray, dash: "dashed")
+  pin(245pt, 68pt, arrow-label[loaded at run time])
+})
+
+#slide[
+  == Shared Library: `gcc -shared`
+  Our own `.so`, loaded by every program that uses it
+
+  #pipeline(on: 4, flags: false)
+
+  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.2em)[
+    #set text(size: 0.72em)
+    #show regex("^-(shared|fPIC|lsum)$"): mark-option
+    ```terminal
+    $ gcc -fPIC -c lib.c -o lib.o
+    $ gcc -shared lib.o -o libsum.so
+    $ gcc main.o -L. -lsum -o app
+    $ ldd app
+    libsum.so => not found
+    $ LD_LIBRARY_PATH=. ./app
+    sum: 55
+    ```
+  ][
+    #layout(size => scale(calc.min(80%, size.width / 290pt * 100%), origin: top + left, reflow: true, shared-linker-drawing))
+  ]
+
+  #v(1fr)
+  #v(-0.4em)
+  #text(size: 0.75em)[⚠️ the loader looks for `libsum.so` only in the system folders (`/usr/lib`, ...): *install* it there, or point to it with `LD_LIBRARY_PATH`]
+  #v(-0.4em)
+  #takeaway[💡 change `lib.c`, rebuild `libsum.so`: every program gets the new code *without* linking again]
+]
+
 // a timeline of two builds of app (main.c, lib.c, print.c), animated one
 // gcc command per step:
 // - all: true  -> `gcc main.c lib.c print.c`: step 1 the first build, 2 the

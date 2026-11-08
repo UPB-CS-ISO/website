@@ -23,20 +23,19 @@
     - Chapter 10 - _Using Implicit Rules_ (pattern rules, automatic variables)
 ]
 
+// the files of the project, walked through like in a debugger: one array of
+// marks per step of the slide (see debug-code), every file covers all 5 steps
 #slide[
   == The Project
-  One `main.c` and two pairs of `.h` / `.c` files
+  The program of _Several Source Files_: `main.c` uses two _modules_, `lib` and `print`
 
-  #set text(size: 0.66em)
   #grid(
-    columns: (auto, 1fr, 1fr, 1.15fr),
+    columns: (0.95fr, 1.07fr, 1.12fr),
     column-gutter: 0.6em,
+    row-gutter: 0.5em,
     [
-      #set text(size: 1.2em)
-      #proj-tree(makefile: false)
-    ],
-    [
-      #code-file("main.c")[```c
+      #set text(size: 0.7em)
+      #code-file("main.c", debug-code(((), (6,), (7,), (), ()))[```c
       #include "lib.h"
       #include "print.h"
 
@@ -46,17 +45,27 @@
           print_result("sum", total);
           return 0;
       }
+      ```])
+      #v(0.3em)
+      #reveal-terminal(before: none, lines: (0, 0, 0, 4, 6), full: false)[```terminal
+      $ gcc -c main.c
+      $ gcc -c lib.c
+      $ gcc -c print.c
+      $ gcc main.o lib.o print.o -o app
+      $ ./app
+      sum = 55
       ```]
     ],
     [
-      #code-file("lib.h")[```c
+      #set text(size: 0.7em)
+      #code-file("lib.h", debug-code(((), (3, 4), (), (), ()))[```c
       #ifndef LIB_H
       #define LIB_H
       #define MAX 10
       int sum(int n);
       #endif
-      ```]
-      #code-file("lib.c")[```c
+      ```])
+      #code-file("lib.c", debug-code(((), (3,), (), (), ()))[```c
       #include "lib.h"
 
       int sum(int n)
@@ -67,17 +76,18 @@
           }
           return s;
       }
-      ```]
+      ```])
     ],
     [
-      #code-file("print.h")[```c
+      #set text(size: 0.7em)
+      #code-file("print.h", debug-code(((), (), (3, 4), (), ()))[```c
       #ifndef PRINT_H
       #define PRINT_H
       void print_result(const char *label,
                         int value);
       #endif
-      ```]
-      #code-file("print.c")[```c
+      ```])
+      #code-file("print.c", debug-code(((), (), (4, 5), (), ()))[```c
       #include <stdio.h>
       #include "print.h"
 
@@ -86,9 +96,17 @@
       {
           printf("%s = %d\n", label, value);
       }
-      ```]
+      ```])
     ],
   )
+
+  #v(1fr)
+  #set text(size: 0.85em)
+  #only(1)[💡 a module is a pair of files: the `.h` *declares* what it offers, the `.c` *defines* how it works]
+  #only(2)[💡 `main.c` calls `sum`: declared in `lib.h`, defined in `lib.c`, adds the numbers from 1 to `MAX`]
+  #only(3)[💡 `main.c` calls `print_result`: declared in `print.h`, defined in `print.c`, uses `printf`]
+  #only(4)[💡 each `.c` is *compiled* to its own `.o`, then the three `.o` files are *linked* into `app`]
+  #only(5)[💡 four commands to remember and type again after every change: `make` will run them for us]
 ]
 
 // the times in the cards come from a real run (`ls -l --time-style=+%H:%M:%S`):

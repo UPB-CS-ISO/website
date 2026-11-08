@@ -56,8 +56,6 @@
       - Language Servers
       - Debuggers
       - Debug Adapters
-      - From an Editor to an IDE
-        - LSP + DAP
       - The C Compilation Pipeline
         - preprocessor, compiler, assembler, linker
       #colbreak()
@@ -70,6 +68,8 @@
       - Header Dependencies
       - Version Control with Git
         - commits, commit vs push, branches
+      - From an Editor to an IDE
+        - LSP + DAP
     ]
   ]
 ]
@@ -79,13 +79,13 @@
 #include "lsp.typ"
 #include "debugger.typ"
 #include "dap.typ"
-#include "editor-ide.typ"
 #include "compiling.typ"
 #include "make.typ"
 #include "make-project.typ"
 #include "make-special.typ"
 #include "make-headers.typ"
 #include "git.typ"
+#include "editor-ide.typ"
 
 #slide[
   == We talked about
@@ -98,8 +98,6 @@
       - Language Servers
       - Debuggers
       - Debug Adapters
-      - From an Editor to an IDE
-        - LSP + DAP
       - The C Compilation Pipeline
         - preprocessor, compiler, assembler, linker
       #colbreak()
@@ -112,6 +110,8 @@
       - Header Dependencies
       - Version Control with Git
         - commits, commit vs push, branches
+      - From an Editor to an IDE
+        - LSP + DAP
     ]
   ]
 ]

@@ -167,7 +167,7 @@
     #uncover("5-")[#text(size: 0.9em, fill: accent)[*Variables*: `n = 10`, `s = 0`, `i = 1`]]
   ][
     #only("1-2")[
-      #text(size: 0.85em, weight: "bold", fill: accent)[Requests: a question and its answer, the same `seq`]
+      #text(size: 0.85em, weight: "bold", fill: accent)[Requests: a question and its answer]
       #msg(true, "request", "setBreakpoints", (
         "seq:         3",
         "source:      /home/student/project/lib.c",
@@ -187,7 +187,7 @@
       ))
     ]
     #only("4-")[
-      #text(size: 0.85em, weight: "bold", fill: accent)[Requests: a question and its answer, the same `seq`]
+      #text(size: 0.85em, weight: "bold", fill: accent)[Requests: a question and its answer]
       #msg(true, "request", "variables", (
         "seq:                9",
         "variablesReference: 1001",
@@ -225,7 +225,7 @@
 )
 
 #slide[
-  == What You Get
+  == What You Get #only("1-4")[in VSCodium]#only("5-")[in `nvim`]
   `lldb` in VSCodium (CodeLLDB) and in `nvim` (`nvim-dap`)
 
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.2em)[

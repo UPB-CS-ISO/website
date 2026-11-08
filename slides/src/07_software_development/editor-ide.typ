@@ -227,3 +227,113 @@
     #callout[install `clangd` and `lldb-dap` once, then use them from *any* editor you like]
   ]
 ]
+
+// the question an editor asks when it opens a folder it has not seen yet
+// (VS Code, Zed, JetBrains IDEs, ... all ask it, in their own words), drawn as
+// a generic popup window: title bar, folder, warning, the two buttons
+#let trust-dialog = popup(width: 250pt, color: accent)[Trust this folder?][
+  #text(font: mono, size: 0.9em, fill: luma(90))[\~/Downloads/homework]
+  #v(0.3em)
+  The editor can run *language servers*, *build scripts*, *tasks* and the *debugger* from this folder.
+  Only trust code you know.
+  #v(0.5em)
+  // the buttons are colored by what they do (safe / dangerous), with a mark
+  // and a word, not by color alone
+  #align(right, {
+    box(inset: (x: 0.6em, y: 0.35em), radius: 0.3em, fill: ok-fill, stroke: 1.2pt + ok-color,
+      text(fill: ok-color, weight: "bold")[✅ Restricted mode])
+    h(0.5em)
+    box(inset: (x: 0.6em, y: 0.35em), radius: 0.3em, fill: bad-color, text(fill: white, weight: "bold")[⚠️ Trust])
+  })
+]
+
+// a card with a colored bar on the left: what one of the dialog's answers does
+// usage: #answer-card(ok-color, ok-fill)[✅ Restricted mode][nothing runs]
+#let answer-card(color, fill, title, body) = block(
+  width: 100%, fill: fill, stroke: (left: 3pt + color), inset: (x: 0.7em, y: 0.5em), {
+    text(fill: color, weight: "bold", title)
+    v(0.1em)
+    body
+  })
+
+#slide[
+  == Trust the Folder?
+  An IDE does not only show the code, it *runs* programs from the folder
+
+  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
+    #v(0.5em)
+    #align(center, trust-dialog)
+    #v(0.4em)
+    #align(center, text(size: 0.75em, fill: luma(100))[_VS Code_, _Zed_, _JetBrains_ IDEs, ... all ask this \ when they open a new folder])
+  ][
+    #set text(size: 0.8em)
+    #answer-card(bad-color, bad-fill)[⚠️ Trust: dangerous for unknown code][
+      - starts the *language server* and the programs the folder's *settings* name
+      - a *Rust* project: `rust-analyzer` compiles and *runs* `build.rs` as soon as the folder opens, *any code*, as you
+      - runs the *tasks* and the *debugger* configurations
+    ]
+    #v(0.5em)
+    #answer-card(ok-color, ok-fill)[✅ Restricted mode: safe][
+      - only an editor: you can read and edit the code
+      - *nothing* from the folder runs, until you trust it
+    ]
+  ]
+
+  #v(1fr)
+  #callout[💡 code from the internet or from a colleague: open it in *Restricted mode*, trust only code you know]
+]
+
+// what a trusted folder makes the editor run, one row per kind of file:
+// the file in the folder, what the editor runs because of it, and when;
+// the last column (red, from step 4) is what an attacker writes in that file.
+// Rows not reached yet are hidden but keep their space, so nothing moves;
+// the row of the current step gets the orange fill (only the color changes).
+// usage: #trust-table(2)
+#let trust-table(step) = block(width: 100%, {
+  set text(size: 0.72em)
+  let rows = (
+    ([`.vscode/settings.json` \ `.zed/settings.json`], [the language server written there, with its arguments], [*on open*], [`"path": "./x.sh"`]),
+    ([`Cargo.toml` \ `build.rs`], [`rust-analyzer` runs `cargo check`, which compiles and *runs* `build.rs`], [*on open*], [`build.rs`: any Rust code]),
+    ([`.vscode/tasks.json` \ `.vscode/launch.json` \ `.zed/tasks.json`], [the commands written there], [when you run a task or debug], [`"command": "rm -rf ~"`]),
+  )
+  table(
+    columns: (1.15fr, 1.9fr, 0.95fr, 1.3fr),
+    align: left + horizon,
+    inset: (x: 0.55em, y: 0.5em),
+    stroke: none,
+    fill: (x, y) => if x == 3 and step < 4 { none }
+      else if y == 0 { if x == 3 { bad-color } else { accent } }
+      else if y == step and step <= 3 { changed-fill }
+      else if x == 3 { bad-fill }
+      else if calc.odd(y) { luma(246) } else { white },
+    table.header(
+      text(fill: white)[*in the folder*],
+      text(fill: white)[*the editor runs*],
+      text(fill: white)[*when*],
+      if step >= 4 { text(fill: white)[*an attacker writes*] } else { hide[*an attacker writes*] },
+    ),
+    ..rows.enumerate().map(((i, r)) => {
+      let shown = i + 1 <= step
+      (
+        ..r.slice(0, 3).map(c => if shown { c } else { hide(c) }),
+        if shown and step >= 4 { text(fill: bad-color, r.at(3)) } else { hide(r.at(3)) },
+      )
+    }).flatten(),
+    table.hline(stroke: 0.8pt + luma(200)),
+  )
+})
+
+#slide[
+  == What Does Trust Allow?
+  A trusted folder decides which programs the editor *runs*
+
+  #v(0.3em)
+  #for s in range(1, 5) { only(if s == 4 { "4-" } else { s }, trust-table(s)) }
+
+  #v(1fr)
+  #set text(size: 0.9em)
+  #only(1)[💡 the settings choose *which program* starts as the language server: any program can be named there]
+  #only(2)[💡 to understand a Rust project, `rust-analyzer` builds it, and building means *running* `build.rs`]
+  #only(3)[💡 _Run_ and _Debug_ do not only start your program: they run whatever command the folder wrote]
+  #only("4-")[#callout(color: bad-color, fill: bad-fill)[⚠️ *on open*: nothing to click, the code runs *as you*, with your files and your SSH keys]]
+]

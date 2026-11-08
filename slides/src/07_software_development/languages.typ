@@ -50,7 +50,7 @@
         }
         ```
       ],
-      uncover("2-")[
+      [
         #text(size: 2em, weight: "bold", fill: changed)[?]
         #v(-0.8em)
         #draw-arrow(length: 3em, color: changed)
@@ -69,8 +69,8 @@
   ]
 
   #v(1fr)
-  #only(1)[💡 every processor has its own *instruction set*: x86-64, ARM64, RISC-V, ...]
-  #only(2)[💡 someone has to *translate* the source code to machine code: *who* does it and *when*?]
+  💡 every processor has its own *instruction set*: x86-64, ARM64, RISC-V, ... \
+  💡 someone has to *translate* the source code to machine code: *who* does it and *when*?
 ]
 
 #slide[
@@ -90,29 +90,27 @@
   ]
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
-    #uncover("2-")[
-      ```terminal
-      $ gcc hello.c -o hello
-      $ ./hello
-      Hello, 0!
-      Hello, 1!
-      Hello, 2!
-      $ file hello
-      hello: ELF 64-bit LSB pie executable, ...
-      ```
-    ]
+    ```terminal
+    $ gcc hello.c -o hello
+    $ ./hello
+    Hello, 0!
+    Hello, 1!
+    Hello, 2!
+    $ file hello
+    hello: ELF 64-bit LSB pie executable, ...
+    ```
   ][
     #set text(size: 0.9em)
-    #uncover("3-")[#block[
+    #uncover("2-")[#block[
       ✅ *fast*: the CPU runs the program directly\
       ✅ many errors (syntax, types) are found *before* running\
       ✅ ship only the executable, not the source
     ]]
-    #uncover("4-")[#block[
+    #uncover("3-")[#block[
       ❌ one executable per *processor* and *OS*\
       ❌ compile again after *every* change
     ]]
-    #uncover("5-")[
+    #uncover("4-")[
       #v(0.3em)
       #chip("C", "compiled") #chip("C++", "compiled") #chip("Rust", "compiled") #chip("Go", "compiled") #chip("Zig", "compiled") #chip("Fortran", "compiled")
     ]
@@ -418,10 +416,11 @@
     #uncover("2-")[
       - `node`, `deno` and `chrome` share the *V8* engine, that also JIT-compiles the hot code
     ]
-    #uncover("3-")[
-      #callout[you run the source, but *not* line by line]
-    ]
   ]
+
+  #only("3-", place(center + horizon, popup(width: 340pt)[⚠️ Not line by line][
+    #text(size: 1.4em)[you run the *source*, but the interpreter first *compiles* all of it to bytecode]
+  ]))
 ]
 
 // ----- the big picture: when does the translation happen? -----

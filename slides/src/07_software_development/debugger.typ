@@ -102,14 +102,15 @@
 #let gdb-session(src, upto: none, window: 12) = {
   let all = src.split("\n")
   let last = if upto == none { all.len() } else { upto }
-  let first = calc.max(0, last - window)
-  let shown = all.slice(first, last)
+  // gdb waits for the next command: an empty prompt after the output
+  let lines = all.slice(0, last) + ("(gdb)",)
+  let shown = lines.slice(calc.max(0, lines.len() - window))
   // pad to `window` lines, so the block keeps its height
   while shown.len() < window { shown.push(" ") }
   set align(left)
   show raw.line: l => {
-    if l.text.starts-with("(gdb) ") [
-      #text(fill: accent, weight: "bold")[(gdb)] #text(weight: "bold", l.text.slice(6))
+    if l.text.starts-with("(gdb)") [
+      #text(fill: accent, weight: "bold")[(gdb)] #text(weight: "bold", l.text.slice(5).trim())
     ] else if l.text.starts-with("$ ") {
       render-terminal-line(l.text)
     } else [
@@ -206,9 +207,11 @@ $1 = 10"
     }
     v(0.3em)
     // a fixed number of lines, so the block keeps its height
-    for c in commands + (" ",) * calc.max(0, 7 - commands.len()) {
-      block(spacing: 0em, if c.starts-with("(gdb) ") {
-        text(fill: rgb("7fb7c9"), weight: "bold")[(gdb)] + " " + text(weight: "bold", c.slice(6))
+    // gdb waits for the next command: an empty prompt after the output
+    let commands = commands + ("(gdb)",)
+    for c in commands + (" ",) * calc.max(0, 8 - commands.len()) {
+      block(spacing: 0em, if c.starts-with("(gdb)") {
+        text(fill: rgb("7fb7c9"), weight: "bold")[(gdb)] + " " + text(weight: "bold", c.slice(5).trim())
       } else { text(fill: luma(170), c) })
     }
   })

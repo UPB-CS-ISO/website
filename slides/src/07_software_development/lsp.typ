@@ -179,7 +179,7 @@
 ]
 
 #slide[
-  == What You Get
+  == What You Get #only("1-3")[in `helix`]#only("4-")[in VSCodium]
   `clangd` in `helix` (built in) and in VSCodium (an extension)
 
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.2em)[
@@ -236,21 +236,18 @@
       [Typst], [`tinymist`],
     )
   ][
-    #uncover("2-")[
-      ```terminal
-      $ hx --health c
-      Configured language servers:
-        ✓ clangd: /usr/bin/clangd
-      ```
-    ]
-    #uncover("3-")[#block[
-      ⚠️ `clangd` needs the flags of the compiler (`-I`, `-D`, ...), from a `compile_commands.json` file:
-    ]]
-    #uncover("4-")[
-      ```terminal
-      $ bear -- make
-      ```
-      #text(size: 0.8em)[`bear` watches the build and writes `compile_commands.json`]
-    ]
+    ```terminal
+    $ hx --health c
+    Configured language servers:
+      ✓ clangd: /usr/bin/clangd
+    ```
   ]
+
+  #only("2-", place(bottom + right, dy: -0.5em, popup(width: 260pt)[⚠️ clangd and the compiler flags][
+    `clangd` needs the flags (`-I`, `-D`, ...) from `compile_commands.json`
+    ```terminal
+    $ bear -- make
+    ```
+    `bear` watches the build and writes it
+  ]))
 ]
