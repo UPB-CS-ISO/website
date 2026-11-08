@@ -49,5 +49,62 @@
 [data-theme='dark'] .language-shell-session .token.parameter, [data-theme='dark'] .language-bash .token.parameter { color: #ffb86c !important; }
 [data-theme='dark'] .language-shell-session .token.output { color: #bfbfbf !important; }
 
+/* The SVG pictures of the labs are drawn on white. In dark mode, invert their lightness but keep their colors
+   (hue-rotate puts the hues back after invert), so that white becomes the dark background of the page and black
+   text becomes light. Small images may be inlined as data: URLs, so both forms of src are matched. */
+[data-theme='dark'] .markdown img[src$='.svg'],
+[data-theme='dark'] .markdown img[src^='data:image/svg+xml'] {
+  filter: invert(0.92) hue-rotate(180deg) brightness(1.25);
+}
+
 /* Steps inside a numbered exercise are lettered: a., b., c. */
 .markdown ol ol { list-style-type: lower-alpha; }
+
+/* Hints and Checks of the exercises (<details className="reveal">): a small gray link that opens on click,
+   instead of the blue box of <details> */
+.markdown details.reveal {
+  --ifm-code-background: var(--ifm-color-emphasis-100);
+  --ifm-link-color: var(--ifm-color-primary);
+  --ifm-link-hover-color: var(--ifm-color-primary);
+  --ifm-link-decoration: none;
+  --docusaurus-details-decoration-color: var(--ifm-color-emphasis-500);
+  --docusaurus-details-summary-arrow-size: 0.25rem;
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: inherit;
+  padding: 0;
+  margin: 0 0 0.25rem;
+}
+.markdown details.reveal > summary {
+  display: inline-block;
+  padding-left: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-600);
+}
+.markdown details.reveal > summary::before { top: 0.42rem; }
+.markdown details.reveal > summary:hover { color: var(--ifm-color-primary); }
+.markdown details.reveal > div > div {
+  margin: 0.25rem 0 0.75rem;
+  border-top: none;
+  border-left: 2px solid var(--ifm-color-emphasis-300);
+  padding: 0 0 0 0.75rem;
+}
+
+/* Inline code that is a command line (plugins/rehype-inline-shell.mjs): the colors of the terminal of the slides */
+.sh-inline .sh-cmd { color: #004d65; font-weight: 600; }
+.sh-inline .sh-sudo { color: #b3261e; font-weight: 600; font-style: italic; }
+.sh-inline .sh-flag { color: #9a4d76; }
+.sh-inline .sh-str { color: #2e7d46; }
+.sh-inline .sh-var { color: #b35900; }
+.sh-inline .sh-op { color: #555555; font-weight: 600; }
+.sh-inline .sh-comment { color: #828282; font-style: italic; }
+.sh-inline .sh-prompt { color: #004d65; font-weight: 600; }
+[data-theme='dark'] .sh-inline .sh-cmd, [data-theme='dark'] .sh-inline .sh-prompt { color: #55d5fd; }
+[data-theme='dark'] .sh-inline .sh-sudo { color: #ff7b72; }
+[data-theme='dark'] .sh-inline .sh-flag { color: #d2a8ff; }
+[data-theme='dark'] .sh-inline .sh-str { color: #7ee787; }
+[data-theme='dark'] .sh-inline .sh-var { color: #ffb86c; }
+[data-theme='dark'] .sh-inline .sh-op { color: #c9d1d9; }
+[data-theme='dark'] .sh-inline .sh-comment { color: #8b949e; }
+.sh-inline .sh-placeholder { font-style: italic; opacity: 0.8; }
