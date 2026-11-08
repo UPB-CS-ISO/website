@@ -14,7 +14,7 @@ const PROGRAMS = new Set([
   "ps", "pstree", "pgrep", "kill", "killall", "top", "htop", "jobs", "fg", "bg", "sleep", "tee", "tree",
   "id", "whoami", "groups", "getent", "passwd", "useradd", "usermod", "userdel", "groupadd", "gpasswd",
   "export", "source", "env", "type", "history", "readlink", "ln", "du", "df", "tar", "xargs",
-  "vi", "tac", "column", "rev", "nl", "jq", "set",
+  "vi", "tac", "column", "rev", "nl", "jq", "set", "vimtutor",
   "gzip", "gunzip", "zip", "unzip", "bzip2", "bunzip2", "xz", "unxz",
   "trap", "unset", "shopt", "alias", "unalias", "command", "help", "exit", "true", "false",
   "seq", "printenv", "ip", "uname", "date", "nohup", "yes", "chage", "systemctl", "coredumpctl", "openssl",
