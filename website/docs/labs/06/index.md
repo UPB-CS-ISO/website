@@ -8,7 +8,8 @@ will work with what is **inside** most of these files: **text**. You will meet t
 read lines and write lines: `cat`, `head`, `tail` and `sort` work with whole lines, `grep` finds the lines that match a
 **regular expression**, `cut`, `tr` and `sed` change the inside of every line, and `wc` and `awk` count and compute.
 You will join them into **pipelines** that answer a question in one line, find out if a command worked from its
-**exit code**, and chain commands with `&&` and `||`. At the end, you will edit text files in the terminal with `nano` and `vim`, and try a newer editor, Helix (`hx`).
+**exit code**, and chain commands with `&&` and `||`. At the end, you will meet the three kinds of
+terminal editors, `nano`, `vim` and `emacs`, and start learning one of them.
 
 The most important idea of this lab is that text is the **common language** of the commands. Every filter reads lines
 of text, does **one** small thing with them, and writes lines of text, so the output of any filter can be the input of
@@ -26,7 +27,8 @@ which tells the shell if it worked.
 - Change, delete and squeeze characters with `tr`, and replace text with `sed`
 - Count lines, words and characters with `wc`, and compute sums and averages with `awk`
 - Find out if a command worked from its **exit code**, and chain commands with `&&` and `||`
-- Edit a text file in the terminal with `nano` and with `vim` and try `hx`
+- Edit a text file in the terminal with `nano` and with `vim`, start learning `vim`, `nvim`, `hx` or `emacs`, and choose
+  the editor that other programs open with `EDITOR`
 
 ## Resources
 
@@ -43,8 +45,8 @@ which tells the shell if it worked.
    tutorial of `vim`
 4. The lecture slides: [06. Text Processing](/docs/lectures/06)
 5. The manual pages: `man cat`, `man tac`, `man head`, `man tail`, `man sort`, `man uniq`, `man grep`, `man 7 regex`,
-   `man cut`, `man tr`, `man sed`, `man rev`, `man nl`, `man wc`, `man awk`, `man nano`, `man vim` and `man bash`
-   (search for `Pipelines` and `Lists`)
+   `man cut`, `man tr`, `man sed`, `man rev`, `man nl`, `man wc`, `man awk`, `man column`, `man jq`, `man nano`,
+   `man vim` and `man bash` (search for `Pipelines`, `Lists` and `edit-and-execute-command`)
 
 ## Fedora and Ubuntu
 
@@ -53,10 +55,12 @@ the commands of this lab are the same, with a few differences:
 
 |                          | Fedora                                      | Ubuntu                                                 |
 | ------------------------ | ------------------------------------------- | ------------------------------------------------------ |
-| the prompt               | `[student@fedora ~]$`                       | `student@ubuntu:~$`                         |
+| the prompt               | `[student@fedora ~]$`                       | `student@ubuntu:~$`                                    |
 | the program behind `awk` | GNU `awk` (`gawk`)                          | `mawk`, a smaller `awk`: this lab works the same on it |
 | `vim` and `vimtutor`     | if missing: `sudo dnf install vim-enhanced` | if missing: `sudo apt install vim`                     |
-| install Helix (`hx`)           | `sudo dnf install helix`              | `sudo snap install --classic helix`                           |
+| install Helix (`hx`)     | `sudo dnf install helix`                    | `sudo snap install --classic helix`                    |
+| install `jq`             | `sudo dnf install jq`                       | `sudo apt install jq`                                  |
+| `EDITOR`                 | `/usr/bin/nano`                             | not set: each program picks its own editor             |
 
 ## Filters
 
@@ -112,7 +116,7 @@ while they run. The exercises at home and the challenges need the details: they 
 ## Line Filters
 
 The line filters work with **whole lines**: they choose which lines to keep and in which order, but do not change
-them. The examples use the files that [exercise 2](#first-steps) creates in `~/lab06`; `fruits.txt` has 7 lines:
+them. The examples use the files that [exercise 1](#first-steps) creates in `~/lab06`; `fruits.txt` has 7 lines:
 `banana`, `apple`, `cherry`, `apple`, `kiwi`, `banana` and `apple`.
 
 ### Showing a File: `cat` and `tac`
@@ -263,6 +267,9 @@ orange
 gal
 goal
 gooooal
+Cat
+UPB
+x86
 notes.txt
 2026-10-04
 call 0722 123 456
@@ -287,7 +294,7 @@ quotes**: without them, the shell may expand it as a glob, before `grep` starts.
 | `.`      | **any** single character                             | `c.l`    | `color`, `colour`, `call ...`           |
 | `^`      | the **start** of the line                            | `^ca`    | `cat`, `category`, `call ...`           |
 | `$`      | the **end** of the line                              | `r$`     | `color`, `colour`                       |
-| `[abc]`  | **one** of the characters inside (a **class**)       | `[0-9]`  | `2026-10-04`, `call ...`                |
+| `[abc]`  | **one** of the characters inside (a **class**)       | `[0-9]`  | `x86`, `2026-10-04`, `call ...`         |
 | `[^abc]` | one character that is **not** inside; `^` means _not_ only right after `[`                 | `^[^c]`  | every line that does not start with `c` |
 | `*`      | the **previous** item, **0 or more** times           | `go*al`  | `gal`, `goal`, `gooooal`                |
 | `.*`     | any characters, or none                              | `^c.*e$` | `concatenate`                           |
@@ -301,7 +308,7 @@ gooooal
 [student@fedora lab06]$ grep '^[a-z]*$' words.txt | wc -l
 12
 [student@fedora lab06]$ grep '.' words.txt | wc -l
-15
+18
 [student@fedora lab06]$ grep '\.' words.txt
 notes.txt
 ```
@@ -317,7 +324,7 @@ table also shows `\b`, which GNU `grep` understands with or without `-E`:
 
 | Regex | Matches                                                   | Example    | Matches in `words.txt`                  |
 | ----- | --------------------------------------------------------- | ---------- | --------------------------------------- |
-| `+`   | the previous item, **1 or more** times                    | `[0-9]+`   | `2026-10-04`, `call ...`                |
+| `+`   | the previous item, **1 or more** times                    | `[0-9]+`   | `x86`, `2026-10-04`, `call ...`         |
 | `?`   | the previous item, **0 or 1** time: it is optional        | `colou?r`  | `color`, `colour`                       |
 | `{n}` | the previous item, exactly `n` times; `{n,m}`: `n` to `m` | `[0-9]{4}` | `2026-10-04`, `call 0722 ...`           |
 | `( )` | a **group**, repeated as one item                         | `b(an)*a`  | `banana`, `bat`                         |
@@ -345,6 +352,17 @@ Without `-E`, `grep` uses the **basic** regular expressions, where `+`, `?`, `{`
 
 :::
 
+:::tip
+
+**A playground for regular expressions**
+
+[regex101.com](https://regex101.com) colors the matches while you type the regex, and explains every part of it in
+plain words. Paste `words.txt` as the _test string_ and keep the `m` flag on, so that `^` and `$` match at every line,
+as in `grep`. Its default flavor, PCRE2, understands all the regular expressions of this lab; check the final one with
+`grep` anyway.
+
+:::
+
 ### `grep` Options
 
 | Option | What it does                                                                             |
@@ -364,6 +382,7 @@ Without `-E`, `grep` uses the **basic** regular expressions, where `+`, `?`, `{`
 1:banana
 6:banana
 [student@fedora lab06]$ grep -o -E '[0-9]+' words.txt
+86
 2026
 10
 04
@@ -425,11 +444,14 @@ age,city
 [student@fedora lab06]$ cut -d' ' -f2 people.txt
 30
 
+9
+102
+47
 ```
 
 - `-d, -f1` printed the first field, the names; `-f2-` printed everything from the second field on.
-- `people.txt` has `Alice 30 Paris` and `Bob   25 London`: for `Bob`, field `2` is the empty field between the first
-  two spaces, so `cut` printed an empty line. `tr`, in the next section, fixes it.
+- The second line of `people.txt` is `Bob   25 London`: for `Bob`, field `2` is the empty field between the first two
+  spaces, so `cut` printed an empty line. `tr`, in the next section, fixes it.
 
 ### Changing Characters: `tr`
 
@@ -453,6 +475,9 @@ call
 [student@fedora lab06]$ tr -s ' ' < people.txt | cut -d' ' -f2
 30
 25
+9
+102
+47
 [student@fedora lab06]$ echo "$PATH" | tr : '\n'
 /home/student/.local/bin
 /home/student/bin
@@ -599,6 +624,9 @@ alice banana
 [student@fedora lab06]$ awk '{ print NF, $NF }' people.txt
 3 Paris
 3 London
+3 Rome
+3 Oslo
+3 Madrid
 ```
 
 - The first program added field 3 of every line, and printed the sum at the end; the header `count` is not a number,
@@ -731,30 +759,18 @@ cut: nope.csv: No such file or directory
 You edit text files all the time: settings in `/etc` and in `~/.config`, programs, notes. On a server, over the
 network, or on a virtual terminal (lab 04), there is no window: you need an editor that runs **inside the terminal**.
 
-| Editor              | What it is like                                                                                                                   |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `nano`              | simple: what you type goes into the text, and the bottom of the screen lists the keys; the default editor of Fedora and Ubuntu    |
-| `vi`, `vim`, `nvim` | **modal**: the keys are commands, and you type text only in Insert mode; `vi` is on every Unix system, `nvim` is a newer `vim`    |
-| `emacs`             | not modal: every command is a <kbd>Ctrl</kbd> or <kbd>Alt</kbd> combination; it can be extended with programs in its own language |
-| `helix` (`hx`)      | modal like `vim`, but you select first, then act; it knows programming languages without any settings                             |
+Terminal editors come in three kinds. In a **simple** editor, `nano`, what you type goes into the text. In a **modal**
+editor, `vim`, `nvim` or Helix (`hx`), the keys are commands, and you type text only in one of its modes. `emacs` is in
+between: what you type goes into the text, as in `nano`, but every command is a **chord**, keys held down together,
+and it can do almost anything. Think of it as a much more powerful `nano`.
 
-### `nano`
+### Simple: `nano` {/* #nano */}
 
-You met `nano` in [lab 02](/docs/labs/02#nano). The bottom of the screen lists its keys: `^` means
-<kbd>Ctrl</kbd> and `M-` means <kbd>Alt</kbd>.
+You met `nano` in [lab 02](/docs/labs/02#nano); it is the default editor of Fedora and Ubuntu. The bottom of the
+screen lists its keys: `^` means <kbd>Ctrl</kbd> and `M-` means <kbd>Alt</kbd>. All of them are in the `nano` tab of
+[The Keys of Each Editor](#the-keys-of-each-editor).
 
-| Key                           | Action                                    |
-| ----------------------------- | ----------------------------------------- |
-| <kbd>Ctrl</kbd>+<kbd>O</kbd>  | save (_write out_), then <kbd>Enter</kbd> to keep the name |
-| <kbd>Ctrl</kbd>+<kbd>X</kbd>  | exit; if the file changed, it asks to save: <kbd>Y</kbd> or <kbd>N</kbd>                                      |
-| <kbd>Ctrl</kbd>+<kbd>K</kbd>  | cut the line                              |
-| <kbd>Ctrl</kbd>+<kbd>U</kbd>  | paste the lines that you cut              |
-| <kbd>Alt</kbd>+<kbd>U</kbd>   | undo                                      |
-| <kbd>Ctrl</kbd>+<kbd>W</kbd>  | search (_where is_)                       |
-| <kbd>Ctrl</kbd>+<kbd>\\</kbd> | search and replace                        |
-| <kbd>Ctrl</kbd>+<kbd>\_</kbd> | go to a line, by its number               |
-
-### `vim`
+### Modal: `vim`, `nvim` and `hx` {/* #vim */}
 
 `vim` (_Vi IMproved_) is **modal**: the same key does different things in different **modes**. It starts in the
 **Normal** mode, where every key is a **command**: <kbd>j</kbd> does not type a `j`, it moves the cursor down, and
@@ -765,31 +781,16 @@ with no <kbd>Ctrl</kbd> to hold.
 
 ![The modes of vim](./images/vim-modes.svg)
 
-| Mode         | What the keys do                   | Enter it with                                   | The last line shows |
-| ------------ | ---------------------------------- | ----------------------------------------------- | ------------------- |
-| Normal       | move, delete, copy, paste          | <kbd>Esc</kbd>, from any other mode             | nothing             |
-| Insert       | type text                          | from Normal: <kbd>i</kbd>, <kbd>a</kbd>, <kbd>o</kbd>       | `-- INSERT --`      |
-| Command line | type a command: save, quit, replace; <kbd>Enter</kbd> runs it  | <kbd>:</kbd> (or <kbd>/</kbd> to search)        | `:` (or `/`) and what you type |
-| Visual       | select text, then act on it: <kbd>d</kbd> deletes, <kbd>y</kbd> copies                        | <kbd>v</kbd> (characters), <kbd>V</kbd> (lines) | `-- VISUAL --`, `-- VISUAL LINE --`      |
+| Mode         | What the keys do                                                       | Enter it with                                         | The last line shows                 |
+| ------------ | ---------------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------- |
+| Normal       | move, delete, copy, paste                                              | <kbd>Esc</kbd>, from any other mode                   | nothing                             |
+| Insert       | type text                                                              | from Normal: <kbd>i</kbd>, <kbd>a</kbd>, <kbd>o</kbd> | `-- INSERT --`                      |
+| Command line | type a command: save, quit, replace; <kbd>Enter</kbd> runs it          | <kbd>:</kbd> (or <kbd>/</kbd> to search)              | `:` (or `/`) and what you type      |
+| Visual       | select text, then act on it: <kbd>d</kbd> deletes, <kbd>y</kbd> copies | <kbd>v</kbd> (characters), <kbd>V</kbd> (lines)       | `-- VISUAL --`, `-- VISUAL LINE --` |
 
-| In Normal mode                                                     | Action                                                      |
-| ------------------------------------------------------------------ | ----------------------------------------------------------- |
-| <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd>, or the arrows | left, down, up, right                                       |
-| <kbd>w</kbd>, <kbd>b</kbd>                                         | the next word, the previous word                            |
-| <kbd>0</kbd>, <kbd>$</kbd>                                         | the start, the end of the line                              |
-| <kbd>g</kbd><kbd>g</kbd>, <kbd>G</kbd>                             | the first line, the last line                               |
-| <kbd>i</kbd>, <kbd>a</kbd>                                         | Insert mode, before, after the cursor                       |
-| <kbd>o</kbd>, <kbd>O</kbd>                                         | a new line below, above, in Insert mode                     |
-| <kbd>x</kbd>, <kbd>d</kbd><kbd>d</kbd>                             | delete a character, delete (cut) the line: <kbd>p</kbd> pastes it back                          |
-| <kbd>y</kbd><kbd>y</kbd>, <kbd>p</kbd>                             | copy (_yank_) the line, paste it below                      |
-| <kbd>u</kbd>, <kbd>Ctrl</kbd>+<kbd>R</kbd>                         | undo, redo                                                  |
-| <kbd>/</kbd>`text`, <kbd>n</kbd>                                   | search forward, go to the next match                        |
-| `:w`, `:q`, `:wq`, `:q!`                                           | save, quit, save and quit, quit **without** saving          |
-| `:%s/old/new/g`                                                    | replace in every line, like `sed`: `old` is a regex, `%` means all the lines |
-
-A number in front of a command repeats it: <kbd>5</kbd><kbd>j</kbd> goes 5 lines down,
-<kbd>3</kbd><kbd>d</kbd><kbd>d</kbd> deletes 3 lines. The keys <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd>
-are the ones of Sway, from [lab 01](/docs/labs/01).
+`vi`, the ancestor of `vim`, is on every Unix system; `nvim` (Neovim) is a newer `vim`, with the same keys. Helix
+(`hx`) is modal too, but you **select first, then act**: <kbd>x</kbd> selects the line, then <kbd>d</kbd> deletes it
+(in `vim`, <kbd>d</kbd><kbd>d</kbd> does both). Helix knows the programming languages without any settings.
 
 :::tip
 
@@ -797,6 +798,155 @@ are the ones of Sway, from [lab 01](/docs/labs/01).
 
 Look at the last line to know the mode. Press <kbd>Esc</kbd> a few times to get back to the Normal mode, then type
 `:q!` and <kbd>Enter</kbd> to quit without saving. `vimtutor` teaches the rest in 30 minutes.
+
+:::
+
+### Chorded: `emacs` {/* #emacs */}
+
+`emacs`(_Editor MACroS_) has no modes: what you type goes into the text. Every command is a **chord**: <kbd>Ctrl</kbd>+<kbd>X</kbd>
+<kbd>Ctrl</kbd>+<kbd>S</kbd> saves, <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd> quits. Its manual writes
+<kbd>Ctrl</kbd> as `C-` and <kbd>Alt</kbd> as `M-` (_Meta_): `C-x C-s`. Start it with `emacs -nw` (_no window_) to
+keep it in the terminal, and press <kbd>Ctrl</kbd>+<kbd>G</kbd> to cancel a command that you started by mistake.
+
+### The Keys of Each Editor
+
+The same actions in the four editors: choose the tab of the editor you use.
+
+<Tabs groupId="editor">
+<TabItem value="nano" label="nano">
+
+| Action                        | Keys                                                                                             |
+| ----------------------------- | ------------------------------------------------------------------------------------------------ |
+| open a file                   | `nano <FILE>`                                                                                    |
+| type text                     | type it                                                                                          |
+| save                          | <kbd>Ctrl</kbd>+<kbd>O</kbd> (_write out_), then <kbd>Enter</kbd> to keep the name               |
+| quit                          | <kbd>Ctrl</kbd>+<kbd>X</kbd>; if the file changed, it asks to save: <kbd>Y</kbd> or <kbd>N</kbd> |
+| quit without saving           | <kbd>Ctrl</kbd>+<kbd>X</kbd>, then <kbd>N</kbd>                                                  |
+| cancel a command              | <kbd>Ctrl</kbd>+<kbd>C</kbd>                                                                     |
+| undo, redo                    | <kbd>Alt</kbd>+<kbd>U</kbd>, <kbd>Alt</kbd>+<kbd>E</kbd>                                         |
+| search, the next match        | <kbd>Ctrl</kbd>+<kbd>W</kbd> (_where is_), <kbd>Alt</kbd>+<kbd>W</kbd>                           |
+| cut the line                  | <kbd>Ctrl</kbd>+<kbd>K</kbd>                                                                     |
+| copy the line                 | <kbd>Alt</kbd>+<kbd>6</kbd>                                                                      |
+| paste                         | <kbd>Ctrl</kbd>+<kbd>U</kbd>                                                                     |
+| the first line, the last line | <kbd>Alt</kbd>+<kbd>\\</kbd>, <kbd>Alt</kbd>+<kbd>/</kbd>                                        |
+| go to a line, by its number   | <kbd>Ctrl</kbd>+<kbd>\_</kbd>                                                                    |
+| replace                       | <kbd>Ctrl</kbd>+<kbd>\\</kbd>                                                                    |
+| the tutorial                  | none: the bottom of the screen lists the keys                                                    |
+
+</TabItem>
+<TabItem value="vim" label="vim / nvim">
+
+| Action                        | Keys                                                                        |
+| ----------------------------- | --------------------------------------------------------------------------- |
+| open a file                   | `vim <FILE>`, `nvim <FILE>`                                                 |
+| type text                     | <kbd>i</kbd> (the Insert mode), then <kbd>Esc</kbd> back to the Normal mode |
+| save                          | `:w`                                                                        |
+| quit                          | `:q`; `:wq` saves and quits                                                 |
+| quit without saving           | `:q!`                                                                       |
+| cancel a command              | <kbd>Esc</kbd>                                                              |
+| undo, redo                    | <kbd>u</kbd>, <kbd>Ctrl</kbd>+<kbd>R</kbd>                                  |
+| search, the next match        | <kbd>/</kbd>`text` <kbd>Enter</kbd>, <kbd>n</kbd>                           |
+| cut the line                  | <kbd>d</kbd><kbd>d</kbd>                                                    |
+| copy the line                 | <kbd>y</kbd><kbd>y</kbd> (_yank_)                                           |
+| paste                         | <kbd>p</kbd>, below the current line                                        |
+| the first line, the last line | <kbd>g</kbd><kbd>g</kbd>, <kbd>G</kbd>                                      |
+| go to a line, by its number   | `:42` goes to line 42                                                       |
+| replace                       | `:%s/old/new/g`, like `sed`: `old` is a regex, `%` means all the lines      |
+| the tutorial                  | `vimtutor`; in `nvim`, `:Tutor`                                             |
+
+More keys of the Normal mode:
+
+| Keys                                                               | Action                                  |
+| ------------------------------------------------------------------ | --------------------------------------- |
+| <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd>, or the arrows | left, down, up, right                   |
+| <kbd>w</kbd>, <kbd>b</kbd>                                         | the next word, the previous word        |
+| <kbd>0</kbd>, <kbd>$</kbd>                                         | the start, the end of the line          |
+| <kbd>a</kbd>                                                       | the Insert mode, after the cursor       |
+| <kbd>o</kbd>, <kbd>O</kbd>                                         | a new line below, above, in Insert mode |
+| <kbd>x</kbd>                                                       | delete a character                      |
+
+A number in front of a command repeats it: <kbd>5</kbd><kbd>j</kbd> goes 5 lines down,
+<kbd>3</kbd><kbd>d</kbd><kbd>d</kbd> deletes 3 lines. The keys <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd>
+are the ones of Sway, from [lab 01](/docs/labs/01).
+
+</TabItem>
+<TabItem value="hx" label="hx">
+
+| Action                        | Keys                                                                                                                                 |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| open a file                   | `hx <FILE>`                                                                                                                          |
+| type text                     | <kbd>i</kbd> (the Insert mode), then <kbd>Esc</kbd> back to the Normal mode                                                          |
+| save                          | `:w`                                                                                                                                 |
+| quit                          | `:q`; `:wq` saves and quits                                                                                                          |
+| quit without saving           | `:q!`                                                                                                                                |
+| cancel a command              | <kbd>Esc</kbd>                                                                                                                       |
+| undo, redo                    | <kbd>u</kbd>, <kbd>U</kbd>                                                                                                           |
+| search, the next match        | <kbd>/</kbd>`text` <kbd>Enter</kbd>, <kbd>n</kbd>                                                                                    |
+| cut the line                  | <kbd>x</kbd> selects the line, <kbd>d</kbd> cuts it                                                                                  |
+| copy the line                 | <kbd>x</kbd>, then <kbd>y</kbd>                                                                                                      |
+| paste                         | <kbd>p</kbd>, after the selection                                                                                                    |
+| the first line, the last line | <kbd>g</kbd><kbd>g</kbd>, <kbd>g</kbd><kbd>e</kbd>                                                                                   |
+| go to a line, by its number   | `:goto 42`                                                                                                                           |
+| replace                       | <kbd>%</kbd> selects the file, <kbd>s</kbd>`old` <kbd>Enter</kbd> selects every match, <kbd>c</kbd>`new` <kbd>Esc</kbd> changes them |
+| the tutorial                  | `hx --tutor`                                                                                                                         |
+
+After <kbd>g</kbd> or <kbd>Space</kbd>, Helix shows a menu with the keys that can follow.
+
+</TabItem>
+<TabItem value="emacs" label="emacs">
+
+| Action                        | Keys                                                                                                                       |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| open a file                   | `emacs -nw <FILE>`                                                                                                         |
+| type text                     | type it                                                                                                                    |
+| save                          | <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>S</kbd>                                                                  |
+| quit                          | <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd>                                                                  |
+| quit without saving           | <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd>, then <kbd>n</kbd> and `yes`                                     |
+| cancel a command              | <kbd>Ctrl</kbd>+<kbd>G</kbd>                                                                                               |
+| undo, redo                    | <kbd>Ctrl</kbd>+<kbd>/</kbd>; to redo, <kbd>Ctrl</kbd>+<kbd>G</kbd>, then <kbd>Ctrl</kbd>+<kbd>/</kbd>                     |
+| search, the next match        | <kbd>Ctrl</kbd>+<kbd>S</kbd>, then <kbd>Ctrl</kbd>+<kbd>S</kbd> again                                                      |
+| cut the line                  | <kbd>Ctrl</kbd>+<kbd>A</kbd> (the start of the line), then <kbd>Ctrl</kbd>+<kbd>K</kbd> twice                              |
+| copy the line                 | cut it, then <kbd>Ctrl</kbd>+<kbd>Y</kbd> pastes it back; the next <kbd>Ctrl</kbd>+<kbd>Y</kbd> pastes a copy              |
+| paste                         | <kbd>Ctrl</kbd>+<kbd>Y</kbd> (_yank_)                                                                                      |
+| the first line, the last line | <kbd>Alt</kbd>+<kbd>&lt;</kbd>, <kbd>Alt</kbd>+<kbd>&gt;</kbd>                                                             |
+| go to a line, by its number   | <kbd>Alt</kbd>+<kbd>G</kbd> <kbd>G</kbd>, then the number                                                                  |
+| replace                       | <kbd>Alt</kbd>+<kbd>%</kbd> `old` <kbd>Enter</kbd> `new` <kbd>Enter</kbd>, then <kbd>!</kbd> replaces all the next matches |
+| the tutorial                  | <kbd>Ctrl</kbd>+<kbd>H</kbd> <kbd>T</kbd>                                                                                  |
+
+</TabItem>
+</Tabs>
+
+### The Default Editor: `EDITOR`
+
+Some programs open an editor for you, on a temporary file: they wait until you save and quit, then read what you
+wrote. To know **which** editor to start, they read the environment variable **`EDITOR`**
+([Environment Variables](/docs/labs/04#environment-variables) in lab 04). A few of them look first at **`VISUAL`**, an
+older name for the same choice: if it is set, it wins.
+
+| Program                                                                 | What it opens in the editor                                       |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `bash`, the keys <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>E</kbd> | the command you are typing; `bash` runs it when the editor quits |
+| `less`, the key <kbd>v</kbd>                                            | the file you are reading                                          |
+| `sudoedit <FILE>`                                                       | a copy of a system file, put back in place when the editor quits |
+| `crontab -e`                                                            | the list of the commands that run on a schedule                   |
+| `git commit`                                                            | the message of the commit                                |
+
+```shell-session
+[student@fedora ~]$ echo "[$EDITOR] [$VISUAL]"
+[/usr/bin/nano] []
+[student@fedora ~]$ export EDITOR=vim
+[student@fedora ~]$ echo 'export EDITOR=vim' >> ~/.bashrc
+```
+
+- `echo` showed that Fedora chose `nano`, and that `VISUAL` is empty (Ubuntu: both are empty, and each program picks
+  its own editor).
+- `export EDITOR=vim` chose `vim` for the programs started from this terminal, until you close it.
+- `echo ... >> ~/.bashrc` added the same line at the end of `~/.bashrc` (the settings of `bash`, read by every new
+  terminal).
+
+:::caution
+
+Use `>>`, not `>`: `> ~/.bashrc` replaces the whole file with that one line, and the settings that were in it are lost.
 
 :::
 
@@ -881,13 +1031,14 @@ cut: nope.csv: No such file or directory
 | `vim` writes letters in strange places, or does not type  | You are in the wrong mode: press <kbd>Esc</kbd>, then <kbd>i</kbd> to type                                                 |
 | `E37: No write since last change (add ! to override)`     | `vim` does not quit without saving: `:wq` saves, `:q!` throws the changes away                                             |
 | `vim: command not found`                                  | Use `vi`, or install `vim-enhanced` (Ubuntu: `vim`)                                                                        |
+| `jq: error ... Cannot index array with "city"`            | The file is a list: take its elements first, `.[] \| .city`                                                                |
 
 ## Exercises
 
-- 🧪 [First Steps](#first-steps) (exercises 1 - 15): one idea at a time, in the order of the lab, to do in the lab;
-- 🏠 [Going Further](#going-further) (exercises 16 - 34): longer exercises, to do at home; some of them look at how
+- 🧪 [First Steps](#first-steps) (exercises 1 - 14): one idea at a time, in the order of the lab, to do in the lab;
+- 🏠 [Going Further](#going-further) (exercises 15 - 34): longer exercises, to do at home; some of them look at how
   the commands of a pipeline run together, explained in [How a Pipeline Runs](#how-a-pipeline-runs);
-- 📝 [Challenges](#challenges) (exercises 35 - 40): the hardest ones, like the ones at the exam.
+- 📝 [Challenges](#challenges) (exercises 35 - 41): the hardest ones, like the ones at the exam.
 
 :::danger
 
@@ -900,32 +1051,10 @@ file, look at it on the screen, and never redirect the output of a command into 
 ### 🧪 First Steps {/* #first-steps */}
 
 Do these exercises in order, during the lab. Each one starts with what it wants you to achieve, and tries **one** idea
-from the lab: read the section linked at the end of the exercise if you get stuck. Run the commands in `~/lab06`,
-unless the exercise says otherwise.
+from the lab: read the section linked under its goal if you get stuck. Run the commands in `~/lab06`, unless the
+exercise says otherwise.
 
-1. **Your editor**: Choose `vim`, `nvim` (Neovim), `hx` (Helix) or `emacs`, and start learning it with its own
-    tutorial, for 20 minutes. You will continue the tutorial at home, in [exercise 16](#going-further).
-
-    1. choose one of the four editors, and install it if it is missing:
-
-       | Editor  | On Fedora                       | On Ubuntu                           | The tutorial                      |
-       | ------- | ------------------------------- | ----------------------------------- | --------------------------------- |
-       | `vim`   | `sudo dnf install vim-enhanced` | `sudo apt install vim`              | `vimtutor`                        |
-       | `nvim`  | `sudo dnf install neovim`       | `sudo apt install neovim`           | `nvim +Tutor`                     |
-       | `hx`    | `sudo dnf install helix`        | `sudo snap install --classic helix` | `hx --tutor`                      |
-       | `emacs` | `sudo dnf install emacs`        | `sudo apt install emacs`            | `emacs -nw -f help-with-tutorial` |
-
-    2. start its tutorial, and follow it for 20 minutes: it is a text file that you change while you read it;
-    3. remember the lesson where you stopped, and quit the tutorial without saving.
-
-    💡 Every tutorial starts with how to move and how to quit. Helix selects first, then acts: <kbd>x</kbd> selects a
-    line, <kbd>d</kbd> deletes it. In Emacs, <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd>
-    quits; `-nw` keeps it in the terminal.
-
-    **Check:** the tutorial opens inside the editor, at its first lesson; after 20 minutes you can move, insert,
-    delete and quit without looking at it. <small>→ [Text Editors](#text-editors)</small>
-
-2. **The practice tree**: Create the files that the other exercises use, in `~/lab06`.
+1. **The practice tree**: Create the files that the other exercises use, in `~/lab06`.
 
     1. run these commands (copy them from the browser with <kbd>Ctrl</kbd>+<kbd>C</kbd> and paste them in the terminal
        with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>):
@@ -936,9 +1065,9 @@ unless the exercise says otherwise.
        printf '%s\n' banana apple cherry apple kiwi banana apple > fruits.txt
        printf '%s\n' 10 9 100 2 > numbers.txt
        printf '%s\n' color colour cat category concatenate dog banana bat orange \
-           gal goal gooooal notes.txt 2026-10-04 'call 0722 123 456' > words.txt
+           gal goal gooooal Cat UPB x86 notes.txt 2026-10-04 'call 0722 123 456' > words.txt
        printf '%s\n' name,age,city Alice,30,Paris Bob,25,London Carol,22,Bucharest > students.csv
-       printf '%s\n' 'Alice 30 Paris' 'Bob   25 London' > people.txt
+       printf '%s\n' 'Alice 30 Paris' 'Bob   25 London' 'Carol 9 Rome' 'Dave 102 Oslo' 'Erin 47 Madrid' > people.txt
        printf '%s\n' name,fruit,count alice,apple,3 bob,kiwi,1 carol,apple,2 \
            alice,banana,5 dan,apple,1 alice,apple,2 > orders.csv
        cat > access.log << 'END'
@@ -953,213 +1082,395 @@ unless the exercise says otherwise.
        END
        ```
 
-    2. list the files of `~/lab06`, and count the lines of each of them with **one** command.
+    2. list the files of `~/lab06`.
 
-    **Check:** `~/lab06` has 7 files: `access.log` (8 lines), `fruits.txt` (7), `numbers.txt` (4), `orders.csv` (7),
-    `people.txt` (2), `students.csv` (4) and `words.txt` (15). <small>→ [Counting: `wc`](#counting-wc)</small>
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. The commands print nothing.
+    2. `access.log`, `fruits.txt`, `numbers.txt`, `orders.csv`, `people.txt`, `students.csv` and `words.txt`.
+
+    </details>
 
 **Line filters**
 
-3. **Both ends of a file**: Look at parts of a file, without printing all of it.
+2. **Both ends of a file**: Look at parts of a file, without printing all of it.
+    <small>→ [Showing a File](#showing-a-file-cat-and-tac) · [The First and the Last Lines](#the-first-and-the-last-lines-head-and-tail)</small>
 
     1. print `fruits.txt` with the number of every line; then print it from the last line to the first;
-    2. print the first 3 lines of `/etc/passwd`, then only its last line;
-    3. print only the 5th line of `fruits.txt`;
-    4. print `students.csv` without its header;
-    5. create the empty file `live.log`; in a second terminal, follow it; in the first terminal, add the lines
-       `first` and `second` to it, one at a time; stop following it.
+    2. print only the 5th line of `fruits.txt`;
+    3. print `students.csv` without its header;
+    4. create the empty file `live.log`; in a second terminal, follow it; in the first terminal, add the line `first`
+       to it; stop following it.
 
-    💡 `man cat`: search for `number`; `man tail`: search for `+NUM` and for `follow`; add a line with `echo` and `>>`
+    <details className="reveal">
+    <summary>Hint</summary>
+
+    `man cat`: search for `number`; `man tail`: search for `+NUM` and for `follow`; add a line with `echo` and `>>`
     (lab 03).
 
-    **Check:** the lines are numbered `1` to `7`, and `tac` starts with `apple`; the first line of `/etc/passwd` is
-    the line of `root`; the 5th fruit is `kiwi`; without the header, `students.csv` starts with `Alice,30,Paris`. Each
-    line appears in the second terminal the moment you add it. <small>→ [Showing a File](#showing-a-file-cat-and-tac) · [The First and the Last Lines](#the-first-and-the-last-lines-head-and-tail)</small>
+    </details>
 
-4. **Sort and count**: Put lines in the right order, and find the lines that repeat.
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. The lines are numbered `1` to `7`; from the last line, the file starts with `apple` and ends with `banana`.
+    2. `kiwi`.
+    3. The output starts with `Alice,30,Paris`.
+    4. `first` appears in the second terminal the moment you add it.
+
+    </details>
+
+3. **Sort and count**: Put lines in the right order, and find the lines that repeat.
+    <small>→ [Sorting: `sort`](#sorting-sort) · [Counting Repeated Lines](#counting-repeated-lines-uniq)</small>
 
     1. sort `numbers.txt` as text, then as numbers, then as numbers from the largest;
-    2. print the students of `students.csv`, without the header, from the oldest to the youngest; then sort them by
-       their city;
+    2. print the students of `students.csv`, without the header, from the oldest to the youngest;
     3. print every fruit of `fruits.txt` once, then only the fruits that appear exactly once;
     4. print the most frequent fruit, with how many times it appears, with **one** pipeline.
 
-    💡 `man sort`: search for `field-separator` and for `KEYDEF`; `man uniq`: search for `unique`.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** `10 100 2 9`, then `2 9 10 100`, then `100 10 9 2`. By age: `Alice`, `Bob`, `Carol`; by city: `Carol`
-    (`Bucharest`), `Bob` (`London`), `Alice` (`Paris`). The fruits are `apple`, `banana`, `cherry` and `kiwi`; only
-    `cherry` and `kiwi` appear once. The most frequent is `3 apple`. <small>→ [Sorting: `sort`](#sorting-sort) · [Counting Repeated Lines](#counting-repeated-lines-uniq)</small>
+    `man sort`: search for `field-separator` and for `KEYDEF`; `man uniq`: search for `unique`.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `10 100 2 9`, then `2 9 10 100`, then `100 10 9 2`.
+    2. `Alice`, `Bob`, `Carol`.
+    3. `apple`, `banana`, `cherry` and `kiwi`; then only `cherry` and `kiwi`.
+    4. `3 apple`.
+
+    **Why:** as text, `100` comes before `2` because `1` comes before `2`, whatever follows it.
+
+    </details>
 
 **Regular expressions**
 
-5. **Basic regular expressions**: Describe lines with a pattern, and find them in `words.txt` with `grep`.
+4. **Regular expressions**: Describe lines with a pattern, find them in `words.txt`, and see why a regex needs quotes.
+    <small>→ [Basic Regular Expressions](#basic-regular-expressions) · [Extended Regular Expressions](#extended-regular-expressions) · [Regular Expressions](#regular-expressions)</small>
 
-    For each, **first** write the regex on paper, then check it. Find the lines that:
+    For steps 1 - 4, **first** write the regex on paper, then check it with `grep`:
 
-    1. end with `l`;
-    2. start with a digit;
-    3. have an `o`, and later in the line an `e`;
-    4. have exactly three characters, all of them lowercase letters;
-    5. have at least one character that is neither a lowercase letter nor a digit.
+    1. find the lines that end with `l`;
+    2. find the lines that have exactly three characters, all of them lowercase letters;
+    3. find the lines that have a `g`, **one** or more `o`, then `al`;
+    4. find the lines that are exactly `cat` or exactly `dog`;
+    5. create the empty file `cat.txt`; **first** guess what `grep ca* words.txt` and `grep 'ca*' words.txt` print,
+       then run them; delete `cat.txt`.
 
-    💡 The table of [Basic Regular Expressions](#basic-regular-expressions). For step 4, think of `^` and `$`.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** `gal`, `goal`, `gooooal`; `2026-10-04`; `concatenate`, `orange`, `notes.txt`; `cat`, `dog`, `bat`,
-    `gal`; `notes.txt` (the `.`), `2026-10-04` (the `-`) and `call 0722 123 456` (the spaces). <small>→ [Basic Regular Expressions](#basic-regular-expressions)</small>
+    The tables of [Basic Regular Expressions](#basic-regular-expressions) and
+    [Extended Regular Expressions](#extended-regular-expressions); for step 2, think of `^` and `$`. For step 5, print
+    the words that `grep` receives with `echo grep ca* words.txt`.
 
-6. **Extended regular expressions**: Write shorter patterns with `grep -E`, and see why a regex needs quotes.
+    </details>
 
-    1. find the lines that have a `g`, **one** or more `o`, then `al`;
-    2. find the lines that are exactly `cat` or exactly `dog`;
-    3. find the lines with a phone number: 4 digits, a space, 3 digits, a space, 3 digits;
-        4. create the empty file `banana.txt`, and check with `ls` that no other file starts with `ba`; **first** guess
-       what `grep ba* words.txt` and `grep 'ba*' words.txt` print, then run them; delete `banana.txt`.
+    <details className="reveal">
+    <summary>Check</summary>
 
-    💡 The table of [Extended Regular Expressions](#extended-regular-expressions); for step 4, print the words that
-    `grep` receives with `echo grep ba* words.txt`.
+    1. `gal`, `goal`, `gooooal`.
+    2. `cat`, `dog`, `bat`, `gal`, but not `Cat`, `UPB` or `x86`.
+    3. `goal` and `gooooal`, but not `gal`.
+    4. `cat` and `dog`, but not `category`.
+    5. `grep ca* words.txt` prints nothing; `grep 'ca*' words.txt` prints `color`, `colour`, `cat`, `category`,
+       `concatenate` and `call 0722 123 456`.
 
-    **Check:** `goal` and `gooooal`, but not `gal`; `cat` and `dog`, but not `category`; `call 0722 123 456`. Without
-    quotes, the shell turned `ba*` into `banana.txt`, and `grep` searched for the text `banana.txt`: nothing. With
-    quotes, `grep` got `ba*`, a `b` and any number of `a`: `banana` and `bat`. <small>→ [Extended Regular Expressions](#extended-regular-expressions) · [Regular Expressions](#regular-expressions)</small>
+    **Why:** without quotes, the shell turned `ca*` into `cat.txt`, and `grep` searched for the text `cat.txt`; with
+    quotes, `grep` got `ca*`, a `c` and any number of `a`, even none.
 
-7. **`grep` options**: Make `grep` print exactly what you need: other lines, only a part of them, or only a number.
+    </details>
+
+5. **`grep` options**: Make `grep` print exactly what you need: other lines, the line numbers, or only a number.
+    <small>→ [`grep` Options](#grep-options)</small>
 
     1. print the settings of `/etc/login.defs` (lab 05), without the comments (the lines that start with `#`) and
        without the empty lines; then count them;
     2. print the line of the `UMASK` setting, with its line number;
-    3. print only the shell of every user (the text after the last `:`), from the users database; count how many
-       users have each shell;
-    4. count the lines of `words.txt` that contain `cat`, then print only those where `cat` is a whole word.
+    3. count the lines of `words.txt` that contain `cat`; then print only those where `cat` is a whole word, in
+       lowercase or in capital letters.
 
-    💡 `man grep`: search for `invert`, `line-number`, `only-matching` and `word-regexp`; an empty line is `^$`. Look
-    up the users with `getent passwd` (lab 05).
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** the settings are lines like `UID_MIN 1000`, a few dozen of them; `UMASK` is `022`. Most users have
-    **Check:** the settings are lines like `UID_MIN 1000`, a few dozen of them; `UMASK` is `022`. Most users have
-    `nologin` (`/sbin/nologin` on Fedora, `/usr/sbin/nologin` on Ubuntu), and only a few have `/bin/bash`. `cat` is in
-    3 lines, but it is a whole word only in `cat`.
-    <small>→ [`grep` Options](#grep-options)</small>
+    `man grep`: search for `invert`, `line-number`, `word-regexp` and `ignore-case`; an empty line is `^$`.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. Lines like `UID_MIN 1000`, a few dozen of them.
+    2. One line, with its number and a `:` in front: `UMASK` is `022`.
+    3. `3`; then `cat` and `Cat`.
+
+    </details>
 
 **Change text**
 
-8. **Cut columns**: Keep only some fields, or some characters, of every line.
+6. **Columns and characters**: Keep only some fields of every line with `cut`, and change characters with `tr`.
+    <small>→ [Cutting Columns: `cut`](#cutting-columns-cut) · [Changing Characters: `tr`](#changing-characters-tr)</small>
 
     1. print the names and the cities of `students.csv`, without the header;
     2. print the name and the shell of every user, from the users database;
-    3. print the first 3 characters of every fruit;
-    4. print only the name of the current directory, with `pwd`, `rev` and `cut`.
+    3. print `fruits.txt` in capital letters; then print the fruits without their vowels;
+    4. print the age of every person in `people.txt`, with `tr` and `cut`; then print the people from the youngest to
+       the oldest;
+    5. print the directories of your `PATH`, one per line.
 
-    💡 `man cut`: search for `delimiter`, `fields` and `characters`; `/etc/passwd` has 7 fields, separated by `:`.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** `Alice,Paris`, `Bob,London`, `Carol,Bucharest`; lines like `student:/bin/bash`; `ban`, `app`, `che`,
-    ...; `lab06`. <small>→ [Cutting Columns: `cut`](#cutting-columns-cut) · [Reversing and Numbering](#reversing-and-numbering-rev-and-nl)</small>
+    `man cut`: search for `delimiter` and `fields`; `/etc/passwd` has 7 fields, separated by `:`, and `getent passwd`
+    prints all the users (lab 05). `man tr`: search for `delete` and `squeeze`; `tr` reads only its input.
 
-9. **Change characters**: Change, delete and squeeze characters with `tr`.
+    </details>
 
-    1. print `fruits.txt` in capital letters;
-    2. print the fruits without their vowels;
-    3. print the words of `the quick brown fox` one per line;
-    4. print the age of every person in `people.txt`, with `tr` and `cut`;
-    5. print the directories of your `PATH` one per line, and count them.
+    <details className="reveal">
+    <summary>Check</summary>
 
-    💡 `man tr`: search for `delete` and `squeeze`; `tr` reads only its input.
+    1. `Alice,Paris`, `Bob,London`, `Carol,Bucharest`.
+    2. Lines like `student:/bin/bash`.
+    3. `BANANA`, `APPLE`, `CHERRY`, ...; then `bnn`, `ppl`, `chrry`, `ppl`, `kw`, `bnn`, `ppl`.
+    4. `30`, `25`, `9`, `102`, `47`; then `Carol`, `Bob`, `Alice`, `Erin`, `Dave`.
+    5. One directory per line, among them `/usr/bin`.
 
-    **Check:** `BANANA`, ...; `bnn`, `ppl`, `chrry`, `ppl`, `kw`, `bnn`, `ppl`; 4 lines; `30` and `25`; one directory
-    per line, among them `/usr/bin`. <small>→ [Changing Characters: `tr`](#changing-characters-tr)</small>
+    **Why:** for `cut`, every space is a delimiter, so `tr -s ' '` must squeeze the spaces of `Bob   25` first; sorted
+    as text, `Dave` (`102`) would come first and `Carol` (`9`) last.
 
-10. **Replace text**: Change words and parts of lines with `sed`, without changing the files.
+    </details>
+
+7. **Replace text**: Change words and parts of lines with `sed`, without changing the files.
+    <small>→ [Replacing Text: `sed`](#replacing-text-sed) · [Reversing and Numbering](#reversing-and-numbering-rev-and-nl)</small>
 
     1. replace `apple` with `pear` in `fruits.txt`; then check that `fruits.txt` did not change;
-    2. print the phone line of `words.txt` with every digit replaced by `#`;
-    3. print `students.csv` with tabs instead of commas, then cut its second column **without** `-d`;
-    4. print the line `notes.txt` of `words.txt` without its extension;
-    5. print your home directory with `/home` replaced by `/users`.
+    2. print `students.csv` with tabs instead of commas, then cut its second column **without** `-d`;
+    3. print the line `notes.txt` of `words.txt` without its extension;
+    4. print your home directory with `/home` replaced by `/users`; then print only the name of the current directory,
+       with `pwd`, `rev` and `cut`.
 
-    💡 [Replacing Text: `sed`](#replacing-text-sed); `\t` is a tab; for step 5, use another separator than `/`.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** `pear` three times, and `fruits.txt` still has `apple`; `call #### ### ###`; `age`, `30`, `25`, `22`;
-    `notes`; `/users/student`. <small>→ [Replacing Text: `sed`](#replacing-text-sed)</small>
+    [Replacing Text: `sed`](#replacing-text-sed); `\t` is a tab; for step 4, use another separator than `/`, and
+    remember that `cut` cannot count the fields from the end.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `pear` three times; `fruits.txt` still has `apple`.
+    2. `age`, `30`, `25`, `22`.
+    3. `notes`.
+    4. `/users/student`; then `lab06`.
+
+    </details>
 
 **Counting and computing**
 
-11. **Count**: Count the lines, the words and the characters of a text.
+8. **Count and compute**: Count the lines and the characters of a text with `wc`, and answer questions about the orders
+    of `orders.csv` with `awk`.
+    <small>→ [Counting: `wc`](#counting-wc) · [Computing: `awk`](#computing-awk)</small>
 
     1. count the lines, the words and the bytes of `words.txt`; then only its lines, without the name of the file;
-    2. count the users of the system;
-    3. count the characters and the bytes of `Iași`.
-
-    💡 `man wc`: search for `chars`.
-
-    **Check:** `15 18 116 words.txt`, then `15`; a few dozen users; `Iași` and the end of the line are 5 characters,
-    but 6 bytes: `ș` takes 2 bytes. <small>→ [Counting: `wc`](#counting-wc)</small>
-
-12. **Compute with `awk`**: Answer questions about the orders of `orders.csv` with `awk`.
-
-    1. print the name and the count of every order, without the header;
-    2. compute how many fruits `alice` ordered in total;
-    3. compute the average count of the orders of apples;
-    4. print the orders of at least 2 fruits, then count them;
+    2. count the characters and the bytes of `Iași`;
+    3. compute how many fruits `alice` ordered in total;
+    4. compute the average count of the orders of apples;
     5. print the name and the UID of the users whose UID is at least `1000`, from the users database.
 
-        💡 [Computing: `awk`](#computing-awk) has all you need; the UID is field 3 of the users database. Skip the header
-    with `NR > 1`: `awk` compares the text `count` with a number as text, and `"count" >= 2` is true.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** `alice 3`, `bob 1`, ...; `10`; `2`; 4 orders; `student 1000`, and also `nobody 65534`. <small>→ [Computing: `awk`](#computing-awk)</small>
+    `man wc`: search for `chars`. [Computing: `awk`](#computing-awk) has all you need; the UID is field 3 of the users
+    database.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `18 21 128 words.txt`, then `18`.
+    2. `5` characters, but `6` bytes.
+    3. `10`.
+    4. `2`.
+    5. `student 1000`, and also `nobody 65534`.
+
+    **Why:** `Iași` and the end of the line are 5 characters, but `ș` takes 2 bytes.
+
+    </details>
 
 **A pipeline**
 
-13. **Read a log**: Answer questions about the requests of `access.log`, with pipelines that you build one command at
-    a time.
+9. **Read a log**: Answer questions about the requests of `access.log`, with pipelines that you build one command at a
+    time.
+    <small>→ [A Pipeline, Step by Step](#a-pipeline-step-by-step) · [Filters](#filters)</small>
 
-    1. print the page of every request (the third field);
-    2. print how many times each page was asked for, the most requested first;
-    3. print the addresses that asked for a page that does not exist (status `404`), each once;
-    4. count the requests that ended with `404`.
+    1. print how many times each page (the third field) was asked for, the most requested first, with its place in the
+       ranking (`1`, `2`, ...) in front;
+    2. print the addresses that asked for a page that does not exist (status `404`), each once;
+    3. count the requests that ended with `404`.
 
-    💡 [A Pipeline, Step by Step](#a-pipeline-step-by-step); look at the output after every command.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** 8 pages; `/index.html` and `/old.html` were asked for twice, the others once; `10.0.0.3` and
-    `10.0.0.9`; `5`. <small>→ [A Pipeline, Step by Step](#a-pipeline-step-by-step) · [Filters](#filters)</small>
+    [A Pipeline, Step by Step](#a-pipeline-step-by-step); look at the output after every command. The ranking is a
+    line number: `man nl`.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. 6 lines, numbered `1` to `6`: `/index.html` and `/old.html` first, with `2`; the others with `1`.
+    2. `10.0.0.3` and `10.0.0.9`.
+    3. `5`.
+
+    </details>
 
 **Exit codes**
 
-14. **Did it work?**: Read the exit code of a command, and run a command only if another one worked, or failed.
+10. **Did it work?**: Read the exit code of a command, and run a command only if another one worked, or failed.
+    <small>→ [Exit Codes](#exit-codes) · [Chaining Commands](#chaining-commands--and-)</small>
 
     1. **first** guess the exit code of each command, then check it: `grep -q apple fruits.txt`,
        `grep -q mango fruits.txt`, `grep apple nope.txt`, `ls /nope`, `true` and `false`;
-    2. start `sleep 100`, stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd>, and print its exit code;
-    3. print `found` only if `cherry` is in `fruits.txt`; then print `missing` only if `mango` is **not** in it;
-    4. create the directory `save` and, only if that worked, copy `orders.csv` into it, with **one** line; run the
+    2. print `found` only if `cherry` is in `fruits.txt`; then print `missing` only if `mango` is **not** in it;
+    3. create the directory `save` and, only if that worked, copy `orders.csv` into it, with **one** line; run the
        same line again.
 
-    💡 [Exit Codes](#exit-codes) and [Chaining Commands](#chaining-commands--and-); `man ls`: search for
-    `Exit status`.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** `0`, `1`, `2`, `2`, `0`, `1`; `sleep` ends with `130`: `128 + 2`, for `SIGINT`. `found`, then `missing`.
-    The second time, `mkdir` fails with `File exists`, and `cp` does not run. <small>→ [Exit Codes](#exit-codes) · [Chaining Commands](#chaining-commands--and-)</small>
+    [Exit Codes](#exit-codes) and [Chaining Commands](#chaining-commands--and-); `man ls`: search for `Exit status`.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `0`, `1`, `2`, `2`, `0`, `1`.
+    2. `found`, then `missing`.
+    3. The first time, nothing is printed; the second time, `mkdir` fails with `File exists`, and `cp` does not run.
+
+    </details>
+
+11. **The exit code of a pipeline**: Find out which command of a pipeline gives the exit code of the whole pipeline.
+    <small>→ [The Exit Code of a Pipeline](#the-exit-code-of-a-pipeline)</small>
+
+    For each pipeline, **first** guess its exit code, then run it and print `$?`:
+
+    1. `grep mango fruits.txt | wc -l`;
+    2. `wc -l fruits.txt | grep -q mango`;
+    3. `grep apple nope.txt | sort`.
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `0`, and the exit code is `0`.
+    2. Nothing, and the exit code is `1`.
+    3. An error of `grep`, and the exit code is `0`.
+
+    **Why:** a pipeline ends with the exit code of its **last** command: in lines 1 and 3, the failure of `grep` is
+    hidden.
+
+    </details>
 
 **Text editors**
 
-15. **Two editors**: Write a file with `nano`, then change it with `vim`.
+12. **Two editors**: Write a file with `nano`, then change it with `vim`.
+    <small>→ [`nano`](#nano) · [`vim`](#vim)</small>
 
     1. with `nano`, create `todo.txt` with three lines: `buy milk`, `learn vim` and `call bob`; cut the last line and
        paste it above the first one; save and exit;
     2. open `todo.txt` with `vim`; delete the line `learn vim`, then undo; add the line `practice awk` at the end;
        replace `milk` with `bread`, with a command; save and quit;
-    3. open it again, delete a line, and quit **without** saving;
-    4. print `todo.txt`.
+    3. open it again, delete a line, and quit **without** saving; print `todo.txt`.
 
-    💡 The tables of [`nano`](#nano) and [`vim`](#vim); in `vim`, always look at the last line to know the mode.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** `todo.txt` has 4 lines: `call bob`, `buy bread`, `learn vim` and `practice awk`. <small>→ [`nano`](#nano) · [`vim`](#vim)</small>
+    The `nano` and `vim` tabs of [The Keys of Each Editor](#the-keys-of-each-editor); in `vim`, always look at the last
+    line to know the mode.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `todo.txt` has `call bob`, `buy milk` and `learn vim`.
+    3. `todo.txt` has 4 lines: `call bob`, `buy bread`, `learn vim` and `practice awk`.
+
+    </details>
+
+13. **Your editor**: Choose `vim`, `nvim` (Neovim), `hx` (Helix) or `emacs`, and start learning it with its own
+    tutorial, for 10 minutes. You will continue the tutorial at home, in [exercise 15](#going-further).
+    <small>→ [Text Editors](#text-editors) · [The Keys of Each Editor](#the-keys-of-each-editor)</small>
+
+    1. choose one of the four editors, and install it if it is missing:
+
+       | Editor  | On Fedora                       | On Ubuntu                           | The tutorial                      |
+       | ------- | ------------------------------- | ----------------------------------- | --------------------------------- |
+       | `vim`   | `sudo dnf install vim-enhanced` | `sudo apt install vim`              | `vimtutor`                        |
+       | `nvim`  | `sudo dnf install neovim`       | `sudo apt install neovim`           | `nvim +Tutor`                     |
+       | `hx`    | `sudo dnf install helix`        | `sudo snap install --classic helix` | `hx --tutor`                      |
+       | `emacs` | `sudo dnf install emacs`        | `sudo apt install emacs`            | `emacs -nw -f help-with-tutorial` |
+
+    2. start its tutorial, and follow it for 10 minutes: it is a text file that you change while you read it;
+    3. remember the lesson where you stopped, and quit the tutorial without saving.
+
+    <details className="reveal">
+    <summary>Hint</summary>
+
+    Every tutorial starts with how to move and how to quit; the tab of your editor in
+    [The Keys of Each Editor](#the-keys-of-each-editor) has the same keys on one page.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. The editor prints its version with `--version`.
+    2. The tutorial opens inside the editor, at its first lesson; after 10 minutes you can move and quit without
+       looking at it.
+
+    </details>
+
+14. **The default editor**: Make the programs that open an editor for you open the editor you chose in exercise 13.
+    <small>→ [The Default Editor: `EDITOR`](#the-default-editor-editor)</small>
+
+    1. choose your editor as the default editor, only for this terminal;
+    2. type `echo one two`, **without** pressing <kbd>Enter</kbd>, open the line in the editor, add ` three` at its
+       end, save and quit.
+
+    <details className="reveal">
+    <summary>Hint</summary>
+
+    `man bash`: search for `edit-and-execute-command`.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `echo $EDITOR` prints the name of your editor.
+    2. The line opens in your editor; when the editor quits, `bash` runs it and prints `one two three`.
+
+    </details>
 
 ### 🏠 Going Further {/* #going-further */}
 
 Each exercise starts with its **goal**; you choose the commands. At the end, check the goal itself, not only that each
 command worked. The exercises use the files of `~/lab06` from the First Steps.
 
-16. **Your editor, the essentials**: Go on with the tutorial of the editor you chose in exercise 1, until you know
+15. **Your editor, the essentials**: Go on with the tutorial of the editor you chose in exercise 13, until you know
     enough to use it every day, then use it on a real file.
+    <small>→ [Text Editors](#text-editors) · [The Keys of Each Editor](#the-keys-of-each-editor)</small>
 
     1. install the editor if it is missing on your computer:
 
@@ -1176,46 +1487,83 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
        - `hx`: chapters 1 - 6, until you know the replace command, <kbd>r</kbd>;
        - `emacs`: the sections up to _Searching_, included;
     3. quit the tutorial without saving;
-    4. open `todo.txt` from exercise 15 with your editor, add the line `use vim` (or `use nvim`, `use hx`,
+    4. open `todo.txt` from exercise 12 with your editor, add the line `use vim` (or `use nvim`, `use hx`,
        `use emacs`) at the end, save and quit; print `todo.txt`.
 
-    💡 Every tutorial starts with how to move and how to quit. Helix selects first, then acts: <kbd>x</kbd> selects a
-    line, <kbd>d</kbd> deletes it. In Emacs, <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd>
-    quits; `-nw` keeps it in the terminal.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** you did the lessons of your editor, and you can move, insert, delete, copy, paste, undo, search, save
-    and quit without looking at the tutorial. `todo.txt` ends with the line of your editor, after `practice awk`.
-    <small>→ [Text Editors](#text-editors)</small>
+    Every tutorial starts with how to move and how to quit; the tab of your editor in
+    [The Keys of Each Editor](#the-keys-of-each-editor) has the same keys on one page.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. The editor prints its version with `--version`.
+    2. You can move, insert, delete, copy, paste, undo, search, save and quit without looking at the tutorial.
+    4. `todo.txt` ends with the line of your editor, after `practice awk`.
+
+    </details>
 
 **Line filters and search**
 
-17. **Your favorite commands**: You have used the terminal for six weeks. Find out which 5 commands you run most
+16. **Your favorite commands**: You have used the terminal for six weeks. Find out which 5 commands you run most
     often.
+    <small>→ [Counting Repeated Lines](#counting-repeated-lines-uniq) · [Computing: `awk`](#computing-awk)</small>
 
     1. print the history of your shell, and find the field that holds the name of the command;
     2. print the 5 most used commands, each with how many times you ran it, the most used first.
 
-    💡 `help history`; every line of `history` starts with a number.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** 5 lines like `   42 ls`, with the counts going down; `ls` and `cd` are usually near the top. Each
-    terminal adds its commands to `~/.bash_history` when it is closed, so a new terminal does not know the commands of
-    the ones still open. <small>→ [Counting Repeated Lines](#counting-repeated-lines-uniq) · [Computing: `awk`](#computing-awk)</small>
+    `help history`; every line of `history` starts with a number.
 
-18. **The largest programs**: The disk of your computer is almost full. Find the 5 largest files in `/usr/bin`, with
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. The name of the command is the second field, after the number of the line.
+    2. 5 lines like `   42 ls`, with the counts going down; `ls` and `cd` are usually near the top.
+
+    **Why:** the commands of the other open terminals are missing: each terminal adds its commands to
+    `~/.bash_history` only when it is closed.
+
+    </details>
+
+17. **The largest programs**: The disk of your computer is almost full. Find the 5 largest files in `/usr/bin`, with
     sizes that are easy to read.
+    <small>→ [Sorting: `sort`](#sorting-sort) · [Computing: `awk`](#computing-awk)</small>
 
     1. list `/usr/bin` in the long format, and sort the lines by the size, the 5th field, as a number; keep the 5
        largest;
     2. print only their size and their name;
     3. do it again with the sizes written as `2.1M`, and sort them correctly.
 
-    💡 `man sort`: search for `KEYDEF` and for `human`; `man ls`: search for `human`.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-        **Check:** the same 5 files in steps 1 and 3, in the same order; in step 3, `sort -n` alone would read `900K` as
-    `900` and `2.1M` as `2.1`, and think that `900K` is the larger one. <small>→ [Sorting: `sort`](#sorting-sort) · [Computing: `awk`](#computing-awk)</small>
+    `man sort`: search for `KEYDEF` and for `human`; `man ls`: search for `human`.
 
-19. **A sign-up form**: A form saved everything people typed, without checking it. Keep only the valid phone numbers
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. 5 lines of `ls -l`, the largest file first.
+    2. 5 lines, each with a size in bytes and a name.
+    3. The same 5 files as in step 1, in the same order, with sizes like `2.1M`.
+
+    **Why:** `sort -n` alone would read `900K` as `900` and `2.1M` as `2.1`, and think that `900K` is the larger one.
+
+    </details>
+
+18. **A sign-up form**: A form saved everything people typed, without checking it. Keep only the valid phone numbers
     and e-mail addresses.
+    <small>→ [Extended Regular Expressions](#extended-regular-expressions) · [`grep` Options](#grep-options)</small>
 
     Create `contacts.txt`:
 
@@ -1239,17 +1587,30 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     2. accept also the numbers written with `+4` in front;
     3. print the e-mail addresses: lowercase letters, digits, `.` or `_`, then **one** `@`, then a domain of lowercase
        letters and dots, which ends with a `.` and some letters;
-        4. count the lines that are neither a phone number, as in step 2, nor an e-mail address, with **one** `grep`.
+    4. count the lines that are neither a phone number, as in step 2, nor an e-mail address, with **one** `grep`.
 
-    💡 [Extended Regular Expressions](#extended-regular-expressions); a `+` that is a plain character is written `\+`.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** `0722123456`; then also `+40722123456`; `ana.pop@upb.ro`, `dave_99@stud.upb.ro` and
-    `erin@example.com`; `6` lines are neither. <small>→ [Extended Regular Expressions](#extended-regular-expressions) · [`grep` Options](#grep-options)</small>
+    [Extended Regular Expressions](#extended-regular-expressions); a `+` that is a plain character is written `\+`.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `0722123456`.
+    2. `0722123456` and `+40722123456`.
+    3. `ana.pop@upb.ro`, `dave_99@stud.upb.ro` and `erin@example.com`.
+    4. `6`.
+
+    </details>
 
 **Columns and computing**
 
-20. **Names from the secretary**: The secretary exported the names as `Popescu, Ana`, but the new system wants
+19. **Names from the secretary**: The secretary exported the names as `Popescu, Ana`, but the new system wants
     `Ana Popescu`, and an address for every student.
+    <small>→ [Replacing Text: `sed`](#replacing-text-sed) · [Changing Characters: `tr`](#changing-characters-tr)</small>
 
     Create `names.txt` with `printf '%s\n' 'Popescu, Ana' 'Ionescu, Mihai' 'Georgescu, Ioana' > names.txt`:
 
@@ -1257,27 +1618,51 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     2. sort the result by the first name;
     3. print an e-mail address for every student, like `ana.popescu@upb.ro`, all in lowercase.
 
-    💡 `man sed`: search for `\1`; in an extended regex, `( )` keeps what it matched, and `\1`, `\2` put it back in
-    the new text.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** `Ana Popescu`, `Mihai Ionescu`, `Ioana Georgescu`; sorted: `Ana`, `Ioana`, `Mihai`;
-    `ana.popescu@upb.ro`, `mihai.ionescu@upb.ro`, `ioana.georgescu@upb.ro`. <small>→ [Replacing Text: `sed`](#replacing-text-sed) · [Changing Characters: `tr`](#changing-characters-tr)</small>
+    `man sed`: search for `\1`; in an extended regex, `( )` keeps what it matched, and `\1`, `\2` put it back in the
+    new text.
 
-21. **The words of the manual**: Which words does the manual of `bash` use most, and how many different words does it
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `Ana Popescu`, `Mihai Ionescu`, `Ioana Georgescu`.
+    2. `Ana Popescu`, `Ioana Georgescu`, `Mihai Ionescu`.
+    3. `ana.popescu@upb.ro`, `mihai.ionescu@upb.ro`, `ioana.georgescu@upb.ro`.
+
+    </details>
+
+20. **The words of the manual**: Which words does the manual of `bash` use most, and how many different words does it
     have?
+    <small>→ [Changing Characters: `tr`](#changing-characters-tr) · [Counting Repeated Lines](#counting-repeated-lines-uniq)</small>
 
     1. print the text of `man bash`, one word per line: every run of characters that are not letters becomes one end
        of line;
     2. make all the words lowercase, and print the 10 most frequent ones, with their counts;
     3. count the different words.
 
-    💡 `man tr`: search for `complement`; the manual page, sent into a pipe, is plain text.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** `the` is the first, by far; small words like `a`, `is`, `to` and `of` follow. There are a few thousand
-    different words. <small>→ [Changing Characters: `tr`](#changing-characters-tr) · [Counting Repeated Lines](#counting-repeated-lines-uniq)</small>
+    `man tr`: search for `complement`; the manual page, sent into a pipe, is plain text.
 
-22. **The memory of the browser**: Your computer is slow, and you suspect Firefox. Find out how much memory all its
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. One word per line, with no spaces and no punctuation.
+    2. `the` is the first, by far; small words like `a`, `is`, `to` and `of` follow.
+    3. A few thousand different words.
+
+    </details>
+
+21. **The memory of the browser**: Your computer is slow, and you suspect Firefox. Find out how much memory all its
     processes use together.
+    <small>→ [Computing: `awk`](#computing-awk) · [Listing Processes](/docs/labs/03#listing-processes-ps)</small>
 
     Open Firefox with a few tabs, then:
 
@@ -1286,14 +1671,26 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     2. add up their memory, and print it in MiB;
     3. print the 3 processes of the system that use the most memory.
 
-        💡 `man ps`: search for `rss` (the unit is KiB) and for `args`; a tab of Firefox is a process too, whose name is
-    not `firefox`, but whose command line has it. `grep firefox` has `firefox` in its own command line, so it finds
-    itself; `grep '[f]irefox'` matches the same processes, but not itself.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** Firefox has several processes, one for every few tabs; together they use a few hundred MiB. Firefox is
-    usually among the 3 largest processes. <small>→ [Computing: `awk`](#computing-awk) · [Listing Processes](/docs/labs/03#listing-processes-ps)</small>
+    `man ps`: search for `rss` (the unit is KiB) and for `args`; a tab of Firefox is a process too, whose name is not
+    `firefox`, but whose command line has it. `grep firefox` has `firefox` in its own command line, so it finds itself;
+    `grep '[f]irefox'` matches the same processes, but not itself.
 
-23. **The exam grades**: The teaching assistant needs a report of the exam, from a file of grades.
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. Several processes, one for every few tabs.
+    2. A few hundred MiB.
+    3. Firefox is usually among them.
+
+    </details>
+
+22. **The exam grades**: The teaching assistant needs a report of the exam, from a file of grades.
+    <small>→ [Computing: `awk`](#computing-awk)</small>
 
     Create `grades.csv` with
     `printf '%s\n' name,grade ana,9 bob,4 carol,7 dave,10 erin,3 grace,5 mallory,6 > grades.csv`, then compute, with
@@ -1304,14 +1701,28 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     3. the largest grade, and the student who got it;
     4. the names of the students who did not pass, in alphabetical order.
 
-        💡 Skip the header in every step, with `NR > 1`: `awk` compares the text `grade` with a number as text, so it
-    would pass, and even become the largest grade. A variable can remember the largest value so far:
+    <details className="reveal">
+    <summary>Hint</summary>
+
+    Skip the header in every step, with `NR > 1`: `awk` compares the text `grade` with a number as text, so it would
+    pass, and even become the largest grade. A variable can remember the largest value so far:
     `NR > 1 && $2 > max { max = $2 }`.
 
-    **Check:** `5`; `6.28571` and `7.4`; `dave 10`; `bob` and `erin`. <small>→ [Computing: `awk`](#computing-awk)</small>
+    </details>
 
-24. **An audit of the users**: Write the report of the users of the system, as an administrator would do it each
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `5`.
+    2. `6.28571` and `7.4`.
+    3. `dave 10`.
+    4. `bob` and `erin`.
+
+    </details>
+
+23. **An audit of the users**: Write the report of the users of the system, as an administrator would do it each
     month.
+    <small>→ [Computing: `awk`](#computing-awk) · [Cutting Columns: `cut`](#cutting-columns-cut)</small>
 
     From the users database:
 
@@ -1319,15 +1730,76 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     2. count the system users (a UID from `1` to `999`);
     3. print the name and the home directory of the regular users (a UID from `1000` to `60000`).
 
-    💡 `man login.defs`: search for `UID_MAX`; `awk` conditions can use `&&`.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** `nologin` is the most used shell; there are a few dozen system users; the regular users are `student`
-    and every user from lab 05 that is still there, with a home directory in `/home`. `nobody` (`65534`) is not a
-    regular user. <small>→ [Computing: `awk`](#computing-awk) · [Cutting Columns: `cut`](#cutting-columns-cut)</small>
+    `man login.defs`: search for `UID_MAX`; `awk` conditions can use `&&`.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `nologin` is the most used shell.
+    2. A few dozen system users.
+    3. `student` and every user from lab 05 that is still there, each with a home directory in `/home`.
+
+    **Why:** `nobody` (`65534`) is not a regular user: its UID is larger than `UID_MAX`.
+
+    </details>
+
+24. **From JSON to a table**: A weather service answers in **JSON**, the text format of most web services, not in
+    lines. Turn its answer into lines that the filters can use, and into a table that you can read.
+    <small>→ [Filters](#filters) · [Sorting: `sort`](#sorting-sort)</small>
+
+    Create `weather.json`:
+
+    ```bash
+    cat > ~/lab06/weather.json << 'END'
+    [
+      {"city": "Bucharest", "temp": 12, "sky": "sunny"},
+      {"city": "Cluj", "temp": 7, "sky": "rain"},
+      {"city": "Iasi", "temp": 9, "sky": "cloudy"},
+      {"city": "Timisoara", "temp": 14, "sky": "sunny"},
+      {"city": "Constanta", "temp": 15, "sky": "wind"}
+    ]
+    END
+    ```
+
+    1. print `students.csv` as a table, with the columns aligned, with `column`;
+    2. install `jq` if it is missing (`sudo dnf install jq`; Ubuntu: `sudo apt install jq`), then print `weather.json`
+       with `jq`, indented and in color;
+    3. print only the names of the cities, one per line, without quotes;
+    4. print the cities where the sky is `sunny`, each with its temperature; then only the warmest city;
+    5. print the city, the temperature and the sky of every city, as a table with the columns aligned.
+
+    <details className="reveal">
+    <summary>Hint</summary>
+
+    `man column`: search for `table` and `separator`. In `jq`, `.` is the whole input, `.[]` every element of a list,
+    `.city` a field, and `|` passes the result on, as in the shell; `-r` prints text without quotes. `man jq`: search
+    for `select` and for `String interpolation`.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `name   age  city`, then `Alice  30   Paris`, ..., with the columns aligned.
+    2. The same 5 cities, every field on its own line, indented.
+    3. `Bucharest`, `Cluj`, `Iasi`, `Timisoara`, `Constanta`.
+    4. `Bucharest 12` and `Timisoara 14`; then `Constanta` (`15`).
+    5. 5 lines, from `Bucharest  12  sunny` to `Constanta  15  wind`, with the columns aligned.
+
+    **Why:** `jq` turns JSON into lines, and from there every filter of the lab works; `column` only changes how the
+    lines look.
+
+    </details>
 
 **Exit codes**
 
 25. **Predict the chain**: Learn to read `&&` and `||` without running the commands.
+    <small>→ [Chaining Commands](#chaining-commands--and-)</small>
 
     **First** write down, on paper, what each line prints, then check:
 
@@ -1337,26 +1809,50 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     4. `false || false && echo C; echo $?`
     5. `true && false || echo D`
 
-        **Check:** `A`; `B`; `B`; nothing, then `1`; `D`. The shell reads from left to right, and each `&&` or `||` looks
-    at the exit code of the last command that ran before it: in line 5, `D` is printed although the first command
-    worked. <small>→ [Chaining Commands](#chaining-commands--and-)</small>
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `A`.
+    2. `B`.
+    3. `B`.
+    4. Nothing, then `1`.
+    5. `D`.
+
+    **Why:** the shell reads from left to right, and each `&&` or `||` looks at the exit code of the last command that
+    ran before it: in line 5, `D` is printed although the first command worked.
+
+    </details>
 
 26. **What the numbers mean**: Find out what the exit codes say, besides "success" and "error".
+    <small>→ [Exit Codes](#exit-codes) · [Signals](/docs/labs/04#signals)</small>
 
     1. find in the manual what `ls` means by `1` and by `2`, and produce each of them;
-    2. start `sleep 100`, end it with `kill` from another terminal, and print its exit code; do it again with
-       `kill -9`;
+    2. start `sleep 100`, stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd>, and print its exit code; do it again, but end it
+       with `kill` from another terminal, then with `kill -9`;
     3. run `bash -c 'exit 42'` and print its exit code; then `bash -c 'exit 300'`.
 
-        💡 `man ls`: search for `Exit status`; hide the long output of `ls -R` with `> /dev/null 2>&1`; `kill -l 15`
-    prints the name of signal `15`; an exit code is one byte.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** `ls /nope` ends with `2`; `ls -R /etc` ends with `1`, because some directories inside it cannot be
-    read. `kill` gives `143` (`128 + 15`, `SIGTERM`), `kill -9` gives `137` (`128 + 9`, `SIGKILL`). `42`, then `44`:
-    `300` does not fit in one byte, and only `300 - 256` is kept. <small>→ [Exit Codes](#exit-codes) · [Signals](/docs/labs/04#signals)</small>
+    `man ls`: search for `Exit status`; hide the long output of `ls -R` with `> /dev/null 2>&1`; `kill -l 15` prints
+    the name of signal `15`; an exit code is one byte.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `ls /nope` ends with `2`; `ls -R /etc` ends with `1`, because some directories inside it cannot be read.
+    2. `130` (`128 + 2`, `SIGINT`), `143` (`128 + 15`, `SIGTERM`), then `137` (`128 + 9`, `SIGKILL`).
+    3. `42`, then `44`.
+
+    **Why:** `300` does not fit in one byte, and only `300 - 256` is kept.
+
+    </details>
 
 27. **A careful change**: You must change `kiwi` into `mango` in `orders.csv`, directly in the file. Do it so that you
     can always go back.
+    <small>→ [Chaining Commands](#chaining-commands--and-) · [Replacing Text: `sed`](#replacing-text-sed)</small>
 
     1. with **one** line: copy `orders.csv` to `orders.bak`; only if the copy worked, change the file with `sed -i`;
        print `changed` if both worked, or `not changed` otherwise;
@@ -1364,15 +1860,27 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     3. run the same line again, but copy into `/nope/orders.bak`;
     4. put the original `orders.csv` back, from `orders.bak`.
 
-    💡 [Replacing Text: `sed`](#replacing-text-sed) and [Chaining Commands](#chaining-commands--and-).
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** after step 1, `orders.csv` has `bob,mango,1` and `orders.bak` has `bob,kiwi,1`. In step 3, `cp` fails,
-    `sed` does not run, and `not changed` is printed. At the end, `grep -c kiwi orders.csv` prints `1`.
-    <small>→ [Chaining Commands](#chaining-commands--and-) · [Replacing Text: `sed`](#replacing-text-sed)</small>
+    [Replacing Text: `sed`](#replacing-text-sed) and [Chaining Commands](#chaining-commands--and-).
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `changed`.
+    2. `orders.csv` has `bob,mango,1`, and `orders.bak` has `bob,kiwi,1`.
+    3. An error of `cp`, then `not changed`: `sed` did not run.
+    4. `grep -c kiwi orders.csv` prints `1`.
+
+    </details>
 
 **How a pipeline runs**
 
 28. **The processes of a pipeline**: See that the commands of a pipeline run together, as one job.
+    <small>→ [How a Pipeline Runs](#how-a-pipeline-runs) · [Foreground and Background](/docs/labs/04#foreground-and-background)</small>
 
     1. in the second terminal, print the PID of the shell, then run `sleep 300 | sleep 301 | cat`;
     2. in the first terminal, show the tree of processes of the second shell, with the PIDs; list these processes with
@@ -1380,25 +1888,48 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     3. stop the pipeline with <kbd>Ctrl</kbd>+<kbd>Z</kbd>, and list them again; continue it with `fg`, and end it
        with <kbd>Ctrl</kbd>+<kbd>C</kbd>.
 
-    💡 `man pstree`: search for `pid`; `man ps`: search for `pgid` and for `state`.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** the three commands are children of the same `bash`, started at the same time, and they have the same
-    process group: the PID of the first `sleep`. They are all `S` (waiting); after <kbd>Ctrl</kbd>+<kbd>Z</kbd>, all
-    `T` (stopped); <kbd>Ctrl</kbd>+<kbd>C</kbd> ends all three. <small>→ [How a Pipeline Runs](#how-a-pipeline-runs) · [Foreground and Background](/docs/labs/04#foreground-and-background)</small>
+    `man pstree`: search for `pid`; `man ps`: search for `pgid` and for `state`.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. A number, the PID of the shell; the pipeline does not give the prompt back.
+    2. The three commands are children of the same `bash`, and they have the same process group: the PID of the first
+       `sleep`. They are all `S` (waiting).
+    3. After <kbd>Ctrl</kbd>+<kbd>Z</kbd>, all three are `T` (stopped); <kbd>Ctrl</kbd>+<kbd>C</kbd> ends all three.
+
+    </details>
 
 29. **Follow the pipe**: Find the pipe between two commands in `/proc`.
+    <small>→ [How a Pipeline Runs](#how-a-pipeline-runs) · [The `/proc` File System](/docs/labs/03#the-proc-file-system)</small>
 
     1. in the second terminal, run `sleep 300 | cat`;
     2. in the first terminal, find the PIDs of `sleep` and `cat`, and print where the inputs (`0`) and the outputs
        (`1`) of both lead;
     3. end the pipeline.
 
-    💡 `man pgrep`; `man readlink`; the file descriptors of a process are in `/proc/<PID>/fd` (lab 03).
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** the output of `sleep` and the input of `cat` are the same `pipe:[...]`, with the same number; the
-    input of `sleep` and the output of `cat` are the terminal, `/dev/pts/...`. <small>→ [How a Pipeline Runs](#how-a-pipeline-runs) · [The `/proc` File System](/docs/labs/03#the-proc-file-system)</small>
+    `man pgrep`; `man readlink`; the file descriptors of a process are in `/proc/<PID>/fd` (lab 03).
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    2. The output of `sleep` and the input of `cat` are the same `pipe:[...]`, with the same number; the input of
+       `sleep` and the output of `cat` are the terminal, `/dev/pts/...`.
+
+    </details>
 
 30. **Who ends first**: Find out what happens to a command whose reader stopped reading.
+    <small>→ [How a Pipeline Runs](#how-a-pipeline-runs)</small>
 
     For each line, **first** guess the exit codes of the two commands, then print them with `PIPESTATUS`:
 
@@ -1406,50 +1937,90 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     2. `seq 5 | sleep 2`;
     3. `seq 100000 | sleep 2`.
 
-    💡 `kill -l 13`; `seq 100000 | wc -c` tells how much text `seq` writes; the pipe holds 64 KiB.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** `141 0`: `yes` got `SIGPIPE`. `0 0`: the 5 short lines fit in the pipe, and `seq` ended before `sleep`.
-    `141 0`: about 575 KiB do not fit, so `seq` waited for a reader; when `sleep` ended without reading, `seq` got
-    `SIGPIPE`. <small>→ [How a Pipeline Runs](#how-a-pipeline-runs)</small>
+    `kill -l 13`; `seq 100000 | wc -c` tells how much text `seq` writes; the pipe holds 64 KiB.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `141 0`: `yes` got `SIGPIPE`.
+    2. `0 0`: the 5 short lines fit in the pipe, and `seq` ended before `sleep`.
+    3. `141 0`: about 575 KiB do not fit, so `seq` waited for a reader; when `sleep` ended without reading, `seq` got
+       `SIGPIPE`.
+
+    </details>
 
 31. **A failure in the middle**: Every night, a pipeline counts the customers of the shop. One night the file was
     missing, and the report said `0`, with no error. Make the pipeline tell the truth.
+    <small>→ [How a Pipeline Runs](#how-a-pipeline-runs) · [The Exit Code of a Pipeline](#the-exit-code-of-a-pipeline)</small>
 
-        1. run `cut -d, -f1 nope.csv | sort -u | wc -l`; then, with **one** `echo`, print its exit code and the exit codes
+    1. run `cut -d, -f1 nope.csv | sort -u | wc -l`; then, with **one** `echo`, print its exit code and the exit codes
        of every command;
     2. add `&& echo ok || echo failed` after the pipeline;
     3. turn on `pipefail`, and run step 2 again; then turn it off.
 
-        💡 [How a Pipeline Runs](#how-a-pipeline-runs); `echo` is a command too: after it, `$?` and `PIPESTATUS` describe
-    the `echo`, not the pipeline.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** the pipeline prints `0` and ends with `0`, but `PIPESTATUS` is `1 0 0`; without `pipefail` it says `ok`,
-    with `pipefail` it says `failed`. <small>→ [How a Pipeline Runs](#how-a-pipeline-runs) · [The Exit Code of a Pipeline](#the-exit-code-of-a-pipeline)</small>
+    [How a Pipeline Runs](#how-a-pipeline-runs); `echo` is a command too: after it, `$?` and `PIPESTATUS` describe the
+    `echo`, not the pipeline.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. An error of `cut`, then `0`; the exit code is `0`, but `PIPESTATUS` is `1 0 0`.
+    2. `ok`.
+    3. `failed`.
+
+    </details>
 
 32. **Watch a live log**: Watch the requests that end with `404` while they arrive, and only their addresses.
+    <small>→ [How a Pipeline Runs](#how-a-pipeline-runs) · [The First and the Last Lines](#the-first-and-the-last-lines-head-and-tail)</small>
 
     1. in the second terminal, follow `live.log` and keep only the lines that contain `404`;
     2. in the first terminal, add the line `10.0.0.9 GET /x 404` to `live.log`, then the line `10.0.0.7 GET / 200`;
     3. in the second terminal, add `cut` at the end, to keep only the address; add another `404` line;
     4. fix the pipeline of step 3, so that the address appears right away.
 
-    💡 [How a Pipeline Runs](#how-a-pipeline-runs); `man grep`: search for `line-buffered`.
+    <details className="reveal">
+    <summary>Hint</summary>
 
-    **Check:** in step 2 only the `404` line appears, right away. In step 3 nothing appears: the output of `grep` goes
-    into a pipe now, and `grep` waits until it has 4 KiB of text. With `grep --line-buffered`, the address appears at
-    once. <small>→ [How a Pipeline Runs](#how-a-pipeline-runs) · [The First and the Last Lines](#the-first-and-the-last-lines-head-and-tail)</small>
+    [How a Pipeline Runs](#how-a-pipeline-runs); `man grep`: search for `line-buffered`.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    2. Only the `404` line appears, right away.
+    3. Nothing appears.
+    4. With `grep --line-buffered`, the address appears at once.
+
+    **Why:** in step 3, the output of `grep` goes into a pipe, and `grep` waits until it has 4 KiB of text.
+
+    </details>
 
 **Text editors**
 
-33. **Your editor on a real file**: Change a file with the editor you learned in exercises 1 and 16, without retyping
+33. **Your editor on a real file**: Change a file with the editor you learned in exercises 13 and 15, without retyping
     the lines that stay.
+    <small>→ [Text Editors](#text-editors) · [The Keys of Each Editor](#the-keys-of-each-editor)</small>
 
     1. copy `students.csv` to `class.csv`, and open it with your editor;
     2. add the line `Dave,27,Cluj` at the end;
     3. copy the line of `Bob` and paste the copy under it; change the copy into `Erin,24,Iasi`;
     4. replace every `,` with `;`, in **one** command; save, quit, and print the file.
 
-    💡 Choose your editor:
+    <details className="reveal">
+    <summary>Hint</summary>
+
+    Choose your editor:
 
     <Tabs groupId="editor">
     <TabItem value="vim" label="vim">
@@ -1504,18 +2075,31 @@ command worked. The exercises use the files of `~/lab06` from the First Steps.
     </TabItem>
     </Tabs>
 
-    **Check:** `class.csv` has 6 lines: `name;age;city`, `Alice;30;Paris`, `Bob;25;London`, `Erin;24;Iasi`,
-    `Carol;22;Bucharest` and `Dave;27;Cluj`. <small>→ [Text Editors](#text-editors)</small>
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    4. `class.csv` has 6 lines: `name;age;city`, `Alice;30;Paris`, `Bob;25;London`, `Erin;24;Iasi`,
+       `Carol;22;Bucharest` and `Dave;27;Cluj`.
+
+    </details>
 
 **Clean up**
 
 34. **Clean up**: Leave your home directory as it was before the lab.
+    <small>→ [How a Pipeline Runs](#how-a-pipeline-runs)</small>
 
     1. delete `~/lab06`;
     2. if `set -o pipefail` is still on in a shell, close that terminal.
 
-    **Check:** `ls ~` does not show `lab06`; `set -o | grep pipefail` prints `pipefail off` in a new terminal.
-    <small>→ [How a Pipeline Runs](#how-a-pipeline-runs)</small>
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `ls ~` does not show `lab06`.
+    2. In a new terminal, `set -o | grep pipefail` prints `pipefail off`.
+
+    </details>
 
 ### 📝 Challenges {/* #challenges */}
 
@@ -1523,12 +2107,14 @@ These exercises are like the ones at the exam. Each one gives you a **result** t
 the commands. Each one ends with the **Check** that will be used to grade it. Some of them need
 [How a Pipeline Runs](#how-a-pipeline-runs).
 
-All the challenges start from the same setup, the one you will find at the exam: the directory `~/exam` with four
+All the challenges start from the same setup, the one you will find at the exam: the directory `~/exam` with five
 files. `web.log` has one request per line, with 7 fields separated by a space: the address, the date, the time, the
-method, the page, the status and the number of bytes sent. Copy and run these commands before the first challenge; run
+method, the page, the status and the number of bytes sent. `stock.json` is a JSON list, for `jq` (the first
+command installs it; Ubuntu: `sudo apt install jq`). Copy and run these commands before the first challenge; run
 them again to get the original files back:
 
 ```bash
+command -v jq > /dev/null || sudo dnf install -y jq
 mkdir -p ~/exam
 cd ~/exam
 cat > web.log << 'END'
@@ -1556,11 +2142,21 @@ printf '%s\n' name,lab,exam ana,4.5,3.5 bob,2,1.5 carol,3,4 dave,5,4.5 erin,1.5,
     grace,3.5,1 mallory,4,2.5 > grades.csv
 printf '%s\n' '# the settings of the exam server' port=8080 '# host=localhost' \
     host=0.0.0.0 debug=true users=ana,bob,carol > settings.conf
+cat > stock.json << 'END'
+[
+  {"name": "keyboard", "price": 120, "qty": 4},
+  {"name": "mouse", "price": 45, "qty": 10},
+  {"name": "monitor", "price": 900, "qty": 0},
+  {"name": "cable", "price": 12, "qty": 30},
+  {"name": "webcam", "price": 250, "qty": 2}
+]
+END
 ```
 
 When you are done with all the challenges, remove everything with `rm -rf ~/exam`.
 
 35. **The busiest addresses**: Find who uses the server most, and how much it sends.
+    <small>→ [Filters](#filters) · [Computing: `awk`](#computing-awk)</small>
 
     With **one** pipeline for each:
 
@@ -1568,33 +2164,45 @@ When you are done with all the challenges, remove everything with `rm -rf ~/exam
     2. print the total number of bytes that the server sent;
     3. print the number of bytes sent to `10.0.0.12`.
 
-    **Check:** the three outputs are exactly:
+    <details className="reveal">
+    <summary>Check</summary>
 
-    ```text
-          6 10.0.0.9
-          4 10.0.0.7
-          3 10.0.0.5
-    ```
+    1. The output is exactly:
 
-    then `1486950`, then `739123`. <small>→ [Filters](#filters) · [Computing: `awk`](#computing-awk)</small>
+       ```text
+             6 10.0.0.9
+             4 10.0.0.7
+             3 10.0.0.5
+       ```
+
+    2. `1486950`.
+    3. `739123`.
+
+    </details>
 
 36. **Who guesses passwords**: A failed login is a `POST` request for `/login` that ends with `401`. Find the addresses
     that failed to log in at least 3 times, and how busy the server was in every hour.
+    <small>→ [Computing: `awk`](#computing-awk) · [Cutting Columns: `cut`](#cutting-columns-cut)</small>
 
     1. print every address with at least 3 failed logins, with its number of failures;
     2. print the number of requests of every hour, in the order of the hours.
 
-    **Check:** step 1 prints exactly `      3 10.0.0.9` (`10.0.0.5` failed only once); step 2 prints exactly:
+    <details className="reveal">
+    <summary>Check</summary>
 
-    ```text
-          8 10
-          6 11
-          3 12
-    ```
+    1. Exactly `      3 10.0.0.9` (`10.0.0.5` failed only once).
+    2. The output is exactly:
 
-    <small>→ [Computing: `awk`](#computing-awk) · [Cutting Columns: `cut`](#cutting-columns-cut)</small>
+       ```text
+             8 10
+             6 11
+             3 12
+       ```
+
+    </details>
 
 37. **Car plates**: Keep only the valid car plates of `plates.txt`, with **one** `grep` and **one** regular expression.
+    <small>→ [Extended Regular Expressions](#extended-regular-expressions)</small>
 
     A valid plate has, separated by single spaces:
 
@@ -1604,19 +2212,55 @@ When you are done with all the challenges, remove everything with `rm -rf ~/exam
 
     Nothing else may be on the line.
 
-    **Check:** the command prints exactly `B 123 ABC`, `B 12 XYZ`, `IF 07 UPB` and `TM 05 LNX`, and the same command
-    with `-c` prints `4`. <small>→ [Extended Regular Expressions](#extended-regular-expressions)</small>
+    <details className="reveal">
+    <summary>Check</summary>
+
+    - The command prints exactly `B 123 ABC`, `B 12 XYZ`, `IF 07 UPB` and `TM 05 LNX`;
+    - the same command with `-c` prints `4`.
+
+    </details>
 
 38. **The final grades**: `grades.csv` has, for every student, the grade of the lab and the grade of the exam. The
     final grade is their sum. A student passes with a final grade of at least `5` **and** an exam grade of at least
     `2.5`.
+    <small>→ [Computing: `awk`](#computing-awk) · [Sorting: `sort`](#sorting-sort)</small>
 
     With **one** pipeline, print the name and the final grade of every student who passed, the largest grade first.
 
-    **Check:** the output is exactly `dave 9.5`, `ana 8`, `carol 7` and `mallory 6.5`; `grace` has `4.5` and `bob`,
-    `erin` have less, so they are not printed. <small>→ [Computing: `awk`](#computing-awk) · [Sorting: `sort`](#sorting-sort)</small>
+    <details className="reveal">
+    <summary>Check</summary>
 
-39. **Predict the exit codes**: Predict what each line prints and its exit codes, then prove each answer.
+    - The output is exactly `dave 9.5`, `ana 8`, `carol 7` and `mallory 6.5`;
+    - `grace` (`4.5`), `bob` and `erin` are not printed.
+
+    </details>
+
+39. **The stock of the shop**: `stock.json` has the products of a shop, with their price and their quantity. Report
+    the value of the stock: the price times the quantity.
+    <small>→ [Filters](#filters) · [Sorting: `sort`](#sorting-sort)</small>
+
+    1. with **one** pipeline, print the name and the value of every product in stock (a quantity larger than `0`), the
+       largest value first, as a table with the columns aligned by `column`;
+    2. print the total value of the stock, as one number.
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. The output is exactly:
+
+       ```text
+       webcam    500
+       keyboard  480
+       mouse     450
+       cable     360
+       ```
+
+    2. `1790`.
+
+    </details>
+
+40. **Predict the exit codes**: Predict what each line prints and its exit codes, then prove each answer.
+    <small>→ [Exit Codes](#exit-codes) · [Chaining Commands](#chaining-commands--and-) · [How a Pipeline Runs](#how-a-pipeline-runs)</small>
 
     In `~/exam`, **first** fill in the table on paper; then run each line, followed by `echo $?`, or by
     `echo "${PIPESTATUS[@]}"` for lines 4 and 6:
@@ -1633,7 +2277,8 @@ When you are done with all the challenges, remove everything with `rm -rf ~/exam
 
     Turn `pipefail` off after line 5.
 
-    **Check:**
+    <details className="reveal">
+    <summary>Check</summary>
 
     |     | Prints                          | Exit code(s)                                           |
     | --- | ------------------------------- | ------------------------------------------------------ |
@@ -1645,9 +2290,10 @@ When you are done with all the challenges, remove everything with `rm -rf ~/exam
     | 6.  | nothing                         | `141 0`: `yes` got `SIGPIPE`                           |
     | 7.  | an error of `cp`, then `failed` | `0`, the exit code of `echo failed`                    |
 
-    <small>→ [Exit Codes](#exit-codes) · [Chaining Commands](#chaining-commands--and-) · [How a Pipeline Runs](#how-a-pipeline-runs)</small>
+    </details>
 
-40. **Configure with `vim`**: Change `settings.conf` with `vim` only, without retyping the lines that stay.
+41. **Configure with `vim`**: Change `settings.conf` with `vim` only, without retyping the lines that stay.
+    <small>→ [`vim`](#vim)</small>
 
     At the end, the file must have exactly these lines, in this order:
 
@@ -1659,11 +2305,21 @@ When you are done with all the challenges, remove everything with `rm -rf ~/exam
     timeout=30
     ```
 
-    💡 In `vim`, `:help :g` explains how to run a command, like `d`, on every line that matches a regex; `:help A`
+    <details className="reveal">
+    <summary>Hint</summary>
+
+    In `vim`, `:help :g` explains how to run a command, like `d`, on every line that matches a regex; `:help A`
     explains how to add text at the end of a line.
 
-    **Check:** `cat -A settings.conf` prints the 5 lines, each ending with `$`, with no spaces before the `$` and no
-    empty lines. <small>→ [`vim`](#vim)</small>
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    - `cat -A settings.conf` prints the 5 lines, each ending with `$`, with no spaces before the `$` and no empty
+      lines.
+
+    </details>
 
 ## Wrap-up Questions
 
@@ -1681,12 +2337,3 @@ assistant. There are no wrong answers for the last two.
 8. How do you quit `vim` without saving?
 9. Which filter surprised you most today?
 10. Which editor will you use from now on, and why?
-
-## Extra
-
-1. **`column`**: `column -t -s, students.csv` aligns a CSV file as a table, for reading.
-   <small>→ `man column`</small>
-2. **`jq`**: many programs and web services write **JSON** instead of lines; `jq` is the filter for it, with its own
-   small language. Install it with `sudo dnf install jq` (Ubuntu: `sudo apt install jq`). <small>→ `man jq`</small>
-3. **Other editors**: `helix` (`hx --tutor`) and `emacs` (<kbd>Ctrl</kbd>+<kbd>H</kbd> then <kbd>T</kbd>) have
-   their own tutorials, like `vimtutor`; Visual Studio Code and Zed can use the keys of `vim`.
