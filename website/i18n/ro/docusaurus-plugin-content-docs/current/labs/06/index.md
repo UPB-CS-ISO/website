@@ -10,7 +10,7 @@ fișier. În acest laborator lucrați cu ce se află **în** majoritatea acestor
 linii, iar `wc` și `awk` numără și calculează. Le legați apoi în **înlănțuiri de comenzi** (*pipelines*) care răspund
 la o întrebare într-o singură linie, aflați din **codul de ieșire** dacă o comandă a reușit și legați comenzi între ele
 cu `&&` și `||`. La final, cunoașteți cele trei feluri de editoare din
-terminal, `nano`, `vim` și Emacs, și începeți să învățați unul dintre ele.
+terminal, `nano`, `vim` și `emacs`, și începeți să învățați unul dintre ele.
 
 Ideea cea mai importantă a laboratorului este că textul este **limba comună** a comenzilor. Fiecare filtru citește
 linii de text, face **un singur** lucru mic cu ele și scrie linii de text, așa că ieșirea oricărui filtru poate fi
@@ -777,7 +777,7 @@ terminal**.
 
 Editoarele din terminal sunt de trei feluri. Într-un editor **simplu**, `nano`, ce tastați ajunge în text. Într-un
 editor **modal**, `vim`, `nvim` sau Helix (`hx`), tastele sunt comenzi, iar textul se scrie doar într-unul dintre
-modurile lui. Emacs este la mijloc: ce tastați ajunge în text, ca în `nano`, dar fiecare comandă este un **acord**,
+modurile lui. `emacs` este la mijloc: ce tastați ajunge în text, ca în `nano`, dar fiecare comandă este un **acord**,
 taste ținute apăsate împreună, și poate face aproape orice. Gândiți-vă la el ca la un `nano` mult mai puternic.
 
 ### Simplu: `nano` {/* #nano */}
@@ -820,7 +820,7 @@ Normal, apoi tastați `:q!` și <kbd>Enter</kbd> ca să ieșiți fără să salv
 
 ### Cu acorduri: `emacs` {/* #emacs */}
 
-Emacs nu are moduri: ce tastați ajunge în text. Fiecare comandă este un **acord**: <kbd>Ctrl</kbd>+<kbd>X</kbd>
+`emacs`(_Editor MACroS_) nu are moduri: ce tastați ajunge în text. Fiecare comandă este un **acord**: <kbd>Ctrl</kbd>+<kbd>X</kbd>
 <kbd>Ctrl</kbd>+<kbd>S</kbd> salvează, <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd> iese. Manualul lui
 scrie <kbd>Ctrl</kbd> ca `C-` și <kbd>Alt</kbd> ca `M-` (_Meta_): `C-x C-s`. Porniți-l cu `emacs -nw` (_no window_) ca să
 rămână în terminal și apăsați <kbd>Ctrl</kbd>+<kbd>G</kbd> ca să anulați o comandă începută din greșeală.
