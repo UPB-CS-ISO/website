@@ -9,8 +9,8 @@ fișier. În acest laborator lucrați cu ce se află **în** majoritatea acestor
 `grep` găsește liniile care se potrivesc cu o **expresie regulată**, `cut`, `tr` și `sed` schimbă conținutul fiecărei
 linii, iar `wc` și `awk` numără și calculează. Le legați apoi în **înlănțuiri de comenzi** (*pipelines*) care răspund
 la o întrebare într-o singură linie, aflați din **codul de ieșire** dacă o comandă a reușit și legați comenzi între ele
-cu `&&` și `||`. La final, cunoașteți cele trei feluri de editoare din
-terminal, `nano`, `vim` și `emacs`, și începeți să învățați unul dintre ele.
+cu `&&` și `||`. La final, faceți cunoștință cu cele trei feluri de editoare din terminal, `nano`, `vim` și `emacs`, și
+începeți să învățați unul dintre ele.
 
 Ideea cea mai importantă a laboratorului este că textul este **limba comună** a comenzilor. Fiecare filtru citește
 linii de text, face **un singur** lucru mic cu ele și scrie linii de text, așa că ieșirea oricărui filtru poate fi
@@ -28,8 +28,8 @@ număr, **codul de ieșire**, prin care îi spune shell-ului dacă a reușit.
 - Să schimbați, să ștergeți și să comprimați caractere cu `tr` și să înlocuiți text cu `sed`
 - Să numărați liniile, cuvintele și caracterele cu `wc` și să calculați sume și medii cu `awk`
 - Să aflați din **codul de ieșire** dacă o comandă a reușit și să legați comenzi cu `&&` și `||`
-- Să editați un fișier text în terminal cu `nano` și cu `vim`, să începeți să învățați `vim`, `nvim`, `hx` sau `emacs` și
-  să alegeți cu `EDITOR` editorul pe care îl deschid alte programe
+- Să editați un fișier text în terminal cu `nano` și cu `vim`, să începeți să învățați `vim`, `nvim`, `hx` sau `emacs`
+  și să alegeți, cu `EDITOR`, editorul pe care îl deschid celelalte programe
 
 ## Resurse {/* #resources */}
 
@@ -54,14 +54,14 @@ număr, **codul de ieșire**, prin care îi spune shell-ului dacă a reușit.
 Calculatoarele din laborator rulează **Fedora** cu **Sway**, iar exemplele de aici provin de pe ele. Acasă puteți folosi
 și **Ubuntu**: comenzile din acest laborator sunt aceleași, cu câteva diferențe:
 
-|                                 | Fedora                                        | Ubuntu                                                      |
-| ------------------------------- | --------------------------------------------- | ----------------------------------------------------------- |
-| promptul                        | `[student@fedora ~]$`                         | `student@ubuntu:~$`                                         |
-| programul din spatele lui `awk` | GNU `awk` (`gawk`)                            | `mawk`, un `awk` mai mic: laboratorul merge la fel și cu el |
-| `vim` și `vimtutor`             | dacă lipsesc: `sudo dnf install vim-enhanced` | dacă lipsesc: `sudo apt install vim`                        |
-| instalarea Helix (`hx`)         | `sudo dnf install helix`                      | `sudo snap install --classic helix`                         |
-| instalarea `jq`                 | `sudo dnf install jq`                         | `sudo apt install jq`                                       |
-| `EDITOR`                        | `/usr/bin/nano`                               | nesetată: fiecare program își alege singur editorul         |
+|                               | Fedora                                        | Ubuntu                                                         |
+| ----------------------------- | --------------------------------------------- | -------------------------------------------------------------- |
+| promptul                      | `[student@fedora ~]$`                         | `student@ubuntu:~$`                                            |
+| programul din spatele lui `awk` | GNU `awk` (`gawk`)                          | `mawk`, un `awk` mai mic: laboratorul merge la fel și cu el    |
+| `vim` și `vimtutor`           | dacă lipsesc: `sudo dnf install vim-enhanced` | dacă lipsesc: `sudo apt install vim`                           |
+| instalarea Helix (`hx`)       | `sudo dnf install helix`                      | `sudo snap install --classic helix`                            |
+| instalarea `jq`               | `sudo dnf install jq`                         | `sudo apt install jq`                                          |
+| `EDITOR`                      | `/usr/bin/nano`                               | nesetată: fiecare program își alege singur editorul            |
 
 ## Filtre {/* #filters */}
 
@@ -368,10 +368,10 @@ completă se află în `man 7 regex`.
 
 **Un loc de joacă pentru expresii regulate**
 
-[regex101.com](https://regex101.com) colorează potrivirile pe măsură ce tastați regex-ul și explică pe înțeles fiecare
-parte a lui. Lipiți `words.txt` ca _test string_ și lăsați activ flag-ul `m`, ca `^` și `$` să se potrivească la
-fiecare linie, ca în `grep`. Varianta lui implicită, PCRE2, înțelege toate expresiile regulate din acest laborator;
-verificați totuși regex-ul final cu `grep`.
+[regex101.com](https://regex101.com) colorează potrivirile pe măsură ce scrieți regex-ul și explică pe înțeles fiecare
+parte a lui. Lipiți `words.txt` ca _test string_ și lăsați activă opțiunea `m`, ca `^` și `$` să se potrivească la
+fiecare linie, ca în `grep`. Varianta implicită a site-ului, PCRE2, înțelege toate expresiile regulate din acest
+laborator; verificați totuși regex-ul final cu `grep`.
 
 :::
 
@@ -777,14 +777,15 @@ terminal**.
 
 Editoarele din terminal sunt de trei feluri. Într-un editor **simplu**, `nano`, ce tastați ajunge în text. Într-un
 editor **modal**, `vim`, `nvim` sau Helix (`hx`), tastele sunt comenzi, iar textul se scrie doar într-unul dintre
-modurile lui. `emacs` este la mijloc: ce tastați ajunge în text, ca în `nano`, dar fiecare comandă este un **acord**,
-taste ținute apăsate împreună, și poate face aproape orice. Gândiți-vă la el ca la un `nano` mult mai puternic.
+modurile lui. `emacs` se află la mijloc: ce tastați ajunge în text, ca în `nano`, dar fiecare comandă este o
+**combinație de taste** (*chord*), adică taste ținute apăsate împreună, și poate face aproape orice. Gândiți-vă la el
+ca la un `nano` mult mai puternic.
 
 ### Simplu: `nano` {/* #nano */}
 
 Ați întâlnit `nano` în [laboratorul 2](/docs/labs/02#nano); este editorul implicit pe Fedora și Ubuntu. Partea de jos a
-ecranului îi listează tastele: `^` înseamnă <kbd>Ctrl</kbd>, iar `M-` înseamnă <kbd>Alt</kbd>. Toate se află în tab-ul
-`nano` din [Tastele fiecărui editor](#the-keys-of-each-editor).
+ecranului îi listează tastele: `^` înseamnă <kbd>Ctrl</kbd>, iar `M-` înseamnă <kbd>Alt</kbd>. Le găsiți pe toate în
+tab-ul `nano` din [Tastele fiecărui editor](#the-keys-of-each-editor).
 
 ### Modal: `vim`, `nvim` și `hx` {/* #vim */}
 
@@ -797,15 +798,15 @@ Normal fiecare literă este o comandă, fără vreun <kbd>Ctrl</kbd> de ținut a
 
 ![Modurile lui vim](./images/vim-modes.svg)
 
-| Mod              | Ce fac tastele                                                                             | Intrați în el cu                                     | Pe ultima linie apare               |
-| ---------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------- | ----------------------------------- |
-| Normal           | mută cursorul, șterg, copiază, lipesc                                                      | <kbd>Esc</kbd>, din orice alt mod                    | nimic                               |
-| Insert           | scriu text                                                                                 | din Normal: <kbd>i</kbd>, <kbd>a</kbd>, <kbd>o</kbd> | `-- INSERT --`                      |
-| Linie de comandă | scrieți o comandă: salvare, ieșire, înlocuire; <kbd>Enter</kbd> o rulează                  | <kbd>:</kbd> (sau <kbd>/</kbd> pentru căutare)       | `:` (sau `/`) și ce tastați         |
-| Visual           | selectați text, apoi acționați asupra lui: <kbd>d</kbd> îl șterge, <kbd>y</kbd> îl copiază | <kbd>v</kbd> (caractere), <kbd>V</kbd> (linii)       | `-- VISUAL --`, `-- VISUAL LINE --` |
+| Mod              | Ce fac tastele                     | Intrați în el cu                                | Pe ultima linie apare |
+| ---------------- | ---------------------------------- | ----------------------------------------------- | --------------------- |
+| Normal           | mută cursorul, șterg, copiază, lipesc | <kbd>Esc</kbd>, din orice alt mod            | nimic                 |
+| Insert           | scriu text                         | din Normal: <kbd>i</kbd>, <kbd>a</kbd>, <kbd>o</kbd> | `-- INSERT --`   |
+| Linie de comandă | scrieți o comandă: salvare, ieșire, înlocuire; <kbd>Enter</kbd> o rulează | <kbd>:</kbd> (sau <kbd>/</kbd> pentru căutare) | `:` (sau `/`) și ce tastați |
+| Visual           | selectați text, apoi acționați asupra lui: <kbd>d</kbd> îl șterge, <kbd>y</kbd> îl copiază | <kbd>v</kbd> (caractere), <kbd>V</kbd> (linii) | `-- VISUAL --`, `-- VISUAL LINE --` |
 
-`vi`, strămoșul lui `vim`, există pe orice sistem Unix; `nvim` (Neovim) este un `vim` mai nou, cu aceleași taste.
-Helix (`hx`) este și el modal, dar **întâi selectați, apoi acționați**: <kbd>x</kbd> selectează linia, apoi
+`vi`, strămoșul lui `vim`, există pe orice sistem Unix; `nvim` (Neovim) este un `vim` mai nou, cu aceleași taste. Helix
+(`hx`) este și el modal, dar în el **întâi selectați, apoi acționați**: <kbd>x</kbd> selectează linia, apoi
 <kbd>d</kbd> o șterge (în `vim`, <kbd>d</kbd><kbd>d</kbd> le face pe amândouă). Helix cunoaște limbajele de programare
 fără nicio setare.
 
@@ -818,69 +819,70 @@ Normal, apoi tastați `:q!` și <kbd>Enter</kbd> ca să ieșiți fără să salv
 
 :::
 
-### Cu acorduri: `emacs` {/* #emacs */}
+### Cu combinații de taste: `emacs` {/* #emacs */}
 
-`emacs`(_Editor MACroS_) nu are moduri: ce tastați ajunge în text. Fiecare comandă este un **acord**: <kbd>Ctrl</kbd>+<kbd>X</kbd>
-<kbd>Ctrl</kbd>+<kbd>S</kbd> salvează, <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd> iese. Manualul lui
-scrie <kbd>Ctrl</kbd> ca `C-` și <kbd>Alt</kbd> ca `M-` (_Meta_): `C-x C-s`. Porniți-l cu `emacs -nw` (_no window_) ca să
-rămână în terminal și apăsați <kbd>Ctrl</kbd>+<kbd>G</kbd> ca să anulați o comandă începută din greșeală.
+`emacs` (_Editor MACroS_) nu are moduri: ce tastați ajunge în text. Fiecare comandă este o **combinație de taste**:
+<kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>S</kbd> salvează, <kbd>Ctrl</kbd>+<kbd>X</kbd>
+<kbd>Ctrl</kbd>+<kbd>C</kbd> iese din editor. Manualul lui scrie <kbd>Ctrl</kbd> ca `C-` și <kbd>Alt</kbd> ca `M-`
+(_Meta_): `C-x C-s`. Porniți-l cu `emacs -nw` (_no window_) ca să rămână în terminal și apăsați
+<kbd>Ctrl</kbd>+<kbd>G</kbd> ca să anulați o comandă începută din greșeală.
 
 ### Tastele fiecărui editor {/* #the-keys-of-each-editor */}
 
-Aceleași acțiuni în cele patru editoare: alegeți tab-ul editorului pe care îl folosiți.
+Aceleași acțiuni, în cele patru editoare: alegeți tab-ul editorului pe care îl folosiți.
 
 <Tabs groupId="editor">
 <TabItem value="nano" label="nano">
 
-| Acțiune                       | Taste                                                                                                                |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| deschideți un fișier          | `nano <FILE>`                                                                                                        |
-| scrieți text                  | tastați-l                                                                                                            |
-| salvați                       | <kbd>Ctrl</kbd>+<kbd>O</kbd> (_write out_), apoi <kbd>Enter</kbd> ca să păstrați numele                              |
-| ieșiți                        | <kbd>Ctrl</kbd>+<kbd>X</kbd>; dacă fișierul s-a schimbat, vă întreabă dacă îl salvați: <kbd>Y</kbd> sau <kbd>N</kbd> |
-| ieșiți fără să salvați        | <kbd>Ctrl</kbd>+<kbd>X</kbd>, apoi <kbd>N</kbd>                                                                      |
-| anulați o comandă             | <kbd>Ctrl</kbd>+<kbd>C</kbd>                                                                                         |
-| undo, redo                    | <kbd>Alt</kbd>+<kbd>U</kbd>, <kbd>Alt</kbd>+<kbd>E</kbd>                                                             |
-| căutați, următoarea potrivire | <kbd>Ctrl</kbd>+<kbd>W</kbd> (_where is_), <kbd>Alt</kbd>+<kbd>W</kbd>                                               |
-| tăiați linia                  | <kbd>Ctrl</kbd>+<kbd>K</kbd>                                                                                         |
-| copiați linia                 | <kbd>Alt</kbd>+<kbd>6</kbd>                                                                                          |
-| lipiți                        | <kbd>Ctrl</kbd>+<kbd>U</kbd>                                                                                         |
-| prima linie, ultima linie     | <kbd>Alt</kbd>+<kbd>\\</kbd>, <kbd>Alt</kbd>+<kbd>/</kbd>                                                            |
-| săriți la o linie, după număr | <kbd>Ctrl</kbd>+<kbd>\_</kbd>                                                                                        |
-| înlocuiți                     | <kbd>Ctrl</kbd>+<kbd>\\</kbd>                                                                                        |
-| tutorialul                    | nu are: partea de jos a ecranului listează tastele                                                                   |
+| Acțiune                         | Taste                                                                                                 |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| deschideți un fișier            | `nano <FILE>`                                                                                         |
+| scrieți text                    | îl tastați direct                                                                                     |
+| salvați                         | <kbd>Ctrl</kbd>+<kbd>O</kbd> (_write out_), apoi <kbd>Enter</kbd> ca să păstrați numele               |
+| ieșiți                          | <kbd>Ctrl</kbd>+<kbd>X</kbd>; dacă fișierul s-a schimbat, vă întreabă dacă îl salvați: <kbd>Y</kbd> sau <kbd>N</kbd> |
+| ieșiți fără să salvați          | <kbd>Ctrl</kbd>+<kbd>X</kbd>, apoi <kbd>N</kbd>                                                       |
+| anulați o comandă               | <kbd>Ctrl</kbd>+<kbd>C</kbd>                                                                          |
+| undo, redo                      | <kbd>Alt</kbd>+<kbd>U</kbd>, <kbd>Alt</kbd>+<kbd>E</kbd>                                              |
+| căutați, următoarea potrivire   | <kbd>Ctrl</kbd>+<kbd>W</kbd> (_where is_), <kbd>Alt</kbd>+<kbd>W</kbd>                                |
+| tăiați linia                    | <kbd>Ctrl</kbd>+<kbd>K</kbd>                                                                          |
+| copiați linia                   | <kbd>Alt</kbd>+<kbd>6</kbd>                                                                           |
+| lipiți                          | <kbd>Ctrl</kbd>+<kbd>U</kbd>                                                                          |
+| prima linie, ultima linie       | <kbd>Alt</kbd>+<kbd>\\</kbd>, <kbd>Alt</kbd>+<kbd>/</kbd>                                             |
+| salt la o linie, după numărul ei | <kbd>Ctrl</kbd>+<kbd>\_</kbd>                                                                        |
+| căutare și înlocuire            | <kbd>Ctrl</kbd>+<kbd>\\</kbd>                                                                         |
+| tutorialul                      | nu are: partea de jos a ecranului listează tastele                                                    |
 
 </TabItem>
 <TabItem value="vim" label="vim / nvim">
 
-| Acțiune                       | Taste                                                                             |
-| ----------------------------- | --------------------------------------------------------------------------------- |
-| deschideți un fișier          | `vim <FILE>`, `nvim <FILE>`                                                       |
-| scrieți text                  | <kbd>i</kbd> (modul Insert), apoi <kbd>Esc</kbd> înapoi în modul Normal           |
-| salvați                       | `:w`                                                                              |
-| ieșiți                        | `:q`; `:wq` salvează și iese                                                      |
-| ieșiți fără să salvați        | `:q!`                                                                             |
-| anulați o comandă             | <kbd>Esc</kbd>                                                                    |
-| undo, redo                    | <kbd>u</kbd>, <kbd>Ctrl</kbd>+<kbd>R</kbd>                                        |
-| căutați, următoarea potrivire | <kbd>/</kbd>`text` <kbd>Enter</kbd>, <kbd>n</kbd>                                 |
-| tăiați linia                  | <kbd>d</kbd><kbd>d</kbd>                                                          |
-| copiați linia                 | <kbd>y</kbd><kbd>y</kbd> (_yank_)                                                 |
-| lipiți                        | <kbd>p</kbd>, sub linia curentă                                                   |
-| prima linie, ultima linie     | <kbd>g</kbd><kbd>g</kbd>, <kbd>G</kbd>                                            |
-| săriți la o linie, după număr | `:42` sare la linia 42                                                            |
-| înlocuiți                     | `:%s/old/new/g`, ca la `sed`: `old` este un regex, iar `%` înseamnă toate liniile |
-| tutorialul                    | `vimtutor`; în `nvim`, `:Tutor`                                                   |
+| Acțiune                         | Taste                                                                              |
+| ------------------------------- | ---------------------------------------------------------------------------------- |
+| deschideți un fișier            | `vim <FILE>`, `nvim <FILE>`                                                        |
+| scrieți text                    | <kbd>i</kbd> (modul Insert), apoi <kbd>Esc</kbd> ca să reveniți în modul Normal    |
+| salvați                         | `:w`                                                                               |
+| ieșiți                          | `:q`; `:wq` salvează și iese                                                       |
+| ieșiți fără să salvați          | `:q!`                                                                              |
+| anulați o comandă               | <kbd>Esc</kbd>                                                                     |
+| undo, redo                      | <kbd>u</kbd>, <kbd>Ctrl</kbd>+<kbd>R</kbd>                                         |
+| căutați, următoarea potrivire   | <kbd>/</kbd>`text` <kbd>Enter</kbd>, <kbd>n</kbd>                                  |
+| tăiați linia                    | <kbd>d</kbd><kbd>d</kbd>                                                           |
+| copiați linia                   | <kbd>y</kbd><kbd>y</kbd> (_yank_)                                                  |
+| lipiți                          | <kbd>p</kbd>, dedesubtul liniei curente                                            |
+| prima linie, ultima linie       | <kbd>g</kbd><kbd>g</kbd>, <kbd>G</kbd>                                             |
+| salt la o linie, după numărul ei | `:42` sare la linia 42                                                            |
+| căutare și înlocuire            | `:%s/old/new/g`, ca la `sed`: `old` este un regex, iar `%` înseamnă toate liniile  |
+| tutorialul                      | `vimtutor`; în `nvim`, `:Tutor`                                                    |
 
-Alte taste ale modului Normal:
+Alte taste din modul Normal:
 
-| Taste                                                             | Acțiune                                          |
-| ----------------------------------------------------------------- | ------------------------------------------------ |
-| <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd>, sau săgețile | stânga, jos, sus, dreapta                        |
-| <kbd>w</kbd>, <kbd>b</kbd>                                        | cuvântul următor, cuvântul anterior              |
-| <kbd>0</kbd>, <kbd>$</kbd>                                        | începutul, sfârșitul liniei                      |
-| <kbd>a</kbd>                                                      | modul Insert, după cursor                        |
-| <kbd>o</kbd>, <kbd>O</kbd>                                        | o linie nouă dedesubt, deasupra, în modul Insert |
-| <kbd>x</kbd>                                                      | șterge un caracter                               |
+| Taste                                                              | Acțiune                                          |
+| ------------------------------------------------------------------ | ------------------------------------------------ |
+| <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd>, sau săgețile  | stânga, jos, sus, dreapta                        |
+| <kbd>w</kbd>, <kbd>b</kbd>                                         | cuvântul următor, cuvântul anterior              |
+| <kbd>0</kbd>, <kbd>$</kbd>                                         | începutul, sfârșitul liniei                      |
+| <kbd>a</kbd>                                                       | modul Insert, după cursor                        |
+| <kbd>o</kbd>, <kbd>O</kbd>                                         | o linie nouă dedesubt, deasupra, în modul Insert |
+| <kbd>x</kbd>                                                       | șterge un caracter                               |
 
 Un număr pus înaintea unei comenzi o repetă: <kbd>5</kbd><kbd>j</kbd> coboară 5 linii,
 <kbd>3</kbd><kbd>d</kbd><kbd>d</kbd> șterge 3 linii. Tastele <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd>
@@ -889,64 +891,64 @@ sunt aceleași ca în Sway, din [laboratorul 1](/docs/labs/01).
 </TabItem>
 <TabItem value="hx" label="hx">
 
-| Acțiune                       | Taste                                                                                                                                          |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| deschideți un fișier          | `hx <FILE>`                                                                                                                                    |
-| scrieți text                  | <kbd>i</kbd> (modul Insert), apoi <kbd>Esc</kbd> înapoi în modul Normal                                                                        |
-| salvați                       | `:w`                                                                                                                                           |
-| ieșiți                        | `:q`; `:wq` salvează și iese                                                                                                                   |
-| ieșiți fără să salvați        | `:q!`                                                                                                                                          |
-| anulați o comandă             | <kbd>Esc</kbd>                                                                                                                                 |
-| undo, redo                    | <kbd>u</kbd>, <kbd>U</kbd>                                                                                                                     |
-| căutați, următoarea potrivire | <kbd>/</kbd>`text` <kbd>Enter</kbd>, <kbd>n</kbd>                                                                                              |
-| tăiați linia                  | <kbd>x</kbd> selectează linia, <kbd>d</kbd> o taie                                                                                             |
-| copiați linia                 | <kbd>x</kbd>, apoi <kbd>y</kbd>                                                                                                                |
-| lipiți                        | <kbd>p</kbd>, după selecție                                                                                                                    |
-| prima linie, ultima linie     | <kbd>g</kbd><kbd>g</kbd>, <kbd>g</kbd><kbd>e</kbd>                                                                                             |
-| săriți la o linie, după număr | `:goto 42`                                                                                                                                     |
-| înlocuiți                     | <kbd>%</kbd> selectează fișierul, <kbd>s</kbd>`old` <kbd>Enter</kbd> selectează fiecare potrivire, <kbd>c</kbd>`new` <kbd>Esc</kbd> le schimbă |
-| tutorialul                    | `hx --tutor`                                                                                                                                   |
+| Acțiune                         | Taste                                                                                                                                        |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| deschideți un fișier            | `hx <FILE>`                                                                                                                                  |
+| scrieți text                    | <kbd>i</kbd> (modul Insert), apoi <kbd>Esc</kbd> ca să reveniți în modul Normal                                                              |
+| salvați                         | `:w`                                                                                                                                         |
+| ieșiți                          | `:q`; `:wq` salvează și iese                                                                                                                 |
+| ieșiți fără să salvați          | `:q!`                                                                                                                                        |
+| anulați o comandă               | <kbd>Esc</kbd>                                                                                                                               |
+| undo, redo                      | <kbd>u</kbd>, <kbd>U</kbd>                                                                                                                   |
+| căutați, următoarea potrivire   | <kbd>/</kbd>`text` <kbd>Enter</kbd>, <kbd>n</kbd>                                                                                            |
+| tăiați linia                    | <kbd>x</kbd> selectează linia, <kbd>d</kbd> o taie                                                                                           |
+| copiați linia                   | <kbd>x</kbd>, apoi <kbd>y</kbd>                                                                                                              |
+| lipiți                          | <kbd>p</kbd>, după selecție                                                                                                                  |
+| prima linie, ultima linie       | <kbd>g</kbd><kbd>g</kbd>, <kbd>g</kbd><kbd>e</kbd>                                                                                           |
+| salt la o linie, după numărul ei | `:goto 42`                                                                                                                                  |
+| căutare și înlocuire            | <kbd>%</kbd> selectează fișierul, <kbd>s</kbd>`old` <kbd>Enter</kbd> selectează fiecare potrivire, <kbd>c</kbd>`new` <kbd>Esc</kbd> le schimbă |
+| tutorialul                      | `hx --tutor`                                                                                                                                 |
 
 După <kbd>g</kbd> sau <kbd>Space</kbd>, Helix afișează un meniu cu tastele care pot urma.
 
 </TabItem>
 <TabItem value="emacs" label="emacs">
 
-| Acțiune                       | Taste                                                                                                                               |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| deschideți un fișier          | `emacs -nw <FILE>`                                                                                                                  |
-| scrieți text                  | tastați-l                                                                                                                           |
-| salvați                       | <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>S</kbd>                                                                           |
-| ieșiți                        | <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd>                                                                           |
-| ieșiți fără să salvați        | <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd>, apoi <kbd>n</kbd> și `yes`                                               |
-| anulați o comandă             | <kbd>Ctrl</kbd>+<kbd>G</kbd>                                                                                                        |
-| undo, redo                    | <kbd>Ctrl</kbd>+<kbd>/</kbd>; pentru redo, <kbd>Ctrl</kbd>+<kbd>G</kbd>, apoi <kbd>Ctrl</kbd>+<kbd>/</kbd>                          |
-| căutați, următoarea potrivire | <kbd>Ctrl</kbd>+<kbd>S</kbd>, apoi încă o dată <kbd>Ctrl</kbd>+<kbd>S</kbd>                                                         |
-| tăiați linia                  | <kbd>Ctrl</kbd>+<kbd>A</kbd> (începutul liniei), apoi de două ori <kbd>Ctrl</kbd>+<kbd>K</kbd>                                      |
-| copiați linia                 | tăiați-o, apoi <kbd>Ctrl</kbd>+<kbd>Y</kbd> o lipește la loc; următorul <kbd>Ctrl</kbd>+<kbd>Y</kbd> lipește o copie                |
-| lipiți                        | <kbd>Ctrl</kbd>+<kbd>Y</kbd> (_yank_)                                                                                               |
-| prima linie, ultima linie     | <kbd>Alt</kbd>+<kbd>&lt;</kbd>, <kbd>Alt</kbd>+<kbd>&gt;</kbd>                                                                      |
-| săriți la o linie, după număr | <kbd>Alt</kbd>+<kbd>G</kbd> <kbd>G</kbd>, apoi numărul                                                                              |
-| înlocuiți                     | <kbd>Alt</kbd>+<kbd>%</kbd> `old` <kbd>Enter</kbd> `new` <kbd>Enter</kbd>, apoi <kbd>!</kbd> le înlocuiește pe toate cele următoare |
-| tutorialul                    | <kbd>Ctrl</kbd>+<kbd>H</kbd> <kbd>T</kbd>                                                                                           |
+| Acțiune                         | Taste                                                                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| deschideți un fișier            | `emacs -nw <FILE>`                                                                                                             |
+| scrieți text                    | îl tastați direct                                                                                                              |
+| salvați                         | <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>S</kbd>                                                                      |
+| ieșiți                          | <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd>                                                                      |
+| ieșiți fără să salvați          | <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd>, apoi <kbd>n</kbd> și `yes`                                          |
+| anulați o comandă               | <kbd>Ctrl</kbd>+<kbd>G</kbd>                                                                                                   |
+| undo, redo                      | <kbd>Ctrl</kbd>+<kbd>/</kbd>; pentru redo, <kbd>Ctrl</kbd>+<kbd>G</kbd>, apoi <kbd>Ctrl</kbd>+<kbd>/</kbd>                     |
+| căutați, următoarea potrivire   | <kbd>Ctrl</kbd>+<kbd>S</kbd>, apoi încă o dată <kbd>Ctrl</kbd>+<kbd>S</kbd>                                                    |
+| tăiați linia                    | <kbd>Ctrl</kbd>+<kbd>A</kbd> (începutul liniei), apoi <kbd>Ctrl</kbd>+<kbd>K</kbd> de două ori                                 |
+| copiați linia                   | tăiați-o, apoi <kbd>Ctrl</kbd>+<kbd>Y</kbd> o lipește la loc; următorul <kbd>Ctrl</kbd>+<kbd>Y</kbd> lipește o copie           |
+| lipiți                          | <kbd>Ctrl</kbd>+<kbd>Y</kbd> (_yank_)                                                                                          |
+| prima linie, ultima linie       | <kbd>Alt</kbd>+<kbd>&lt;</kbd>, <kbd>Alt</kbd>+<kbd>&gt;</kbd>                                                                 |
+| salt la o linie, după numărul ei | <kbd>Alt</kbd>+<kbd>G</kbd> <kbd>G</kbd>, apoi numărul                                                                        |
+| căutare și înlocuire            | <kbd>Alt</kbd>+<kbd>%</kbd> `old` <kbd>Enter</kbd> `new` <kbd>Enter</kbd>, apoi <kbd>!</kbd> înlocuiește toate potrivirile următoare |
+| tutorialul                      | <kbd>Ctrl</kbd>+<kbd>H</kbd> <kbd>T</kbd>                                                                                      |
 
 </TabItem>
 </Tabs>
 
 ### Editorul implicit: `EDITOR` {/* #the-default-editor-editor */}
 
-Unele programe vă deschid singure un editor, pe un fișier temporar: așteaptă până salvați și ieșiți, apoi citesc ce ați
-scris. Ca să știe **ce** editor să pornească, citesc variabila de mediu **`EDITOR`**
-([Variabile de mediu](/docs/labs/04#environment-variables) din laboratorul 4). Câteva se uită întâi la **`VISUAL`**, un
-nume mai vechi pentru aceeași alegere: dacă este setată, ea câștigă.
+Unele programe vă deschid singure un editor, pe un fișier temporar: așteaptă să salvați și să ieșiți, apoi citesc ce
+ați scris. Ca să afle **ce** editor să pornească, citesc variabila de mediu **`EDITOR`**
+([Variabile de mediu](/docs/labs/04#environment-variables) din laboratorul 4). Câteva dintre ele se uită întâi la
+**`VISUAL`**, un nume mai vechi pentru aceeași alegere: dacă este setată, ea are prioritate.
 
-| Program                                                                 | Ce deschide în editor                                             |
-| ----------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `bash`, tastele <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>E</kbd> | comanda pe care o tastați; `bash` o rulează când ieșiți din editor |
-| `less`, tasta <kbd>v</kbd>                                              | fișierul pe care îl citiți                                        |
-| `sudoedit <FILE>`                                                       | o copie a unui fișier de sistem, pusă la loc când ieșiți din editor |
-| `crontab -e`                                                            | lista comenzilor care rulează după un program                     |
-| `git commit`                                                            | mesajul commit-ului (laboratorul 7)                               |
+| Program                                                                    | Ce deschide în editor                                              |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `bash`, tastele <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>E</kbd>  | comanda pe care o tastați; `bash` o rulează când ieșiți din editor |
+| `less`, tasta <kbd>v</kbd>                                                 | fișierul pe care îl citiți                                         |
+| `sudoedit <FILE>`                                                          | o copie a unui fișier de sistem, pusă la loc când ieșiți din editor |
+| `crontab -e`                                                               | lista comenzilor care rulează la ore stabilite                     |
+| `git commit`                                                               | mesajul commit-ului                                                |
 
 ```shell-session
 [student@fedora ~]$ echo "[$EDITOR] [$VISUAL]"
@@ -955,10 +957,10 @@ nume mai vechi pentru aceeași alegere: dacă este setată, ea câștigă.
 [student@fedora ~]$ echo 'export EDITOR=vim' >> ~/.bashrc
 ```
 
-- `echo` a arătat că Fedora a ales `nano` și că `VISUAL` este goală (Ubuntu: amândouă sunt goale, iar fiecare program
+- `echo` a arătat că Fedora a ales `nano` și că `VISUAL` este goală (pe Ubuntu sunt goale amândouă și fiecare program
   își alege singur editorul).
-- `export EDITOR=vim` a ales `vim` pentru programele pornite din acest terminal, până îl închideți.
-- `echo ... >> ~/.bashrc` a adăugat aceeași linie la finalul lui `~/.bashrc` (setările lui `bash`, citite de fiecare
+- `export EDITOR=vim` a ales `vim` pentru programele pornite din acest terminal, până când îl închideți.
+- `echo ... >> ~/.bashrc` a adăugat aceeași linie la sfârșitul lui `~/.bashrc` (setările lui `bash`, citite de fiecare
   terminal nou).
 
 :::caution
@@ -1030,26 +1032,26 @@ cut: nope.csv: No such file or directory
 
 ## Depanare {/* #troubleshooting */}
 
-| Problemă                                                     | Soluție                                                                                                                    |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| O comandă așteaptă și promptul nu mai revine                 | Citește de la tastatură: ați uitat fișierul sau `<`. Apăsați <kbd>Ctrl</kbd>+<kbd>D</kbd> sau <kbd>Ctrl</kbd>+<kbd>C</kbd> |
-| `tr: extra operand ‘fruits.txt’`                             | `tr` citește doar de la intrare: `tr a-z A-Z < fruits.txt`                                                                 |
-| `sort` pune `100` înainte de `2`                             | Sortează ca text: adăugați `-n`, sau `n` după `-k`                                                                         |
-| `uniq` lasă linii repetate                                   | Liniile nu sunt una lângă alta: rulați întâi `sort`                                                                        |
-| `cut` afișează linii goale sau câmpul greșit                 | Există mai mulți delimitatori la rând: comprimați-i cu `tr -s` sau folosiți `awk`                                          |
-| `cut -f2` afișează linia întreagă                            | Fără `-d`, delimitatorul este tab-ul, iar linia nu conține niciunul: dați delimitatorul cu `-d`                            |
-| `cut: the delimiter must be a single character`              | `-d` primește un singur caracter: `-d,`, `-d' '`, `-d:`                                                                    |
-| `grep` găsește linii la care nu vă așteptați                 | `.` și `*` sunt speciale într-un regex: scrieți `\.` pentru un punct adevărat, `\*` pentru un asterisc adevărat            |
-| `grep: warning: stray \ before d`                            | `\d` nu înseamnă cifră în `grep`: folosiți `[0-9]`                                                                         |
-| `grep -E 'a+'` merge, dar `grep 'a+'` nu găsește nimic       | În expresiile regulate de bază, `+` este un caracter obișnuit: folosiți `-E`                                               |
-| `grep` cu `*` dă rezultate ciudate sau caută în alte fișiere | Regex-ul nu este între ghilimele simple, iar shell-ul l-a expandat ca pe un glob                                           |
-| ``sed: -e expression #1, char 8: unknown option to `s'``     | Textul conține `/`: folosiți alt separator, `s\|/usr\|/opt\|`                                                              |
-| `awk -F, '{ print $2 }'` afișează linii goale                | Delimitatorul este greșit: uitați-vă la o linie cu `cat -A` și dați-l pe cel corect cu `-F`                                |
-| `awk "{ print $1 }"` afișează linii întregi                  | Între ghilimele duble, shell-ul a înlocuit `$1` cu nimic: folosiți ghilimele simple                                        |
-| `vim` scrie litere în locuri ciudate sau nu scrie deloc      | Sunteți în modul greșit: apăsați <kbd>Esc</kbd>, apoi <kbd>i</kbd> ca să scrieți                                           |
-| `E37: No write since last change (add ! to override)`        | `vim` nu iese fără să salveze: `:wq` salvează, `:q!` renunță la modificări                                                 |
-| `vim: command not found`                                     | Folosiți `vi` sau instalați `vim-enhanced` (pe Ubuntu: `vim`)                                                              |
-| `jq: error ... Cannot index array with "city"`               | Fișierul este o listă: luați întâi elementele ei, `.[] \| .city`                                                           |
+| Problemă                                                  | Soluție                                                                                                                    |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| O comandă așteaptă și promptul nu mai revine              | Citește de la tastatură: ați uitat fișierul sau `<`. Apăsați <kbd>Ctrl</kbd>+<kbd>D</kbd> sau <kbd>Ctrl</kbd>+<kbd>C</kbd> |
+| `tr: extra operand ‘fruits.txt’`                          | `tr` citește doar de la intrare: `tr a-z A-Z < fruits.txt`                                                                 |
+| `sort` pune `100` înainte de `2`                          | Sortează ca text: adăugați `-n`, sau `n` după `-k`                                                                         |
+| `uniq` lasă linii repetate                                | Liniile nu sunt una lângă alta: rulați întâi `sort`                                                                        |
+| `cut` afișează linii goale sau câmpul greșit              | Există mai mulți delimitatori la rând: comprimați-i cu `tr -s` sau folosiți `awk`                                          |
+| `cut -f2` afișează linia întreagă                         | Fără `-d`, delimitatorul este tab-ul, iar linia nu conține niciunul: dați delimitatorul cu `-d`                            |
+| `cut: the delimiter must be a single character`           | `-d` primește un singur caracter: `-d,`, `-d' '`, `-d:`                                                                    |
+| `grep` găsește linii la care nu vă așteptați              | `.` și `*` sunt speciale într-un regex: scrieți `\.` pentru un punct adevărat, `\*` pentru un asterisc adevărat            |
+| `grep: warning: stray \ before d`                         | `\d` nu înseamnă cifră în `grep`: folosiți `[0-9]`                                                                         |
+| `grep -E 'a+'` merge, dar `grep 'a+'` nu găsește nimic    | În expresiile regulate de bază, `+` este un caracter obișnuit: folosiți `-E`                                               |
+| `grep` cu `*` dă rezultate ciudate sau caută în alte fișiere | Regex-ul nu este între ghilimele simple, iar shell-ul l-a expandat ca pe un glob                                        |
+| ``sed: -e expression #1, char 8: unknown option to `s'``  | Textul conține `/`: folosiți alt separator, `s\|/usr\|/opt\|`                                                              |
+| `awk -F, '{ print $2 }'` afișează linii goale             | Delimitatorul este greșit: uitați-vă la o linie cu `cat -A` și dați-l pe cel corect cu `-F`                                |
+| `awk "{ print $1 }"` afișează linii întregi               | Între ghilimele duble, shell-ul a înlocuit `$1` cu nimic: folosiți ghilimele simple                                        |
+| `vim` scrie litere în locuri ciudate sau nu scrie deloc   | Sunteți în modul greșit: apăsați <kbd>Esc</kbd>, apoi <kbd>i</kbd> ca să scrieți                                           |
+| `E37: No write since last change (add ! to override)`     | `vim` nu iese fără să salveze: `:wq` salvează, `:q!` renunță la modificări                                                 |
+| `vim: command not found`                                  | Folosiți `vi` sau instalați `vim-enhanced` (pe Ubuntu: `vim`)                                                              |
+| `jq: error ... Cannot index array with "city"`            | Fișierul este o listă: luați întâi elementele ei, `.[] \| .city`                                                           |
 
 ## Exerciții {/* #exercises */}
 
@@ -1071,7 +1073,7 @@ citească.
 ### 🧪 Primii pași {/* #first-steps */}
 
 Faceți aceste exerciții în ordine, în timpul laboratorului. Fiecare începe cu ce vrea să obțineți și exersează **o
-singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată sub scopul lui. Rulați comenzile în
+singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată sub scopul exercițiului. Rulați comenzile în
 `~/lab06`, dacă exercițiul nu spune altfel.
 
 1. **Fișierele de lucru**: Creați în `~/lab06` fișierele pe care le folosesc celelalte exerciții.
@@ -1120,8 +1122,8 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată 
     1. afișați `fruits.txt` cu numărul fiecărei linii; apoi afișați-l de la ultima linie la prima;
     2. afișați doar linia a 5-a din `fruits.txt`;
     3. afișați `students.csv` fără antet;
-    4. creați fișierul gol `live.log`; într-un al doilea terminal, urmăriți-l; în primul terminal, adăugați în el
-       linia `first`; opriți urmărirea.
+    4. creați fișierul gol `live.log`; într-un al doilea terminal, urmăriți-l; în primul terminal, adăugați în el linia
+       `first`; opriți urmărirea.
 
     <details className="reveal">
     <summary>Indiciu</summary>
@@ -1165,17 +1167,17 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată 
     3. `apple`, `banana`, `cherry` și `kiwi`; apoi doar `cherry` și `kiwi`.
     4. `3 apple`.
 
-    **De ce:** ca text, `100` vine înaintea lui `2` pentru că `1` vine înaintea lui `2`, indiferent ce urmează după el.
+    **De ce:** ca text, `100` vine înaintea lui `2` pentru că `1` vine înaintea lui `2`, indiferent ce urmează.
 
     </details>
 
 **Expresii regulate**
 
-4. **Expresii regulate**: Descrieți linii printr-un tipar, găsiți-le în `words.txt` și vedeți de ce un regex are nevoie
-    de ghilimele.
+4. **Expresii regulate**: Descrieți linii printr-un tipar, găsiți-le în `words.txt` și vedeți de ce un regex are
+    nevoie de ghilimele.
     <small>→ [Expresii regulate de bază](#basic-regular-expressions) · [Expresii regulate extinse](#extended-regular-expressions) · [Expresii regulate](#regular-expressions)</small>
 
-    La pașii 1 - 4, scrieți **întâi** regex-ul pe hârtie, apoi verificați-l cu `grep`:
+    Pentru pașii 1 - 4, scrieți **întâi** regex-ul pe hârtie, apoi verificați-l cu `grep`:
 
     1. găsiți liniile care se termină cu `l`;
     2. găsiți liniile care au exact trei caractere, toate litere mici;
@@ -1204,7 +1206,7 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată 
        `concatenate` și `call 0722 123 456`.
 
     **De ce:** fără ghilimele, shell-ul a transformat `ca*` în `cat.txt`, iar `grep` a căutat textul `cat.txt`; cu
-    ghilimele, `grep` a primit `ca*`, adică un `c` urmat de oricâți `a`, chiar și niciunul.
+    ghilimele, `grep` a primit `ca*`, adică un `c` urmat de oricâți `a`, chiar și de niciunul.
 
     </details>
 
@@ -1215,8 +1217,8 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată 
     1. afișați setările din `/etc/login.defs` (laboratorul 5), fără comentarii (liniile care încep cu `#`) și fără
        liniile goale; apoi numărați-le;
     2. afișați linia setării `UMASK`, împreună cu numărul ei;
-    3. numărați liniile din `words.txt` care conțin `cat`; apoi afișați-le doar pe cele în care `cat` este un cuvânt
-       întreg, cu litere mici sau mari.
+    3. numărați liniile din `words.txt` care conțin `cat`, apoi afișați-le doar pe cele în care `cat` este un cuvânt
+       întreg, scris cu litere mici sau mari.
 
     <details className="reveal">
     <summary>Indiciu</summary>
@@ -1229,7 +1231,7 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată 
     <summary>Verificare</summary>
 
     1. Linii ca `UID_MIN 1000`, câteva zeci.
-    2. O singură linie, cu numărul ei și un `:` în față: `UMASK` este `022`.
+    2. O singură linie, cu numărul ei și `:` în față: `UMASK` este `022`.
     3. `3`; apoi `cat` și `Cat`.
 
     </details>
@@ -1242,16 +1244,15 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată 
     1. afișați numele și orașele din `students.csv`, fără antet;
     2. afișați numele și shell-ul fiecărui utilizator, din baza de date a utilizatorilor;
     3. afișați `fruits.txt` cu majuscule; apoi afișați fructele fără vocale;
-    4. afișați vârsta fiecărei persoane din `people.txt`, cu `tr` și `cut`; apoi afișați persoanele de la cea mai
-       tânără la cea mai în vârstă;
-    5. afișați directoarele din `PATH`, câte unul pe linie.
+    4. afișați vârsta fiecărei persoane din `people.txt`, cu `tr` și `cut`; apoi afișați persoanele de la cea mai tânără
+       la cea mai în vârstă;
+    5. afișați directoarele din `PATH` câte unul pe linie.
 
     <details className="reveal">
     <summary>Indiciu</summary>
 
-    `man cut`: căutați `delimiter` și `fields`; `/etc/passwd` are 7 câmpuri, separate prin `:`, iar `getent passwd`
-    afișează toți utilizatorii (laboratorul 5). `man tr`: căutați `delete` și `squeeze`; `tr` citește doar de la
-    intrare.
+    `man cut`: căutați `delimiter` și `fields`; `/etc/passwd` are 7 câmpuri, separate prin `:`, iar utilizatorii îi
+    găsiți cu `getent passwd` (laboratorul 5). `man tr`: căutați `delete` și `squeeze`; `tr` citește doar de la intrare.
 
     </details>
 
@@ -1265,7 +1266,7 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată 
     5. Câte un director pe linie, printre ele `/usr/bin`.
 
     **De ce:** pentru `cut`, fiecare spațiu este un delimitator, așa că `tr -s ' '` trebuie să comprime întâi spațiile
-    din `Bob   25`; sortate ca text, `Dave` (`102`) ar veni primul și `Carol` (`9`) ultima.
+    din `Bob   25`; sortate ca text, `Dave` (`102`) ar ieși primul, iar `Carol` (`9`) ultima.
 
     </details>
 
@@ -1282,14 +1283,14 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată 
     <summary>Indiciu</summary>
 
     [Înlocuirea textului: `sed`](#replacing-text-sed); `\t` este un tab; la pasul 4, folosiți alt separator decât `/`
-    și amintiți-vă că `cut` nu poate număra câmpurile de la final.
+    și amintiți-vă că `cut` nu poate număra câmpurile de la sfârșit.
 
     </details>
 
     <details className="reveal">
     <summary>Verificare</summary>
 
-    1. De trei ori `pear`; `fruits.txt` conține tot `apple`.
+    1. De trei ori `pear`, iar `fruits.txt` conține tot `apple`.
     2. `age`, `30`, `25`, `22`.
     3. `notes`.
     4. `/users/student`; apoi `lab06`.
@@ -1382,15 +1383,15 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată 
 
     1. `0`, `1`, `2`, `2`, `0`, `1`.
     2. `found`, apoi `missing`.
-    3. Prima oară nu se afișează nimic; a doua oară, `mkdir` eșuează cu `File exists`, iar `cp` nu mai rulează.
+    3. Prima dată nu se afișează nimic; a doua oară, `mkdir` eșuează cu `File exists`, iar `cp` nu mai rulează.
 
     </details>
 
-11. **Codul de ieșire al unei înlănțuiri**: Aflați care comandă a unei înlănțuiri dă codul de ieșire al întregii
+11. **Codul de ieșire al unei înlănțuiri**: Aflați care comandă dintr-o înlănțuire dă codul de ieșire al întregii
     înlănțuiri.
     <small>→ [Codul de ieșire al unei înlănțuiri](#the-exit-code-of-a-pipeline)</small>
 
-    Pentru fiecare înlănțuire, ghiciți **întâi** codul ei de ieșire, apoi rulați-o și afișați `$?`:
+    Pentru fiecare înlănțuire, ghiciți **întâi** codul de ieșire, apoi rulați-o și afișați `$?`:
 
     1. `grep mango fruits.txt | wc -l`;
     2. `wc -l fruits.txt | grep -q mango`;
@@ -1399,11 +1400,11 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată 
     <details className="reveal">
     <summary>Verificare</summary>
 
-    1. `0`, iar codul de ieșire este `0`.
-    2. Nimic, iar codul de ieșire este `1`.
+    1. Afișează `0`, iar codul de ieșire este `0`.
+    2. Nu afișează nimic, iar codul de ieșire este `1`.
     3. O eroare de la `grep`, iar codul de ieșire este `0`.
 
-    **De ce:** o înlănțuire se termină cu codul de ieșire al **ultimei** comenzi: la liniile 1 și 3, eșecul lui `grep`
+    **De ce:** o înlănțuire se termină cu codul de ieșire al **ultimei** comenzi: pe liniile 1 și 3, eșecul lui `grep`
     rămâne ascuns.
 
     </details>
@@ -1455,8 +1456,8 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată 
     <details className="reveal">
     <summary>Indiciu</summary>
 
-    Fiecare tutorial începe cu deplasarea prin text și cu ieșirea din editor; tab-ul editorului vostru din
-    [Tastele fiecărui editor](#the-keys-of-each-editor) are aceleași taste pe o singură pagină.
+    Fiecare tutorial începe cu deplasarea prin text și cu ieșirea din editor; tab-ul editorului ales din
+    [Tastele fiecărui editor](#the-keys-of-each-editor) are aceleași taste, pe o singură pagină.
 
     </details>
 
@@ -1469,13 +1470,12 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată 
 
     </details>
 
-14. **Editorul implicit**: Faceți programele care vă deschid singure un editor să deschidă editorul ales la
-    exercițiul 13.
+14. **Editorul implicit**: Faceți ca programele care vă deschid un editor să deschidă editorul ales la exercițiul 13.
     <small>→ [Editorul implicit: `EDITOR`](#the-default-editor-editor)</small>
 
-    1. alegeți-vă editorul ca editor implicit, doar pentru acest terminal;
+    1. setați editorul ales ca editor implicit, doar pentru acest terminal;
     2. tastați `echo one two`, **fără** să apăsați <kbd>Enter</kbd>, deschideți linia în editor, adăugați ` three` la
-       finalul ei, salvați și ieșiți.
+       final, salvați și ieșiți.
 
     <details className="reveal">
     <summary>Indiciu</summary>
@@ -1487,8 +1487,8 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea indicată 
     <details className="reveal">
     <summary>Verificare</summary>
 
-    1. `echo $EDITOR` afișează numele editorului vostru.
-    2. Linia se deschide în editorul vostru; când ieșiți din editor, `bash` o rulează și afișează `one two three`.
+    1. `echo $EDITOR` afișează numele editorului ales.
+    2. Linia se deschide în editor; când ieșiți din editor, `bash` o rulează și afișează `one two three`.
 
     </details>
 
@@ -1522,8 +1522,8 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele din `~/lab06` de l
     <details className="reveal">
     <summary>Indiciu</summary>
 
-    Fiecare tutorial începe cu deplasarea prin text și cu ieșirea din editor; tab-ul editorului vostru din
-    [Tastele fiecărui editor](#the-keys-of-each-editor) are aceleași taste pe o singură pagină.
+    Fiecare tutorial începe cu deplasarea prin text și cu ieșirea din editor; tab-ul editorului ales din
+    [Tastele fiecărui editor](#the-keys-of-each-editor) are aceleași taste, pe o singură pagină.
 
     </details>
 
@@ -1559,7 +1559,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele din `~/lab06` de l
     1. Numele comenzii este al doilea câmp, după numărul liniei.
     2. 5 linii ca `   42 ls`, cu numere descrescătoare; de obicei, `ls` și `cd` sunt pe primele locuri.
 
-    **De ce:** lipsesc comenzile celorlalte terminale deschise: fiecare terminal își adaugă comenzile în
+    **De ce:** lipsesc comenzile din celelalte terminale deschise: fiecare terminal își adaugă comenzile în
     `~/.bash_history` abia când se închide.
 
     </details>
@@ -1583,7 +1583,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele din `~/lab06` de l
     <details className="reveal">
     <summary>Verificare</summary>
 
-    1. 5 linii de `ls -l`, întâi fișierul cel mai mare.
+    1. 5 linii din `ls -l`, întâi cel mai mare fișier.
     2. 5 linii, fiecare cu o dimensiune în octeți și un nume.
     3. Aceleași 5 fișiere ca la pasul 1, în aceeași ordine, cu dimensiuni ca `2.1M`.
 
@@ -1684,7 +1684,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele din `~/lab06` de l
     <details className="reveal">
     <summary>Verificare</summary>
 
-    1. Câte un cuvânt pe linie, fără spații și fără semne de punctuație.
+    1. Câte un cuvânt pe linie, fără spații și fără punctuație.
     2. `the` este primul, la mare distanță; urmează cuvinte scurte ca `a`, `is`, `to` și `of`.
     3. Câteva mii de cuvinte diferite.
 
@@ -1772,15 +1772,14 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele din `~/lab06` de l
 
     1. `nologin` este shell-ul cel mai folosit.
     2. Câteva zeci de utilizatori de sistem.
-    3. `student` și toți utilizatorii din laboratorul 5 care mai există, fiecare cu directorul în `/home`.
+    3. `student` și toți utilizatorii din laboratorul 5 care mai există, cu directorul în `/home`.
 
     **De ce:** `nobody` (`65534`) nu este un utilizator obișnuit: UID-ul lui este mai mare decât `UID_MAX`.
 
     </details>
 
-24. **Din JSON într-un tabel**: Un serviciu meteo răspunde în **JSON**, formatul text al celor mai multe servicii web,
-    nu în linii. Transformați răspunsul lui în linii pe care le pot folosi filtrele și într-un tabel pe care îl puteți
-    citi.
+24. **Din JSON în tabel**: Un serviciu meteo răspunde în **JSON**, formatul text al majorității serviciilor web, nu pe
+    linii. Transformați răspunsul în linii pe care le pot folosi filtrele și într-un tabel ușor de citit.
     <small>→ [Filtre](#filters) · [Sortarea: `sort`](#sorting-sort)</small>
 
     Creați `weather.json`:
@@ -1797,18 +1796,18 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele din `~/lab06` de l
     END
     ```
 
-    1. afișați `students.csv` ca tabel, cu coloanele aliniate, cu `column`;
-    2. instalați `jq`, dacă lipsește (`sudo dnf install jq`; Ubuntu: `sudo apt install jq`), apoi afișați
+    1. afișați `students.csv` sub formă de tabel, cu coloanele aliniate, folosind `column`;
+    2. instalați `jq`, dacă lipsește (`sudo dnf install jq`; pe Ubuntu: `sudo apt install jq`), apoi afișați
        `weather.json` cu `jq`, indentat și colorat;
     3. afișați doar numele orașelor, câte unul pe linie, fără ghilimele;
     4. afișați orașele în care cerul este `sunny`, fiecare cu temperatura lui; apoi doar orașul cel mai cald;
-    5. afișați orașul, temperatura și cerul fiecărui oraș, ca tabel cu coloanele aliniate.
+    5. afișați orașul, temperatura și cerul fiecărui oraș, sub formă de tabel cu coloanele aliniate.
 
     <details className="reveal">
     <summary>Indiciu</summary>
 
-    `man column`: căutați `table` și `separator`. În `jq`, `.` este toată intrarea, `.[]` fiecare element al unei
-    liste, `.city` un câmp, iar `|` trimite rezultatul mai departe, ca în shell; `-r` afișează textul fără ghilimele.
+    `man column`: căutați `table` și `separator`. În `jq`, `.` este toată intrarea, `.[]` este fiecare element al unei
+    liste, `.city` este un câmp, iar `|` dă rezultatul mai departe, ca în shell; `-r` afișează text fără ghilimele.
     `man jq`: căutați `select` și `String interpolation`.
 
     </details>
@@ -1817,7 +1816,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele din `~/lab06` de l
     <summary>Verificare</summary>
 
     1. `name   age  city`, apoi `Alice  30   Paris`, ..., cu coloanele aliniate.
-    2. Aceleași 5 orașe, fiecare câmp pe linia lui, indentat.
+    2. Aceleași 5 orașe, cu fiecare câmp pe linia lui, indentat.
     3. `Bucharest`, `Cluj`, `Iasi`, `Timisoara`, `Constanta`.
     4. `Bucharest 12` și `Timisoara 14`; apoi `Constanta` (`15`).
     5. 5 linii, de la `Bucharest  12  sunny` la `Constanta  15  wind`, cu coloanele aliniate.
@@ -1849,8 +1848,8 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele din `~/lab06` de l
     4. Nimic, apoi `1`.
     5. `D`.
 
-    **De ce:** shell-ul citește de la stânga la dreapta, iar fiecare `&&` sau `||` se uită la codul de ieșire al
-    ultimei comenzi rulate înaintea lui: la linia 5 se afișează `D`, deși prima comandă a reușit.
+    **De ce:** shell-ul citește de la stânga la dreapta, iar fiecare `&&` sau `||` se uită la codul de ieșire al ultimei
+    comenzi rulate înaintea lui: la linia 5 se afișează `D`, deși prima comandă a reușit.
 
     </details>
 
@@ -1873,8 +1872,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele din `~/lab06` de l
     <details className="reveal">
     <summary>Verificare</summary>
 
-    1. `ls /nope` se termină cu `2`; `ls -R /etc` se termină cu `1`, pentru că unele directoare din el nu pot fi
-       citite.
+    1. `ls /nope` se termină cu `2`; `ls -R /etc` se termină cu `1`, pentru că unele directoare din el nu pot fi citite.
     2. `130` (`128 + 2`, `SIGINT`), `143` (`128 + 15`, `SIGTERM`), apoi `137` (`128 + 9`, `SIGKILL`).
     3. `42`, apoi `44`.
 
@@ -1930,11 +1928,11 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele din `~/lab06` de l
     <details className="reveal">
     <summary>Verificare</summary>
 
-    1. Un număr, PID-ul shell-ului; înlănțuirea nu mai dă înapoi prompt-ul.
+    1. Un număr, PID-ul shell-ului; înlănțuirea nu vă mai dă promptul înapoi.
     2. Cele trei comenzi sunt copiii aceluiași `bash` și au același grup de procese: PID-ul primului `sleep`. Toate
        sunt în starea `S` (în așteptare).
-    3. După <kbd>Ctrl</kbd>+<kbd>Z</kbd>, toate trei sunt `T` (oprite); <kbd>Ctrl</kbd>+<kbd>C</kbd> le încheie pe
-       toate trei.
+    3. După <kbd>Ctrl</kbd>+<kbd>Z</kbd>, toate sunt `T` (oprite); <kbd>Ctrl</kbd>+<kbd>C</kbd> le încheie pe toate
+       trei.
 
     </details>
 
@@ -2142,8 +2140,8 @@ alegeți voi. Fiecare se încheie cu **Verificarea** după care va fi notat. Une
 
 Toate provocările pornesc de la aceeași configurație, pe care o veți găsi și la examen: directorul `~/exam`, cu cinci
 fișiere. `web.log` conține câte o cerere pe linie, cu 7 câmpuri separate printr-un spațiu: adresa, data, ora, metoda,
-pagina, codul de stare și numărul de octeți trimiși. `stock.json` este o listă JSON, pentru `jq` (prima comandă
-îl instalează; Ubuntu: `sudo apt install jq`). Copiați și rulați comenzile de mai jos înainte de prima provocare;
+pagina, codul de stare și numărul de octeți trimiși. `stock.json` este o listă JSON, pentru `jq` (prima comandă îl
+instalează; pe Ubuntu: `sudo apt install jq`). Copiați și rulați comenzile de mai jos înainte de prima provocare;
 rulați-le din nou ca să recuperați fișierele originale:
 
 ```bash
@@ -2270,12 +2268,12 @@ Când ați terminat toate provocările, ștergeți totul cu `rm -rf ~/exam`.
 
     </details>
 
-39. **Stocul magazinului**: `stock.json` conține produsele unui magazin, cu prețul și cantitatea lor. Calculați
+39. **Stocul magazinului**: `stock.json` conține produsele unui magazin, cu prețul și cantitatea lor. Raportați
     valoarea stocului: prețul înmulțit cu cantitatea.
     <small>→ [Filtre](#filters) · [Sortarea: `sort`](#sorting-sort)</small>
 
     1. cu o **singură** înlănțuire, afișați numele și valoarea fiecărui produs aflat în stoc (cu o cantitate mai mare
-       decât `0`), întâi valoarea cea mai mare, ca tabel cu coloanele aliniate de `column`;
+       decât `0`), întâi valoarea cea mai mare, sub formă de tabel cu coloanele aliniate de `column`;
     2. afișați valoarea totală a stocului, ca un singur număr.
 
     <details className="reveal">
@@ -2316,15 +2314,15 @@ Când ați terminat toate provocările, ștergeți totul cu `rm -rf ~/exam`.
     <details className="reveal">
     <summary>Verificare</summary>
 
-    |     | Afișează                           | Cod(uri) de ieșire                                         |
-    | --- | ---------------------------------- | ---------------------------------------------------------- |
-    | 1.  | `4`                                | `0`                                                        |
-    | 2.  | `0`                                | `1`: `grep` nu a găsit nimic, chiar dacă a afișat un număr |
-    | 3.  | `no`                               | `0`, codul de ieșire al lui `echo no`                      |
-    | 4.  | o eroare de la `cut`, apoi `5`     | `1 0 0`: `cut` a eșuat, dar a citit `web.log`              |
-    | 5.  | o eroare de la `cut`, apoi `5`     | `1`                                                        |
-    | 6.  | nimic                              | `141 0`: `yes` a primit `SIGPIPE`                          |
-    | 7.  | o eroare de la `cp`, apoi `failed` | `0`, codul de ieșire al lui `echo failed`                  |
+    |     | Afișează                          | Cod(uri) de ieșire                                       |
+    | --- | --------------------------------- | -------------------------------------------------------- |
+    | 1.  | `4`                               | `0`                                                      |
+    | 2.  | `0`                               | `1`: `grep` nu a găsit nimic, chiar dacă a afișat un număr |
+    | 3.  | `no`                              | `0`, codul de ieșire al lui `echo no`                    |
+    | 4.  | o eroare de la `cut`, apoi `5`    | `1 0 0`: `cut` a eșuat, dar a citit `web.log`            |
+    | 5.  | o eroare de la `cut`, apoi `5`    | `1`                                                      |
+    | 6.  | nimic                             | `141 0`: `yes` a primit `SIGPIPE`                        |
+    | 7.  | o eroare de la `cp`, apoi `failed` | `0`, codul de ieșire al lui `echo failed`               |
 
     </details>
 
