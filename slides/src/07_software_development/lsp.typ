@@ -174,7 +174,7 @@
   #v(1fr)
   #only(1)[💡 the editor opened `main.c`: it sends the whole text (and `didChange` after every edit)]
   #only(2)[💡 when it finishes checking, the server sends the errors: the editor underlines `totl`]
-  #only(3)[💡 the cursor is on `sum` and you press #kbd("Space") #kbd("k"): the editor asks what is there]
+  #only(3)[💡 the cursor is on `sum` and you press #kbd("Space") #kbd("k") in `helix`: the editor asks what is there]
   #only("4-")[💡 the editor shows the answer in a popup]
 ]
 

@@ -274,36 +274,22 @@
     }
     pin(220pt, 172pt, text(size: 8pt, fill: changed, before))
   } else {
-    // the protocol is an interface: editors plug in on one side, servers on the other
-    let (cx, bw) = (220pt, 46pt) // center and width of the interface
+    // the protocol is a hub: every editor has one cable into it, every
+    // server one cable out of it, so any editor reaches any server
+    let (cx, cy) = (220pt, 80pt) // center of the hub
+    let (bw, bh) = (64pt, 64pt)
     let (bl, br) = (cx - bw / 2, cx + bw / 2)
     let srv-left = xr - 10pt - 42pt
-    let cable = (paint: accent, thickness: 2pt, cap: "round")
-    // a plug: a body and two prongs, pointing towards the interface
-    let plug(x, y, dir) = {
-      // dir = 1: plugs in from the left, dir = -1: from the right
-      let (body-w, body-h, prong) = (9pt, 14pt, 5pt)
-      let bx = if dir == 1 { x - prong - body-w } else { x + prong }
-      place(top + left, dx: bx, dy: y - body-h / 2, box(width: body-w, height: body-h, radius: 2pt, fill: accent))
-      let px = if dir == 1 { x - prong } else { x }
-      for d in (-3.5pt, 3.5pt) {
-        place(top + left, dx: px, dy: y + d - 1pt, box(width: prong, height: 2pt, fill: luma(110)))
-      }
+    let cable = (paint: accent, thickness: 1.8pt, cap: "round")
+    let port(i) = cy + (i - (ys.len() - 1) / 2) * 10pt // where cable i enters the hub
+    for (i, a) in ys.enumerate() {
+      place(top + left, line(start: (xl + 32pt, a), end: (bl, port(i)), stroke: cable))
+      place(top + left, line(start: (br, port(i)), end: (srv-left, a), stroke: cable))
     }
-    for a in ys {
-      place(top + left, line(start: (xl + 32pt, a), end: (bl - 14pt, a), stroke: cable))
-      place(top + left, line(start: (br + 14pt, a), end: (srv-left, a), stroke: cable))
-    }
-    // the interface: a strip of sockets
-    place(top + left, dx: bl, dy: 0pt, box(width: bw, height: 160pt, radius: 0.5em, fill: rgb("eef3f5"), stroke: 1.5pt + accent))
-    for a in ys {
-      for (x, dir) in ((bl, 1), (br, -1)) {
-        plug(x, a, dir)
-      }
-    }
-    pin(cx, 80pt, rotate(-90deg, reflow: true, text(size: 15pt, fill: accent, weight: "bold", tracking: 2pt, protocol)))
-    pin((xl + 32pt + bl) / 2, ys.at(0) - 8pt, text(size: 6.5pt, fill: luma(100), style: "italic", client))
-    pin((br + srv-left) / 2, ys.at(0) - 8pt, text(size: 6.5pt, fill: luma(100), style: "italic", server))
+    place(top + left, dx: bl, dy: cy - bh / 2, box(width: bw, height: bh, radius: 0.6em, fill: rgb("eef3f5"), stroke: 2pt + accent))
+    pin(cx, cy, text(size: 16pt, fill: accent, weight: "bold", tracking: 1.5pt, protocol))
+    pin((xl + 32pt + bl) / 2 - 4pt, ys.at(0) - 6pt, text(size: 6.5pt, fill: luma(100), style: "italic", client))
+    pin((br + srv-left) / 2 + 4pt, ys.at(0) - 6pt, text(size: 6.5pt, fill: luma(100), style: "italic", server))
     pin(220pt, 172pt, text(size: 8pt, fill: accent, after))
   }
   for (i, e) in editors.enumerate() {

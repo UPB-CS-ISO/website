@@ -516,6 +516,15 @@ int main(void)
   if all {
     at(3, bar(262pt, 24pt, 42pt, "main.o", kind: "bad"))
     at(3, bar(307pt, 48pt, 42pt, "lib.o", kind: "bad"))
+    // main.o and lib.o did not change: crossed out, wasted work
+    let cross = (paint: bad-color.transparentize(45%), thickness: 1pt)
+    for (x, y) in ((262pt, 24pt), (307pt, 48pt)) {
+      at(3, wire((x + 2pt, y - bh / 2 + 2pt), (x + 40pt, y + bh / 2 - 2pt), stroke: cross))
+      at(3, wire((x + 2pt, y + bh / 2 - 2pt), (x + 40pt, y - bh / 2 + 2pt), stroke: cross))
+    }
+    at(3, place(top + left, dx: 354pt, dy: 17pt, text(size: 7pt, fill: bad-color, weight: "bold")[
+      `main.c`, `lib.c` did not \ change: wasted work
+    ]))
     at(3, bar(352pt, 72pt, 42pt, "print.o", kind: "on"))
     at(3, bar(397pt, 96pt, 32pt, "app", kind: "on"))
     at(3, pin(345pt, 116pt, text(size: 0.65em, fill: bad-color, style: "italic")[rebuild: every file *again*]))
