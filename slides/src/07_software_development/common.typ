@@ -384,7 +384,7 @@
     let name = box(fill: fill, outset: (x: 1pt, y: 1.5pt), radius: 1pt, text(fill: ink, f))
     cells.push(text(fill: luma(150), branch) + name)
     cells.push(text(fill: if st in ("changed", "built") { ink } else { luma(110) }, times.at(f, default: "")))
-    cells.push(text(font: "DejaVu Sans", size: 0.85em, style: "italic", fill: ink, note))
+    cells.push(text(font: "Libertinus Serif", size: 0.85em, style: "italic", fill: ink, note))
   }
   for _ in range(files.len(), rows) {
     cells += ([ ], [], [])

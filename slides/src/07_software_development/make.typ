@@ -107,7 +107,7 @@
       #let dots = text(fill: bad-color, weight: "bold")[····]
       #block(fill: luma(240), radius: 0.3em, inset: 0.5em, width: 100%, text(font: mono, size: 0.9em)[
         hello.o: hello.c \
-        #dots;gcc -c hello.c #h(1fr) #text(font: "DejaVu Sans", size: 0.8em, fill: bad-color, style: "italic")[4 spaces, not a TAB]
+        #dots;gcc -c hello.c #h(1fr) #text(font: "Libertinus Serif", size: 0.8em, fill: bad-color, style: "italic")[4 spaces, not a TAB]
       ])
       #set text(size: 0.9em)
       ```terminal
