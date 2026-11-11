@@ -155,6 +155,7 @@ Hello, 2!
 | `-c`, `-S`, `-E` | stop after a step of the pipeline (see [The Compilation Pipeline](#the-compilation-pipeline)) |
 | `-l<NAME>`       | links the library `<NAME>`: `-lm` for the math functions, like `sqrt`                         |
 | `-I <DIR>`       | also looks for the header files in `<DIR>`                                                    |
+| `-static`        | creates a static executable (see [The Linker](#the-linker))                                               |
 
 :::info
 
