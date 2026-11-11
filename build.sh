@@ -9,6 +9,10 @@ make
 mkdir -p ../website/static/slides
 cp build/*.pdf ../website/static/slides/
 
+cd ../interactive
+echo Building Interactive Lectures
+make
+
 cd ..
 echo Building Website
 cd website

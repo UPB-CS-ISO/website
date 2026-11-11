@@ -1,0 +1,146 @@
+/* ISO additions to the course kit: code, trees, terminal, sandbox */
+code{font:.88em/1.4 "SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;background:#eef2f7;border-radius:4px;padding:1px 5px;color:#1d2b4a;overflow-wrap:anywhere}
+pre code{background:none;padding:0;white-space:pre;font-size:inherit;color:inherit}
+kbd{display:inline-block;font:600 12.5px/1 "SF Mono",Menlo,Consolas,monospace;padding:4px 7px;border:1px solid #c8d4df;border-bottom-width:2px;border-radius:5px;background:#fff;color:var(--navy);margin:0 1px}
+pre.tree{margin:0;font:13.5px/1.42 "SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;color:var(--ink);overflow-x:auto;white-space:pre}
+pre.tree .h{color:#004d65;font-weight:700}
+pre.tree .n{color:#2e7d46;font-weight:700}
+pre.tree .g{color:var(--red)}pre.tree .g b{text-decoration:line-through;font-weight:400}
+pre.tree .s{color:#c2570c;font-weight:700}
+pre.tree .m{color:#b5651d;font-weight:700}
+pre.tree .an{color:#7a8596;font-style:italic;font-weight:400}
+pre.tree .dim{color:#9aa6b4}
+pre.tree b{font-weight:inherit}
+.cwd{font-style:normal}
+pre.sh{margin:0;background:#1d2740;color:#e6edf5;border-radius:10px;padding:12px 16px;font:13.5px/1.55 "SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;overflow-x:auto;white-space:pre}
+pre.sh .p{color:#7fd1c6;font-weight:700}
+pre.sh .c{color:#fff;font-weight:600}
+pre.sh .o{color:#c9d3e0}
+pre.sh .k{color:#8a9bb5;font-style:italic}
+pre.sh .mk{background:rgba(255,200,87,.18);color:#ffd27a;border-radius:3px;padding:0 2px}
+pre.sh .mk2{background:rgba(127,209,198,.18);color:#9fe3da;border-radius:3px;padding:0 2px}
+pre.sh .mk3{background:rgba(196,160,255,.2);color:#d6c2ff;border-radius:3px;padding:0 2px}
+.syn{font:14px/1.5 "SF Mono",Menlo,Consolas,monospace;background:var(--wash);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:10px 0;overflow-x:auto;white-space:pre;color:var(--navy)}
+.syn .a{color:#c2570c;font-weight:700}.syn .b{color:#6a1b9a;font-weight:700}.syn .c{color:#00838f;font-weight:700}
+.win{border-left:3px solid #0078d4;background:#f3f7fc;border-radius:0 8px 8px 0;padding:8px 12px;margin-top:8px;font-size:14px}
+.win b{color:#0b5aa6}
+.steps{list-style:none;padding:0;margin:8px 0;counter-reset:s}
+.steps li{counter-increment:s;display:flex;gap:10px;align-items:baseline;padding:5px 0;font-size:15px}
+.steps li::before{content:counter(s);flex:0 0 22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
+.calcp{font:14.5px/1.6 "SF Mono",Menlo,Consolas,monospace;overflow-wrap:anywhere}
+.calcp>div{margin-top:6px}.calcp .lb{font:13px/1.4 "Avenir Next",Avenir,"Segoe UI",system-ui,sans-serif;color:var(--muted)}
+.calcp .w{color:#004d65;font-weight:700}.calcp .r{color:#2e7d46;font-weight:700}
+.calcp s{color:#9aa6b4}.calcp .x1{color:#c2570c;background:#fbeadb;border-radius:3px}.calcp .x2{color:#6a1b9a;background:#f1e6f7;border-radius:3px}.calcp .x3{color:#00838f;background:#e0f3f4;border-radius:3px}
+.calcp sup{font-size:.7em}
+.shot{width:100%;border-radius:10px;border:1px solid var(--line);display:block}
+table.t td code,table.t th code{white-space:nowrap}
+table.t.k td:first-child{white-space:nowrap}
+/* sandbox */
+.shellw .cmdchips{gap:8px;align-items:center;padding:12px 22px}
+.chl{font-size:12px;font-weight:750;letter-spacing:1px;text-transform:uppercase;color:var(--teal-d)}
+.chip{border:1px solid #c9d5ec;background:#fff;border-radius:999px;padding:4px 11px;font:12.5px "SF Mono",Menlo,Consolas,monospace;color:var(--navy)}
+.chip:hover{background:#eef3fb;border-color:var(--blue)}
+.wd-b.sb{grid-template-columns:minmax(0,1fr) 290px}
+.trcol .trbar .seg{width:80px}
+.trcol pre.tree.live{font-size:12.5px;max-height:340px}
+/* the shell uses the free space on the right of the text column */
+@media (min-width:1240px){[data-w=shell]{margin-right:calc((1180px - 100vw)/2 + 24px)}}
+@media (max-width:1239px){.wd-b.sb{grid-template-columns:1fr}.wd-b.sb>div+div{border-left:0;border-top:1px solid var(--line)}}
+.wd-b.sb>div{padding:0;min-width:0}
+.tcol{background:#1d2740;position:relative}
+.term{height:360px;overflow-y:auto;padding:12px 16px;font:13.5px/1.5 "SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;color:#e6edf5;cursor:text}
+.term .tout>div{white-space:pre-wrap;word-break:break-word}
+.term .cmd{color:#fff}
+.term .err{color:#ffb4a8}
+.term .dim{color:#8a9bb5}.term .dim b{color:#e6edf5}
+.term .pr{color:#7fd1c6;font-weight:700}
+.tline{display:flex;gap:8px;align-items:baseline}
+.tline input{flex:1;min-width:40px;background:transparent;border:0;outline:0;color:#fff;font:inherit;caret-color:#7fd1c6;padding:0}
+.trcol{padding:12px 16px!important;display:flex;flex-direction:column;gap:8px;background:#fbfcfe}
+.trbar{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.trbar .seg{width:90px}
+.hid{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center}
+pre.tree.live{flex:1;max-height:320px;overflow:auto;font-size:13px}
+.tleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:var(--muted)}
+.tleg .n{color:#2e7d46;font-weight:700}.tleg .g{color:var(--red)}.tleg .m{color:#b5651d;font-weight:700}
+.nano{height:360px;display:flex;flex-direction:column;background:#1d2740}
+.nano textarea{flex:1;background:#1d2740;color:#fff;border:0;outline:0;resize:none;padding:10px 14px;font:13.5px/1.5 "SF Mono",Menlo,Consolas,monospace}
+.nbar{background:#d9e2ee;color:var(--navy);font:12.5px "SF Mono",Menlo,Consolas,monospace;padding:4px 12px}
+.nbar.nk b{background:var(--navy);color:#fff;padding:0 4px;border-radius:2px}
+.missions{border-top:1px solid var(--line);padding:14px 22px}
+.missions .mh{font-size:14px;color:var(--navy);margin-bottom:6px}.missions .mh span{color:var(--teal-d);font-weight:700;margin-left:8px}
+.missions ol{margin:0;padding-left:22px;display:grid;gap:4px}
+.missions li{font-size:14.5px;padding:3px 0}
+.missions li.ok .mt{color:var(--teal-d);text-decoration:line-through;text-decoration-color:#9fd3cc}
+.missions li.ok::marker{content:"✓  ";color:var(--teal);font-weight:800}
+.missions details{display:inline;font-size:12.5px;color:var(--muted)}
+.missions summary{display:inline;cursor:pointer;color:var(--blue);list-style:none}
+.missions summary::-webkit-details-marker{display:none}
+.missions details[open] summary{margin-right:6px}
+.v86s{background:#000;padding:8px;min-height:120px;overflow:auto;outline:0}
+.v86s .v86t,.v86s>div{white-space:pre;font:14px/14px "DejaVu Sans Mono",Menlo,Consolas,monospace;color:#ddd}
+.v86s canvas{display:none}
+.ctrls .btn{padding:10px 16px}
+.ctrls .btn[disabled]{opacity:.5;cursor:default}
+.ctrls .small{align-self:center;margin:0}
+@media (max-width:980px){.wd-b.sb{}.term,.nano{height:300px}.trcol{border-top:1px solid var(--line)}}
+@media (max-width:720px){pre.tree,pre.sh,.term{font-size:12px}}
+.duo>div,.trio>div,.wd-b>div,figure.f{min-width:0}
+
+.missions .mnote{font-size:12.5px;color:var(--muted);margin-left:10px;font-style:italic}
+
+.sidetab{width:100%;margin-bottom:4px}
+.trwrap{display:flex;flex-direction:column;gap:8px;min-width:0}
+.fdview{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fdp{border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden}
+.fdh{font:12.5px "SF Mono",Menlo,Consolas,monospace;padding:6px 10px;background:#004d65;color:#fff;overflow-wrap:anywhere}
+.fdh span{opacity:.75}
+.fdt{width:100%;border-collapse:collapse;font:12.5px/1.35 "SF Mono",Menlo,Consolas,monospace}
+.fdt td{padding:4px 8px;border-top:1px solid var(--line);vertical-align:top}
+.fdt td:first-child{width:20px;font-weight:700;color:#004d65;text-align:center}
+.fdt td:nth-child(2){width:52px;color:var(--muted)}
+.fdt td:last-child{overflow-wrap:anywhere}
+.fdt td i{color:var(--muted);font-style:normal}
+.fdt tr.ch td{background:#fde5d4;color:#c2410c}.fdt tr.ch td:first-child{color:#c2410c}
+.fdt tr.op td{background:#e3f1e6;color:#2e7d46}
+.pipeline{font:12px "SF Mono",Menlo,monospace;color:#c2410c;text-align:center}
+.fdhint{font-size:12.5px;color:var(--muted);margin:4px 2px}
+pre.tree .ln{color:#00838f;font-weight:400}
+.trwrap[hidden],.fdview[hidden]{display:none!important}
+/* flashcards: the flip swaps the two faces with a 2D turn of the face that appears,
+   so it works in every browser (the 3D flip of the kit showed the front again after turning) */
+.flashmode .rin{transform:none!important;transition:none!important;transform-style:flat!important}
+.flashmode .rf,.flashmode .rbk{transform:none!important;-webkit-backface-visibility:visible!important;backface-visibility:visible!important}
+.flashmode .rc.flip .rf{display:none!important}
+.flashmode .rc:not(.flip) .rbk{display:none!important}
+@media (prefers-reduced-motion:no-preference){.flashmode .rc.flip .rbk,.flashmode .rc:not(.flip) .rf{animation:fcturn .25s ease-out}}
+@keyframes fcturn{from{transform:scaleX(.7);opacity:.7}to{transform:scaleX(1);opacity:1}}
+.flashmode .rc{-webkit-tap-highlight-color:transparent}
+
+/* flashcards: the chapter row */
+.rchips{align-items:center}
+.rchl{font-size:11px;font-weight:750;letter-spacing:1.2px;text-transform:uppercase;color:var(--teal-d);margin-right:4px}
+.rchips button span{font-weight:500;color:var(--muted);margin-left:2px}
+.rchips button.on span{color:#cfe6ec}
+.rchips button.here{border-color:#00838f;box-shadow:0 0 0 2px #00838f inset;color:#004d65}
+.rempty{border:1px dashed var(--line);border-radius:18px;padding:28px;text-align:center;color:var(--muted);background:#fbfcfe}
+.rempty[hidden]{display:none}
+.rempty p{margin-bottom:14px;font-size:16px}
+.flashmode .rempty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.flashmode .rempty[hidden]{display:none}
+@media (max-width:720px){.rchips button span{display:none}}
+
+/* syntax highlighting, deck colors */
+.hl-k{color:#004d65;font-weight:700}.hl-s{color:#2e7d46}.hl-c{color:#828282;font-style:italic}.hl-p{color:#b35900;font-weight:600}
+.hl-n{color:#00838f}.hl-f{color:#6a1b9a}.hl-t{color:#004d65;font-weight:700}.hl-v{color:#9a4d76;font-weight:600}.hl-a{color:#e65100;font-weight:700}
+.hl-q{color:#00838f}
+/* nano: a highlighted copy of the text under a transparent textarea */
+.nedit{position:relative;flex:1;min-height:0}
+.nedit .nhl,.nedit textarea{position:absolute;inset:0;margin:0;padding:10px 14px;font:13.5px/1.5 "Ubuntu Mono","DejaVu Sans Mono",Menlo,Consolas,monospace;white-space:pre;overflow:auto;tab-size:8;border:0;box-sizing:border-box}
+.nedit .nhl{pointer-events:none;color:#d3d7cf;background:#0c0c0c}
+.nedit textarea{background:transparent!important;color:transparent!important;caret-color:#fff;resize:none;outline:0}
+.nedit textarea::selection{background:rgba(114,159,207,.4);color:transparent}
+/* the terminal is dark: brighter colors for the highlighted output */
+.term .hl-k,.nhl .hl-k{color:#729fcf}.term .hl-s,.nhl .hl-s{color:#8ae234;font-weight:400}.term .hl-c,.nhl .hl-c{color:#888a85}
+.term .hl-p,.nhl .hl-p{color:#fcaf3e}.term .hl-n,.nhl .hl-n{color:#34e2e2}.term .hl-f,.nhl .hl-f{color:#ad7fa8}
+.term .hl-t,.nhl .hl-t{color:#729fcf}.term .hl-v,.nhl .hl-v{color:#ef9fd0}.term .hl-a,.nhl .hl-a{color:#fcaf3e}.term .hl-q,.nhl .hl-q{color:#34e2e2}
