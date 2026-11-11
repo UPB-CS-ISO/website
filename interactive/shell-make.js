@@ -128,8 +128,19 @@ ${T}$(CC) $(CFLAGS) -c $< -o $@
 `,
 };
 S.MAKEFILES=MK;
+Object.assign(S.MAN,{
+  gcc:['gcc - the GNU C compiler (a driver: preprocessor, compiler, assembler, linker)','gcc [OPTION]... FILE...','-o FILE   the name of the output (default a.out)\n-c        stop after the assembler: FILE.o\n-S        stop after the compiler: FILE.s\n-E        stop after the preprocessor (prints, or -o FILE.i)\n-save-temps  keep the .i, .s and .o files\n-Wall     all the warnings\n-g        debug information, for gdb\n-O2       optimize\n-static   copy the libraries into the executable\n-shared   make a shared library (.so)\n-fPIC     code that works at any address\n-I DIR    look for #include files in DIR\n-L DIR    look for libraries in DIR\n-lNAME    link libNAME.so or libNAME.a (-lm: the math library)\n-v        show the programs gcc runs'],
+  cc:['cc - the C compiler of the system (here, gcc)','cc [OPTION]... FILE...','the same options as gcc: man gcc'],
+  nm:['nm - list the symbols of object files','nm FILE...','T  defined here (in the code, text)\nU  used here, undefined: another file or a library must define it'],
+  objdump:['objdump - display information from object files','objdump -d FILE','-d  disassemble: the machine code, as bytes and as assembly'],
+  ldd:['ldd - print the shared libraries a program needs','ldd FILE','for every library: where the loader finds it, or "not found"\nLD_LIBRARY_PATH=DIR adds DIR to the folders the loader searches'],
+  ar:['ar - create and list archives (static libraries)','ar rcs LIBRARY.a FILE.o...\nar t LIBRARY.a','r  add (replace) the object files\nc  create the archive, without a warning\ns  write an index of the symbols\nt  list the files in the archive'],
+  make:['make - build the targets of a Makefile, running only the recipes that are needed','make [OPTION]... [TARGET]...','no TARGET: the first target of the Makefile\n-B          rebuild everything (--always-make)\n-C DIR      run in DIR\n--debug=v   explain every decision (-d)\na target is rebuilt when it is missing or older than one of its prerequisites'],
+  pico:['pico - a small text editor (here, the same as nano)','pico FILE','Ctrl+O saves, Ctrl+X exits'],
+});
 S.PROFILES['07']=(fs,{D,F,t},variant)=>{
   const h=fs.c.home.c.student.c;
+  delete h.Downloads; delete h.Movies; delete h['watchlist.txt'];   // only the files of this lecture
   const at=(m)=>t(9,20,10,m);
   h.hello=D({'hello.c':F(HELLO_C,null,at(1)),Makefile:F(MK.hello,null,at(2))},at(2));
   h.project=D({'main.c':F(MAIN_C,null,at(3)),'lib.h':F(LIB_H,null,at(4)),'lib.c':F(LIB_C,null,at(5)),'print.h':F(PRINT_H,null,at(6)),'print.c':F(PRINT_C,null,at(7)),
