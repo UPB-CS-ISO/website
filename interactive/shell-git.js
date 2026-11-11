@@ -258,6 +258,8 @@ function cmdGit(sh,args){
   const sub=args[0],a=args.slice(1);
   const say=n=>{G.note=n};
   G.hot='';
+  if(sub==='help'&&a[0])return sh.c_man(['git-'+a[0]]);
+  if(sub&&sub!=='--help'&&args.includes('--help'))return sh.c_man(['git-'+sub]);
   if(!sub||sub==='help'||sub==='--help')return{out:'usage: git <command> [<args>]\n\nthe commands of this demo:\n   status     what changed, and what to do next   (-s: short)\n   diff       the changes not staged yet         (--staged: the staged ones)\n   add        put changes in the staging area     (git add FILE, git add .)\n   restore    undo changes in a file              (--staged: unstage)\n   commit     save the staged changes             (git commit -m "message", -a)\n   log        the history                         (--oneline --graph --all)\n   show       a commit and its changes\n   branch     list, create (git branch NAME) or delete (-d NAME) branches\n   switch     go to a branch                      (-c NAME: a new one)\n   merge      join a branch into this one         (--abort)\n   fetch      download the commits from GitHub\n   pull       fetch, then merge\n   push       send your commits to GitHub         (-u origin BRANCH)\n   remote -v  where GitHub is'};
   if(sub==='--version'||sub==='version')return{out:'git version 2.47.0 (demo)'};
   if(sub==='clone')return{err:"fatal: destination path 'project' already exists and is not an empty directory.\n(this demo starts with "+URL+" already cloned in ~/project: cd ~/project)",code:128};
@@ -484,6 +486,27 @@ function colleague(sh){
   return{id,msg:k.msg,f:k.f};
 }
 
+
+/* the manual pages of git: man git, man git-commit, git help commit, git commit --help */
+const GM={
+  git:['git - the stupid content tracker (a version control system)','git COMMAND [ARGS]','the commands of this demo: status diff add restore commit log show branch switch\ncheckout merge fetch pull push remote help; man git-COMMAND for each one'],
+  'git-status':['git-status - show the state of the working tree','git status [-s]','what is staged, what is changed but not staged, what is untracked,\nand how your branch compares with origin\n-s  short: two letters per file, staged (green) then not staged (red)'],
+  'git-diff':['git-diff - show the changes','git diff [--staged] [FILE]...','no option: the changes not staged yet (working tree vs. staging area)\n--staged (--cached): what the next commit will change\n--stat: only how many lines changed in each file'],
+  'git-add':['git-add - put changes in the staging area','git add FILE...\ngit add .','. : every change in this folder; -A: every change in the repository\nignored files (.gitignore) need -f'],
+  'git-restore':['git-restore - undo changes in files','git restore FILE...\ngit restore --staged FILE...','no option: the file gets back the content of the staging area (your change is lost)\n--staged: take the change out of the staging area, keep it in the file'],
+  'git-commit':['git-commit - record the staged changes in the repository','git commit -m MESSAGE\ngit commit -am MESSAGE','-m MESSAGE  the message (a real git opens an editor without it)\n-a          stage every change to a tracked file first'],
+  'git-log':['git-log - show the history','git log [--oneline] [--graph] [--all] [-n N] [REF]','--oneline  one line per commit\n--graph    draw the branches and merges\n--all      every branch, not only the current one'],
+  'git-show':['git-show - show a commit and its changes','git show [REF]','REF: a commit id, a branch, HEAD, HEAD~1 (its parent) ...'],
+  'git-branch':['git-branch - list, create or delete branches','git branch [-a]\ngit branch NAME\ngit branch -d NAME','a branch is a name for a commit; * marks the one you are on\n-a  also the branches of origin\n-d  delete a merged branch (-D: even if not merged)'],
+  'git-switch':['git-switch - go to another branch','git switch NAME\ngit switch -c NAME','-c  create the branch at the current commit, then go to it\nthe files of the folder change to those of the branch'],
+  'git-checkout':['git-checkout - switch branches or restore files (the older command)','git checkout NAME\ngit checkout -b NAME\ngit checkout -- FILE','prefer git switch and git restore'],
+  'git-merge':['git-merge - join the history of another branch into this one','git merge NAME\ngit merge --abort','fast-forward: this branch only moves forward\nelse a merge commit with two parents; a conflict stops it: fix the files, git add, git commit'],
+  'git-fetch':['git-fetch - download the commits of the remote','git fetch','updates origin/main; your main does not move'],
+  'git-pull':['git-pull - fetch, then merge','git pull','= git fetch + git merge origin/BRANCH (this demo: pull.rebase = false)'],
+  'git-push':['git-push - send your commits to the remote','git push\ngit push -u origin BRANCH','rejected if the remote has commits you do not have: git pull first\n-u  remember origin/BRANCH as the upstream of BRANCH'],
+  'git-remote':['git-remote - the remote repositories','git remote -v','origin: the repository you cloned'],
+};
+Object.assign(S.MAN,GM);
 S.Shell.prototype.c_git=function(args){return cmdGit(this,args)};
 const R0=S.Shell.prototype.reset;S.Shell.prototype.reset=function(){R0.call(this);this.git=null};
 const H0=S.Shell.prototype.c_help;

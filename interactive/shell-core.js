@@ -162,6 +162,17 @@ const MAN={
   pstree:['pstree - display a tree of processes','pstree [-p]','-p  show the PIDs'],
   lsof:['lsof - list open files','lsof -p PID',''],
   file:['file - determine file type','file [-b] [-L] FILE...','-b  only the type, without the name\n-L  follow symbolic links'],
+  clear:['clear - clear the terminal screen','clear','Ctrl+L does the same.'],
+  history:['history - the commands typed in this shell (a bash builtin)','history','!N runs command N again (not in this demo).'],
+  hostname:['hostname - show the name of the computer','hostname'],
+  whoami:['whoami - print the name of the current user','whoami'],
+  which:['which - show where a command is','which COMMAND...','searches the folders of $PATH'],
+  sleep:['sleep - wait for a number of seconds','sleep NUMBER'],
+  true:['true - do nothing, successfully (exit code 0)','true'],
+  false:['false - do nothing, unsuccessfully (exit code 1)','false'],
+  help:['help - the commands of this demo terminal','help'],
+  reset:['reset - (in this demo) put the files back as they were at the start','reset'],
+  man:['man - an interface to the system reference manuals','man PAGE','q quits the real man; / searches.\nSections: 1 commands, 2 system calls, 3 library functions (man 3 printf).'],
 };
 
 /* ---------- the shell ---------- */
@@ -273,7 +284,7 @@ class Shell{
       if(cmd!==undefined){
         const args=words.slice(1), fn=this['c_'+cmd];
         this.stdin=stdin;
-        if(args.includes('--help')&&MAN[cmd]&&cmd!=='cd')res={out:'Usage: '+MAN[cmd][1].split('\n').join('\n  or:  ')+'\n'+MAN[cmd][0]+(MAN[cmd][2]?'\n\n'+MAN[cmd][2]:'')};
+        if(args.includes('--help')&&MAN[cmd]&&cmd!=='cd'&&cmd!=='git')res={out:'Usage: '+MAN[cmd][1].split('\n').join('\n  or:  ')+'\n'+MAN[cmd][0]+(MAN[cmd][2]?'\n\n'+MAN[cmd][2]:'')};
         else if(fn)res=fn.call(this,args)||{};
         else if(cmd.includes('/')&&this.runFile)res=this.runFile(cmd,args)||{};
         else if(['mc','nnn','yazi','vim','vi','sudo','apt','dnf','top','htop','kill'].includes(cmd))res={err:'iso-demo: '+cmd+' is not available in this demo terminal (use your own Linux)'};
@@ -344,7 +355,7 @@ class Shell{
   c_man(args){
     if(!args.length)return{err:'What manual page do you want?\nFor example, try \'man man\'.'};
     const m=MAN[args[0]]; if(!m)return{err:'No manual entry for '+args[0]};
-    const N=args[0].toUpperCase()+'(1)';
+    const N=args[0].toUpperCase()+'('+(m[3]||1)+')';
     return{out:N+'                      User Commands                      '+N+'\n\nNAME\n       '+m[0]+'\n\nSYNOPSIS\n       '+m[1].split('\n').join('\n       ')+(m[2]?'\n\nDESCRIPTION\n       '+m[2].split('\n').join('\n       '):'')+'\n\n(short version for the sandbox, the real page is: man '+args[0]+' in a terminal)'};
   }
   c_echo(args){return{out:args.join(' ')}}
@@ -808,6 +819,6 @@ function stamp(n){n.m=now();if(n.t==='d')Object.values(n.c).forEach(stamp)}
 /* every path in the tree, for the before / after comparison */
 function paths(root){const out=new Map();const rec=(n,p)=>{if(p==='/proc')return;out.set(p,n.m+(n.t==='f'?':'+n.s:n.t==='l'?'>'+n.target:''));if(n.t==='d')for(const k in n.c)rec(n.c[k],p+'/'+k)};rec(root,'');return out}
 
-return{Shell,makeFS,split,lookup,pstr,paths,clone,HOME,sortNames,PROFILES,words,writable,F,D,now:()=>now()};
+return{Shell,makeFS,split,lookup,pstr,paths,clone,HOME,sortNames,PROFILES,words,writable,F,D,MAN,now:()=>now()};
 })();
 if(typeof module!=='undefined')module.exports=ISOSH;
