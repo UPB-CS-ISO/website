@@ -61,7 +61,6 @@ the commands are the same, with a few differences:
 
 |                                                | Fedora                                                | Ubuntu                                            |
 | ---------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------- |
-| the prompt                                     | `[student@fedora ~]$`                                 | `student@ubuntu:~$`                               |
 | install the tools of this lab                  | `sudo dnf install gcc make gdb git clang-tools-extra` | `sudo apt install build-essential gdb git clangd` |
 | a function called without a declaration        | an **error** (GCC 14 and newer)                       | Ubuntu 24.04 has GCC 13: only a **warning**       |
 | the C library, in the output of `ldd`          | `/lib64/libc.so.6`                                    | `/lib/x86_64-linux-gnu/libc.so.6`                 |
@@ -79,11 +78,11 @@ The processor runs only **machine code**: instructions written as bytes, differe
 (x86-64, ARM64, RISC-V). People write **source code**: text, in a programming language. Someone has to translate the
 source code into machine code, and the languages differ in **who** does it and **when**:
 
-| Kind            | Who translates the source code                                                                       | Examples                     |
-| --------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **compiled**    | a **compiler**, **once**, before the program runs: the result is an executable                       | C, C++, Rust, Go             |
-| **interpreted** | an **interpreter**, a program that reads the source and does what it says, **every** time            | `bash`, `sh`                 |
-| **bytecode**    | a compiler, to **bytecode** (machine code for an imaginary processor); a **virtual machine** runs it | Java, C#, Python, JavaScript |
+| Kind            | Who translates the source code                                                                         | When                                                                       | Examples                     |
+| --------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- | ---------------------------- |
+| **compiled**    | a **compiler**, into machine code: the result is an executable                                         | once, before the program runs                                              | C, C++, Rust, Go             |
+| **interpreted** | an **interpreter**, a program that reads the source and does what it says                              | every time the program runs                                                | shell scripts (`bash`, `sh`) |
+| **bytecode**    | a compiler, into **bytecode** (machine code for an imaginary processor); a **virtual machine** runs it | before the program runs (Java, C#), or when it starts (Python, JavaScript) | Java, C#, Python, JavaScript |
 
 Think of a book in a foreign language: a compiled program is a printed translation, made once and read many times; an
 interpreted program is read with a translator next to you, who translates every sentence while you read.
@@ -99,12 +98,12 @@ hello.sh:      Bourne-Again shell script, ASCII text executable
 - `hello.sh` is text: the interpreter, `bash`, reads it line by line. `bash` itself is machine code, an **ELF** file
   (_Executable and Linkable Format_, the format of the programs on Linux), written in C and compiled.
 
-| Compiled                                            | Interpreted                                   |
-| --------------------------------------------------- | --------------------------------------------- |
-| fast: the processor runs the program directly       | slower: the source is translated at every run |
-| many errors are found **before** the program runs   | an error is found only when its line runs     |
-| compile again after **every** change                | change the file and run it                    |
-| a separate executable for each processor and system | runs wherever the interpreter runs            |
+|                    | Compiled                                                    | Interpreted                                                |
+| ------------------ | ----------------------------------------------------------- | ---------------------------------------------------------- |
+| **speed**          | fast: the processor runs the machine code directly          | slower: the interpreter translates the source at every run |
+| **errors**         | the compiler finds many of them **before** the program runs | an error shows up only when its line runs                  |
+| **after a change** | compile again, then run                                     | just run it again                                          |
+| **portability**    | one executable for each processor and system                | the same file runs wherever the interpreter is installed   |
 
 :::info
 
@@ -179,9 +178,9 @@ writes a new file. An option stops `gcc` after a step, so you can look at that f
 
 | Step             | What it does                                                                  | Stop after it               | Writes                 |
 | ---------------- | ----------------------------------------------------------------------------- | --------------------------- | ---------------------- |
-| **preprocessor** | copies the `#include` files in, replaces the `#define`s, removes the comments | `gcc -E hello.c -o hello.i` | `hello.i`, C           |
+| **preprocessor** | copies the `#include` files in, replaces the `#define`s, removes the comments | `gcc -E hello.c -o hello.i` | `hello.i`, preprocessed C           |
 | **compiler**     | translates C into **assembly**, the text form of the machine code             | `gcc -S hello.c`            | `hello.s`, assembly    |
-| **assembler**    | translates assembly into machine code: an **object file**                     | `gcc -c hello.c`            | `hello.o`, object file |
+| **assembler**    | translates assembly into machine code                     | `gcc -c hello.c`            | `hello.o`, object file |
 | **linker**       | joins the object files and the libraries into an executable                   | `gcc hello.o -o hello`      | `hello`, executable    |
 
 Think of a car factory: the first station brings the parts together (the preprocessor), the next ones shape them
@@ -236,8 +235,10 @@ The **compiler** translates C into **assembly**: one line for every instruction 
 
 #### The Assembler: `gcc -c`
 
-The **assembler** translates the assembly into machine code. The result is an **object file**: machine code that does
-not run yet, because it still has holes, the functions that it uses but does not define.
+The **assembler** translates the assembly into machine code. The result is an **object file**: machine code that
+cannot run yet, because it has **holes**. To call `printf`, the code needs its address, but `printf` is not defined in
+`hello.c`, so the assembler does not know where it is: it leaves an empty place, and a note with the name `printf`.
+The [linker](#the-linker) fills these holes later.
 
 ```shell-session
 [student@fedora lab07]$ gcc -c hello.c
@@ -254,9 +255,14 @@ hello.o: ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
 
 #### The Linker
 
-The **linker** (`ld`, which `gcc` runs for you) joins the object files into an executable, and fills in the holes:
-for every `U` symbol it must find **exactly one** `T`, in an object file or in a library. `printf` is in the **C
-library**, the file `libc.so.6`, which the linker uses for every program.
+The **linker** (`ld`, which `gcc` runs for you) joins the object files into an executable, and fills in their holes.
+For every name that an object file uses but does not define (a `U` in `nm`), the linker looks for **the one place**
+that defines it (a `T`), in another object file or in a library. If it finds none, it stops with
+``undefined reference``; if it finds two, with ``multiple definition`` (see [Build Errors](#build-errors)).
+
+`printf` is defined in the **C library**, the file `libc.so.6`, which the linker searches for every program, without
+being asked. It is a shared library, so the linker does not copy `printf` into `hello`: it only writes down that
+`hello` needs `libc.so.6`.
 
 ```shell-session
 [student@fedora lab07]$ gcc hello.o -o hello
@@ -288,10 +294,10 @@ package `glibc-static`. The exercises at home and the challenges build their own
 
 A real program has many source files. Each part of the program, a **module**, is a pair of files:
 
-| File               | What it has                                                    | Example                  |
-| ------------------ | -------------------------------------------------------------- | ------------------------ |
-| `.h`, a **header** | the **declarations**: what the module offers, without the code | `int sum(int n);`        |
-| `.c`               | the **definitions**: the code of the functions                 | `int sum(int n) { ... }` |
+| File                 | What it has                                                                                   | Who uses it                                            | Example: `lib`                    |
+| -------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------ | --------------------------------- |
+| `.h`, the **header** | the **declarations**: what the module offers, without the code; also its `#define`s and types | every `.c` file that calls the module, with `#include` | `lib.h`: `int sum(int n);`        |
+| `.c`, the **source** | the **definitions**: the code of the functions                                                | the compiler, which turns it into an object file       | `lib.c`: `int sum(int n) { ... }` |
 
 Every `.c` file that uses a module includes its header, so the compiler knows the name and the types of the functions
 it calls. The examples use the files of `~/lab07/project`, a program that adds the numbers from 1 to `MAX`:
@@ -331,21 +337,26 @@ sum = 55
 
 - In `main.o`, `sum` and `print_result` are `U`; the linker found them in `lib.o` and `print.o`.
 
-After a change to `print.c`, only `print.o` is out of date: `gcc -c print.c`, then the link, and the program is
-ready. `gcc main.c lib.c print.c -o app` gives the same program, but compiles **all** the files every time; the Linux
-kernel has more than 30 000 `.c` files.
+This is why every `.c` file is compiled to its own object file. After a change to `print.c`, only `print.o` is out of
+date, so two commands are enough: `gcc -c print.c` compiles it again, and `gcc main.o lib.o print.o -o app` links the
+program.
+
+`gcc main.c lib.c print.c -o app` gives the same program in one command, but it compiles **all** the files every
+time. With three files, this does not matter. The Linux kernel has more than 30 000 `.c` files: compiling only the ones
+that changed saves minutes at every build.
 
 ### Build Errors
 
 These are the messages that the build log of the IDE shows. **Who** reports the error tells you what is wrong:
 
-| The message                                     | Reported by  | The cause, and the fix                                                     |
-| ----------------------------------------------- | ------------ | -------------------------------------------------------------------------- |
-| `fatal error: lib.h: No such file or directory` | preprocessor | a wrong name in `#include`, or the header is in another folder: `-I <DIR>` |
-| `error: implicit declaration of function ‘sum’` | compiler     | the function is called before it is declared: include its header           |
-| `error: expected ‘;’ before ‘}’ token`          | compiler     | a syntax error, on the line it names, or on the line before                |
-| ``undefined reference to `sum'``                | linker       | no object file defines `sum`: add the `.o` that defines it                 |
-| ``undefined reference to `sqrt'``               | linker       | the function is in a library: add `-lm` at the end of the command          |
+| The message                                     | Reported by  | The cause                                                      | The fix                             |
+| ----------------------------------------------- | ------------ | -------------------------------------------------------------- | ----------------------------------- |
+| `fatal error: lib.h: No such file or directory` | preprocessor | a wrong name in `#include`, or the header is in another folder | fix the name, or add `-I <DIR>`     |
+| `error: implicit declaration of function ‘sum’` | compiler     | `sum` is called, but nothing above the call declares it        | include the header that declares it |
+| `error: expected ‘;’ before ‘}’ token`          | compiler     | a syntax error, on the line it names or on the line before     | add the missing `;`                 |
+| ``undefined reference to `sum'``                | linker       | no object file defines `sum`                                   | add the `.o` file that defines it   |
+| ``undefined reference to `sqrt'``               | linker       | the function is in a library that is not linked                | add `-lm` at the end of the command |
+| ``multiple definition of `sum'``                | linker       | two object files define `sum`                                  | keep only one of them               |
 
 ```shell-session
 [student@fedora lab07]$ gcc roots.c -o roots
@@ -397,7 +408,7 @@ these editors:
 
 | Editor               | Where it runs | What it needs to use `clangd`                      |
 | -------------------- | ------------- | -------------------------------------------------- |
-| `vim`                | terminal      | a plugin, `vim-lsp`, and a few lines in `~/.vimrc` |
+| `vim`                | terminal      | a plugin, `vim-lsp`, and about 20 lines in `~/.vimrc` |
 | `nvim` 0.11 or newer | terminal      | a few lines in `~/.config/nvim/init.lua`           |
 | `hx` (Helix)         | terminal      | nothing                                            |
 | `emacs` 29 or newer  | both          | one line in `~/.emacs.d/init.el`                   |
@@ -424,7 +435,7 @@ Install, configure and check your editor:
 **This is the hardest setup**
 
 `vim` has no language client of its own, and every new feature needs more Vimscript: use `nvim` instead, with the
-same keys (see the tip above).
+same editing keys (see the tip above).
 
 :::
 
@@ -462,16 +473,17 @@ augroup END
 ```
 
 Check: open a `.c` file, and run `:LspStatus`; it shows `clangd: running`.
+In the table, <kbd>{'\\'}</kbd> is the _leader_ key of `vim`, `<leader>` in `~/.vimrc`.
 
 | What you want                   | Keys                                                                      |
 | ------------------------------- | ------------------------------------------------------------------------- |
 | see the errors                  | at the end of the line; <kbd>]</kbd> <kbd>d</kbd> goes to the next one    |
-| about the name under the cursor | <kbd>K</kbd>                                                              |
+| see what the name under the cursor is | <kbd>K</kbd>                                                              |
 | complete a name                 | in Insert mode, <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>O</kbd> |
 | go to the definition, come back | <kbd>g</kbd> <kbd>d</kbd>, <kbd>Ctrl</kbd>+<kbd>O</kbd>                   |
 | list the uses of a name         | <kbd>g</kbd> <kbd>r</kbd>                                                 |
-| rename a name, in every file    | <kbd>\\</kbd> <kbd>r</kbd> <kbd>n</kbd>                                   |
-| apply the fix that it suggests  | <kbd>\\</kbd> <kbd>c</kbd> <kbd>a</kbd>                                   |
+| rename a name, in every file    | <kbd>{'\\'}</kbd> <kbd>r</kbd> <kbd>n</kbd>                                  |
+| apply the fix that it suggests  | <kbd>{'\\'}</kbd> <kbd>c</kbd> <kbd>a</kbd>                                  |
 
 </TabItem>
 <TabItem value="nvim" label="nvim">
@@ -483,7 +495,7 @@ has an older one: use Helix or Zed there. Then add these lines to `~/.config/nvi
 vim.lsp.config('clangd', {
   cmd = { 'clangd' },
   filetypes = { 'c', 'cpp' },
-  root_markers = { 'Makefile', '.git' },
+  root_markers = { 'compile_commands.json', 'compile_flags.txt', 'Makefile', '.git' },
 })
 vim.lsp.enable('clangd')
 vim.diagnostic.config({ virtual_text = true })
@@ -492,11 +504,11 @@ vim.diagnostic.config({ virtual_text = true })
 Check: open a `.c` file, and run `:checkhealth vim.lsp`; it lists `clangd` among the active clients.
 
 **Ready-made setups**: instead of writing `init.lua` yourself, you can start from a configuration that already has
-`clangd`, completion and a file explorer; move your `~/.config/nvim` aside first. They need a recent Neovim and
-`git`:
+`clangd`, completion and a file explorer. They need a recent Neovim and `git`. Move your `~/.config/nvim` and
+`~/.local/share/nvim` aside first, where the setups install their plugins:
 
-- [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim): one short file, with a comment on every line; the best
-  start if you want to understand your configuration;
+- [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim): one file, explained by its comments; the best start if
+  you want to understand your configuration;
 - [LazyVim](https://www.lazyvim.org), [NvChad](https://nvchad.com) and [AstroNvim](https://astronvim.com): complete
   setups, ready to use.
 
@@ -506,7 +518,7 @@ Check: open a `.c` file, and run `:checkhealth vim.lsp`; it lists `clangd` among
 | What you want                   | Keys                                                                      |
 | ------------------------------- | ------------------------------------------------------------------------- |
 | see the errors                  | at the end of the line; <kbd>]</kbd> <kbd>d</kbd> goes to the next one    |
-| about the name under the cursor | <kbd>K</kbd>                                                              |
+| see what the name under the cursor is | <kbd>K</kbd>                                                              |
 | complete a name                 | in Insert mode, <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>O</kbd> |
 | go to the definition, come back | <kbd>Ctrl</kbd>+<kbd>]</kbd>, <kbd>Ctrl</kbd>+<kbd>T</kbd>                |
 | list the uses of a name         | <kbd>g</kbd> <kbd>r</kbd> <kbd>r</kbd>                                    |
@@ -516,8 +528,8 @@ Check: open a `.c` file, and run `:checkhealth vim.lsp`; it lists `clangd` among
 </TabItem>
 <TabItem value="hx" label="hx">
 
-Install Helix (Fedora: `sudo dnf install helix`; Ubuntu: `sudo snap install --classic helix`). It needs no settings:
-it starts `clangd` by itself for every `.c` file.
+Install Helix (Fedora: `sudo dnf install helix`; Ubuntu: `sudo snap install --classic helix`); its command is `hx`. It
+needs no settings: it starts `clangd` by itself for every `.c` file.
 
 ```shell-session
 [student@fedora project]$ hx --health c
@@ -532,7 +544,7 @@ Configured language servers:
 | What you want                   | Keys                                                             |
 | ------------------------------- | ---------------------------------------------------------------- |
 | see the errors                  | marked at the left; <kbd>Space</kbd> <kbd>d</kbd> lists them     |
-| about the name under the cursor | <kbd>Space</kbd> <kbd>k</kbd>                                    |
+| see what the name under the cursor is | <kbd>Space</kbd> <kbd>k</kbd>                                    |
 | complete a name                 | appears while you type                                           |
 | go to the definition, come back | <kbd>g</kbd> <kbd>d</kbd>, <kbd>Ctrl</kbd>+<kbd>O</kbd>          |
 | list the uses of a name         | <kbd>g</kbd> <kbd>r</kbd>                                        |
@@ -544,7 +556,7 @@ Configured language servers:
 
 Install Emacs (Fedora: `sudo dnf install emacs`; Ubuntu: `sudo apt install emacs`). From version 29 it has a
 language client built in, **Eglot**, which already knows `clangd`. This line in `~/.emacs.d/init.el` starts it for
-every C file:
+every C file; if you already have a file `~/.emacs`, put the line there instead, because Emacs reads only one of them:
 
 ```lisp title="~/.emacs.d/init.el"
 (add-hook 'c-mode-hook 'eglot-ensure)
@@ -555,7 +567,7 @@ Check: open a `.c` file (`emacs -nw main.c` stays in the terminal); the mode lin
 | What you want                   | Keys                                                                                 |
 | ------------------------------- | ------------------------------------------------------------------------------------ |
 | see the errors                  | underlined; <kbd>Alt</kbd>+<kbd>X</kbd> `flymake-show-buffer-diagnostics` lists them |
-| about the name under the cursor | shown at the bottom, by itself                                                       |
+| see what the name under the cursor is | shown at the bottom, by itself                                                       |
 | complete a name                 | <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>I</kbd>                                          |
 | go to the definition, come back | <kbd>Alt</kbd>+<kbd>.</kbd>, <kbd>Alt</kbd>+<kbd>,</kbd>                             |
 | list the uses of a name         | <kbd>Alt</kbd>+<kbd>?</kbd>                                                          |
@@ -580,8 +592,9 @@ code --install-extension llvm-vs-code-extensions.vscode-clangd
 ```
 
 If the extension `C/C++` of Microsoft is also installed, the extension `clangd` asks to turn off its IntelliSense:
-accept, so that only `clangd` checks the code. VSCodium, the same editor without the Microsoft parts, works the same
-way.
+accept, so that only `clangd` checks the code. If `clangd` is not installed, the extension offers to download it:
+install the package instead, so that every editor uses the same `clangd`. VSCodium, the same editor without the
+Microsoft parts, works the same way; its command is `codium`, not `code`.
 
 Check: open the folder of the project (`code ~/lab07/project`), then a `.c` file; the status bar, at the bottom,
 shows `clangd`.
@@ -589,7 +602,7 @@ shows `clangd`.
 | What you want                   | Keys                                                                                 |
 | ------------------------------- | ------------------------------------------------------------------------------------ |
 | see the errors                  | red underline; <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd> lists them              |
-| about the name under the cursor | keep the mouse over it, or <kbd>Ctrl</kbd>+<kbd>K</kbd> <kbd>Ctrl</kbd>+<kbd>I</kbd> |
+| see what the name under the cursor i | keep the mouse over it, or <kbd>Ctrl</kbd>+<kbd>K</kbd> <kbd>Ctrl</kbd>+<kbd>I</kbd> |
 | complete a name                 | appears while you type; <kbd>Ctrl</kbd>+<kbd>Space</kbd>                             |
 | go to the definition, come back | <kbd>F12</kbd>, <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>-</kbd>                          |
 | list the uses of a name         | <kbd>Shift</kbd>+<kbd>F12</kbd>                                                      |
@@ -604,6 +617,7 @@ Install Zed with its script, the same on Fedora and on Ubuntu:
 ```bash
 curl -f https://zed.dev/install.sh | sh
 ```
+The script installs the command `zed` in `~/.local/bin`; if the shell does not find it, log out and log in again.
 
 Zed works **out of the box**: it needs no settings and no extension, and starts `clangd` by itself for every `.c`
 file. Check: open the folder of the project (`zed ~/lab07/project`), then a `.c` file, and make an error: it is
@@ -612,7 +626,7 @@ underlined at once.
 | What you want                   | Keys                                                                    |
 | ------------------------------- | ----------------------------------------------------------------------- |
 | see the errors                  | red underline; <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd> lists them |
-| about the name under the cursor | keep the mouse over it                                                  |
+| see what the name under the cursor is | keep the mouse over it                                                  |
 | complete a name                 | appears while you type                                                  |
 | go to the definition, come back | <kbd>F12</kbd>, <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>-</kbd>             |
 | list the uses of a name         | right click, _Find All References_                                      |
@@ -709,13 +723,14 @@ recipes that are needed.
 
 | Command              | What it does                                                       |
 | -------------------- | ------------------------------------------------------------------ |
-| `make`               | builds the first target of the `Makefile`                          |
+| `make`               | builds the **first** target of the `Makefile`, and only what is out of date                          |
 | `make <TARGET>`      | builds `<TARGET>`                                                  |
 | `make -n`            | only **shows** the commands that it would run (_dry run_)          |
-| `make -B`            | builds everything again, even what is up to date                   |
-| `make <VAR>=<VALUE>` | changes a variable of the `Makefile` (see [Variables](#variables)) |
-| `make -C <DIR>`      | uses the `Makefile` of `<DIR>`                                     |
-| `make --debug=v`     | explains every decision                                            |
+| `make -B`            | builds every target again, even the ones that are up to date                   |
+| `make <VAR>=<VALUE>` | changes a variable for this run only; the `Makefile` stays the same (see [Variables](#variables))|
+| `make -C <DIR>`      | goes to `<DIR>` first, and works there, as if you ran `make` in `<DIR>`                                     |
+| `make --debug=v`     | explains why it builds, or skips, every target                                             |
+| `make -j<N>`         | runs up to `<N>` commands at the same time                                                        |
 
 ### A `Makefile` for a Project
 
@@ -842,7 +857,7 @@ and always runs their recipes. The usual phony targets are:
 | Target    | What it does                                                              |
 | --------- | ------------------------------------------------------------------------- |
 | `all`     | builds everything; it is the **first** target, so `make` means `make all` |
-| `run`     | builds the program, then runs it                                          |
+| `run`     | builds the program, if it is out of date, then runs it                                         |
 | `clean`   | deletes the files that `make` built                                       |
 | `install` | copies the program into the system                                        |
 
@@ -878,6 +893,12 @@ make: Nothing to be done for 'all'.
 - `make run` checked `app` first: it was up to date, so `make` only ran `./app`.
 - `all` has no recipe, and `app` was up to date: nothing to do.
 
+:::info
+
+These names are a convention, not part of `make`: every C programmer expects them, but `make` treats them like any
+other target. Only the order matters: `make` alone builds the first target of the `Makefile`.
+
+:::
 ### Header Dependencies
 
 A header is also a prerequisite: an object file must be compiled again when a header that its `.c` file includes
@@ -931,10 +952,10 @@ A header goes on the rule of an **object file**, never on the rule of the execut
 header from another folder gives `'<HEADER>' file not found` in the editor, even if `make` works. Give it the options
 in a file in the folder of the project:
 
-| File                    | What it has                                        | How you make it                                    |
-| ----------------------- | -------------------------------------------------- | -------------------------------------------------- |
-| `compile_flags.txt`     | the options, one per line, the same for every file | with the editor: for example, the line `-Iinclude` |
-| `compile_commands.json` | the exact `gcc` command of every file              | `make clean`, then `bear -- make`                  |
+| File                    | What it has                                                 | How you make it                                               | Use it when                                                         |
+| ----------------------- | ----------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `compile_flags.txt`     | the options of `gcc`, one per line, the same for every file | by hand, in the editor: for example, the line `-Iinclude`     | all the files use the same options                                  |
+| `compile_commands.json` | the exact `gcc` command of every file, as `make` ran it     | `make clean`, then `bear -- make`; again after you add a file | the files use different options, or a rename must change every file |
 
 `bear` (Fedora: `sudo dnf install bear`; Ubuntu: `sudo apt install bear`) writes down every command that `make` runs,
 so start from a clean build. With `compile_commands.json`, `clangd` also knows the files that you did not open: a
@@ -951,21 +972,22 @@ its variables, while it runs. It is faster than adding `printf` lines and compil
 GNU. It needs the program built with `-g`, which adds the **debug information**: which machine code comes from which
 line, and where every variable is. The `Makefile` of the project already has `-g` in `CFLAGS`.
 
-| Command                                   | Short | What it does                                                                |
-| ----------------------------------------- | ----- | --------------------------------------------------------------------------- |
-| `gdb ./app`                               |       | starts `gdb` with the program; it does not run yet                          |
-| `break <FUNCTION>`, `break <FILE>:<LINE>` | `b`   | sets a **breakpoint**: the program stops there                              |
-| `break <PLACE> if <CONDITION>`            |       | stops there only when the C condition is true                               |
-| `run`                                     | `r`   | starts the program                                                          |
-| `next`                                    | `n`   | runs the next line; a function call on it runs whole                        |
-| `step`                                    | `s`   | runs the next line, and enters the function that it calls                   |
-| `print <EXPRESSION>`                      | `p`   | prints a variable, or any C expression: `print n * 2`                       |
-| `backtrace`                               | `bt`  | prints the **call stack**: the function that runs, who called it, and so on |
-| `up`                                      |       | goes to the function that called this one, to print its variables           |
-| `finish`                                  |       | runs until the function returns, and prints the value it returns            |
-| `watch <VARIABLE>`                        |       | stops every time the variable changes                                       |
-| `continue`                                | `c`   | runs until the next breakpoint, or until the end                            |
-| `quit`                                    | `q`   | quits                                                                       |
+| Command                                   | Short | What it does                                                                           |
+| ----------------------------------------- | ----- | -------------------------------------------------------------------------------------- |
+| `gdb ./app`                               |       | starts `gdb` with the program; the program does not run yet                            |
+| `break <FUNCTION>`, `break <FILE>:<LINE>` | `b`   | sets a **breakpoint**: the program will stop there, **before** that line runs          |
+| `break <PLACE> if <CONDITION>`            |       | stops there only when the C condition is true: `break sum if n > 5`                    |
+| `watch <VARIABLE>`                        |       | stops every time the variable changes, and prints its old and its new value            |
+| `delete <N>`                              | `d`   | deletes breakpoint number `<N>`; without `<N>`, deletes them all                       |
+| `run`                                     | `r`   | starts the program; it runs until a breakpoint, or until it ends                       |
+| `next`                                    | `n`   | runs the line that `gdb` showed; a function that it calls runs whole, without stopping |
+| `step`                                    | `s`   | runs the line that `gdb` showed, but stops inside the function that it calls           |
+| `finish`                                  | `fin` | runs until the current function returns, and prints the value it returns               |
+| `continue`                                | `c`   | runs until the next breakpoint, or until the program ends                              |
+| `print <EXPRESSION>`                      | `p`   | prints a variable, or any C expression: `print n * 2`                                  |
+| `backtrace`                               | `bt`  | prints the **call stack**: the current function, the one that called it, and so on     |
+| `up`, `down`                              |       | moves to the function that called this one, or back, to print its variables            |
+| `quit`                                    | `q`   | quits `gdb`, and stops the program if it still runs                                    |
 
 ```shell-session
 [student@fedora project]$ gdb -q ./app
@@ -1016,14 +1038,15 @@ area** (what the next commit will have), and `git commit` saves the commit in th
 
 | Command                                                          | What it does                                                           |
 | ---------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `git config --global user.name "<NAME>"`, `user.email "<EMAIL>"` | your name and email, written in every commit; once per computer        |
+| `git config --global user.name "<NAME>"`      | your name, written in every commit; once per computer                                          |
+| `git config --global user.email "<EMAIL>"`    | your email, written in every commit; once per computer                                         |
 | `git init`                                                       | turns the current folder into a repository                             |
 | `git status`                                                     | shows the changed files, and what is in the staging area               |
 | `git add <FILE>`                                                 | adds the changes of `<FILE>` to the staging area; `git add .` adds all |
 | `git commit -m "<MESSAGE>"`                                      | saves the staging area as a commit                                     |
 | `git diff`                                                       | shows the changes that are not in the staging area yet                 |
 | `git log --oneline`                                              | shows the commits, one per line, the newest first                      |
-| `git restore <FILE>`                                             | throws away the changes of `<FILE>`, back to the last commit           |
+| `git restore <FILE>`                                             | throws away the changes of `<FILE>` that are not in the staging area; you cannot get them back           |
 | `git switch -c <BRANCH>`, `git switch <BRANCH>`                  | creates a **branch** and goes to it; goes to a branch                  |
 | `git merge <BRANCH>`                                             | brings the commits of `<BRANCH>` into the current branch               |
 
@@ -1130,11 +1153,12 @@ A **library** is a file with compiled functions, ready to be used by other progr
 
 |                              | **Static library**                           | **Shared library**                                                  |
 | ---------------------------- | -------------------------------------------- | ------------------------------------------------------------------- |
-| the file                     | `lib<NAME>.a`, an archive of object files    | `lib<NAME>.so`                                                      |
+| the file                     | `lib<NAME>.a`, an archive of object files    | `lib<NAME>.so`, a _shared object_, ready to be loaded                                                      |
 | the linker                   | **copies** the functions into the executable | only writes down that the executable needs the library              |
-| when the program starts      | nothing to load                              | the **loader** (`ld-linux-x86-64.so.2`) finds and loads the library |
+| when the program starts      | nothing more to load: the code is already in the executable                              | the **loader** (`ld-linux-x86-64.so.2`) finds the library, and loads it |
 | a new version of the library | link every program again                     | every program uses it at its next start                             |
-| the size                     | every program has its own copy               | one copy, on the disk and in memory, for all programs               |
+| the size                     | large executables: every program has its own copy               | small executables: one copy, on the disk and in memory, for all programs               |
+| **if the library is missing**    | the program still runs                                             | the program does not start: `error while loading shared libraries`       |
 
 By default, `gcc` links the C library as a shared library. `-static` copies it in:
 
@@ -1756,7 +1780,8 @@ from the First Steps.
        - `cc1 ... hello.c ...`, which writes `/tmp/cc....s`;
        - `as ... -o /tmp/cc....o /tmp/cc....s`;
        - `collect2 ... -o hello ...`, which runs `ld`.
-    3. `/usr/libexec/gcc/x86_64-redhat-linux/<VERSION>/` (Ubuntu: `/usr/lib/gcc/x86_64-linux-gnu/<VERSION>/`).
+        3. The `cc1` line of step 2 starts with its full path, and `gcc -print-prog-name=cc1` prints it too: on Fedora,
+       `/usr/libexec/gcc/x86_64-redhat-linux/<VERSION>/cc1`; on Ubuntu, a similar folder with `x86_64-linux-gnu`.
 
     **Why:** `gcc` is a **driver**: it runs the preprocessor and the compiler (both in `cc1`), the assembler (`as`) and
     the linker (`collect2`, then `ld`).
@@ -1986,7 +2011,8 @@ from the First Steps.
     1. compile `lib.c` into `lib.o` for a shared library, and create `libsum.so`;
     2. link `app3` from `main.o`, `print.o` and the library; list its libraries; run it;
     3. run it again, so that the loader finds `libsum.so` in the current folder;
-    4. change `lib.c` as in exercise 21; rebuild `lib.o` and `libsum.so`, but **not** `app3`; run `app3`;
+        4. change `lib.c` as in exercise 21; rebuild `lib.o` (with `-fPIC`, as in step 1) and `libsum.so`, but **not**
+       `app3`; run `app3`;
     5. get `lib.c` back; delete `libsum.a`, `libsum.so`, `app2` and `app3`, and run `make -B`.
 
     <details className="reveal">
@@ -2178,8 +2204,8 @@ from the First Steps.
     <details className="reveal">
     <summary>Check</summary>
 
-    3. `app` prints `sum = 55` and `average = 5.5` from any folder; `which app` prints `~/.local/bin/app` (Ubuntu:
-       `/home/student/.local/bin/app`).
+        3. `app` prints `sum = 55` and `average = 5.5` from any folder; `which app` prints the copy in `~/.local/bin`
+       (Fedora writes it `~/.local/bin/app`, Ubuntu `/home/student/.local/bin/app`).
     4. `make install PREFIX=/tmp/try` copies it to `/tmp/try/bin/app`; after `make uninstall`, `which app` finds
        nothing.
     5. `git log --oneline` has 5 commits.
@@ -2408,8 +2434,9 @@ from the First Steps.
 
     1. `ssh -T git@github.com` greets you by your user name.
     2. The page of the empty repository shows the commands to push an existing repository.
-    3. `git remote -v` shows `origin` twice, `(fetch)` and `(push)`, with `git@github.com:<USER>/uso-lab07.git`;
-       `git push -u origin main` ends with `* [new branch]      main -> main`.
+        3. `git remote -v` shows `origin` twice, `(fetch)` and `(push)`, with `git@github.com:<USER>/uso-lab07.git`;
+       `git push -u origin main` shows `* [new branch]      main -> main`, and ends with
+       `branch 'main' set up to track 'origin/main'.`
     4. GitHub shows 6 commits and the sources, but no object file and no `app`.
     5. In `clone`, `make run` compiles every file, and prints `sum: 55` and `average = 5.5`.
 
