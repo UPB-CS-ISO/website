@@ -618,6 +618,7 @@ Install Zed with its script, the same on Fedora and on Ubuntu:
 curl -f https://zed.dev/install.sh | sh
 ```
 The script installs the command `zed` in `~/.local/bin`; if the shell does not find it, log out and log in again.
+The script installs the command `zed` in `~/.local/bin`; if the shell does not find it, log out and log in again.
 
 Zed works **out of the box**: it needs no settings and no extension, and starts `clangd` by itself for every `.c`
 file. Check: open the folder of the project (`zed ~/lab07/project`), then a `.c` file, and make an error: it is
@@ -725,7 +726,7 @@ recipes that are needed.
 | -------------------- | ------------------------------------------------------------------ |
 | `make`               | builds the **first** target of the `Makefile`, and only what is out of date                          |
 | `make <TARGET>`      | builds `<TARGET>`                                                  |
-| `make -n`            | only **shows** the commands that it would run (_dry run_)          |
+| `make -n`            | **shows** the commands that it would run, without running them (_dry run_)         |
 | `make -B`            | builds every target again, even the ones that are up to date                   |
 | `make <VAR>=<VALUE>` | changes a variable for this run only; the `Makefile` stays the same (see [Variables](#variables))|
 | `make -C <DIR>`      | goes to `<DIR>` first, and works there, as if you ran `make` in `<DIR>`                                     |
@@ -859,7 +860,8 @@ and always runs their recipes. The usual phony targets are:
 | `all`     | builds everything; it is the **first** target, so `make` means `make all` |
 | `run`     | builds the program, if it is out of date, then runs it                                         |
 | `clean`   | deletes the files that `make` built                                       |
-| `install` | copies the program into the system                                        |
+| `install` | copies the program into a folder of `PATH`, so that you can run it by its name from any folder                                       |
+| `uninstall` | deletes what `install` copied                                                                   |
 
 ```makefile title="~/lab07/project/Makefile"
 CC = gcc
@@ -893,6 +895,12 @@ make: Nothing to be done for 'all'.
 - `make run` checked `app` first: it was up to date, so `make` only ran `./app`.
 - `all` has no recipe, and `app` was up to date: nothing to do.
 
+:::info
+
+These names are a convention, not part of `make`: every C programmer expects them, but `make` treats them like any
+other target. Only the order matters: `make` alone builds the first target of the `Makefile`.
+
+:::
 :::info
 
 These names are a convention, not part of `make`: every C programmer expects them, but `make` treats them like any
@@ -1533,7 +1541,8 @@ unless the exercise says otherwise.
     <details className="reveal">
     <summary>Check</summary>
 
-    1. `hx --health c` shows `✓ clangd: /usr/bin/clangd`; in `nvim`, `:checkhealth vim.lsp` lists `clangd`.
+        1. The check at the end of your editor's tab works: for example, `hx --health c` shows
+       `✓ clangd: /usr/bin/clangd`, and in `nvim`, `:checkhealth vim.lsp` lists `clangd`.
     2. The information about `sum` is `int sum(int n)`, provided by `"lib.h"`; its definition opens `lib.c` (or its
        declaration, in `lib.h`).
     3. The error is `Use of undeclared identifier 'totl'; did you mean 'total'?`; the fix writes `total` back.
