@@ -22,10 +22,14 @@ jobs:
             website/package-lock.json
             slides/package-lock.json
 
+      - name: Install Typst
+        uses: typst-community/setup-typst@v4
+        # with:
+        #   typst-version: '0.13.1'   # optional: pin for reproducible builds
+
       - name: Install dependencies (slides)
         working-directory: slides
         run: |
-          sudo snap install typst
           cargo install --git https://github.com/polylux-typ/polylux/ --branch release
 
       - name: Build slides
