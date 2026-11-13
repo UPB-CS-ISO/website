@@ -239,6 +239,30 @@ int main(void)
 - Bucla a devenit o comparație (`cmpl`: este `i` cel mult `2`?) și un salt înapoi (`jle`, _jump if less or equal_).
 - `printf` este doar **apelat**: codul lui nu se află în `hello.s`.
 
+Două opțiuni fac `hello.s` mai ușor de citit:
+
+| Opțiune         | Ce face                                                                                                        |
+| --------------- | -------------------------------------------------------------------------------------------------------------- |
+| `-fverbose-asm` | scrie fiecare linie de C ca un comentariu deasupra instrucțiunilor ei și variabila pe care o folosește fiecare |
+| `-masm=intel`   | scrie **sintaxa Intel** în loc de **sintaxa AT&T**, cea implicită pentru `gcc` (doar pe x86)                   |
+
+```shell-session
+[student@fedora lab07]$ gcc -S -fverbose-asm hello.c
+[student@fedora lab07]$ grep -B1 cmpl hello.s
+# hello.c:8:     for (int i = 0; i < TIMES; i++) {
+	cmpl	$2, -4(%rbp)	#, i
+[student@fedora lab07]$ gcc -S -masm=intel hello.c
+[student@fedora lab07]$ grep -E 'call|cmp|jle' hello.s
+	call	printf@PLT
+	cmp	DWORD PTR -4[rbp], 2
+	jle	.L3
+```
+
+- `-fverbose-asm` a arătat că comparația vine de la linia 8 din `hello.c`, `for`-ul, și că `-4(%rbp)` este `i`.
+- `-masm=intel` a scris aceleași instrucțiuni în sintaxa Intel, cea din manualele Intel și AMD și din majoritatea
+  cărților: operanzii sunt în **ordine inversă**, fără `%` și `$`, iar dimensiunea este un cuvânt (`DWORD PTR`, 4
+  octeți) în loc de o literă (`l` din `cmpl`).
+
 #### Asamblorul: `gcc -c` {/* #the-assembler-gcc--c */}
 
 **Asamblorul** traduce limbajul de asamblare în cod mașină. Rezultatul este un **fișier obiect**: cod mașină care
@@ -257,7 +281,9 @@ hello.o: ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
 
 - `nm` a listat numele (**simbolurile**) din `hello.o`: `T` înseamnă **definit** aici (în _text_, adică în cod), iar
   `U` înseamnă **folosit** aici, dar **nedefinit** (_undefined_).
-- `objdump -d hello.o` afișează codul mașină, ca octeți, alături de limbajul de asamblare.
+- `objdump -d hello.o` afișează codul mașină, ca octeți, alături de limbajul de asamblare; `-M intel` folosește
+  sintaxa Intel. Ca să vedeți fiecare linie de C deasupra codului ei mașină, compilați cu `-g` și adăugați `-S`:
+  `gcc -g -c hello.c`, apoi `objdump -d -S -M intel hello.o`.
 
 #### Linkerul {/* #the-linker */}
 
@@ -1439,15 +1465,17 @@ singură idee din laborator: dacă vă împotmoliți, citiți secțiunea indicat
     1. opriți `gcc` după preprocesor și scrieți rezultatul în `hello.i`; numărați liniile din `hello.c` și din
        `hello.i` și găsiți declarația lui `printf` în `hello.i`;
     2. uitați-vă la ultimele linii din `hello.i`: aflați ce au devenit `TIMES` și comentariul;
-    3. opriți `gcc` după compilator; în `hello.s`, găsiți linia care apelează `printf` și linia care îl compară pe `i`
-       cu `2`;
-    4. opriți `gcc` după asamblor; afișați tipul lui `hello.o` și listați-i simbolurile: găsiți-l pe cel definit în el
+    3. opriți `gcc` după compilator, cu liniile de C scrise ca comentarii în `hello.s`; găsiți linia care apelează
+       `printf`, linia care îl compară pe `i` cu `2` și linia de C din care vine fiecare;
+    4. scrieți din nou `hello.s`, în sintaxa Intel, și găsiți aceleași două linii;
+    5. opriți `gcc` după asamblor; afișați tipul lui `hello.o` și listați-i simbolurile: găsiți-l pe cel definit în el
        și pe cel pe care doar îl folosește.
 
     <details className="reveal">
     <summary>Indiciu</summary>
 
-    Tabelul din [Etapele compilării](#the-compilation-pipeline); `grep`, `tail` și `wc` din laboratorul 6;
+    Tabelele din [Etapele compilării](#the-compilation-pipeline) și [Compilatorul](#the-compiler-gcc--s); `grep`,
+    `tail` și `wc` din laboratorul 6;
     `man nm`: 🔍 căutați `"U"`.
 
     </details>
@@ -1458,8 +1486,11 @@ singură idee din laborator: dacă vă împotmoliți, citiți secțiunea indicat
     1. `hello.c` are 12 linii; `hello.i` are câteva sute (numărul depinde de biblioteca C); declarația este
        `extern int printf (const char *__restrict __format, ...);`.
     2. Bucla conține `i < 3`, iar comentariul a dispărut.
-    3. `call printf@PLT` și `cmpl $2, -4(%rbp)` (pe ARM: `bl printf` și `cmp w0, 2`).
-    4. `hello.o: ELF 64-bit LSB relocatable, ...`; `T main` este definit în `hello.o`, iar `U printf` este doar
+    3. `gcc -S -fverbose-asm hello.c`: `call printf@PLT` este sub `# hello.c:9:`, `printf`-ul, iar
+       `cmpl $2, -4(%rbp)` sub `# hello.c:8:`, `for`-ul (pe ARM: `bl printf` și `cmp w0, 2`, după `//`).
+    4. `gcc -S -masm=intel hello.c`: `call printf@PLT` și `cmp DWORD PTR -4[rbp], 2` (pe ARM, `gcc` spune
+       `unrecognized command-line option`: ARM are o singură sintaxă).
+    5. `hello.o: ELF 64-bit LSB relocatable, ...`; `T main` este definit în `hello.o`, iar `U printf` este doar
        folosit.
 
     **De ce:** preprocesorul doar modifică textul; compilatorul și asamblorul îl traduc, dar lasă un gol pentru
@@ -2920,6 +2951,7 @@ asistentul. La ultimele două nu există răspunsuri greșite.
    `sudo dnf install clang` (Ubuntu: `sudo apt install clang`) și construiți proiectul cu `make -B CC=clang`.
    <small>→ `man clang`</small>
 3. **Compiler Explorer**: [godbolt.org](https://godbolt.org) afișează codul în limbaj de asamblare al unei funcții C
-   în timp ce o scrieți, pentru multe compilatoare și procesoare. Încercați `-O2` pe `sum`. <small>→ [Compilatorul](#the-compiler-gcc--s)</small>
+   în timp ce o scrieți, pentru multe compilatoare și procesoare, și dă fiecărei linii de C și instrucțiunilor ei
+   aceeași culoare. Încercați `-O2` pe `sum`. <small>→ [Compilatorul](#the-compiler-gcc--s)</small>
 4. **CMake și Meson**: proiectele mari nu își scriu `Makefile`-ul de mână; o unealtă îl generează dintr-o descriere
    mai scurtă a proiectului. <small>→ [cmake.org](https://cmake.org), [mesonbuild.com](https://mesonbuild.com)</small>
