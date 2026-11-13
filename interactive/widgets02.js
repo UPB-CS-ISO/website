@@ -265,6 +265,10 @@ function wPager(root){
   draw();
 }
 
+/* the jump button (dev.js): its prefix in a span, so a narrow screen can drop it and keep the whole name */
+document.addEventListener('pageshown',e=>{const b=e.detail&&e.detail.querySelector('.tryjump>span:nth-child(2)');
+  if(b&&!b.querySelector('.tj-p')&&b.firstChild&&b.firstChild.nodeType===3){const p=document.createElement('span');p.className='tj-p';p.textContent=b.firstChild.textContent;b.replaceChild(p,b.firstChild)}});
+
 const W=window.DK_W||(window.DK_W={});
 W.walk=wWalk; W.fhs=wFhs; W.ospath=wOspath; W.pager=wPager;
 })();

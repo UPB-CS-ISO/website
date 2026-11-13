@@ -800,6 +800,7 @@ CSS = """
 .tryjump{display:inline-flex;align-items:center;gap:10px;margin:-6px 0 20px;padding:7px 16px 7px 7px;border:1.5px solid #00838f;border-radius:999px;background:#f0f8f9;color:#004d65;font-size:14px;text-align:left;max-width:100%}
 .tryjump{white-space:nowrap}.tryjump>span:nth-child(2){min-width:0;overflow:hidden;text-overflow:ellipsis}.tryjump>span{flex:0 0 auto}.tryjump>span:nth-child(2){flex:0 1 auto}
 .tryjump:hover{background:#dcefF1}
+@media (max-width:560px){.tryjump .tj-p{display:none}}
 .tryjump b{color:#00838f}
 .tryjump .tj-i{flex:0 0 26px;height:26px;border-radius:50%;background:#00838f;color:#fff;display:grid;place-items:center;font-size:10px}
 .side .tri{font-style:normal;font-size:9px;color:#00838f;margin-left:auto;align-self:center;padding-left:6px}
