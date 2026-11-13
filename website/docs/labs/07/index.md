@@ -234,6 +234,30 @@ The **compiler** translates C into **assembly**: one line for every instruction 
 - The loop became a compare (`cmpl`, is `i` at most `2`?) and a jump back (`jle`, _jump if less or equal_).
 - `printf` is only **called**: its code is not in `hello.s`.
 
+Two options make `hello.s` easier to read:
+
+| Option          | What it does                                                                                   |
+| --------------- | ---------------------------------------------------------------------------------------------- |
+| `-fverbose-asm` | writes each line of C as a comment above its instructions, and the variable that each one uses |
+| `-masm=intel`   | writes the **Intel syntax** instead of the **AT&T syntax**, the default of `gcc` (x86 only)    |
+
+```shell-session
+[student@fedora lab07]$ gcc -S -fverbose-asm hello.c
+[student@fedora lab07]$ grep -B1 cmpl hello.s
+# hello.c:8:     for (int i = 0; i < TIMES; i++) {
+	cmpl	$2, -4(%rbp)	#, i
+[student@fedora lab07]$ gcc -S -masm=intel hello.c
+[student@fedora lab07]$ grep -E 'call|cmp|jle' hello.s
+	call	printf@PLT
+	cmp	DWORD PTR -4[rbp], 2
+	jle	.L3
+```
+
+- `-fverbose-asm` showed that the compare comes from line 8 of `hello.c`, the `for`, and that `-4(%rbp)` is `i`.
+- `-masm=intel` wrote the same instructions in the Intel syntax, the one of the manuals of Intel and AMD and of most
+  books: the operands are in the **reverse order**, without `%` and `$`, and the size is a word (`DWORD PTR`, 4
+  bytes) instead of a letter (the `l` of `cmpl`).
+
 #### The Assembler: `gcc -c`
 
 The **assembler** translates the assembly into machine code. The result is an **object file**: machine code that
@@ -252,7 +276,9 @@ hello.o: ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
 
 - `nm` listed the names (the **symbols**) of `hello.o`: `T` means **defined** here (in the _text_, the code), `U`
   means **used** here but **undefined**.
-- `objdump -d hello.o` shows the machine code, as bytes, next to the assembly.
+- `objdump -d hello.o` shows the machine code, as bytes, next to the assembly; `-M intel` uses the Intel syntax. To
+  see each line of C above its machine code, compile with `-g` and add `-S`: `gcc -g -c hello.c`, then
+  `objdump -d -S -M intel hello.o`.
 
 #### The Linker
 
@@ -1407,16 +1433,17 @@ unless the exercise says otherwise.
     1. stop `gcc` after the preprocessor, and write the result to `hello.i`; count the lines of `hello.c` and of
        `hello.i`, and find the declaration of `printf` in `hello.i`;
     2. look at the last lines of `hello.i`: find what `TIMES` and the comment became;
-    3. stop `gcc` after the compiler; in `hello.s`, find the line that calls `printf`, and the line that compares `i`
-       with `2`;
-    4. stop `gcc` after the assembler; print the type of `hello.o`, and list its symbols: find the one that is defined
+    3. stop `gcc` after the compiler, with the lines of C written as comments in `hello.s`; find the line that calls
+       `printf`, the line that compares `i` with `2`, and the line of C that each one comes from;
+    4. write `hello.s` again, in the Intel syntax, and find the same two lines;
+    5. stop `gcc` after the assembler; print the type of `hello.o`, and list its symbols: find the one that is defined
        in it, and the one that it only uses.
 
     <details className="reveal">
     <summary>Hint</summary>
 
-    The table of [The Compilation Pipeline](#the-compilation-pipeline); `grep`, `tail` and `wc` from lab 06;
-    `man nm`: search for `"U"`.
+    The tables of [The Compilation Pipeline](#the-compilation-pipeline) and [The Compiler](#the-compiler-gcc--s);
+    `grep`, `tail` and `wc` from lab 06; `man nm`: search for `"U"`.
 
     </details>
 
@@ -1426,8 +1453,11 @@ unless the exercise says otherwise.
     1. `hello.c` has 12 lines; `hello.i` has several hundred (the number depends on the C library); the declaration is
        `extern int printf (const char *__restrict __format, ...);`.
     2. The loop has `i < 3`, and the comment is gone.
-    3. `call printf@PLT` and `cmpl $2, -4(%rbp)` (on ARM: `bl printf` and `cmp w0, 2`).
-    4. `hello.o: ELF 64-bit LSB relocatable, ...`; `T main` is defined in `hello.o`, `U printf` is only used.
+    3. `gcc -S -fverbose-asm hello.c`: `call printf@PLT` is under `# hello.c:9:`, the `printf`, and
+       `cmpl $2, -4(%rbp)` under `# hello.c:8:`, the `for` (on ARM: `bl printf` and `cmp w0, 2`, after `//`).
+    4. `gcc -S -masm=intel hello.c`: `call printf@PLT` and `cmp DWORD PTR -4[rbp], 2` (on ARM, `gcc` says
+       `unrecognized command-line option`: ARM has only one syntax).
+    5. `hello.o: ELF 64-bit LSB relocatable, ...`; `T main` is defined in `hello.o`, `U printf` is only used.
 
     **Why:** the preprocessor only changes the text; the compiler and the assembler translate it, but leave a hole
     for `printf`, which the linker fills.
@@ -2863,6 +2893,7 @@ assistant. There are no wrong answers for the last two.
    `sudo dnf install clang` (Ubuntu: `sudo apt install clang`), and build the project with `make -B CC=clang`.
    <small>→ `man clang`</small>
 3. **Compiler Explorer**: [godbolt.org](https://godbolt.org) shows the assembly code of a C function while you type
-   it, for many compilers and processors. Try `-O2` on `sum`. <small>→ [The Compiler](#the-compiler-gcc--s)</small>
+   it, for many compilers and processors, and gives each line of C and its instructions the same color. Try `-O2` on
+   `sum`. <small>→ [The Compiler](#the-compiler-gcc--s)</small>
 4. **CMake and Meson**: large projects do not write the `Makefile` by hand; a tool generates it from a shorter
    description of the project. <small>→ [cmake.org](https://cmake.org), [mesonbuild.com](https://mesonbuild.com)</small>
