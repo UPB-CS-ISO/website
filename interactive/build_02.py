@@ -4,7 +4,7 @@
     python3 interactive/build_02.py
 writes website/static/courses/02-files-management/index.html
 """
-import os, re, sys
+import json, os, re, sys
 sys.path.insert(0, os.path.dirname(__file__))
 from engine import *  # noqa
 
@@ -25,6 +25,12 @@ def img(path, alt, width=900):
     return _page.img("slides/src/02_files_management/img", path, alt, width)
 
 
+def widget(_w, **data):
+    """<div data-w=name data-k=...>: strings as they are, everything else as JSON"""
+    a = "".join(f' data-{k}="{E(v if isinstance(v, str) else json.dumps(v))}"' for k, v in data.items())
+    return f'<div data-w="{_w}"{a}></div>'
+
+
 # ---------------------------------------------------------------- 01 layout
 page = chapter("layout", "One tree", "Windows drives vs. the single Linux root", 12)
 
@@ -34,8 +40,6 @@ LINUX_TREE = """/
 ├── dev
 ├── etc
 ├── home
-│   ├── alice
-│   └── bob
 ├── lib
 ├── media
 ├── mnt
@@ -46,9 +50,6 @@ LINUX_TREE = """/
 ├── sys
 ├── tmp
 ├── usr
-│   ├── bin
-│   ├── lib
-│   └── share
 └── var"""
 
 page("one-root", "Drive letters vs. one root", "File system layout", F(r"""
@@ -83,7 +84,7 @@ page("one-root", "Drive letters vs. one root", "File system layout", F(r"""
 ├── media
 │   └── usb
 ├── tmp
-└── usr''', here=(9,), caption="the USB stick is just another directory: `/media/usb`")}
+└── usr''', here=(7, 8), caption="the USB stick is just another directory: `/media/usb`")}
 </div></div>
 {quiz("Alice plugs in a USB stick on Linux. Where do its files show up?",
       ["On a new drive letter, `E:\\`", "In a directory below `/`, for example `/media/alice/USB_STICK`", "In a second root, next to `/`", "Only in the file manager, not in the shell"],
@@ -107,17 +108,27 @@ FHS = [
     ("/usr", "installed software: `/usr/bin` (`firefox`, `python3`, `git`), `/usr/lib`, `/usr/share` (icons, manual pages)", "`C:\\Program Files`"),
     ("/var", "data that grows while the system runs: `/var/log/`, `/var/cache/`, `/var/lib/` (databases)", "`C:\\ProgramData`, Event Viewer"),
 ]
+FHS_GROUP = {"/bin, /sbin": "prog", "/lib": "prog", "/opt": "prog", "/usr": "prog", "/etc": "conf", "/home": "user", "/root": "user",
+             "/var": "var", "/tmp": "var", "/dev": "virt", "/proc, /sys": "virt", "/media": "disk", "/mnt": "disk"}
+FHS_GROUPS = [
+    dict(id="prog", name="programs", win=md("`C:\\Windows`, `C:\\Program Files`")),
+    dict(id="conf", name="configuration", win="the Registry"),
+    dict(id="user", name="user data", win=md("`C:\\Users`")),
+    dict(id="var", name="changing data", win=md("`C:\\ProgramData`, `%TEMP%`")),
+    dict(id="virt", name="virtual", win="no files: Task Manager, Device Manager"),
+    dict(id="disk", name="other disks", win="drive letters"),
+]
+
+
+def fhs_widget():
+    dirs = [dict(k=d, what=md(w), win=md(x), g=FHS_GROUP.get(d, "")) for d, w, x in FHS]
+    return widget("fhs", tree=LINUX_TREE, dirs=dirs, groups=FHS_GROUPS)
+
+
 page("directories", "What every directory is for", "The Linux layout", F(r"""
 <p class="txt">Each directory directly below <code>/</code> has a job. You do not need to memorize them, but you should recognize them when a path starts with one.</p>
-<div class="duo top w14" style="grid-template-columns:.55fr 1.45fr"><div>{tree(LINUX_TREE, here=(6, 7))}</div><div>
-{table(["Directory", "What lives there", "Windows equivalent"], [(f"`{d}`", w, x) for d, w, x in FHS], "k")}
-</div></div>
-{table(["", "Linux", "Windows"], [
-    ("programs", "`/bin`, `/sbin`, `/usr`, `/opt`", "`C:\\Windows`, `C:\\Program Files`"),
-    ("configuration", "`/etc`", "Registry"),
-    ("user data", "`/home`, `/root`", "`C:\\Users`"),
-    ("changing data", "`/var`, `/tmp`", "`C:\\ProgramData`, `%TEMP%`"),
-    ("virtual", "`/dev`, `/proc`, `/sys`", "*no files*")])}
+{fhs_widget()}
+{sol("All the directories in one table", table(["Directory", "What lives there", "Windows equivalent"], [(f"`{d}`", w, x) for d, w, x in FHS], "k"))}
 {bad("`/root` is the root directory", "`/` is the root of the file system. `/root` is only the home directory of the user called `root`, one directory below `/`.", "say *slash* for `/` and *slash root* for `/root`.")}
 {quiz("You changed the name of the computer and want to check the setting. Which file do you open?",
       ["`/home/alice/hostname`", "`/etc/hostname`", "`/proc/hostname`", "`/bin/hostname`"],
@@ -162,6 +173,15 @@ Movies/the_odyssey.mkv''')}
       1, "A relative path is glued to the current directory: `/home/alice/Downloads` + `/Movies/the_odyssey.mkv`. That file probably does not exist, so the command fails with *No such file or directory*.")}
 """))
 
+OSPATHS = [   # path, answer (win / linux / none), why: the quiz of the slides
+    ("C:\\Users\\Alice\\Videos\\toy_story_5.mkv", "win", "a drive letter and backslashes."),
+    ("/home/alice/Movies/toy_story_5.mkv", "linux", "it starts from the root `/`."),
+    ("..\\Videos\\michael.mp4", "win", "a relative path with `\\`."),
+    ("../Downloads/supergirl.mp4", "linux", "a relative path with `/`."),
+    ("C:/Program Files/App", "win", "a drive letter; Windows also accepts `/` in many programs."),
+    ("~\\Downloads", "none", "`~` is only expanded by Linux shells, and on Linux `\\` is not a separator."),
+    ("~/Movies/project_hail_mary.mkv", "linux", "`~` is the home directory, expanded by `bash`."),
+]
 page("symbols", "Special path symbols", "`.` `..` `/` `~`", F(r"""
 {table(["Meaning", "Windows", "Linux", "Notes"], [
     ("current directory", "`.`", "`.`", "the directory you are in"),
@@ -174,24 +194,7 @@ page("symbols", "Special path symbols", "`.` `..` `/` `~`", F(r"""
 <div class="panel"><h3><code>~</code> belongs to the shell</h3><p class="cap"><code>bash</code> replaces <code>~</code> with your home directory before the command runs. In quotes (<code>"~"</code>) it is a plain character.</p></div>
 <div class="panel"><h3>Windows also accepts <code>/</code></h3><p class="cap"><code>C:/Program Files/App</code> works in most programs. The reverse is not true: Linux never accepts <code>\\</code> as a separator.</p></div>
 </div>
-<h2>Windows or Linux?</h2>
-<p class="txt">Decide for every path which system it belongs to and whether it is valid, then open the answer.</p>
-{table(["Path", "OS?", "Valid?"], [
-    ("`C:\\Users\\Alice\\Videos\\toy_story_5.mkv`", "", ""),
-    ("`/home/alice/Movies/toy_story_5.mkv`", "", ""),
-    ("`..\\Videos\\michael.mp4`", "", ""),
-    ("`../Downloads/supergirl.mp4`", "", ""),
-    ("`C:/Program Files/App`", "", ""),
-    ("`~\\Downloads`", "", ""),
-    ("`~/Movies/project_hail_mary.mkv`", "", "")])}
-{sol("Answers", table(["Path", "OS", "Valid", "Why"], [
-    ("`C:\\Users\\Alice\\Videos\\toy_story_5.mkv`", "Windows", "✅", "drive letter and backslashes"),
-    ("`/home/alice/Movies/toy_story_5.mkv`", "Linux", "✅", "starts from the root `/`"),
-    ("`..\\Videos\\michael.mp4`", "Windows", "✅", "relative path with `\\`"),
-    ("`../Downloads/supergirl.mp4`", "Linux", "✅", "relative path with `/`"),
-    ("`C:/Program Files/App`", "Windows", "✅", "Windows also accepts `/` in many cases"),
-    ("`~\\Downloads`", "Windows", "❌", "`~` is only expanded by Linux shells, and `\\` is not a Linux separator"),
-    ("`~/Movies/project_hail_mary.mkv`", "Linux", "✅", "`~` is the home directory")]))}
+{widget("ospath", rows=[dict(p=p, a=a, why=md(w)) for p, a, w in OSPATHS])}
 """))
 
 # ---------------------------------------------------------------- 03 walking
@@ -246,29 +249,39 @@ def calc(rel, absolute):
             f'<div><div class="lb">🌍 absolute path</div><b>{E(res)}</b></div></div>')
 
 
-WALKS = [
-    ("./the_odyssey.mkv", "/home/alice/Movies/the_odyssey.mkv", [(4, ".", "`.` stay in `Movies`"), (5, "open", "open `the_odyssey.mkv`")], "the same as `the_odyssey.mkv`"),
-    ("../watchlist.txt", "/home/alice/watchlist.txt", [(3, "..", "`..` up to `alice`"), (8, "open", "open `watchlist.txt`")], None),
-    ("../Downloads/supergirl.mp4", "/home/alice/Downloads/supergirl.mp4", [(3, "..", "`..` up to `alice`"), (6, "Downloads", "`Downloads` down"), (7, "open", "open `supergirl.mp4`")], None),
-    ("../../bob/notes.txt", "/home/bob/notes.txt", [(3, "..", "`..` up to `alice`"), (2, "..", "`..` up to `home`"), (9, "bob", "`bob` down"), (10, "open", "open `notes.txt`")], None),
-    ("./../Movies/./the_odyssey.mkv", "/home/alice/Movies/the_odyssey.mkv", [(4, ".", "`.` stay in `Movies`"), (3, "..", "`..` up to `alice`"), (4, "Movies", "`Movies` back down"), (4, ".", "`.` stay in `Movies`"), (5, "open", "open `the_odyssey.mkv`")], "`.` and `..` can appear *anywhere* in a path"),
-    ("../Downloads/./../../bob/notes.txt", "/home/bob/notes.txt", [(3, "..", "`..` up to `alice`"), (6, "Downloads", "`Downloads` down"), (6, ".", "`.` stay in `Downloads`"), (3, "..", "`..` back up to `alice`"), (2, "..", "`..` up to `home`"), (9, "bob", "`bob` down"), (10, "open", "open `notes.txt`")], "`..` removes the last directory *still left* in the path"),
+WALKS = [   # relative path from PWD, its absolute path (checked by calc), the tip
+    ("./the_odyssey.mkv", "/home/alice/Movies/the_odyssey.mkv", "the same as `the_odyssey.mkv`: `.` changes nothing"),
+    ("../watchlist.txt", "/home/alice/watchlist.txt", "`..` climbs one level, the name is looked up there"),
+    ("../Downloads/supergirl.mp4", "/home/alice/Downloads/supergirl.mp4", "up, then down into a sibling directory"),
+    ("../../bob/notes.txt", "/home/bob/notes.txt", "two `..` reach `home`, where every user has a directory"),
+    ("./../Movies/./the_odyssey.mkv", "/home/alice/Movies/the_odyssey.mkv", "`.` and `..` can appear *anywhere* in a path"),
+    ("../Downloads/./../../bob/notes.txt", "/home/bob/notes.txt", "`..` removes the last directory *still left* in the path"),
 ]
 
 
-def walk(rel, absolute, moves, extra):
-    assert len(rel.split("/")) == len(moves), rel
-    notes = {}
-    for k, (line, n, _) in enumerate(moves, 1):
-        notes[line] = (notes[line] + " " if line in notes else "") + f"({k}) {n}"
-    here = tuple(m[0] for m in moves)
-    target = moves[-1][0]
-    left = (f'<h3>🧾 <code>{E(rel)}</code></h3><p class="small">from 📍 <code>{PWD}</code></p>'
-            + steps(*[m[2] for m in moves]))
-    right = tree(DOT, here=here, cwd=4, target=target, notes=notes)
-    tip = f"💡 {md(extra)}" if extra else "💡 how the absolute path is calculated"
-    return (f'<div class="prob"><div class="duo top" style="margin:0"><div>{left}</div><div>{right}</div></div>'
-            f'<div class="note blue" style="margin-bottom:0"><p>{tip}</p>{calc(rel, absolute)}</div></div>')
+# the tree of the walker: the one of the slides, plus /etc to walk to with absolute paths
+WALK_TREE = """/
+├── etc
+│   └── hostname
+└── home
+    ├── alice
+    │   ├── Movies
+    │   │   └── the_odyssey.mkv
+    │   ├── Downloads
+    │   │   └── supergirl.mp4
+    │   └── watchlist.txt
+    └── bob
+        └── notes.txt"""
+
+
+def walker():
+    return widget("walk", tree=WALK_TREE, pwd=PWD, paths=[dict(p=r, tip=md(x)) for r, a, x in WALKS if calc(r, a)])
+
+
+def paper(rel, absolute, extra):
+    """the calculation on paper, without the tree"""
+    return (f'<div class="note blue"><h3>🧾 <code>{E(rel)}</code> <span class="small">from 📍 <code>{PWD}</code></span></h3>'
+            f'<p>💡 {md(extra)}</p>{calc(rel, absolute)}</div>')
 
 
 page("dots", "`.` and `..`", "Where am I, where is my parent", F(r"""
@@ -285,14 +298,14 @@ page("dots", "`.` and `..`", "Where am I, where is my parent", F(r"""
       "Three levels up from `Movies`: `alice`, `home`, `/`. One more `..` would stay in `/`.")}
 """))
 
-page("examples", "Walking a path, step by step", "Four examples", F(r"""
-<p class="txt">Read the path from left to right. Each part is one move in the tree, starting from 📍 <code>{PWD}</code>.</p>
-{"".join(walk(*w) for w in WALKS[:4])}
+page("examples", "Walking a path, step by step", "From relative to absolute", F(r"""
+<p class="txt">Read the path from left to right. Each part is one move in the tree, starting from 📍 <code>{PWD}</code>. Under the path, the same walk on paper: glue the path to the current directory, then cancel the parts.</p>
+{walker()}
 """))
 
 page("tricky", "Tricky paths", "`.` and `..` anywhere", F(r"""
-<p class="txt">The rule does not change when <code>.</code> and <code>..</code> are in the middle of the path: glue the path to the current directory, drop every <code>.</code>, and let every <code>..</code> remove the directory just before it.</p>
-{"".join(walk(*w) for w in WALKS[4:])}
+<p class="txt">The rule does not change when <code>.</code> and <code>..</code> are in the middle of the path: glue the path to the current directory, drop every <code>.</code>, and let every <code>..</code> remove the directory just before it. Both paths below are also in the walker on the previous page.</p>
+{"".join(paper(*w) for w in WALKS[4:])}
 {quiz("From `/home/alice/Movies`, what is `../Movies/../Downloads/.` as an absolute path?",
       ["`/home/alice/Movies/Downloads`", "`/home/alice/Downloads`", "`/home/Downloads`", "`/home/alice/Movies/../Downloads`"], 1,
       "`/home/alice/Movies` + `/../Movies/../Downloads/.`: the first `..` removes `Movies`, `Movies` comes back, the second `..` removes it again, `Downloads` stays, `.` is dropped.")}
@@ -302,25 +315,29 @@ page("tricky", "Tricky paths", "`.` and `..` anywhere", F(r"""
 
 # ---------------------------------------------------------------- 04 manual
 page = chapter("manual", "The manual", "`man`, SYNOPSIS, paths as parameters", 14)
-MAN_PAGE = """PWD(1)                        User Commands                        PWD(1)
+MAN_PAGE = """PWD(1)                User Commands                 PWD(1)
 
 NAME
-       pwd - print the name of the current working directory
+       pwd - print name of current/working directory
 
 SYNOPSIS
        pwd [OPTION]...
 
 DESCRIPTION
-       Prints the absolute path of the current working directory,
-       starting from the root directory /.
+       Print the full filename of the current working
+       directory.
+
        -L, --logical
-              keep the symbolic links that are part of the path
+              use PWD from environment, even if it
+              contains symlinks
+
        -P, --physical
-              replace symbolic links with the directories they point to
-       --help show a short help text and exit
+              avoid all symlinks
+
+       --help display this help and exit
 
 EXIT STATUS
-       0 on success, any other value if an error occurred
+       0 on success, any other value on an error
 
 EXAMPLES
        $ cd /home/alice/Movies && pwd
@@ -328,9 +345,83 @@ EXAMPLES
 
 SEE ALSO
        cd(1), ls(1)"""
+MAN_LS = """LS(1)                     User Commands                    LS(1)
+
+NAME
+       ls - list directory contents
+
+SYNOPSIS
+       ls [OPTION]... [FILE]...
+
+DESCRIPTION
+       List information about the FILEs (the current
+       directory by default). Sort entries alphabetically
+       if none of -cftuvSUX nor --sort is specified.
+
+       Mandatory arguments to long options are mandatory
+       for short options too.
+
+       -a, --all
+              do not ignore entries starting with .
+
+       -A, --almost-all
+              do not list implied . and ..
+
+       -d, --directory
+              list directories themselves, not their
+              contents
+
+       -F, --classify
+              append indicator (one of */=>@|) to entries
+
+       -h, --human-readable
+              with -l and -s, print sizes like 1K 234M 2G
+
+       -i, --inode
+              print the index number of each file
+
+       -l     use a long listing format
+
+       -r, --reverse
+              reverse order while sorting
+
+       -R, --recursive
+              list subdirectories recursively
+
+       -s, --size
+              print the allocated size of each file, in
+              blocks
+
+       -S     sort by file size, largest first
+
+       -t     sort by time, newest first
+
+       -1     list one file per line
+
+       --help display this help and exit
+
+       --version
+              output version information and exit
+
+   Exit status:
+       0      if OK,
+
+       1      if minor problems (e.g., cannot access
+              subdirectory),
+
+       2      if serious trouble (e.g., cannot access
+              command-line argument).
+
+AUTHOR
+       Written by Richard M. Stallman and David MacKenzie.
+
+SEE ALSO
+       dircolors(1), find(1), tree(1)
+
+GNU coreutils 9.4            April 2024                     LS(1)"""
 page("man", "Reading a manual page", "`man pwd`", F(r"""
 {why("The manual installed on your computer describes exactly the version you run. Web pages and AI answers are often for another version, or simply wrong; the manual is the reference you check them against.")}
-<div class="duo top w14"><div><figure class="f"><pre class="tree" style="font-size:12px">{E(MAN_PAGE)}</pre><figcaption><code>man pwd</code>, shortened</figcaption></figure></div><div>
+<div class="duo top w14"><div><figure class="f manfig"><pre class="tree">{E(MAN_PAGE)}</pre><figcaption><code>man pwd</code>, shortened</figcaption></figure></div><div>
 {table(["Part", "What it tells you"], [
     ("`PWD(1)`", "the name and the *section* of the page; section 1 is *User Commands*"),
     ("NAME", "what the command is, in one line"),
@@ -341,15 +432,8 @@ page("man", "Reading a manual page", "`man pwd`", F(r"""
     ("SEE ALSO", "related pages: `cd(1)` is the page of `cd` in section 1")])}
 </div></div>
 <h2>Inside the viewer</h2>
-<div class="duo top"><div>
-{table(["Keys", "Move in the page"], [
-    ("[[↑]] [[↓]]", "one line up / down"), ("[[Space]] [[Page Down]]", "one page down"), ("[[b]] [[Page Up]]", "one page up"),
-    ("[[g]] [[G]]", "the beginning / the end"), ("[[h]]", "help, with all the keys"), ("[[q]]", "quit")])}
-</div><div>
-{table(["Keys", "Search in the page"], [
-    ("[[/]] *word* [[Enter]]", "search forward"), ("[[?]] *word* [[Enter]]", "search backward"), ("[[n]]", "next match"), ("[[N]]", "previous match")])}
-{note("Search for what you want to do", "You do not know the option yet, so do not search for it. `man ls`, then [[/]] `reverse` [[Enter]] jumps to `-r, --reverse  reverse order while sorting`.")}
-</div></div>
+<p class="txt"><code>man</code> shows the page in <code>less</code>, a viewer driven by single keys. You do not know the option yet, so search for what you want to do: <code>/reverse</code> finds <code>-r, --reverse</code>. For a quick summary instead of the whole page, most commands print one with <code>--help</code>: <code>ls --help</code>.</p>
+{widget("pager", name="ls", text=MAN_LS)}
 {quiz("A SYNOPSIS says `ls [OPTION]... [FILE]...`. Which call is **not** allowed by it?", ["`ls`", "`ls -l -a Movies Downloads`", "`ls Movies`", "none, all three are allowed"], 3,
       "Both parts are in `[ ]` (optional) and followed by `...` (they can repeat): zero or more options, then zero or more files.")}
 """))
@@ -384,12 +468,6 @@ $ mv /tmp/watchlist.txt ~/Downloads/
 $ ls -l ~/Documents ../Downloads''', marks={1: [("../watchlist.txt", "mk"), ("/tmp/", "mk3")], 2: [("/tmp/watchlist.txt", "mk"), ("~/Downloads/", "mk3")], 3: [("-l", "mk2"), ("~/Documents", "mk"), ("../Downloads", "mk")]})}
 {note("Relative paths depend on where you are", "`cp ../watchlist.txt /tmp/` copies a different file (or fails) when you run it from another directory. Check with `pwd`, or look at the prompt, before you run a command with relative paths.", "warn")}
 </div></div>
-<h2>Read the manual first</h2>
-<div class="trio">
-<div class="panel"><h3>1. the manual</h3>{sh("$ man ls")}<p class="cap">written for the version installed on your computer</p></div>
-<div class="panel"><h3>2. the short help</h3>{sh("$ ls --help")}<p class="cap">a summary of the options, for most commands</p></div>
-<div class="panel wash"><h3>3. web search, AI</h3><p class="cap">useful to find the command. The options it gives may be for another version, or wrong: check them in the manual.</p></div>
-</div>
 """))
 
 # ---------------------------------------------------------------- 05 navigation
@@ -711,8 +789,148 @@ META = dict(
 )
 
 
+CSS = """
+.pg h2{margin-top:34px}
+
+/* ---- the interactive parts: a teal frame and a label (as in lecture 07) ---- */
+.wd{container-type:inline-size;border:2px solid #00838f;border-radius:16px;box-shadow:0 0 0 5px #e3f2f3,0 14px 34px rgba(0,77,101,.08);margin:34px 0}
+.wd-h{background:linear-gradient(100deg,#dcefF1,#eef6f7 70%);align-items:center;padding:14px 20px}
+.wd-h h3::before{content:"\\25B6  Interactive";display:block;width:max-content;font:800 10.5px/1 system-ui,sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:#fff;background:#00838f;border-radius:999px;padding:5px 10px;margin-bottom:7px}
+.wd-h p{color:#33555f}
+.tryjump{display:inline-flex;align-items:center;gap:10px;margin:-6px 0 20px;padding:7px 16px 7px 7px;border:1.5px solid #00838f;border-radius:999px;background:#f0f8f9;color:#004d65;font-size:14px;text-align:left;max-width:100%}
+.tryjump>span{flex:0 0 auto}.tryjump>span:nth-child(2){flex:0 1 auto;min-width:0;line-height:1.35}   /* one line when it fits, a second line rather than a cut name */
+.tryjump:hover{background:#dcefF1}
+@media (max-width:560px){.tryjump .tj-p{display:none}}
+.tryjump b{color:#00838f}
+.tryjump .tj-i{flex:0 0 26px;height:26px;border-radius:50%;background:#00838f;color:#fff;display:grid;place-items:center;font-size:10px}
+.side .tri{font-style:normal;font-size:9px;color:#00838f;margin-left:auto;align-self:center;padding-left:6px}
+.side li a.on .tri{color:#004d65}
+.chip.on{background:#004d65;color:#fff;border-color:#004d65}
+
+/* ---- the demo terminal: its side panel goes next to it only when there is room for both ---- */
+[data-w=shell]{margin-right:0!important}
+.wd .wd-b.sb{grid-template-columns:minmax(0,1fr)}
+.wd .wd-b.sb>div+div{border-left:0;border-top:1px solid var(--line)}
+@container (min-width:840px){.wd .wd-b.sb{grid-template-columns:minmax(0,1fr) 300px}.wd .wd-b.sb>div+div{border-left:1px solid var(--line);border-top:0}}
+@container (min-width:1150px){.wd .missions ol{grid-template-columns:1fr 1fr;column-gap:32px}}
+.shellw .cmdchips{padding:10px 20px}
+
+/* ---- walk a path ---- */
+.wk-c{gap:6px 8px;align-items:center;padding:8px 18px}
+.wk-c2{align-items:center;justify-content:space-between;gap:8px 18px;padding:6px 18px}
+.wk-own{display:flex;align-items:center;gap:8px;flex:1 1 300px;min-width:0}
+.wk-own input{flex:1;min-width:0;font:13.5px "SF Mono",Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff}
+.wk-own .btn,.wk-nav .btn{padding:8px 14px}
+.wk-nav{display:flex;align-items:center;gap:10px;margin-left:auto}
+.wk-nav .btn[disabled]{opacity:.45;cursor:default}
+.pdots{display:flex;gap:6px;flex-wrap:wrap;max-width:150px}.pdots i{width:9px;height:9px;border-radius:50%;background:#ccdbe0}.pdots i.dn{background:#00838f}.pdots i.on{background:#e65100;transform:scale(1.3)}
+.wk-x{padding:7px 18px;background:#fff6ef;border-bottom:1px solid #f6d6bd;font-size:15px;line-height:1.45;min-height:46px}
+.wk-x>b{color:#c2410c;margin-right:4px}
+.wk-x.err{background:#fdecea;border-color:#f3c3bd}.wk-x.err>b{color:#b3261e}
+.wk-b{display:grid;grid-template-columns:minmax(0,1fr)}
+.wk-b>div{padding:10px 18px;min-width:0}
+.wk-b>div+div{border-top:1px solid var(--line)}
+@container (min-width:860px){.wk-b{grid-template-columns:minmax(0,1fr) auto}.wk-b>div+div{border-top:0;border-left:1px solid var(--line)}}
+.wk-lb{font-size:11px;font-weight:750;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.wk-toks{display:flex;flex-wrap:wrap;align-items:center;gap:3px 2px;font:600 14.5px "SF Mono",Menlo,Consolas,monospace}
+.wk-t{border:1.5px solid #b8cdd4;border-radius:7px;padding:2px 7px;background:#fff;color:#7d8d93}
+.wk-t.dn{border-color:#00838f;color:#004d65;background:#eef6f7}
+.wk-t.on{border-color:#e65100;background:#ffe6cc;color:#b35900;box-shadow:0 0 0 3px #fde5d4}
+.wk-t.x{border-color:#c62828;background:#fdecea;color:#b3261e}
+.wk-s{color:#7d8d93;padding:0 1px;font-weight:400}
+.wk .calcp{font-size:13px;line-height:1.5}.wk .calcp>div{margin-top:3px}.wk .calcp .lb{font-size:12px}
+.wk-q{color:#9aa9ae}.wk-e{color:#b3261e}
+pre.tree.wk-tree{font-size:13px;line-height:1.42;overflow-x:auto}
+pre.tree .wk-on{background:#ffe6cc;color:#b35900;font-weight:700;border-radius:3px}
+pre.tree .wk-xl{background:#fdecea;color:#b3261e;font-weight:700;border-radius:3px}
+@container (max-width:520px){pre.tree.wk-tree .an{display:none}}
+
+/* ---- the directories below / ---- */
+.g-prog{--g:#004d65}.g-conf{--g:#8e24aa}.g-user{--g:#2e7d46}.g-var{--g:#c77800}.g-virt{--g:#00838f}.g-disk{--g:#3559a6}
+.fh-c{padding:10px 18px}.fh-c .seg{flex-wrap:wrap}
+.fh-gx{padding:8px 18px;font-size:14.5px;line-height:1.45;border-bottom:1px solid var(--line);border-left:4px solid var(--g,transparent);background:#fbfcfe;min-height:42px}
+.fh-gx>b{color:var(--g)}
+.fh-b{display:grid;grid-template-columns:minmax(0,1fr)}
+.fh-b>div{min-width:0}
+.fh-card{order:-1;border-bottom:1px solid var(--line)}
+@container (min-width:620px){.fh-b{grid-template-columns:auto minmax(0,1fr)}.fh-card{order:0;border-bottom:0;border-left:1px solid var(--line)}}
+.fh-t{padding:8px 12px;display:flex;flex-direction:column;overflow-x:auto}
+.fh-l{display:flex;border:0;background:none;padding:0 10px 0 4px;font:12.5px/1.3 "SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;color:var(--ink);text-align:left;white-space:pre;border-radius:5px}
+.fh-l span{color:#9aa9ae}.fh-l b{font-weight:600}
+.fh-l:hover{background:#eef4f6}
+.fh-l.sn b{color:#004d65}
+.fh-l.gr{background:#e0f2f1}.fh-l.gr b{color:#00695c;font-weight:800}
+.fh-l.on{background:#ffe6cc}.fh-l.on b{color:#b35900;font-weight:800}
+.fh-card{padding:16px 20px;display:flex;flex-direction:column;gap:10px}
+.fh-k{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.fh-k code{font-size:18px;font-weight:700;color:#004d65}
+.fh-tag{font-size:11px;font-weight:750;letter-spacing:.8px;text-transform:uppercase;border-radius:999px;padding:3px 9px;color:#fff;background:var(--g)}
+.fh-card p{font-size:15.5px;line-height:1.55}
+.fh-win{font-size:14.5px;border-left:3px solid #0078d4;background:#f3f7fc;border-radius:0 8px 8px 0;padding:8px 12px}.fh-win b{color:#0b5aa6;margin-right:6px}
+
+/* ---- Windows or Linux ---- */
+.op-r{display:grid;grid-template-columns:minmax(0,1fr);gap:6px 16px;padding:8px 18px;border-top:1px solid var(--line);align-items:center;min-height:48px}
+.op-r:first-child{border-top:0}
+@container (min-width:640px){.op-r{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}}
+.op-p{font-size:14px;justify-self:start}
+.op-bs{display:flex;gap:6px;flex-wrap:wrap}
+.op-bs button{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:4px 12px;font-size:13.5px;font-weight:650;color:var(--navy)}
+.op-bs button:hover{border-color:#00838f;background:#f0f8f9}
+.op-r.ok{background:#f5fbf6}.op-r.no{background:#fff8f6}
+.op-w{font-size:14px;line-height:1.45;margin:0}
+.op-tag{display:inline-block;font-size:12px;font-weight:750;border-radius:999px;padding:1px 9px;margin-right:2px}
+.op-tag.ok{background:#e3f1e6;color:#2e7d46}.op-tag.no{background:#fdecea;color:#b3261e;text-decoration:line-through}
+.op-f{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+
+/* ---- the manual page viewer ---- */
+.mp-b{display:grid;grid-template-columns:minmax(0,1fr)}
+.mp-b>div{min-width:0}
+.mp-r{border-top:1px solid var(--line)}
+@container (min-width:860px){.mp-b{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}.mp-r{border-top:0;border-left:1px solid var(--line)}}
+.mp-l{padding:12px 18px;display:flex;flex-direction:column;gap:8px}
+.mp-scr{background:#0c0c0c;border-radius:10px;overflow:hidden;cursor:text;outline:0;box-shadow:0 0 0 2px #0c0c0c}
+.mp-scr:focus,.mp-scr:focus-within{box-shadow:0 0 0 3px #26a6b8}
+.mp-scr pre{margin:0;padding:8px 12px;min-height:calc(16 * 1.45em + 16px);font:12px/1.45 "DejaVu Sans Mono","Ubuntu Mono",Menlo,Consolas,monospace;color:#d3d7cf;white-space:pre-wrap;overflow-wrap:anywhere}
+.mp-scr pre b{color:#fff}
+.mp-scr mark{background:#d3d7cf;color:#0c0c0c;border-radius:1px}
+.mp-dim{color:#666}.mp-sh{color:#d3d7cf}.mp-cur{background:#d3d7cf}
+.mp-st{display:flex;align-items:center;background:#d3d7cf;color:#0c0c0c;font:12px/1.6 "DejaVu Sans Mono","Ubuntu Mono",Menlo,Consolas,monospace;padding:1px 12px;min-height:22px}
+.mp-st.msg,.mp-st.srch{background:#0c0c0c;color:#fff}.mp-st.off{background:#0c0c0c}
+.mp-in{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#fff;font:inherit;padding:0;caret-color:#fff}
+.mp-keys{display:flex;flex-wrap:wrap;gap:5px}
+.mp-keys .chip{padding:3px 10px}
+.mp-r .missions{border-top:0;padding:12px 18px}
+.mp-r .missions li{font-size:14px}
+.mp-kt{margin:0 18px 14px;font-size:13px;border-collapse:collapse;color:var(--muted)}
+.mp-kt td{padding:3px 8px 3px 0}.mp-kt kbd{font-size:11.5px;padding:3px 6px}
+
+/* ---- tables wrap instead of scrolling sideways; terminals wrap their long lines ---- */
+.pg table.t td code,.pg table.t th code{white-space:normal}
+.pg table.t.k td:first-child{white-space:normal}
+.pg pre.sh{white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden}
+.pg .syn{white-space:pre-wrap;overflow-wrap:anywhere}
+@media (max-width:520px){.pg table.t{font-size:13px}.pg table.t th,.pg table.t td{padding:7px 6px}.pg table.t td,.pg table.t th{overflow-wrap:anywhere;hyphens:auto}}
+.manfig pre.tree{font-size:12px;white-space:pre-wrap}
+@media (max-width:720px){.pg pre.tree{font-size:11.5px}}
+
+/* ---- wide monitors: a wider page, the widgets use the room ---- */
+@media (min-width:1500px){
+ .wrap{width:min(1640px,calc(100% - 96px))}
+ .layout{grid-template-columns:250px minmax(0,1fr);gap:56px}
+ .pg>p,.pg .txt,.pg ul.k{max-width:940px}
+ .why{max-width:1040px}.q,details.sol{max-width:980px}
+ .duo{gap:40px}
+ .hero{grid-template-columns:1.6fr 1fr}
+}
+@media (min-width:1900px){
+ body{font-size:18px}
+ .wrap{width:min(1840px,calc(100% - 140px))}
+ .layout{grid-template-columns:270px minmax(0,1fr);gap:64px}
+}
+"""
+
+
 def build():
-    render(COURSE, META, OUT)
+    render(COURSE, META, OUT, js=["dev.js", "widgets02.js"], css=CSS)
 
 
 if __name__ == "__main__":
