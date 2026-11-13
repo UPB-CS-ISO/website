@@ -308,31 +308,38 @@ function wShell(root){
 }
 
 /* ---------- a real Linux, emulated by v86 ---------- */
+/* everything comes from public CDNs, nothing is deployed with the site:
+   the emulator from npm (jsDelivr), the BIOS from the v86 repository (jsDelivr),
+   the Buildroot kernel from the image server of the v86 author (i.copy.sh, the one copy.sh/v86 uses) */
 const V86CFG=Object.assign({
   lib:'https://cdn.jsdelivr.net/npm/v86@0.5.471/build/libv86.js',
   wasm:'https://cdn.jsdelivr.net/npm/v86@0.5.471/build/v86.wasm',
-  bios:'v86/seabios.bin', vga:'v86/vgabios.bin', bzimage:'v86/buildroot-bzimage68.bin',
+  bios:'https://cdn.jsdelivr.net/gh/copy/v86@0.5/bios/seabios.bin',
+  vga:'https://cdn.jsdelivr.net/gh/copy/v86@0.5/bios/vgabios.bin',
+  bzimage:'https://i.copy.sh/buildroot-bzimage68.bin',
 },window.ISO_V86||{});
 const SEED='mkdir -p ~/Downloads ~/Movies && echo "Project Hail Mary" > ~/watchlist.txt && touch ~/Downloads/supergirl.mp4 ~/Downloads/michael.mp4 ~/Movies/the_odyssey.mkv && cd ~ && clear && ls -l\n';
 function wLinux(root){
   root.innerHTML=`<div class="wd"><div class="wd-h"><div><h3>A real Linux in the page</h3><p>The <a href="https://github.com/copy/v86" target="_blank" rel="noopener">v86</a> emulator boots a small Buildroot Linux in your browser. Same commands, real coreutils (BusyBox), nothing is installed.</p></div><span class="badge off" data-r="st">off</span></div>
-  <div class="ctrls"><button type="button" class="btn" data-r="boot">Boot Linux <span aria-hidden="true">→</span></button><button type="button" class="btn ghost" data-r="seed" disabled>Create the lecture files</button><span class="small" data-r="msg">≈ 10 MB download, about 10 s to boot. Click the screen before typing.</span></div>
+  <div class="ctrls"><button type="button" class="btn" data-r="boot">Boot Linux <span aria-hidden="true">→</span></button><button type="button" class="btn ghost" data-r="seed" disabled>Create the lecture files</button><span class="small" data-r="msg">≈ 12 MB download from public servers, about 10 s to boot. Click the screen before typing.</span></div>
   <div class="v86s" data-r="scr" hidden><div class="v86t"></div><canvas hidden></canvas></div></div>`;
   const q=s=>root.querySelector(`[data-r="${s}"]`);
-  let emu=null;
+  let emu=null, started=false;
   const st=(t,c)=>{const b=q('st');b.textContent=t;b.className='badge '+(c||'')};
+  const fail=m=>{st('error','bad');q('msg').textContent='Could not start: '+m}
   q('boot').addEventListener('click',async()=>{
     if(emu)return; q('boot').disabled=true; st('loading','warn');
     try{
-      const head=await fetch(V86CFG.bzimage,{method:'HEAD'});
-      if(!head.ok)throw new Error('the Linux image is missing ('+V86CFG.bzimage+'). Run v86/fetch.sh next to this page, see v86/README.md.');
-      if(!window.V86)await new Promise((ok,ko)=>{const s=document.createElement('script');s.src=V86CFG.lib;s.onload=ok;s.onerror=()=>ko(new Error('could not load libv86.js'));document.head.appendChild(s)});
+      if(!window.V86)await new Promise((ok,ko)=>{const s=document.createElement('script');s.src=V86CFG.lib;s.onload=ok;s.onerror=()=>ko(new Error('could not load the emulator ('+V86CFG.lib+')'));document.head.appendChild(s)});
       q('scr').hidden=false;
       emu=new window.V86({wasm_path:V86CFG.wasm,memory_size:64*1024*1024,vga_memory_size:2*1024*1024,screen_container:q('scr'),
         bios:{url:V86CFG.bios},vga_bios:{url:V86CFG.vga},bzimage:{url:V86CFG.bzimage},cmdline:'tsc=reliable mitigations=off random.trust_cpu=on',autostart:true});
-      st('booting','warn'); q('msg').textContent='Booting… log in as root when asked (no password).';
-      emu.add_listener('emulator-started',()=>{st('running','ok');q('seed').disabled=false});
-    }catch(e){st('error','bad');q('msg').textContent='Could not start: '+e.message;q('boot').disabled=false}
+      q('msg').textContent='Downloading…';
+      emu.add_listener('download-progress',e=>{if(!started&&e.lengthComputable&&e.total)q('msg').textContent='Downloading '+(e.file_name||'').replace(/^.*\//,'')+' · '+Math.round(100*e.loaded/e.total)+' %'});
+      emu.add_listener('download-error',e=>fail('the download of '+e.file_name+' failed. Check the internet connection and try again (reload the page).'));
+      emu.add_listener('emulator-started',()=>{started=true;st('running','ok');q('msg').textContent='Booting… log in as root when asked (no password).';q('seed').disabled=false});
+      setTimeout(()=>{if(!started)fail('nothing arrived in 60 s. A public server may be down or blocked on this network; reload the page to try again.')},60000);
+    }catch(e){fail(e.message);q('boot').disabled=false}
   });
   q('seed').addEventListener('click',()=>{if(emu){emu.keyboard_send_text(SEED);q('scr').focus()}});
 }
