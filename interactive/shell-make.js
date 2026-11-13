@@ -129,10 +129,10 @@ ${T}$(CC) $(CFLAGS) -c $< -o $@
 };
 S.MAKEFILES=MK;
 Object.assign(S.MAN,{
-  gcc:['gcc - the GNU C compiler (a driver: preprocessor, compiler, assembler, linker)','gcc [OPTION]... FILE...','-o FILE   the name of the output (default a.out)\n-c        stop after the assembler: FILE.o\n-S        stop after the compiler: FILE.s\n-E        stop after the preprocessor (prints, or -o FILE.i)\n-save-temps  keep the .i, .s and .o files\n-Wall     all the warnings\n-g        debug information, for gdb\n-O2       optimize\n-static   copy the libraries into the executable\n-shared   make a shared library (.so)\n-fPIC     code that works at any address\n-I DIR    look for #include files in DIR\n-L DIR    look for libraries in DIR\n-lNAME    link libNAME.so or libNAME.a (-lm: the math library)\n-v        show the programs gcc runs'],
+  gcc:['gcc - the GNU C compiler (a driver: preprocessor, compiler, assembler, linker)','gcc [OPTION]... FILE...','-o FILE   the name of the output (default a.out)\n-c        stop after the assembler: FILE.o\n-S        stop after the compiler: FILE.s\n-E        stop after the preprocessor (prints, or -o FILE.i)\n-save-temps  keep the .i, .s and .o files\n-fverbose-asm  in the .s, the lines of C as comments above their instructions\n-masm=intel   write the .s in the Intel syntax (default: -masm=att)\n-Wall     all the warnings\n-g        debug information, for gdb\n-O2       optimize\n-static   copy the libraries into the executable\n-shared   make a shared library (.so)\n-fPIC     code that works at any address\n-I DIR    look for #include files in DIR\n-L DIR    look for libraries in DIR\n-lNAME    link libNAME.so or libNAME.a (-lm: the math library)\n-v        show the programs gcc runs'],
   cc:['cc - the C compiler of the system (here, gcc)','cc [OPTION]... FILE...','the same options as gcc: man gcc'],
   nm:['nm - list the symbols of object files','nm FILE...','T  defined here (in the code, text)\nU  used here, undefined: another file or a library must define it'],
-  objdump:['objdump - display information from object files','objdump -d FILE','-d  disassemble: the machine code, as bytes and as assembly'],
+  objdump:['objdump - display information from object files','objdump -d [-S] [-M intel] FILE','-d        disassemble: the machine code, as bytes and as assembly\n-S        also show the lines of C above their machine code (implies -d; needs gcc -g)\n-M intel  show the assembly in the Intel syntax (default: AT&T)'],
   ldd:['ldd - print the shared libraries a program needs','ldd FILE','for every library: where the loader finds it, or "not found"\nLD_LIBRARY_PATH=DIR adds DIR to the folders the loader searches'],
   ar:['ar - create and list archives (static libraries)','ar rcs LIBRARY.a FILE.o...\nar t LIBRARY.a','r  add (replace) the object files\nc  create the archive, without a warning\ns  write an index of the symbols\nt  list the files in the archive'],
   make:['make - build the targets of a Makefile, running only the recipes that are needed','make [OPTION]... [TARGET]...','no TARGET: the first target of the Makefile\n-B          rebuild everything (--always-make)\n-C DIR      run in DIR\n--debug=v   explain every decision (-d)\na target is rebuilt when it is missing or older than one of its prerequisites'],
@@ -190,16 +190,64 @@ function preprocess(sh,file,src,defs){                // the .i: headers copied 
   });
   return out.join('\n');
 }
-function assembly(o){
-  const fns=o.defined.map(f=>`${f}:\n    pushq   %rbp\n    movq    %rsp, %rbp\n    ...\n`+o.used.map(u=>`    call    ${u}${KNOWN[u]?'@PLT':''}`).join('\n')+'\n    ...\n    ret');
-  return `    .file   "${o.src}"\n    .text\n    .globl  ${o.defined.join(', ')}\n`+fns.join('\n');
+/* the assembly of gcc -S: AT&T (default) or Intel (-masm=intel); -fverbose-asm adds the lines of C as comments */
+const ins=(op,args,cm)=>'\t'+op+(args?'\t'+args:'')+(cm!=null?'\t#'+(cm&&cm[0]!==','?' ':'')+cm:'');
+function helloShape(o){                               // the loop of hello.c: for (...; i < N; i++) printf(...);
+  const L=o.text.split('\n'), at=re=>L.findIndex(l=>re.test(l));
+  const f=at(/^\s*for\s*\(\s*int\s+i\s*=\s*0\s*;\s*i\s*<\s*\w+\s*;\s*i\+\+\s*\)\s*\{\s*$/), p=at(/^\s*printf\s*\(\s*"[^"]*"\s*,\s*i\s*\)\s*;/), r=at(/^\s*return\s+0\s*;/);
+  const lim=f<0?null:L[f].match(/i\s*<\s*(\w+)/)[1], n=lim==null?NaN:parseInt(/^\d+$/.test(lim)?lim:o.defs[lim],10);
+  if(o.defined.join()!=='main'||f<0||p!==f+1||r<0||isNaN(n))return null;
+  const end=L.length-1-[...L].reverse().findIndex(l=>/^\}\s*$/.test(l));
+  const str=L[p].match(/"([^"]*)"/)[1];
+  return{L,f,p,r,end,n,str};
+}
+function assembly(o,intel,verbose){
+  const src=o.src.replace(/^.*\//,''), h=helloShape(o), out=[];
+  const at=k=>{if(verbose&&h)out.push('# '+src+':'+(k+1)+': '+h.L[k])};
+  const I=(att,itl,cm)=>out.push(ins(...(intel?itl:att),verbose?cm:null));
+  out.push('\t.file\t"'+src+'"');
+  if(intel)out.push('\t.intel_syntax noprefix');
+  if(verbose)out.push('# GNU C17 (GCC) version 14.2.1 (x86_64-redhat-linux)','# options passed: -mtune=generic -march=x86-64'+(intel?' -masm=intel':''));
+  if(!h){                                             // any other file: the frame of each function and its calls
+    const L=o.text.split('\n');
+    out.push('\t.text');
+    o.defined.forEach(d=>{out.push('\t.globl\t'+d,d+':');I(['pushq','%rbp'],['push','rbp'],'');I(['movq','%rsp, %rbp'],['mov','rbp, rsp'],',');out.push('\t...');
+      o.used.forEach(u=>{const k=L.findIndex(l=>new RegExp('\\b'+u+'\\s*\\(').test(l));if(verbose&&k>=0)out.push('# '+src+':'+(k+1)+': '+L[k]);I(['call',u+(KNOWN[u]?'@PLT':'')],['call',u+(KNOWN[u]?'@PLT':'')],'')});
+      out.push('\t...');I(['ret',''],['ret',''],null)});
+    return out.join('\n');
+  }
+  const m=h.n-1, v=intel?'DWORD PTR -4[rbp]':'-4(%rbp)';
+  out.push('\t.text','\t.section\t.rodata','.LC0:','\t.string\t"'+h.str+'"','\t.text','\t.globl\tmain','\t.type\tmain, @function','main:');
+  I(['pushq','%rbp'],['push','rbp'],'');
+  I(['movq','%rsp, %rbp'],['mov','rbp, rsp'],',');
+  I(['subq','$16, %rsp'],['sub','rsp, 16'],',');
+  at(h.f);I(['movl','$0, '+v],['mov',v+', 0'],', i');
+  at(h.f);I(['jmp','.L2'],['jmp','.L2'],'');
+  out.push('.L3:');
+  at(h.p);I(['movl',v+', %eax'],['mov','eax, '+v],'i, tmp84');
+  I(['movl','%eax, %esi'],['mov','esi, eax'],'tmp84,');
+  I(['leaq','.LC0(%rip), %rax'],['lea','rax, .LC0[rip]'],', tmp85');
+  I(['movq','%rax, %rdi'],['mov','rdi, rax'],'tmp85,');
+  I(['movl','$0, %eax'],['mov','eax, 0'],',');
+  I(['call','printf@PLT'],['call','printf@PLT'],'');
+  at(h.f);I(['addl','$1, '+v],['add',v+', 1'],', i');
+  out.push('.L2:');
+  at(h.f);I(['cmpl','$'+m+', '+v],['cmp',v+', '+m],', i');
+  I(['jle','.L3'],['jle','.L3'],',');
+  at(h.r);I(['movl','$0, %eax'],['mov','eax, 0'],', _4');
+  at(h.end);I(['leave',''],['leave',''],null);
+  I(['ret',''],['ret',''],null);
+  out.push('\t.size\tmain, .-main','\t.ident\t"GCC: (GNU) 14.2.1"');
+  return out.join('\n');
 }
 function c_gcc(args){
-  let out=null,mode='link',temps=false,shared=false,stat=false;const ins=[],Ld=[],libs=[];const debug=args.includes('-g');
+  let out=null,mode='link',temps=false,shared=false,stat=false,intel=false,verbose=false;const ins=[],Ld=[],libs=[];const debug=args.includes('-g');
   for(let i=0;i<args.length;i++){const a=args[i];
     if(a==='-o'){out=args[++i];continue}
     if(a==='-c'){mode='c';continue}if(a==='-E'){mode='E';continue}if(a==='-S'){mode='S';continue}
-    if(a==='-save-temps'){temps=true;continue}if(a==='-shared'){shared=true;continue}if(a==='-static'){stat=true;continue}
+    if(a==='-save-temps'){temps=true;continue}if(a==='-fverbose-asm'){verbose=true;continue}
+    if(/^-masm=/.test(a)){if(!/^-masm=(intel|att)$/.test(a))return{err:"gcc: error: unrecognized argument in option '"+a+"'\ngcc: note: valid arguments to '-masm=' are: att intel"};intel=a==='-masm=intel';continue}
+if(a==='-shared'){shared=true;continue}if(a==='-static'){stat=true;continue}
     if(/^-L/.test(a)){Ld.push(a.slice(2)||args[++i]);continue}
     if(/^-l/.test(a)){libs.push(a.slice(2));continue}
     if(a==='-v')return{err:'Using built-in specs.\nTarget: x86_64-linux-gnu\ngcc version 13.2.0 (demo)\n .../cc1 hello.c -o /tmp/ccA1.s\n as -o /tmp/ccB2.o /tmp/ccA1.s\n .../collect2 ... /tmp/ccB2.o -lc ...'};
@@ -214,7 +262,7 @@ function c_gcc(args){
     if(f.endsWith('.c')){const r=compile(this,f);if(r.err)return{err:r.err};
       const o={kind:'o',debug,...r.obj};
       if(mode==='E'||temps){const txt=preprocess(this,f,this.get(f).node.data,r.obj.defs);if(mode==='E'){if(out)this.writeText(out,txt);else printed=txt;continue}this.writeText(base(f)+'.i',txt)}
-      if(mode==='S'||temps){const txt=assembly(o);if(mode==='S'){this.writeText(out||base(f)+'.s',txt);continue}this.writeText(base(f)+'.s',txt)}
+      if(mode==='S'||temps){const txt=assembly(o,intel,verbose);if(mode==='S'){this.writeText(out||base(f)+'.s',txt);continue}this.writeText(base(f)+'.s',txt)}
       if(mode==='c'||temps){const name=mode==='c'&&out?out:base(f)+'.o';if(!this.writeObj(name,o))return{err:'gcc: cannot write '+name};if(mode==='c')continue}
       objs.push(o)}
     else if(mode!=='link')return{err:'gcc: warning: '+f+': linker input file unused because linking not done'};
@@ -263,9 +311,36 @@ S.Shell.prototype.c_nm=function(args){
   return{out:out.join('\n').replace(/^\n/,'')};
 };
 S.Shell.prototype.c_objdump=function(args){
-  const f=args.filter(a=>!a.startsWith('-'))[0];if(!args.includes('-d')||!f)return{err:'Usage: objdump -d FILE (this demo shows the disassembly only)'};
+  let dis=false,src=false,intel=false,f=null;
+  for(let k=0;k<args.length;k++){const a=args[k];
+    if(a==='-M'){intel=/intel/.test(args[++k]||'');continue}
+    if(/^-M./.test(a)||/^--disassembler-options=/.test(a)){intel=/intel/.test(a);continue}
+    if(a==='--source'){src=true;continue}if(a==='--disassemble'){dis=true;continue}
+    if(/^-[dSr]+$/.test(a)){if(a.includes('d'))dis=true;if(a.includes('S'))src=true;continue}
+    if(a.startsWith('-'))return{err:"objdump: unrecognized option '"+a+"'\n(this demo knows -d, -S and -M intel)"};
+    f=f||a}
+  if(!(dis||src)||!f)return{err:'Usage: objdump -d [-S] [-M intel] FILE (this demo shows the disassembly only)'};
   const r=elf(this,f,'objdump');if(r.err)return r;const o=r.m.kind==='o'?r.m:r.m.objs[0];
-  return{out:'\n'+f+':     file format elf64-x86-64\n\nDisassembly of section .text:\n\n'+o.defined.map(d=>'0000000000000000 <'+d+'>:\n   0: 55                    push   %rbp\n   1: 48 89 e5              mov    %rsp,%rbp\n  ...\n'+o.used.map((u,i)=>'  '+(0x29+i*8).toString(16)+': e8 00 00 00 00        call   '+(r.m.kind==='o'?'...   # '+u+': filled in by the linker':u+'@plt')).join('\n')).join('\n\n')};
+  const head='\n'+f+':     file format elf64-x86-64\n\nDisassembly of section .text:\n\n';
+  const row=(ad,by,att,itl)=>{const[op,...rest]=(intel?itl:att).split(' ');return ad.padStart(4)+':\t'+by.padEnd(21)+'\t'+(rest.length?op.padEnd(7)+rest.join(' '):op)};
+  const h=r.m.kind==='o'?helloShape(o):null;
+  if(h&&h.n-1<=127){                                  // the real code of hello.c at -O0
+    const N=(h.n-1).toString(16), withSrc=src&&o.debug, L=h.L;let max=-1, cur=-1;
+    const show=k=>{if(!withSrc||k===cur)return[];cur=k;const from=k>max?max+1:k;if(k>max)max=k;return L.slice(from,k+1)};
+    const R=[
+      [Math.max(0,L.findIndex(l=>/^\{\s*$/.test(l))),'0','55','push %rbp','push rbp'],[null,'1','48 89 e5','mov %rsp,%rbp','mov rbp,rsp'],[null,'4','48 83 ec 10','sub $0x10,%rsp','sub rsp,0x10'],
+      [h.f,'8','c7 45 fc 00 00 00 00','movl $0x0,-0x4(%rbp)','mov DWORD PTR [rbp-0x4],0x0'],[null,'f','eb 1d','jmp 2e <main+0x2e>','jmp 2e <main+0x2e>'],
+      [h.p,'11','8b 45 fc','mov -0x4(%rbp),%eax','mov eax,DWORD PTR [rbp-0x4]'],[null,'14','89 c6','mov %eax,%esi','mov esi,eax'],
+      [null,'16','48 8d 05 00 00 00 00','lea 0x0(%rip),%rax        # 1d <main+0x1d>','lea rax,[rip+0x0]        # 1d <main+0x1d>'],
+      [null,'1d','48 89 c7','mov %rax,%rdi','mov rdi,rax'],[null,'20','b8 00 00 00 00','mov $0x0,%eax','mov eax,0x0'],
+      [null,'25','e8 00 00 00 00','call 2a <main+0x2a>   # printf: filled in by the linker','call 2a <main+0x2a>   # printf: filled in by the linker'],
+      [h.f,'2a','83 45 fc 01','addl $0x1,-0x4(%rbp)','add DWORD PTR [rbp-0x4],0x1'],[null,'2e','83 7d fc '+N.padStart(2,'0'),'cmpl $0x'+N+',-0x4(%rbp)','cmp DWORD PTR [rbp-0x4],0x'+N],
+      [null,'32','7e dd','jle 11 <main+0x11>','jle 11 <main+0x11>'],[h.r,'34','b8 00 00 00 00','mov $0x0,%eax','mov eax,0x0'],[h.end,'39','c9','leave','leave'],[null,'3a','c3','ret','ret']];
+    const out=['0000000000000000 <main>:'];
+    R.forEach(([k,...x])=>{if(k!=null)out.push(...show(k));out.push(row(...x))});
+    return{out:head+out.join('\n')};
+  }
+  return{out:head+o.defined.map(d=>'0000000000000000 <'+d+'>:\n'+row('0','55','push %rbp','push rbp')+'\n'+row('1','48 89 e5','mov %rsp,%rbp','mov rbp,rsp')+'\n  ...\n'+o.used.map((u,i)=>row((0x29+i*8).toString(16),'e8 00 00 00 00',r.m.kind==='o'?'call ...   # '+u+': filled in by the linker':'call '+u+'@plt',r.m.kind==='o'?'call ...   # '+u+': filled in by the linker':'call '+u+'@plt')).join('\n')).join('\n\n')};
 };
 S.Shell.prototype.c_ldd=function(args){
   const f=args[0];if(!f)return{err:'ldd: missing file arguments'};

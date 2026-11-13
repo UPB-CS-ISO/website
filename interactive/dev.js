@@ -36,12 +36,20 @@ const PSTEPS=[
   {f:'hello.s',k:'assembly',tool:'compiler',flag:'-S',lang:'asm',show:'main:\n    ...\n    movl    $0, -4(%rbp)      # i = 0\n    jmp     .L2\n.L3:\n    ...\n    call    printf@PLT        # only a call\n    addl    $1, -4(%rbp)      # i++\n.L2:\n    cmpl    $2, -4(%rbp)      # i <= 2 ?\n    jle     .L3',
    cmd:'$ gcc -S hello.c\n$ ls\nhello.c  hello.s',
    t:'Step 2 · the compiler',x:'Translates C to <b>assembly</b>: one line per CPU instruction, for <b>one</b> processor (here x86-64). The loop became a compare (<code>cmpl</code>) and a jump (<code>jle</code>). <code>printf</code> is only <i>called</i>: its code is not here.'},
-  {f:'hello.o',k:'object file',tool:'assembler',flag:'-c',lang:'none',show:'0000000000000000 <main>:\n   4: 55               push %rbp\n   5: 48 89 e5         mov  %rsp,%rbp\n  ...\n  29: e8 00 00 00 00   call ???   # printf: not known yet\n  2e: 83 45 fc 01      addl $0x1,-0x4(%rbp)',
+  {f:'hello.o',k:'object file',tool:'assembler',flag:'-c',lang:'none',show:'0000000000000000 <main>:\n   0: 55               push %rbp\n   1: 48 89 e5         mov  %rsp,%rbp\n  ...\n  25: e8 00 00 00 00   call ???   # printf: not known yet\n  2a: 83 45 fc 01      addl $0x1,-0x4(%rbp)',
    cmd:'$ gcc -c hello.c\n$ file hello.o\nhello.o: ELF 64-bit LSB relocatable, x86-64\n$ nm hello.o\n0000000000000000 T main\n                 U printf',
    t:'Step 3 · the assembler',x:'Turns the assembly into <b>machine code</b>: an <b>object file</b>, not runnable yet. <code>nm</code> shows <code>T main</code> (defined here) and <code>U printf</code> (used, but <b>undefined</b>): the call still goes to address <code>00 00 00 00</code>.'},
   {f:'hello',k:'executable',tool:'linker',flag:'',lang:'none',show:null,cmd:null,
    t:'Step 4 · the linker',x:'Joins the object files with the libraries and fills in the address of every function: the call to <code>printf</code> now goes somewhere.'},
 ];
+const ASMV={                                          // step 2: the same hello.s, three ways
+  verbose:{show:'main:\n    ...\n.L3:\n# hello.c:9:         printf("Hello, %d!\\n", i);\n    ...\n    call    printf@PLT\n# hello.c:8:     for (int i = 0; i < TIMES; i++) {\n    addl    $1, -4(%rbp)    #, i\n.L2:\n# hello.c:8:     for (int i = 0; i < TIMES; i++) {\n    cmpl    $2, -4(%rbp)    #, i\n    jle     .L3',
+    cmd:'$ gcc -S -fverbose-asm hello.c\n$ grep -B1 cmpl hello.s\n# hello.c:8:     for (int i = 0; i < TIMES; i++) {\n\tcmpl\t$2, -4(%rbp)\t#, i',
+    x:'<code>-fverbose-asm</code> writes each line of C as a comment above its instructions, and the variable each one uses: <code>-4(%rbp)</code> is <code>i</code>.'},
+  intel:{show:'main:\n    ...\n    mov     DWORD PTR -4[rbp], 0     # i = 0\n    jmp     .L2\n.L3:\n    ...\n    call    printf@PLT               # only a call\n    add     DWORD PTR -4[rbp], 1     # i++\n.L2:\n    cmp     DWORD PTR -4[rbp], 2     # i <= 2 ?\n    jle     .L3',
+    cmd:'$ gcc -S -masm=intel hello.c\n$ grep -E \'call|cmp|jle\' hello.s\n\tcall\tprintf@PLT\n\tcmp\tDWORD PTR -4[rbp], 2\n\tjle\t.L3',
+    x:'<code>-masm=intel</code>: the <b>Intel syntax</b> of the processor manuals. The operands are in the <b>reverse order</b>, without <code>%</code> and <code>$</code>, and the size is a word (<code>DWORD PTR</code>) instead of a letter (the <code>l</code> of <code>cmpl</code>).'},
+};
 const LINK={
   dynamic:{cmd:'$ gcc hello.o -o hello\n$ file hello\nhello: ELF 64-bit ..., dynamically linked\n$ ldd hello\nlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6\n$ ls -sh hello\n12K hello',
     show:'hello  (12K)\n├── main         the code of hello.c\n└── printf  ──▶  in libc.so.6, loaded when hello starts',
@@ -51,11 +59,11 @@ const LINK={
     x:'<b>Static</b> (<code>-static</code>): the code of <code>printf</code>, and of what it needs, is copied into the file. Runs without libc installed, but 50 times larger.'},
 };
 function wPipe(root){
-  let i=0, ln='dynamic';
+  let i=0, ln='dynamic', as='att';
   root.innerHTML=`<div class="wd pipe"><div class="wd-h"><div><h3>From hello.c to an executable</h3><p>One <code>gcc hello.c -o hello</code> runs four programs, one after the other. Click a file or an arrow, or use <b>Next</b>.</p></div><span class="badge" data-r="b"></span></div>
   <div class="pflow" data-r="flow"></div>
   <div class="pdrv"><span>gcc is only a <i>driver</i>: it runs <code>cc1</code> (steps 1 and 2), <code>as</code> (3) and <code>ld</code> (4). <code>gcc -v</code> shows them.</span></div>
-  <div class="pexp"><div><div class="pst" data-r="t"></div><p data-r="x"></p></div><div class="seg" data-seg="ln" data-r="lk" hidden><button type="button" data-v="dynamic" class="on">dynamic (default)</button><button type="button" data-v="static">static (-static)</button></div></div>
+  <div class="pexp"><div><div class="pst" data-r="t"></div><p data-r="x"></p></div><div class="seg" data-seg="as" data-r="as" hidden><button type="button" data-v="att" class="on">AT&amp;T (default)</button><button type="button" data-v="verbose">-fverbose-asm</button><button type="button" data-v="intel">-masm=intel</button></div><div class="seg" data-seg="ln" data-r="lk" hidden><button type="button" data-v="dynamic" class="on">dynamic (default)</button><button type="button" data-v="static">static (-static)</button></div></div>
   <div class="ppanes"><div><div class="ppf" data-r="fn"></div><pre class="sh ppcode" data-r="show"></pre></div><div><div class="ppf">in a terminal</div><pre class="sh" data-r="cmd"></pre></div></div>
   <div class="pnav"><button type="button" class="btn ghost" data-r="prev">← Back</button><span class="pdots" data-r="dots"></span><button type="button" class="btn" data-r="next">Next step →</button></div></div>`;
   const q=s=>root.querySelector(`[data-r="${s}"]`);
@@ -64,18 +72,19 @@ function wPipe(root){
     q('flow').innerHTML=PSTEPS.map((p,k)=>(p.tool?`<button type="button" class="parr ${k===i?'on':k<i?'dn':''}" data-k="${k}" aria-label="step ${k}: ${p.tool}"><span class="pt">${p.tool}</span><span class="pl"></span><code>gcc${p.flag?' '+p.flag:''}</code></button>`:'')+
       `<button type="button" class="pcard ${st(k)}" data-k="${k}"><b>${k===4&&ln==='static'?'hello-static':p.f}</b><span>${p.k}</span></button>`).join('');
     q('flow').querySelectorAll('[data-k]').forEach(b=>b.addEventListener('click',()=>{i=+b.dataset.k;draw()}));
-    const L=i===4?LINK[ln]:null;
-    q('lk').hidden=i!==4;
+    const L=i===4?LINK[ln]:i===2&&as!=='att'?ASMV[as]:null;
+    q('lk').hidden=i!==4; q('as').hidden=i!==2;
     q('t').textContent=S.t;
-    q('x').innerHTML=S.x+(L?' '+L.x:'');
+    q('x').innerHTML=i===2&&L?L.x:S.x+(L?' '+L.x:'');
     q('fn').innerHTML=`inside <b>${i===4&&ln==='static'?'hello-static':S.f}</b> · ${S.k}`;
-    q('show').innerHTML=L?esc(L.show):hl(S.show,S.lang);
+    q('show').innerHTML=i===4&&L?esc(L.show):hl(L?L.show:S.show,S.lang);
     q('cmd').innerHTML=shc(L?L.cmd:S.cmd);
     q('b').textContent=i===0?'the source':'step '+i+' / 4';
     q('dots').innerHTML=PSTEPS.map((p,k)=>`<i class="${k===i?'on':k<i?'dn':''}"></i>`).join('');
     q('prev').disabled=i===0; q('next').disabled=i===PSTEPS.length-1;
   }
   root.querySelectorAll('[data-seg="ln"] button').forEach(b=>b.addEventListener('click',()=>{root.querySelectorAll('[data-seg="ln"] button').forEach(x=>x.classList.toggle('on',x===b));ln=b.dataset.v;draw()}));
+  root.querySelectorAll('[data-seg="as"] button').forEach(b=>b.addEventListener('click',()=>{root.querySelectorAll('[data-seg="as"] button').forEach(x=>x.classList.toggle('on',x===b));as=b.dataset.v;draw()}));
   q('prev').addEventListener('click',()=>{if(i>0){i--;draw()}});
   q('next').addEventListener('click',()=>{if(i<PSTEPS.length-1){i++;draw()}});
   draw();

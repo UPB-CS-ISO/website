@@ -352,7 +352,8 @@ page("pipeline", "From hello.c to an executable", "Four steps", F(r"""
     ("1. preprocessor", "`gcc -E hello.c -o hello.i`", "`hello.i`, C text", "`wc -l`, `tail`"), ("2. compiler", "`gcc -S hello.c`", "`hello.s`, assembly", "`cat`"),
     ("3. assembler", "`gcc -c hello.c`", "`hello.o`, an object file", "`nm`, `objdump -d`, `file`"), ("4. linker", "`gcc hello.o -o hello`", "`hello`, the executable", "`file`, `ldd`, `./hello`")], "k")}
 <p class="small"><code>gcc -save-temps hello.c -o hello</code> keeps all of them: <code>hello.i</code>, <code>hello.s</code>, <code>hello.o</code>.</p>
-{mterm("long", "~/hello", "cc-pipe", ["cat hello.c", "gcc -E hello.c -o hello.i", "tail hello.i", "gcc -S hello.c", "gcc -c hello.c", "nm hello.o"], "Build hello.c step by step")}
+<p class="small">To read <code>hello.s</code>: <code>-fverbose-asm</code> writes each line of C as a comment above its instructions; <code>-masm=intel</code> writes the <b>Intel syntax</b> of the processor manuals instead of AT&amp;T. For an object built with <code>gcc -g</code>, <code>objdump -d -S -M intel</code> shows each line of C above its machine code.</p>
+{mterm("long", "~/hello", "cc-pipe", ["cat hello.c", "gcc -E hello.c -o hello.i", "tail hello.i", "gcc -S -fverbose-asm hello.c", "grep -B1 cmpl hello.s", "gcc -S -masm=intel hello.c", "gcc -c hello.c", "nm hello.o"], "Build hello.c step by step")}
 """))
 page("libraries", "Libraries", "Static and shared", F(r"""
 <p class="txt">A <b>library</b> is a file of compiled functions, ready for other programs: <code>printf</code> is in the C library, <code>sqrt</code> in the math library. The two kinds differ in <b>when</b> the code of the library joins the program: when it is <b>linked</b> (static) or every time it <b>starts</b> (shared).</p>

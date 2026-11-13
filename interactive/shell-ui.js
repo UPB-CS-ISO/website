@@ -130,7 +130,8 @@ Object.assign(MSETS,{
   'cc-pipe':[
     {t:'Compile <code>hello.c</code> into <code>hello</code> with one <code>gcc</code> command, and run it.',h:'gcc hello.c -o hello, then ./hello',ok:(sh,c,o)=>/^\.\/hello$/.test(c)&&/Hello, 2!/.test(o)&&hist(sh,/^gcc\b.*hello\.c/)},
     {t:'Stop after the <b>preprocessor</b>: make <code>hello.i</code>, and count its lines.',h:'gcc -E hello.c -o hello.i, then wc -l',ok:(sh,c,o)=>ex(sh,'hello.i')&&/^wc\b/.test(c)&&/hello\.i/.test(o)},
-    {t:'Stop after the <b>compiler</b>: make the assembly file <code>hello.s</code>.',h:'gcc -S',ok:sh=>ex(sh,'hello.s')},
+    {t:'Stop after the <b>compiler</b>, with the lines of C as comments in <code>hello.s</code>, and find the line of C of the compare (<code>cmpl</code>).',h:'gcc -S -fverbose-asm, then grep -B1 cmpl hello.s',ok:(sh,c,o)=>hist(sh,/^gcc\b.*-S\b.*-fverbose-asm|^gcc\b.*-fverbose-asm.*-S\b/)&&/# hello\.c:\d+:.*for/.test(o)&&/cmpl/.test(o)},
+    {t:'Write <code>hello.s</code> again in the <b>Intel syntax</b>, and find the same compare.',h:'gcc -S -masm=intel, then grep cmp hello.s',ok:(sh,c,o)=>hist(sh,/^gcc\b.*-masm=intel/)&&/cmp\s+DWORD PTR/.test(o)},
     {t:'Stop after the <b>assembler</b>: make <code>hello.o</code> and list what it defines and what it needs.',h:'gcc -c, then nm hello.o',ok:(sh,c,o)=>/^nm\b/.test(c)&&/U printf/.test(o)},
     {t:'<b>Link</b> <code>hello.o</code> and check the type of the result with <code>file</code>.',h:'gcc hello.o -o hello; file hello',ok:(sh,c,o)=>/^file\b/.test(c)&&/pie executable/.test(o)},
     {t:'Build a <b>static</b> <code>hello-static</code> and compare its size with <code>hello</code>.',h:'gcc -static hello.o -o hello-static; ls -lh',ok:(sh,c,o)=>/^ls\b/.test(c)&&/637K .*hello-static|hello-static/.test(o)&&/637K/.test(o)},

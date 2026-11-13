@@ -153,7 +153,7 @@ const MAN={
   wc:['wc - print newline, word, and byte counts for each file','wc [OPTION]... [FILE]...','-l  lines\n-w  words\n-c  bytes'],
   head:['head - output the first part of files','head [OPTION]... [FILE]...','-n N  the first N lines (10 by default)'],
   tail:['tail - output the last part of files','tail [OPTION]... [FILE]...','-n N  the last N lines (10 by default)'],
-  grep:['grep - print lines that match patterns','grep [OPTION]... PATTERNS [FILE]...','-i  ignore case\n-v  the lines that do not match\n-c  count the lines\n-n  line numbers'],
+  grep:['grep - print lines that match patterns','grep [OPTION]... PATTERNS [FILE]...','-i  ignore case\n-v  the lines that do not match\n-c  count the lines\n-n  line numbers\n-E  extended regular expressions (a|b)\n-A N, -B N, -C N  also print N lines after, before, around each match'],
   uniq:['uniq - report or omit repeated lines','uniq [OPTION]... [INPUT]','-c  prefix lines by the number of occurrences'],
   xxd:['xxd - make a hex dump','xxd [-l LEN] [FILE]','-l LEN  stop after LEN bytes'],
   ln:['ln - make links between files','ln -s TARGET LINK_NAME','-s  make a symbolic (soft) link\n-f  remove an existing LINK_NAME'],
@@ -507,14 +507,20 @@ class Shell{
   c_head(a){return this.headtail(a,'head')}
   c_tail(a){return this.headtail(a,'tail')}
   c_grep(args){
-    const o={},rest=[];
-    for(const a of args){if(/^-[ivcn]+$/.test(a)){for(const ch of a.slice(1))o[ch]=true;continue}rest.push(a)}
+    const o={},rest=[];let A=0,B=0;
+    for(let k=0;k<args.length;k++){const a=args[k];
+      let m=a.match(/^-([ABC])(\d*)$/);if(m){const n=parseInt(m[2]||args[++k],10)||0;if(m[1]!=='B')A=n;if(m[1]!=='A')B=n;continue}
+      if(/^-[ivcnE]+$/.test(a)){for(const ch of a.slice(1))o[ch]=true;continue}rest.push(a)}
     if(!rest.length)return{err:"Usage: grep [OPTION]... PATTERNS [FILE]...\nTry 'grep --help' for more information.",code:2};
     let re;try{re=new RegExp(rest[0],o.i?'i':'')}catch(e){return{err:'grep: Invalid regular expression',code:2}}
     const r=this.inputs(rest.slice(1),'grep'); if(r.wait)return{note:r.wait}; if(r.dev)return{note:'iso-demo: /dev/'+r.dev+' never ends'};
     const many=r.list.length>1,out=[];let found=0;
     for(const f of r.list){const l=f.text===''?[]:f.text.replace(/\n$/,'').split('\n');let c=0;
-      l.forEach((x,i)=>{if(re.test(x)!==!!o.v){c++;found++;if(!o.c)out.push((many?f.name+':':'')+(o.n?(i+1)+':':'')+x)}});
+      const hit=l.map(x=>re.test(x)!==!!o.v);c=hit.filter(Boolean).length;found+=c;
+      if(!o.c){let last=-1;l.forEach((x,i)=>{
+        if(!hit.slice(Math.max(0,i-A),i+B+1).some(Boolean))return;           // a match, or within -A/-B lines of one
+        if((A||B)&&last>=0&&i>last+1)out.push('--');last=i;
+        out.push((many?f.name+(hit[i]?':':'-'):'')+(o.n?(i+1)+(hit[i]?':':'-'):'')+x)})}
       if(o.c)out.push((many?f.name+':':'')+c)}
     return{out:out.join('\n'),err:r.err,code:r.err?2:found?0:1};
   }
