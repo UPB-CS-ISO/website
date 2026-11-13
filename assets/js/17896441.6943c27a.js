@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkcourses=self.webpackChunkcourses||[]).push([["106"],{500(s,e,c){c.d(e,{A:()=>a});var n=c(4848);c(6540);var u=c(4078);function a(s){return("string"==typeof s.className?s.className.split(" "):[]).includes("sh-inline")?(0,n.jsx)("code",{...s}):(0,n.jsx)(u.A,{...s})}}}]);
