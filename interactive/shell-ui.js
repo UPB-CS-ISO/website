@@ -230,7 +230,7 @@ function wShell(root){
   <div class="wd-b sb${ext?' ext':''}"><div class="tcol"><div class="tbar"><i></i><i></i><i></i><span data-r="ttl"></span><b class="demo">DEMO</b></div><div class="term" data-r="term"><div class="tout" data-r="out"></div><div class="tline" data-r="line"><span class="pr" data-r="pr"></span><input data-r="in" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="command"></div></div></div>
   <div class="trcol">${ext?'<div class="extp" data-r="ext"></div>':`${sh.profile==='03'?'':'<!--'}<div class="seg sidetab" data-seg="side"><button type="button" data-v="tree" class="${side==='tree'?'on':''}">files</button><button type="button" data-v="fd" class="${side==='fd'?'on':''}">file descriptors</button></div>${sh.profile==='03'?'':'-->'}<div class="fdview" data-r="fdv"></div><div class="trwrap" data-r="trw"><div class="trbar"><div class="seg" data-seg="view"><button type="button" data-v="home" class="${mode==='home'?'on':''}">~</button><button type="button" data-v="root" class="${mode==='root'?'on':''}">/</button></div><label class="hid"><input type="checkbox" data-r="hid"> hidden files</label></div><pre class="tree live" data-r="tree"></pre>
   <div class="tleg"><span><i class="cwd">📍</i> current directory</span><span class="n">+ created</span><span class="g">− removed</span><span class="m">changed</span></div></div>`}</div></div>
-  ${withMissions?`<div class="missions"><div class="mh"><b>Missions</b> <span data-r="mcount"></span>${cmds.length?'<em class="mnote">type them yourself, the buttons above are only examples</em>':''}</div><ol data-r="ml">${mset.map((m,i)=>`<li data-i="${i}"><span class="mt">${m.t}</span> <details><summary>hint</summary>${esc(m.h)}</details></li>`).join('')}</ol></div>`:''}
+  ${withMissions?`<div class="missions"><div class="mh"><b>Missions</b> <span data-r="mcount"></span><button type="button" class="mall" data-r="mall">show all</button>${cmds.length?'<em class="mnote">type them yourself, the buttons above are only examples</em>':''}</div><ol data-r="ml">${mset.map((m,i)=>`<li data-i="${i}"><span class="mt">${m.t}</span> <details><summary>hint</summary>${esc(m.h)}</details></li>`).join('')}</ol></div>`:''}
   <div class="wd-f">Tab completes a name, ↑ ↓ bring back the previous commands, <code>help</code> lists the commands, <code>man cp</code> shows a short manual page.</div></div>`;
   const q=s=>root.querySelector(`[data-r="${s}"]`);
   const out=q('out'), inp=q('in'), term=q('term');
@@ -252,6 +252,7 @@ function wShell(root){
     mset.forEach((m,i)=>{if(!done.has(i)&&m.ok(sh,c,o)){done.add(i)}});
     root.querySelectorAll('[data-r="ml"] li').forEach(li=>li.classList.toggle('ok',done.has(+li.dataset.i)));
     q('mcount').textContent=done.size+' / '+mset.length;
+    root.querySelector('.missions').classList.toggle('fin',done.size===mset.length);   // all done: show the whole list
     const b=q('badge');b.textContent=done.size===mset.length?'all missions done':done.size+' / '+mset.length+' missions';b.className='badge'+(done.size===mset.length?' ok':'');
   };
   function exec(c,chip){
@@ -303,6 +304,7 @@ function wShell(root){
   root.querySelectorAll('[data-seg="side"] button').forEach(b=>b.addEventListener('click',()=>{root.querySelectorAll('[data-seg="side"] button').forEach(x=>x.classList.toggle('on',x===b));side=b.dataset.v;draw()}));
   root.querySelectorAll('[data-seg="view"] button').forEach(b=>b.addEventListener('click',()=>{root.querySelectorAll('[data-seg="view"] button').forEach(x=>x.classList.toggle('on',x===b));mode=b.dataset.v;draw()}));
   if(!ext)q('hid').addEventListener('change',e=>{hidden=e.target.checked;draw()});
+  if(withMissions)q('mall').addEventListener('click',()=>{const all=root.querySelector('.missions').classList.toggle('all');q('mall').textContent=all?'only the next one':'show all'});   // one mission at a time, or the list
   print('<span class="dim">Demo terminal, simulated in your browser: nothing runs on a real computer.\nType a command and press Enter. Try <b>help</b>.</span>');
   draw();mcheck('','');
 }
