@@ -17,8 +17,9 @@ website can link to and embed them (e.g. `/slides/iso_01_intro.pdf`).
 - **Typst** (CLI) — e.g. `brew install typst`, `cargo install --locked typst-cli`,
   or `sudo snap install typst`.
 - **GNU Make**
-- **Python 3** with **Pillow** (`pip install -r interactive/requirements.txt`)
-  and **poppler** (`pdftoppm`) for the interactive lectures
+- **[uv](https://docs.astral.sh/uv/)** and **poppler** (`pdftoppm`) for the
+  interactive lectures (`make` runs them with `uv run`, which installs Pillow from
+  `interactive/uv.lock`)
 - **Node.js ≥ 18** (CI uses Node 22) and **npm**
 
 The first slide build needs internet access: Typst downloads the

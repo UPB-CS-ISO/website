@@ -1,0 +1,11 @@
+[project]
+name = "iso-interactive"
+version = "0.1.0"
+description = "Builds the interactive lectures of ISO (website/static/courses)"
+requires-python = ">=3.10"
+dependencies = [
+    "pillow",
+]
+
+[tool.uv]
+package = false
