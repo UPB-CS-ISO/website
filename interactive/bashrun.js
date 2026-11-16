@@ -932,7 +932,7 @@ const KW=new Set(['if','then','elif','else','fi','for','in','do','done','while',
 const CMDS=new Set(['echo','printf','read','test','expr','bc','seq','cat','wc','head','tail','grep','date','ls','cp','mv','rm','mkdir','touch','chmod','sort','uniq','cut','tr','local','export','unset','return','exit','break','continue','shift','cd','pwd','type','sleep','true','false','bash','python3','node','env','whoami','basename','dirname']);
 function hl(text){
   return text.split('\n').map(l=>{
-    let o='',i=0;const n=l.length;let cmdPos=true;
+    let o='',i=0;const n=l.length;let cmdPos=true,asg=false;
     const span=(c,s)=>'<span class="hl-'+c+'">'+esc(s)+'</span>';
     const dollar=j=>{const m=/^\$(?:\{[^}]*\}|\(\(|\(|[A-Za-z_]\w*|[0-9#?@*$!])/.exec(l.slice(j));return m?m[0]:null};
     while(i<n){const c=l[i];
@@ -946,14 +946,15 @@ function hl(text){
       if(cmdPos&&(c==='['||/\d/.test(c))&&(i===0||/[\s;|&(]/.test(l[i-1]))){const w=/^[^\s;|&()<>]+/.exec(l.slice(i))[0];o+=span(w==='[['?'k':'f',w);i+=w.length;cmdPos=false;continue}
       const m=/^[A-Za-z_][\w-]*/.exec(l.slice(i));
       if(m&&(i===0||!/[\w$]/.test(l[i-1]))){const w=m[0];
-        if(l[i+w.length]==='='&&/^[A-Za-z_]\w*$/.test(w)){o+=span('v',w);i+=w.length;cmdPos=false;continue}
+        if(l[i+w.length]==='='&&/^[A-Za-z_]\w*$/.test(w)){asg=cmdPos;o+=span('v',w);i+=w.length;cmdPos=false;continue}
         if(KW.has(w)&&(cmdPos||w==='in'||w==='do')){o+=span('k',w);i+=w.length;cmdPos=w!=='for'&&w!=='case'&&w!=='in';continue}
         if(cmdPos&&(CMDS.has(w)||/^[a-z_][\w-]*$/.test(w)&&l.slice(i+w.length).startsWith('()'))){o+=span('f',w);i+=w.length;cmdPos=false;continue}
         if(cmdPos&&w)cmdPos=false;
         o+=esc(w);i+=w.length;continue}
       const num=/^\d+/.exec(l.slice(i));
       if(num&&(i===0||/[\s=(,]/.test(l[i-1]))&&/^($|[\s;|&)<>])/.test(l.slice(i+num[0].length))){o+=span('n',num[0]);i+=num[0].length;cmdPos=false;continue}
-      if(c===';'||c==='|'||c==='&'||c==='('||c==='{'||c==='`'){cmdPos=true;o+=esc(c);i++;continue}
+      if(c===';'||c==='|'||c==='&'||c==='('||c==='{'||c==='`'){cmdPos=true;asg=false;o+=esc(c);i++;continue}
+      if(/\s/.test(c)&&asg){cmdPos=true;asg=false}
       if(!/\s/.test(c))cmdPos=c==='!'?cmdPos:false;
       o+=esc(c);i++}
     return o}).join('\n')}

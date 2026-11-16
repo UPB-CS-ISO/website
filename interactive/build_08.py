@@ -28,7 +28,7 @@ DOLLAR = re.compile(r"\$(?:\{[^}]*\}|\(\(|\(|[A-Za-z_]\w*|[0-9#?@*$!])")
 def hlb(text):
     res = []
     for l in text.split("\n"):
-        o, i, n, cmd = [], 0, len(l), True
+        o, i, n, cmd, asg = [], 0, len(l), True, False
         span = lambda c, s: f'<span class="hl-{c}">{E(s)}</span>'
         while i < n:
             c = l[i]
@@ -62,7 +62,7 @@ def hlb(text):
             if m and (i == 0 or not re.match(r"[\w$]", l[i - 1])):
                 w = m.group()
                 if l[i + len(w):i + len(w) + 1] == "=" and re.fullmatch(r"[A-Za-z_]\w*", w):
-                    o.append(span("v", w)); i += len(w); cmd = False; continue
+                    asg = cmd; o.append(span("v", w)); i += len(w); cmd = False; continue
                 if w in KW and (cmd or w in ("in", "do")):
                     o.append(span("k", w)); i += len(w); cmd = w not in ("for", "case", "in"); continue
                 if cmd and (w in CMDS or (re.fullmatch(r"[a-z_][\w-]*", w) and l[i + len(w):].startswith("()"))):
@@ -73,7 +73,9 @@ def hlb(text):
             if m and (i == 0 or l[i - 1] in " \t=(,") and re.match(r"($|[\s;|&)<>])", l[i + len(m.group()):]):
                 o.append(span("n", m.group())); i += len(m.group()); cmd = False; continue
             if c in ";|&({`":
-                cmd = True; o.append(E(c)); i += 1; continue
+                cmd = True; asg = False; o.append(E(c)); i += 1; continue
+            if c.isspace() and asg:
+                cmd, asg = True, False
             if not c.isspace() and c != "!":
                 cmd = False
             o.append(E(c)); i += 1
@@ -1443,8 +1445,9 @@ pre.db-out{margin:0;background:#1d2740;color:#e6edf5;border:0;border-radius:8px;
 /* ---- IFS ---- */
 .sp-c{align-items:flex-end;gap:10px 18px;padding:10px 18px}
 .sp-c>div{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
-.sp-v{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:700;color:var(--muted)}
-.sp-v textarea,.gl-in input{font:15px 'SF Mono',Menlo,monospace;border:1px solid #c9d5ec;border-radius:6px;padding:4px 8px;width:270px;max-width:100%;resize:none;white-space:pre;box-sizing:border-box}
+.sp-v{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:700;color:var(--muted);flex:1 1 340px;min-width:0;max-width:520px}
+.sp-v textarea{font:15px/1.45 'SF Mono',Menlo,monospace;border:1px solid #c9d5ec;border-radius:6px;padding:4px 8px;width:100%;resize:none;white-space:pre-wrap;overflow-wrap:anywhere;overflow:hidden;box-sizing:border-box;min-height:32px}
+.gl-in input{font:15px 'SF Mono',Menlo,monospace;border:1px solid #c9d5ec;border-radius:6px;padding:4px 8px;width:270px;max-width:100%;box-sizing:border-box}
 .sp-pre{display:flex;flex-wrap:wrap;gap:5px;align-items:center;flex-basis:100%}
 .sp-pre .chip{white-space:pre}
 .sp-b{padding:12px 18px;display:grid;gap:10px}

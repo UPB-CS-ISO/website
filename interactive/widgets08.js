@@ -276,8 +276,10 @@ function wSplit(root){
       x=!cut?'Quoted: **one** word, `IFS` does not matter, the spaces are kept.':I===''?'`IFS` is empty: nothing is cut, one word.':ws.includes('')?'Two separators in a row that are not spaces make an **empty** word.':!nonws&&/(^\s|\s$|\s\s)/.test(v)?'Spaces, tabs and newlines in a row are **one** cut; at the start and at the end they are dropped.':nonws&&/\s/.test(v)&&!I.includes(' ')?'Only the characters of `IFS` cut: here the space is a normal character.':'Every piece between the separators is a separate word.'}
     q('body').innerHTML=html;q('x').innerHTML=md(x);q('b').textContent=ws.length+(ws.length===1?' word':' words')};
   root.querySelectorAll('[data-seg]').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));if(sg.dataset.seg==='ifs')ifs=b.dataset.v;else mode=b.dataset.v;draw()})));
-  root.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click',()=>{q('v').value=pres[+b.dataset.p];q('v').rows=q('v').value.includes('\n')?2:1;draw()}));
-  q('v').addEventListener('input',()=>{q('v').rows=q('v').value.includes('\n')?2:1;draw()});
+  const fit=()=>{const t=q('v');t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px'};
+  root.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click',()=>{q('v').value=pres[+b.dataset.p];fit();draw()}));
+  q('v').addEventListener('input',()=>{fit();draw()});
+  setTimeout(fit,0);
   draw()}
 
 /* ================================================================ the shell sees the words */
