@@ -16,6 +16,7 @@ Cursurile în capitole scurte, parcurse în browser: terminale demo în care put
 | <a href="/courses/03-processes/index.html">03. Procese</a> | simulatoare pentru loader, stările proceselor, `fork` și `exec`, redirectări și pipe-uri |
 | <a href="/courses/04-command-line/index.html">04. Interfața în linia de comandă</a> | simulatoare pentru terminale, sesiuni, variabile și linia de comandă, un terminal cu joburi |
 | <a href="/courses/07-software-development/index.html">07. Dezvoltarea aplicațiilor</a> | simulatoare pentru compilare și `make`, terminale demo pentru `gcc`, `make` și `git` |
+| <a href="/courses/08-shell-scripting/index.html">08. Scripturi shell</a> | un depanator de scripturi, linie cu linie, un laborator de scripturi cu misiuni, simulatoare pentru `IFS`, `$( )`, tiparele din `case` și `$(( ))` / `bc` |
 
 :::note
 
