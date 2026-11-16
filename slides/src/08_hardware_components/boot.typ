@@ -15,6 +15,13 @@
     - Chapter 6 - _How User Space Starts_
 ]
 
+#slide[
+  == Why "Boot"?
+  From _bootstrap_: a small program that pulls the whole system up
+
+  #align(center, image("img/bootstrap-origin.jpg", height: 82%))
+]
+
 // ---------------------------------------------------------------------------
 // The boot chain
 // ---------------------------------------------------------------------------
@@ -82,7 +89,6 @@
     only("6-")[finally, a *login* screen or a text prompt: the system is ready]
   })
 
-  #only("6-")[💡 a chain: each stage is small and knows just enough to start the next one ("pull yourself up by your bootstraps")]
 ]
 
 // ---------------------------------------------------------------------------
