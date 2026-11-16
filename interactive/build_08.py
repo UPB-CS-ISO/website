@@ -1433,7 +1433,7 @@ pre.db-out{margin:0;background:#1d2740;color:#e6edf5;border:0;border-radius:8px;
 .lb-args input{flex:1;min-width:0;border:1px solid #d3dde1;border-radius:6px;padding:4px 8px;font:13.5px 'SF Mono',Menlo,monospace}
 .lb-kb{display:block;margin-top:8px;font-size:12.5px;color:var(--muted)}
 .lb-kb span{display:block;margin-bottom:3px}
-.lb-kb textarea{width:100%;box-sizing:border-box;border:1px solid #d3dde1;border-radius:6px;padding:4px 8px;font:13px/1.45 'SF Mono',Menlo,monospace;resize:vertical}
+.lb-kb textarea{width:100%;box-sizing:border-box;border:1px solid #d3dde1;border-radius:6px;padding:4px 8px;font:13px/1.45 'SF Mono',Menlo,monospace;resize:none;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;min-height:32px}
 .lab .missions li .mt code{font-size:13px}
 .missions:not(.all):not(.fin) ol{display:block}
 .missions:not(.all):not(.fin) li.ok,.missions:not(.all):not(.fin) li:not(.ok)~li{visibility:hidden;height:0;padding:0;overflow:hidden}
@@ -1546,7 +1546,7 @@ pre.sh.gl-code{margin:0;font-size:13px}
 .ca-x{border-top:1px solid #f6d6bd;border-bottom:0}
 .ca-bh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px}
 .ca-bh .seg button{padding:3px 9px;font-size:12px;text-transform:none;letter-spacing:0}
-.ca-in input{width:220px}
+.ca-in{flex:1 1 260px;max-width:420px}.ca-in input{width:100%}
 
 svg.f3{display:block;width:100%;height:auto;margin:0 auto}
 

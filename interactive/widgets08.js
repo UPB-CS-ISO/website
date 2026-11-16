@@ -242,6 +242,8 @@ function wLab(root){
   root.querySelectorAll('[data-x]').forEach(b=>b.addEventListener('click',()=>{const e=EX[+b.dataset.x];ta.value=e.src;if(e.args!=null)q('args').value=e.args;if(kbOn&&e.input!=null)q('kb').value=e.input;setMode('edit');paint();run(false)}));
   if(set.length)q('mall').addEventListener('click',()=>{const all=root.querySelector('.missions').classList.toggle('all');q('mall').textContent=all?'only the next one':'show all'});
   setTimeout(paint,0);paint();
+  if(kbOn){const k=q('kb'),kfit=()=>{k.style.height='auto';k.style.height=(k.scrollHeight+2)+'px'};k.addEventListener('input',kfit);
+    root.querySelectorAll('[data-x],[data-r="reset"]').forEach(b=>b.addEventListener('click',()=>setTimeout(kfit,0)));setTimeout(kfit,0)}
   if(set.length){q('mcount').textContent='0 / '+set.length;q('b').textContent='0 / '+set.length+' missions'}else q('b').textContent='bash (demo)';
 }
 
