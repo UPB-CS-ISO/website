@@ -113,10 +113,10 @@ const config: Config = {
           docId: "/category/labs",
         },
         {
-          href: "pathname:///courses/index.html",
+          type: "doc",
           position: "left",
           label: "Interactive",
-          target: "_self",
+          docId: "interactive",
         },
         {
           type: "localeDropdown",
@@ -142,6 +142,10 @@ const config: Config = {
             {
               label: "Labs",
               to: "/docs/category/labs",
+            },
+            {
+              label: "Interactive",
+              to: "/docs/interactive",
             },
           ],
         },
