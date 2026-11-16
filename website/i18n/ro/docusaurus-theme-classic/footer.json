@@ -19,6 +19,10 @@
     "message": "Laboratoare",
     "description": "The label of footer link with label=Labs linking to /docs/category/labs"
   },
+  "link.item.label.Interactive": {
+    "message": "Interactiv",
+    "description": "The label of footer link with label=Interactive linking to /docs/interactive"
+  },
   "link.item.label.Facebook": {
     "message": "Facebook",
     "description": "The label of footer link with label=Facebook linking to https://www.facebook.com/uso.acs"

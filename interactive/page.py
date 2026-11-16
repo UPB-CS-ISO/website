@@ -117,7 +117,7 @@ document.querySelectorAll('[data-w]').forEach(n=>{try{W[n.dataset.w](n)}catch(e)
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="ar-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#004d65"/></marker></defs></svg>
 <header class="topbar"><div class="wrap top-inner">
-<a class="brand" href="#map" aria-label="ISO, course map">{brand}<b>ISO</b><span>/ LECTURE {M['num']}</span></a>
+<div class="brand"><a class="brand" href="../index.html" title="All interactive lectures" aria-label="ISO, all interactive lectures">{brand}<b>ISO</b></a><a class="brand" href="#map" aria-label="Lecture {M['num']}, course map"><span>/ LECTURE {M['num']}</span></a></div>
 <nav class="nav"><a class="mapbtn" href="#map"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 5l5-2 6 2 5-2v12l-5 2-6-2-5 2z" fill="none" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 3v12M13 5v12" fill="none" stroke-width="1.6"/></svg>Course map</a><a class="hide-m" href="#all">Read it all</a></nav>
 </div></header>
 

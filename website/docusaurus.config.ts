@@ -113,6 +113,12 @@ const config: Config = {
           docId: "/category/labs",
         },
         {
+          type: "doc",
+          position: "left",
+          label: "Interactive",
+          docId: "interactive",
+        },
+        {
           type: "localeDropdown",
           position: "right",
         },
@@ -136,6 +142,10 @@ const config: Config = {
             {
               label: "Labs",
               to: "/docs/category/labs",
+            },
+            {
+              label: "Interactive",
+              to: "/docs/interactive",
             },
           ],
         },

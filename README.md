@@ -6,7 +6,7 @@ Politehnica Bucharest. The repository has two parts:
 | Folder     | What it is                                   | Tooling                               |
 |------------|----------------------------------------------|---------------------------------------|
 | `slides/`  | Lecture slides, written in Typst             | [Typst](https://typst.app), `make`    |
-| `interactive/` | Interactive lectures (one HTML page per lecture) | Python 3 + Pillow, `pdftoppm` (poppler) |
+| `interactive/` | Interactive lectures (one HTML page per lecture, see [its README](interactive/README.md)) | [uv](https://docs.astral.sh/uv/) (Python + Pillow), `pdftoppm` (poppler) |
 | `website/` | Course website (lectures, labs, slide PDFs)  | [Docusaurus 3](https://docusaurus.io), Node.js |
 
 The slides are compiled to PDF and copied into `website/static/slides/`, so the
@@ -17,8 +17,9 @@ website can link to and embed them (e.g. `/slides/iso_01_intro.pdf`).
 - **Typst** (CLI) — e.g. `brew install typst`, `cargo install --locked typst-cli`,
   or `sudo snap install typst`.
 - **GNU Make**
-- **Python 3** with **Pillow** (`pip install -r interactive/requirements.txt`)
-  and **poppler** (`pdftoppm`) for the interactive lectures
+- **[uv](https://docs.astral.sh/uv/)** and **poppler** (`pdftoppm`) for the
+  interactive lectures (`make` runs them with `uv run`, which installs Pillow from
+  `interactive/uv.lock`)
 - **Node.js ≥ 18** (CI uses Node 22) and **npm**
 
 The first slide build needs internet access: Typst downloads the
