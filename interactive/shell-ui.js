@@ -313,13 +313,14 @@ function wShell(root){
 /* ---------- a real Linux, emulated by v86 ---------- */
 /* everything comes from public CDNs, nothing is deployed with the site:
    the emulator from npm (jsDelivr), the BIOS from the v86 repository (jsDelivr),
-   the Buildroot kernel from the image server of the v86 author (i.copy.sh, the one copy.sh/v86 uses) */
+   the Buildroot kernel of copy.sh/v86 from the course repository UPB-CS-ISO/v86-images (jsDelivr);
+   i.copy.sh itself refuses other websites (hotlink protection) */
 const V86CFG=Object.assign({
   lib:'https://cdn.jsdelivr.net/npm/v86@0.5.471/build/libv86.js',
   wasm:'https://cdn.jsdelivr.net/npm/v86@0.5.471/build/v86.wasm',
   bios:'https://cdn.jsdelivr.net/gh/copy/v86@0.5/bios/seabios.bin',
   vga:'https://cdn.jsdelivr.net/gh/copy/v86@0.5/bios/vgabios.bin',
-  bzimage:'https://i.copy.sh/buildroot-bzimage68.bin',
+  bzimage:'https://cdn.jsdelivr.net/gh/UPB-CS-ISO/v86-images@1.0/buildroot-bzimage68.bin',
 },window.ISO_V86||{});
 const SEED='mkdir -p ~/Downloads ~/Movies && echo "Project Hail Mary" > ~/watchlist.txt && touch ~/Downloads/supergirl.mp4 ~/Downloads/michael.mp4 ~/Movies/the_odyssey.mkv && cd ~ && clear && ls -l\n';
 function wLinux(root){
