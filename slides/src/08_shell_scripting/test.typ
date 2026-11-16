@@ -12,10 +12,10 @@
   #set text(size: 0.9em)
   + *Brian Ward*, _How LINUX Works_, 3#super[rd] Edition, No Starch Press, 2021
     - Chapter 11 - _Introduction to Shell Scripts_
-      - Section 11.5 - _Conditionals_
+      - Section 11.5.5 - _Testing Conditions_
   + *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
     - Chapter 13 - _Automatizarea sarcinilor_
-      - Section 13.3.2 - _Controlul fluxului_
+      - Section 13.3.2.1 - _if_
 ]
 
 #slide[
@@ -26,7 +26,7 @@
     #set text(size: 0.75em)
     #table(
       columns: (auto, 1fr),
-      table.header([Test], [True (`0`) if]),
+      table.header([*Test*], [*True (`0`) if*]),
       [`N -eq M`, `-ne`], [the numbers are #strong[eq]ual, #strong[n]ot #strong[e]qual],
       [`N -lt M`, `-le`], [#strong[l]ess #strong[t]han, #strong[l]ess or #strong[e]qual],
       [`N -gt M`, `-ge`], [#strong[g]reater #strong[t]han, #strong[g]reater or #strong[e]qual],
@@ -53,6 +53,7 @@
   #v(0.3em)
   #only(1)[💡 `2 -lt 3`: true, `test` ends with `0`]
   #only(2)[💡 `2 -gt 3`: false, `test` ends with `1`]
+  #only(3)[💡 `-f fruits.txt`: the file exists and is a regular file, `test` ends with `0`]
   #only("4-")[
     #shell-first[`<` and `>` are redirects, so the comparisons are *options*: `-lt`, `-gt`, ...]
   ]
@@ -195,7 +196,7 @@ fi"
   == 🐞 `[` Needs Spaces
   Without them, `[` is glued to the next word
 
-  #debug-run(bracket-code, size: 1.05em, columns: (9fr, 11fr), command: "./smaller.sh", blocks: true, (
+  #debug-run(bracket-code, size: 1.05em, columns: (9fr, 11fr), command: "./bracket.sh", blocks: true, (
     (line: 2, run: "a=2", vars: (a: "2")),
     (line: 3, run: "b=3", vars: (b: "3")),
     (line: 4, part: "[$a -lt $b]", run: "[2 -lt 3]", status: 127, out: ("./smaller.sh: line 4: [2: command not found",),
@@ -220,7 +221,7 @@ echo \"done\""
   == 🐞 `if`, `elif`, `else`
   The first command that ends with `0` chooses the branch
 
-  #debug-run(if-code, size: 1.1em, columns: (3fr, 2fr), command: "./kind.sh", (
+  #debug-run(if-code, size: 1.1em, columns: (3fr, 2fr), command: "./kind.sh", blocks: true, (
     (line: 2, run: "name=fruits.txt", vars: (name: "fruits.txt")),
     (line: 3, part: "[ -d \"$name\" ]", run: "[ -d fruits.txt ]", status: 1,
       note: [💡 the condition is the *command* `[`: not a directory, it ends with `1`, _false_]),

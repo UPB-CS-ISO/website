@@ -8,15 +8,19 @@
   #set text(size: 0.85em)
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
     1. *Brian Ward*, _How LINUX Works_, 3#super[rd] Edition, No Starch Press, 2021
+      - Chapter 2 - _Basic Commands and Directory Hierarchy_
+        - Section 2.8 - _Environment and Shell Variables_
       - Chapter 11 - _Introduction to Shell Scripts_
-        - Section 11.1 - _Shell Script Basics_
-        - Sections 11.3 - 11.7 - _Special Variables_, _Exit Codes_, _Conditionals_, _Loops_, _Command Substitution_
+        - Sections 11.1 - 11.7 - from _Shell Script Basics_ to _Command Substitution_
+        - Sections 11.10, 11.11, 11.13 - _Utilities_, _Subshells_, _Reading User Input_
         - Section 11.14 - _When (Not) to Use Shell Scripts_
   ][
     2. *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
+      - Chapter 7 - _Interfața în linia de comandă_
+        - Sections 7.2.2 - 7.2.5 - _Subshelluri_, _Variabile shell_, _Expandări_, _Escaping_
       - Chapter 13 - _Automatizarea sarcinilor_
-        - Section 13.2 - _Dezvoltarea scripturilor_
-        - Section 13.3 - _Funcționalități pentru scripturi shell_
+        - Sections 13.1 - 13.3 - from _Perspective pentru scripting_ to _Funcții_
+        - Sections 13.4.1, 13.4.2 - _Robustețe_, _Lizibilitate_
   ]
 ]
 
@@ -25,8 +29,8 @@
 
   - Shell Scripts
   - Variables
-  - Variables Expansion
-  - Reading Input: `read` and `IFS`
+  - Variable Expansion
+  - Reading Input
   - Command Substitution
   - Arithmetic
   - Operators and Decimals
@@ -35,7 +39,7 @@
   - Conditions: `case`
   - Loops: `while`
   - Loops: `for`
-  - Using `IFS` with `for`
+  - Using `IFS` With `for`
   - Functions
   - Script Parameters
 ]
@@ -61,8 +65,8 @@
 
   - Shell Scripts
   - Variables
-  - Variables Expansion
-  - Reading Input: `read` and `IFS`
+  - Variable Expansion
+  - Reading Input
   - Command Substitution
   - Arithmetic
   - Operators and Decimals
@@ -71,7 +75,7 @@
   - Conditions: `case`
   - Loops: `while`
   - Loops: `for`
-  - Using `IFS` with `for`
+  - Using `IFS` With `for`
   - Functions
   - Script Parameters
 ]

@@ -12,10 +12,12 @@
   #set text(size: 0.9em)
   + *Brian Ward*, _How LINUX Works_, 3#super[rd] Edition, No Starch Press, 2021
     - Chapter 11 - _Introduction to Shell Scripts_
-      - Section 11.10 - _Important Shell Script Utilities_ (`expr`)
+      - Section 11.10.5 - _expr_
   + *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
+    - Chapter 7 - _Interfața în linia de comandă_
+      - Section 7.2.4 - _Expandări_
     - Chapter 13 - _Automatizarea sarcinilor_
-      - Section 13.3.1 - _Variabile_
+      - Section 13.4.2 - _Lizibilitate_
 ]
 
 #slide[

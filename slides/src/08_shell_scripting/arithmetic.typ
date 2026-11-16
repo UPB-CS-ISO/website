@@ -12,10 +12,10 @@
   #set text(size: 0.9em)
   + *Brian Ward*, _How LINUX Works_, 3#super[rd] Edition, No Starch Press, 2021
     - Chapter 11 - _Introduction to Shell Scripts_
-      - Section 11.10 - _Important Shell Script Utilities_ (`expr`)
+      - Section 11.10.5 - _expr_
   + *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
-    - Chapter 13 - _Automatizarea sarcinilor_
-      - Section 13.3.1 - _Variabile_
+    - Chapter 7 - _Interfața în linia de comandă_
+      - Section 7.2.4 - _Expandări_
 ]
 
 #let naive-code = "#!/bin/bash
@@ -29,7 +29,7 @@ $a + $b"
   == 🐞 Adding Two Numbers?
   What you might expect to work
 
-  #debug-run(naive-code, size: 1.25em, columns: (2fr, 3fr), command: "./math.sh", blocks: true, (
+  #debug-run(naive-code, size: 1.25em, columns: (2fr, 3fr), command: "./sum.sh", blocks: true, (
     (line: 2, run: "a=2", vars: (a: "2")),
     (line: 3, run: "b=3", vars: (b: "3")),
     (line: 4, run: "sum=2+3", vars: (sum: "2+3"),
@@ -112,7 +112,7 @@ echo $sum"
 ]
 
 #slide[
-  == `expr` Pitfalls
+  == The Pitfalls of `expr`
   The shell expands the parameters of `expr` first
 
   // the session takes all the width (its error message is long), what
@@ -159,13 +159,13 @@ echo $sum"
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
     #set text(size: 1.35em)
-    #highlight-code(((1,), (2,), (3,), (4,), "all"))[```bash
+    #highlight-code(("all", (1,), (2,), (3,), (4,), "all"))[```bash
 ((n = n - 1))
 ((count++))
 sum=$((a + b))
 echo $((a * 2 + 1))
 ```]
-    #uncover("3-")[
+    #uncover("4-")[
       #set text(size: 0.65em)
       #v(0.3em)
       #grid(
@@ -179,34 +179,23 @@ echo $((a * 2 + 1))
     ]
   ][
     #set text(size: 0.9em)
-    #uncover("1-")[#block[- ```bash (( expression ))``` - a *command* that computes: C-like operators `+ - * / % **`, `( )`, variables without `$`]]
-    #uncover("2-")[#block[- `=`, `+=`, `-=`, `++`, `--` change a variable]]
-    #uncover("3-")[#block[- ```bash $(( expression ))``` - like ```bash $( command )```, but for an expression: the shell computes it and puts the *result* in its place, as text]]
-    #uncover("4-")[#block[- anywhere in a command line, also inside `"..."`]]
+    #uncover("2-")[#block[- ```bash (( expression ))``` - a *command* that computes: C-like operators `+ - * / % **`, `( )`, variables without `$`]]
+    #uncover("3-")[#block[- `=`, `+=`, `-=`, `++`, `--` change a variable]]
+    #uncover("4-")[#block[- ```bash $(( expression ))``` - like ```bash $( command )```, but for an expression: the shell computes it and puts the *result* in its place, as text]]
+    #uncover("5-")[#block[- anywhere in a command line, also inside `"..."`]]
   ]
 
   #bash-only[`(( ))` as a command, `++`, `--`]
 
-  // the warning, as a popup on top of the slide, with a soft shadow
-  #only("5-")[
-    #let card = block(
-      fill: rgb("fff8e1"),
-      stroke: 2.5pt + fail-color,
-      radius: 0.6em,
-      inset: (x: 1.4em, y: 0.9em),
-      align(center)[
+  // the warning, as a popup on top of the slide
+  #only("6-")[
+    #popup[
+      #align(center)[
         #text(size: 1.8em, weight: "bold", fill: fail-color)[⚠️ integers only!]
         #v(-0.3em)
         #text(size: 1.2em)[```bash $((7 / 2))``` is `3` #h(1em) no `3.5`, no `0.5`]
-      ],
-    )
-    #place(center + horizon, dy: 1.5em, rotate(-3deg, context {
-      let size = measure(card)
-      box({
-        place(dx: 7pt, dy: 7pt, box(width: size.width, height: size.height, radius: 0.6em, fill: luma(0).transparentize(80%)))
-        card
-      })
-    }))
+      ]
+    ]
   ]
 ]
 
@@ -222,7 +211,7 @@ echo \"$a + $b = $((a + b))\""
   == 🐞 Arithmetic
   The shell computes inside ```bash $(( ))```, no program is started
 
-  #debug-run(arith-code, size: 1.35em, columns: (3fr, 2fr), command: "./math.sh", (
+  #debug-run(arith-code, size: 1.35em, columns: (3fr, 2fr), command: "./math.sh", blocks: true, (
     (line: 2, run: "a=2", vars: (a: "2")),
     (line: 3, run: "b=3", vars: (b: "3")),
     (line: 4, compute: "$((a + b))", info: [computes `2 + 3` = `5`],

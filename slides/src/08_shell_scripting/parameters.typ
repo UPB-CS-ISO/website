@@ -56,7 +56,7 @@ echo \"$# parameters\""
   == 🐞 Script Parameters
   The words after the name of the script are ```bash $1```, ```bash $2```, ...
 
-  #debug-run(params-code, size: 1.25em, columns: (3fr, 2fr), command: "./params.sh alice bob", (
+  #debug-run(params-code, size: 1.25em, columns: (3fr, 2fr), command: "./params.sh alice bob", blocks: true, (
     (line: 2, run: "echo \"script: ./params.sh\"", status: 0, out: ("script: ./params.sh",),
       vars: ("$0": "./params.sh", "$1": "alice", "$2": "bob", "$#": "2"),
       note: [💡 ```bash $0``` - the name of the script, as you typed it]),
@@ -67,45 +67,23 @@ echo \"$# parameters\""
   ))
 ]
 
-#let show-code = "#!/bin/bash
-for p in \"$@\"; do
-    echo \"[$p]\"
-done"
-
-#slide[
-  == 🐞 Going Over the Parameters
-  ```bash "$@"``` - the parameters, every one a word
-
-  #debug-run(show-code, size: 1.35em, columns: (1fr, 1fr), command: "./show.sh \"Alice Smith\" bob", (
-    (line: 2, info: [expands to `"Alice Smith" "bob"`],
-      vars: ("$1": "Alice Smith", "$2": "bob", "$#": "2"),
-      note: [💡 two words, the space inside `Alice Smith` is kept]),
-    (line: 2, expand: "p ", run: "p=\"Alice Smith\"", vars: (p: "Alice Smith")),
-    (line: 3, run: "echo \"[Alice Smith]\"", status: 0, out: ("[Alice Smith]",)),
-    (line: 2, expand: "p ", run: "p=\"bob\"", vars: (p: "bob")),
-    (line: 3, run: "echo \"[bob]\"", status: 0, out: ("[bob]",)),
-  ))
-]
-
 #slide[
   == Positional Parameters
   ```bash $0```, ```bash $1```, ```bash $2```, ... - the words of the command line
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
     #set text(size: 0.95em)
-    ```bash
-    #!/bin/bash
-    echo "script: $0"
-    echo "first:  $1"
-    echo "second: $2"
-    echo "count:  $#"
-    echo "all:    $@"
-    ```
+    #code-panel("args.sh", "#!/bin/bash
+echo \"script: $0\"
+echo \"first:  $1\"
+echo \"second: $2\"
+echo \"count:  $#\"
+echo \"all:    $@\"")
     #set text(size: 0.8em)
     #table(
       columns: (auto, 1fr),
       inset: (x: 0.4em, y: 0.3em),
-      table.header([Variable], [Value]),
+      table.header([*Variable*], [*Value*]),
       [```bash $0```], [the name of the script, as you typed it],
       [```bash $1``` ... ```bash $9```, ```bash ${10}```], [the parameters],
       [```bash $#```], [how many parameters],
@@ -114,14 +92,14 @@ done"
   ][
     #set text(size: 0.95em)
     #reveal-terminal(before: none, lines: (6, 12), full: false)[```terminal
-    $ ./params.sh alice bob
-    script: ./params.sh
+    $ ./args.sh alice bob
+    script: ./args.sh
     first:  alice
     second: bob
     count:  2
     all:    alice bob
-    $ ./params.sh "Alice Smith" bob carol
-    script: ./params.sh
+    $ ./args.sh "Alice Smith" bob carol
+    script: ./args.sh
     first:  Alice Smith
     second: bob
     count:  3
@@ -135,30 +113,38 @@ done"
   ]
 ]
 
+#let show-code = "#!/bin/bash
+for p in \"$@\"; do
+    echo \"[$p]\"
+done"
+
+#slide[
+  == 🐞 Going Over the Parameters
+  ```bash "$@"``` - the parameters, every one a word
+
+  #debug-run(show-code, size: 1.35em, columns: (1fr, 1fr), command: "./show.sh \"Alice Smith\" bob", blocks: true, (
+    (line: 2, info: [expands to `"Alice Smith" "bob"`],
+      vars: ("$1": "Alice Smith", "$2": "bob", "$#": "2"),
+      note: [💡 two words, the space inside `Alice Smith` is kept]),
+    (line: 2, expand: "p ", run: "p=\"Alice Smith\"", vars: (p: "Alice Smith")),
+    (line: 3, run: "echo \"[Alice Smith]\"", status: 0, out: ("[Alice Smith]",)),
+    (line: 2, expand: "p ", run: "p=\"bob\"", vars: (p: "bob")),
+    (line: 3, run: "echo \"[bob]\"", status: 0, out: ("[bob]",)),
+  ))
+]
+
 #slide[
   == `"$@"` Keeps the Words
   Without quotes, the parameters are cut again at the characters of `IFS`
 
   #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
     #set text(size: 1.1em)
-    ```bash
-    #!/bin/bash
-    # show.sh
-    for p in "$@"; do
-        echo "[$p]"
-    done
-    ```
+    #code-panel("show.sh", show-code)
     #terminal("$ ./show.sh \"Alice Smith\" bob\n[Alice Smith]\n[bob]")
   ][
     #set text(size: 1.1em)
     #uncover("2-")[
-      ```bash
-      #!/bin/bash
-      # show2.sh
-      for p in $@; do
-          echo "[$p]"
-      done
-      ```
+      #code-panel("show2.sh", show-code.replace("\"$@\"", "$@"))
       #terminal("$ ./show2.sh \"Alice Smith\" bob\n[Alice]\n[Smith]\n[bob]")
     ]
   ]

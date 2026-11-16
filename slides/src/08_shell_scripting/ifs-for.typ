@@ -2,7 +2,7 @@
 #import "common.typ": *
 
 #slide[
-  = Using `IFS` with `for` #text(size: 10pt, weight: "regular")[\ _Choose where the list of words is cut_]
+  = Using `IFS` With `for` #text(size: 10pt, weight: "regular")[\ _Choose where the list of words is cut_]
 ]
 
 #slide[
@@ -16,7 +16,8 @@
       - Section 11.6.1 - _for Loops_
   + *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
     - Chapter 13 - _Automatizarea sarcinilor_
-      - Section 13.3.2 - _Controlul fluxului_
+      - Section 13.3.2.3 - _for_
+      - Section 13.4.1 - _Robustețe_
 ]
 
 #slide[
@@ -80,7 +81,7 @@ unset IFS"
   == 🐞 `for` With `IFS`
   `IFS` decides the words of the list
 
-  #debug-run(ifs-for-code, size: 1.25em, columns: (1fr, 1fr), command: "./fruits.sh", blocks: true, (
+  #debug-run(ifs-for-code, size: 1.25em, columns: (1fr, 1fr), command: "./split.sh", blocks: true, (
     (line: 1, vars: (IFS: "space tab newline"), tags: (IFS: [default]),
       note: [💡 the script starts: `IFS` has the *default* value]),
     (line: 2, run: "line=\"apple:kiwi:cherry\"", vars: (line: "apple:kiwi:cherry"),

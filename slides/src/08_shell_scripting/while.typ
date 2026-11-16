@@ -15,7 +15,7 @@
       - Section 11.6.2 - _while Loops_
   + *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
     - Chapter 13 - _Automatizarea sarcinilor_
-      - Section 13.3.2 - _Controlul fluxului_
+      - Section 13.3.2.4 - _while_
 ]
 
 #slide[
@@ -92,14 +92,14 @@ echo \"done\""
     (line: 3, part: "[ $n -eq 2 ]", run: "[ 0 -eq 2 ]", status: 1,
       note: [💡 not `0`, _false_: `until` runs the body]),
     (line: 4, run: "n=1", vars: (n: "1")),
-    (line: 5, run: "echo 1", status: 0, out: ("1",)),
+    (line: 5, run: "echo \"1\"", status: 0, out: ("1",)),
     (line: 3, part: "[ $n -eq 2 ]", run: "[ 1 -eq 2 ]", status: 1,
       note: [💡 `done` jumps back: still not `0`, the body runs again]),
     (line: 4, run: "n=2", vars: (n: "2")),
-    (line: 5, run: "echo 2", status: 0, out: ("2",)),
+    (line: 5, run: "echo \"2\"", status: 0, out: ("2",)),
     (line: 3, part: "[ $n -eq 2 ]", run: "[ 2 -eq 2 ]", status: 0,
       note: [💡 `0`, _true_: `until` stops - the opposite of `while`]),
-    (line: 7, run: "echo done", status: 0, out: ("done",)),
+    (line: 7, run: "echo \"done\"", status: 0, out: ("done",)),
   ))
 ]
 

@@ -15,7 +15,7 @@
       - Section 11.5.6 - _case_
   + *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
     - Chapter 13 - _Automatizarea sarcinilor_
-      - Section 13.3.2 - _Controlul fluxului_
+      - Section 13.3.2.2 - _case_
 ]
 
 #slide[
@@ -151,7 +151,7 @@ esac
 echo \"done\""
 
 #slide[
-  == 🐞 Pitfall: `a*` Comes First
+  == 🐞 `a*` Comes First
   The first pattern that matches wins
 
   #debug-run(order-code, size: 1.35em, columns: (3fr, 2fr), command: "./order.sh", blocks: true, (

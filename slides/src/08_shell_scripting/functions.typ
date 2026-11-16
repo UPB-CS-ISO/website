@@ -13,6 +13,7 @@
   + *Brian Ward*, _How LINUX Works_, 3#super[rd] Edition, No Starch Press, 2021
     - Chapter 11 - _Introduction to Shell Scripts_
       - Section 11.7 - _Command Substitution_
+      - Section 11.11 - _Subshells_
   + *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
     - Chapter 13 - _Automatizarea sarcinilor_
       - Section 13.3.3 - _Funcții_
@@ -122,10 +123,10 @@ echo \"$name $count\""
   #debug-run(local-code, size: 1.15em, columns: (3fr, 2fr), command: "./update.sh", blocks: true, (
     (line: 2, run: "update() { ... }",
       note: [💡 lines 2 - 5 only define the function]),
-    (line: 6, run: "name=alice", vars: (name: "alice")),
+    (line: 6, run: "name=\"alice\"", vars: (name: "alice")),
     (line: 7, run: "count=0", vars: (count: "0")),
     (line: 8, run: "update"),
-    (line: 3, run: "local name=bob", vars: ("name (local)": "bob"),
+    (line: 3, run: "local name=\"bob\"", vars: ("name (local)": "bob"),
       note: [💡 `local`: a *new* `name`, inside the function - the one of the script is not touched]),
     (line: 4, run: "count=1", vars: (count: "1"),
       note: [💡 no `local`: `count` is the variable of the script, *global*]),
@@ -211,7 +212,7 @@ echo \"$name: $sum\""
 ]
 
 #slide[
-  == Function Pitfalls
+  == The Pitfalls of Functions
   A function is a command: it prints and ends with an exit code, nothing more
 
   // one pitfall: the wrong command line, its problem highlighted in red,

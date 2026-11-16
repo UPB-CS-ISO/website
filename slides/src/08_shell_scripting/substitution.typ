@@ -13,9 +13,11 @@
   + *Brian Ward*, _How LINUX Works_, 3#super[rd] Edition, No Starch Press, 2021
     - Chapter 11 - _Introduction to Shell Scripts_
       - Section 11.7 - _Command Substitution_
+      - Section 11.11 - _Subshells_
   + *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
-    - Chapter 13 - _Automatizarea sarcinilor_
-      - Section 13.3.1 - _Variabile_
+    - Chapter 7 - _Interfața în linia de comandă_
+      - Section 7.2.2 - _Subshelluri_
+      - Section 7.2.4 - _Expandări_
 ]
 
 // ----- command substitution, drawn -----
@@ -83,7 +85,7 @@
 
   #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.5em)[
     #set text(size: 1.15em)
-    #highlight-code(("all", (1,), (1,), (1,), (1,), (2,), (3,)))[```bash
+    #highlight-code(("all", (1,), (1,), (1,), (1,), (2,), (3,), "all"))[```bash
 VAR=$(command arg1 arg2)
 command1 $(command2 arg)
 VAR=`command arg1 arg2`
@@ -139,13 +141,13 @@ echo \"$count fruits on $today\""
 ]
 
 #slide[
-  == Command Substitution
-  ```bash $(command)``` - the output of a command, as text
+  == Capturing Output
+  The output of a command becomes text in the command line
 
   #toolbox.side-by-side(columns: (11fr, 9fr), gutter: 1.5em)[
     #set text(size: 0.95em)
     #grid(columns: (1fr, auto), column-gutter: 0.5em, [
-    #reveal-terminal(before: luma(170), lines: (1, 3, 5, 7), full: false)[```terminal
+    #reveal-terminal(before: none, lines: (1, 3, 5, 7), full: false)[```terminal
     $ count=$(wc -l < fruits.txt)
     $ echo "$count fruits"
     7 fruits

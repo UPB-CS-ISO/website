@@ -11,8 +11,11 @@
 
   #set text(size: 0.9em)
   + *Brian Ward*, _How LINUX Works_, 3#super[rd] Edition, No Starch Press, 2021
-    - Chapter 11 - _Introduction to Shell Scripts_
+    - Chapter 2 - _Basic Commands and Directory Hierarchy_
+      - Section 2.8 - _Environment and Shell Variables_
   + *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
+    - Chapter 7 - _Interfața în linia de comandă_
+      - Section 7.2.3 - _Variabile shell_
     - Chapter 13 - _Automatizarea sarcinilor_
       - Section 13.3.1 - _Variabile_
 ]
@@ -132,7 +135,7 @@ echo \"$greeting!\""
   == 🐞 Variables Hold Text
   ```bash NAME=value``` stores the text, ```bash $NAME``` puts it back
 
-  #debug-run(vars-code, size: 1.35em, columns: (3fr, 2fr), command: "./vars.sh", (
+  #debug-run(vars-code, size: 1.35em, columns: (3fr, 2fr), command: "./vars.sh", blocks: true, (
     (line: 2, run: "name=\"alice\"", vars: (name: "alice"),
       note: [💡 `name` holds the text `alice`]),
     (line: 3, run: "greeting=\"Hello, alice\"", vars: (greeting: "Hello, alice"),

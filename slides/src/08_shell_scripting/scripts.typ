@@ -91,7 +91,7 @@
     #set text(size: 1.35em)
     #highlight-code(("all", (1,), (2,), (3,), (4,), lines-range(5, 6), "all"))[```bash
 #!/bin/bash
-# backup.sh - back up the notes
+# back up the notes
 mkdir -p ~/backup
 cd ~/backup; ls
 cp ~/notes.txt \
@@ -152,7 +152,7 @@ cp ~/notes.txt \
 
 #let run-drawing(typed, rows, file, out, extra: none) = {
   let n = rows.len() + 1
-  let lines = ("echo \"backing up\"", "mkdir -p ~/backup", "cp notes.txt ~/backup/", "echo \"done\"")
+  let lines = ("mkdir -p ~/backup", "cp ~/notes.txt ~/backup/", "echo \"backup done\"")
   let render(i) = {
     let f = file(i)
     grid(
@@ -193,9 +193,7 @@ cp ~/notes.txt \
         })
         let o = debug-panel([output], {
           set text(font: mono, size: 0.9em)
-          text(fill: changed)[backing up]
-          linebreak()
-          text(fill: changed)[done]
+          text(fill: changed)[backup done]
         })
         if extra != none and i == extra.at(0) { extra.at(1) } else if i >= out { o } else { hide(o) }
       },
@@ -223,7 +221,7 @@ cp ~/notes.txt \
     i => (
       perms: if i == 3 { "check" } else { none },
       shebang: if i in (4, 5) { "read" } else if i == 6 { "comment" } else { none },
-      lines: if i == 6 { (2, 3, 4, 5) } else { () },
+      lines: if i == 6 { (2, 3, 4) } else { () },
     ),
     6,
     // what happens without `x`
@@ -252,7 +250,7 @@ cp ~/notes.txt \
     i => (
       perms: if i >= 3 { "skip" } else { none },
       shebang: if i == 5 { "comment" } else { none },
-      lines: if i == 5 { (2, 3, 4, 5) } else { () },
+      lines: if i == 5 { (2, 3, 4) } else { () },
     ),
     5,
   )
@@ -316,23 +314,21 @@ cp ~/notes.txt \
 ]
 
 #let backup-code = "#!/bin/bash
-echo \"backing up\"
 mkdir -p ~/backup
-cp notes.txt ~/backup/
-echo \"done\""
+cp ~/notes.txt ~/backup/
+echo \"backup done\""
 
 #slide[
   == 🐞 A Script Runs Line by Line
   A file with command lines, the shell runs them one after another
 
-  #debug-run(backup-code, size: 1.35em, columns: (3fr, 2fr), command: "./backup.sh", (
+  #debug-run(backup-code, size: 1.35em, columns: (3fr, 2fr), command: "./backup.sh", blocks: true, (
     (line: 1, expand: "/bin/bash", run: "/bin/bash ./backup.sh", info: [started by the kernel],
       note: [💡 `#!` - the program that runs the script, for `bash` the line is a comment]),
-    (line: 2, run: "echo \"backing up\"", status: 0, out: ("backing up",)),
-    (line: 3, run: "mkdir -p /home/alice/backup", status: 0,
+    (line: 2, run: "mkdir -p /home/alice/backup", status: 0,
       note: [💡 the shell replaces `~` before running the command, like in the terminal]),
-    (line: 4, run: "cp notes.txt /home/alice/backup/", status: 0),
-    (line: 5, run: "echo \"done\"", status: 0, out: ("done",),
+    (line: 3, run: "cp /home/alice/notes.txt /home/alice/backup/", status: 0),
+    (line: 4, run: "echo \"backup done\"", status: 0, out: ("backup done",),
       note: [💡 no more lines: the script ends]),
   ))
 ]

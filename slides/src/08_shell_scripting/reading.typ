@@ -15,7 +15,7 @@
       - Section 11.13 - _Reading User Input_
   + *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
     - Chapter 13 - _Automatizarea sarcinilor_
-      - Section 13.3 - _Funcționalități pentru scripturi shell_
+      - Section 13.3.2.4 - _while_
 ]
 
 #slide[

@@ -53,3 +53,16 @@
 
 // the default IFS: space, tab and newline
 #let blank = (" ", "\t", "\n")
+
+// ----- files -----
+
+// a script shown on a slide, in the same frame as the script of the
+// debugger: its name in the title bar, the code under it
+// #code-panel("show.sh", "#!/bin/bash\nfor p in \"$@\"; do\n    echo \"[$p]\"\ndone")
+#let code-panel(name, code) = debug-panel(raw(name), {
+  // inline raw is wrapped in a box by the template, which would break the lines apart
+  show raw.where(block: false): it => it.lines.join()
+  for l in code.split("\n") {
+    block(width: 100%, above: 0pt, below: 0pt, inset: (y: 0.2em), raw(l, lang: "bash"))
+  }
+})

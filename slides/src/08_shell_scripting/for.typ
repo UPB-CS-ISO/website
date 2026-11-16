@@ -15,7 +15,7 @@
       - Section 11.6.1 - _for Loops_
   + *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
     - Chapter 13 - _Automatizarea sarcinilor_
-      - Section 13.3.2 - _Controlul fluxului_
+      - Section 13.3.2.3 - _for_
 ]
 
 #slide[
@@ -55,7 +55,7 @@ echo \"done\""
   == 🐞 `for`
   Run the body once for every word of the list
 
-  #debug-run(for-code, size: 1.35em, columns: (7fr, 3fr), command: "./fruits.sh", (
+  #debug-run(for-code, size: 1.35em, columns: (7fr, 3fr), command: "./like.sh", blocks: true, (
     (line: 2, expand: "apple", run: "fruit=apple", vars: (fruit: "apple"),
       note: [💡 `fruit` takes the first word]),
     (line: 3, run: "echo \"I like apple\"", status: 0, out: ("I like apple",)),
@@ -78,7 +78,7 @@ done"
   == 🐞 `for` With a Glob
   The shell makes the list of words first
 
-  #debug-run(glob-code, size: 1.35em, columns: (3fr, 2fr), command: "./files.sh", (
+  #debug-run(glob-code, size: 1.35em, columns: (3fr, 2fr), command: "./files.sh", blocks: true, (
     (line: 2, expand: "*.txt", info: [expands `*.txt` to `fruits.txt notes.txt words.txt`],
       note: [💡 before the loop starts, the shell replaces the glob with the file names]),
     (line: 2, expand: "f ", run: "f=fruits.txt", vars: (f: "fruits.txt")),
@@ -145,9 +145,9 @@ echo \"done\""
     (line: 3, run: "i=2", vars: (i: "2"), expand: "i ",
       note: [💡 `done` jumps back, `i` takes the next word - `seq` does not run again]),
     (line: 4, run: "echo \"round 2\"", status: 0, out: ("round 2",)),
-    (line: 3, run: "i=3", vars: (i: "3"), expand: "i in"),
+    (line: 3, run: "i=3", vars: (i: "3"), expand: "i "),
     (line: 4, run: "echo \"round 3\"", status: 0, out: ("round 3",)),
-    (line: 6, run: "echo done", status: 0, out: ("done",),
+    (line: 6, run: "echo \"done\"", status: 0, out: ("done",),
       note: [💡 no more words, the loop ends]),
   ))
 ]
