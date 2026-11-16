@@ -227,8 +227,8 @@
 ).map(c => uncover(str(at) + "-", c))
 
 #slide[
-  == Instruction Set Architecture (ISA)
-  The instructions a processor understands, and how they look in bytes
+  == The ISA
+  _Instruction Set Architecture_: the instructions a processor understands, and how they look in bytes
 
   #set text(size: 0.9em)
   #align(center, grid(
@@ -242,7 +242,7 @@
     uncover("2-", text(size: 0.75em, weight: "bold", fill: luma(90))[one machine code per ISA]),
     [],
     uncover("2-", text(size: 0.75em, weight: "bold", fill: luma(90))[runs only on]),
-    grid.cell(rowspan: 3, code-file("add.c")[```c a = a + 1;```]),
+    grid.cell(rowspan: 3, code-file("add.c", width: 92pt)[```c a = a + 1;```]),
     grid.cell(rowspan: 3, draw-arrow(length: 2em)),
     grid.cell(rowspan: 3, tool-box("compiler", sub: [`gcc`, `clang`])),
     grid.cell(rowspan: 3, {
@@ -259,7 +259,7 @@
   #v(0.2em)
   #only(1)[💡 the ISA is the *contract* between hardware and software: which instructions exist and how they are written in bytes]
   #only("2-4")[💡 the same line of C, three different "languages": the bytes mean nothing to the other CPUs]
-  #only("5-", place(bottom + left, dy: -0.3em, popup(width: 190pt)[⚠️ One program, one ISA][
+  #only("5-", place(bottom + left, dy: 1em, popup(width: 190pt)[One program, one ISA][
     a program compiled for one ISA does *not* run on another: this is why you download `x86_64` or `arm64` versions
   ]))
 ]
@@ -387,7 +387,7 @@
   )
 
   // the main idea: a large popup over the bottom of the slide
-  #only("3-", place(bottom + center, dy: -0.8em, popup(width: 420pt, color: changed)[
+  #only("3-", place(bottom + center, dy: -0.8em, popup(width: 420pt, kind: "tip")[
     #text(size: 1.15em)[CISC or RISC? Today the line is blurry]
   ][
     #set text(size: 1.1em)
@@ -459,8 +459,8 @@
 ]
 
 #slide[
-  == Ask Linux: `uname` and `file`
-  The ISA of the machine, and the ISA of a program
+  == `uname` and `file`
+  Ask Linux: the ISA of the machine, and the ISA of a program
 
   // the architecture in the output, highlighted ("ARM aarch64" before
   // "aarch64", so it is matched as one piece)
@@ -681,33 +681,147 @@
   ]))
 ]
 
+// a real hybrid laptop CPU (16 cores, no SMT), as `lscpu -e` shows it
+#let hybrid-out = (
+  "$ nproc",
+  "16",
+  "$ lscpu -e",
+  "CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ       MHZ",
+  "  0    0      0    0 0:0:0:0          yes 5100.0000 400.0000 1000.2170",
+  "  1    0      0    1 4:4:1:0          yes 5100.0000 400.0000 1000.0100",
+  "  2    0      0    2 8:8:2:0          yes 5100.0000 400.0000  616.8610",
+  "  3    0      0    3 12:12:3:0        yes 5200.0000 400.0000  620.5800",
+  "  4    0      0    4 32:32:4:0        yes 4000.0000 400.0000  999.3280",
+  "  5    0      0    5 34:34:4:0        yes 4000.0000 400.0000 1096.9500",
+  "  6    0      0    6 36:36:4:0        yes 4000.0000 400.0000  999.9120",
+  "  7    0      0    7 38:38:4:0        yes 4000.0000 400.0000  999.6950",
+  "  8    0      0    8 40:40:5:0        yes 4000.0000 400.0000 1099.8380",
+  "  9    0      0    9 42:42:5:0        yes 4000.0000 400.0000 1100.0770",
+  " 10    0      0   10 44:44:5:0        yes 4000.0000 400.0000 1073.9640",
+  " 11    0      0   11 46:46:5:0        yes 4000.0000 400.0000 1185.3230",
+  " 12    0      0   12 64:64:8          yes 3700.0000 400.0000 1299.9730",
+  " 13    0      0   13 66:66:8          yes 3700.0000 400.0000 1300.1600",
+  " 14    0      0   14 68:68:8          yes 3700.0000 400.0000 1299.3879",
+  " 15    0      0   15 70:70:8          yes 3700.0000 400.0000 1299.9460",
+)
+// the words to mark on the rows `from` to `to` (line numbers in hybrid-out)
+#let rows-marks(from, to, f) = range(from, to + 1).map(n => f(n, hybrid-out.at(n))).flatten().chunks(2)
+#let cache-of(t) = t.split(" ").filter(w => w.contains(":")).first()
+#let mhz-of(t) = t.split(" ").filter(w => w.ends-with(".0000")).first()
+#let mark-group(from, to) = rows-marks(from, to, (n, t) => (n, cache-of(t), n, mhz-of(t)))
+
+// the chip of that laptop: 4 P-cores (own L2), 8 E-cores (two groups of 4,
+// one L2 each), the shared L3, and 4 low-power E-cores apart, without L3.
+// `on`: "p", "e", "lp" or none
+#let hybrid-chip(on) = drawing(width: 200pt, height: 160pt, {
+  let col(g) = if on == g { changed } else { accent }
+  let core(x, y, s, g) = at(x, y, box(width: s, height: s, radius: 1.5pt, fill: col(g)))
+  let l2(x, y, w, g) = at(x, y, box(width: w, height: 6pt, radius: 1pt, fill: col(g).lighten(55%), align(center + horizon, text(size: 0.4em)[L2])))
+  let label(x, y, g, body) = at(x, y, text(size: 0.55em, weight: "bold", fill: if on == g { changed.darken(15%) } else { black }, body))
+  // P-cores: each with its own L2
+  label(0pt, 0pt, "p")[🏎️ 4 P-cores, 5.1 GHz]
+  for i in range(4) { core(i * 22pt, 12pt, 18pt, "p"); l2(i * 22pt, 32pt, 18pt, "p") }
+  // E-cores: two groups of 4, one L2 per group
+  label(104pt, 0pt, "e")[🌱 8 E-cores, 4.0 GHz]
+  for g in range(2) {
+    for i in range(4) { core(104pt + i * 12pt + g * 50pt, 14pt, 10pt, "e") }
+    l2(104pt + g * 50pt, 26pt, 46pt, "e")
+  }
+  // the L3, shared by the P-cores and the E-cores
+  at(0pt, 44pt, box(width: 200pt, height: 12pt, radius: 2pt, fill: luma(225), align(center + horizon, text(size: 0.5em)[L3: shared by the P-cores and the E-cores])))
+  // the low-power island
+  at(40pt, 80pt, box(width: 120pt, height: 64pt, radius: 4pt, stroke: (paint: luma(140), thickness: 0.8pt, dash: "dashed")))
+  label(48pt, 84pt, "lp")[🔋 4 LP E-cores, 3.7 GHz]
+  for i in range(4) { core(62pt + i * 20pt, 100pt, 12pt, "lp") }
+  l2(62pt, 116pt, 72pt, "lp")
+  at(48pt, 128pt, text(size: 0.5em, fill: luma(90))[low-power island: no L3])
+})
+
+#slide[
+  == A Hybrid Laptop CPU
+  The same commands on a Panther Lake laptop (Intel Core Ultra): 16 cores of three kinds
+
+  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1em)[
+    #set text(size: 0.5em)
+    #mark-terminal(hybrid-out, (
+      (19, ((1, "16"), (3, "CORE"))),
+      (19, ((3, "L1d:L1i:L2:L3"), (3, "MAXMHZ")) + mark-group(4, 7)),
+      (19, mark-group(8, 15)),
+      (19, mark-group(16, 19)),
+      (19, ((3, " MHZ"),) + range(4, 20).map(n => (n, hybrid-out.at(n).split(" ").last()))),
+    ))
+  ][
+    #only(1, hybrid-chip(none))
+    #only(2, hybrid-chip("p"))
+    #only(3, hybrid-chip("e"))
+    #only(4, hybrid-chip("lp"))
+    #only("5-", hybrid-chip(none))
+  ]
+
+  #v(0.2em)
+  #only(1)[💡 16 CPUs on 16 different cores: no Hyper-Threading here]
+  #only(2)[💡 P-cores: the fastest (CPU 3 goes to 5.2 GHz), each with its own L2]
+  #only(3)[💡 E-cores: slower, in two groups of 4; each group shares one L2 (`4` and `5`)]
+  #only(4)[💡 LP E-cores: one L2 (`8`) and no L3 at all: they run the background work while the big cores sleep]
+  #only("5-")[💡 `MHZ` is the speed right now: 600 - 1300 MHz, the cores slow down when there is little to do]
+]
+
+// a register drawn as a row of bits, grouped in bytes; `on` colors it
+#let register-bits(n, cell: 5pt, color: accent) = box(stack(dir: ltr, spacing: 2pt, ..range(calc.quo(n, 8)).map(_ => box(
+  stack(dir: ltr, ..range(8).map(_ => box(width: cell, height: 14pt, fill: color.lighten(80%), stroke: 0.4pt + color))),
+))))
+
+// one row: a name, the register, and right after it what its addresses reach
+#let bits-row(name, n, reach, color: accent) = block(below: 0.8em, {
+  box(width: 3.5em, text(weight: "bold", fill: color, name))
+  register-bits(n, color: color)
+  h(0.6em)
+  box(baseline: -0.2em, text(size: 0.9em, reach))
+})
+
+// 16 GB of RAM as a bar, and the part a 32-bit address can reach (4 GiB)
+#let ram-bar = {
+  let w = 380pt
+  let part = w * 4 / 16
+  box(width: w, {
+    stack(
+      dir: ltr,
+      box(width: part, height: 18pt, fill: ok-color.lighten(70%), stroke: 0.8pt + ok-color, align(center + horizon, text(
+        size: 0.65em,
+        weight: "bold",
+        fill: ok-color.darken(20%),
+      )[the first 4 GiB: reachable])),
+      box(width: w - part, height: 18pt, fill: bad-color.lighten(85%), stroke: 0.8pt + bad-color, align(center + horizon, text(
+        size: 0.65em,
+        weight: "bold",
+        fill: bad-color,
+      )[❌ the rest: a 32-bit address cannot point here])),
+    )
+  })
+}
+
 #slide[
   == 32 or 64 bit?
   The size of a register, and so of a memory address
 
-  #grid(
-    columns: (1fr, 1fr),
-    column-gutter: 1.2em,
-    card([🕰️ 32 bit])[
-      #align(center)[
-        #text(size: 1.6em, weight: "bold", fill: accent)[$2^32$ B = 4 GiB] \
-        #text(size: 0.8em)[the most RAM a 32-bit address can reach]
-      ]
-    ],
-    uncover("2-", card([🚀 64 bit])[
-      #align(center)[
-        #text(size: 1.6em, weight: "bold", fill: accent)[$2^64$ B = 16 EiB] \
-        #text(size: 0.8em)[on paper; real CPUs use 48 - 57 bits (256 TiB - 128 PiB)]
-      ]
-    ]),
-  )
-
-  #v(0.5em)
   #set text(size: 0.85em)
+  #bits-row([32 bit], 32, [$2^32$ addresses = *4 GiB*], color: rgb("c26a2f"))
+  #uncover("2-", bits-row([64 bit], 64, [$2^64$ = *16 EiB*]))
+  #align(right, text(size: 0.8em, fill: luma(90), style: "italic")[one small box = one bit, grouped by 8 in bytes])
+
+  #v(0.6em)
   #uncover("3-")[
-    - today almost everything is 64-bit: `x86_64` / `amd64`, `aarch64` / `arm64`, `riscv64`
-    - 32-bit lives on in microcontrollers 🔌 and old programs
+    #align(center)[
+      #text(size: 0.9em)[a laptop with *16 GB* of RAM, seen by a *32-bit* program:] \
+      #v(0.2em)
+      #ram-bar
+    ]
   ]
 
-  #only(1)[💡 a laptop with 16 GB of RAM needs more than 32 bits]
+  #only(2, place(bottom + center, dy: -0.2em, popup(width: 360pt, kind: "info")[64 bits on paper][
+    real 64-bit CPUs use 48 to 57 address bits: 256 TiB to 128 PiB, still far more than any computer has
+  ]))
+  #only("4-", place(bottom + center, dy: 1em, popup(width: 400pt, kind: "info")[Today almost everything is 64-bit][
+    `x86_64` / `amd64`, `aarch64` / `arm64`, `riscv64`; 32-bit lives on in microcontrollers and old programs
+  ]))
 ]

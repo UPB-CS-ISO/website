@@ -54,12 +54,87 @@
   == The Main Components
   Every computer, from a phone to a server, has the same parts
 
-  #for s in range(1, 8) { only(if s == 7 { "7-" } else { s }, components(s)) }
+  #for s in range(1, 8) { only(s, components(s)) }
+  #only("8-", components(0))
 
-  #only("8-", place(bottom + center, dy: 1.6em, info(width: 430pt)[Input and output (I/O)][
-    everything that is not CPU or RAM is a _device_: the OS talks to it through a *driver*
+  #only("8-", place(center + horizon, dy: 1em, popup(width: 330pt, kind: "info")[Devices and drivers][
+    #set text(size: 1.15em)
+    #align(center)[
+      everything that is not CPU or RAM is a *device*
+      #v(0.3em)
+      #grid(
+        columns: 5,
+        column-gutter: 0.4em,
+        align: horizon,
+        tool-box("🐧 OS", sub: [Linux]),
+        draw-arrow(length: 1.4em),
+        tool-box("driver", sub: [`nvme`, `usbhid`, ...], on: true),
+        draw-arrow(length: 1.4em),
+        tool-box("device", sub: [SSD, keyboard, ...], fill: white),
+      )
+      #v(0.2em)
+      #text(size: 0.85em)[the OS talks to every device through its *driver*]
+    ]
   ]))
 ]
+
+// a PC: separate chips and cards on a board, connected by copper traces
+#let pc-drawing = drawing(width: 220pt, height: 112pt, {
+  at(0pt, 0pt, box(width: 220pt, height: 112pt, radius: 4pt, fill: pcb-fill, stroke: 1pt + pcb-stroke))
+  at(6pt, 3pt, text(size: 0.55em, fill: pcb-stroke, weight: "bold")[motherboard])
+  let trace(a, b) = wire(a, b, stroke: 1.5pt + rgb("c9a227"))
+  trace((62pt, 38pt), (92pt, 38pt))
+  trace((36pt, 60pt), (36pt, 76pt))
+  trace((80pt, 90pt), (130pt, 90pt))
+  trace((128pt, 38pt), (160pt, 38pt))
+  at(10pt, 16pt, unit(kind: "dark", width: 52pt, height: 44pt, size: 0.65em, icon: cpu-icon)[CPU])
+  for i in range(3) { at(94pt + i * 12pt, 14pt, box(width: 8pt, height: 46pt, radius: 1pt, fill: white, stroke: 0.8pt + luma(130))) }
+  at(92pt, 62pt, text(size: 0.5em, weight: "bold")[🧮 RAM])
+  at(160pt, 16pt, unit(kind: "slot", width: 52pt, height: 44pt, size: 0.6em)[🎮 GPU \ card])
+  at(10pt, 76pt, unit(kind: "slot", width: 70pt, height: 28pt, size: 0.6em)[💾 SSD])
+  at(130pt, 76pt, unit(width: 50pt, height: 28pt, size: 0.6em)[chipset])
+})
+
+// an SoC: one chip with everything inside, the RAM next to it
+#let soc-drawing = drawing(width: 220pt, height: 112pt, {
+  at(0pt, 0pt, box(width: 220pt, height: 112pt, radius: 4pt, fill: luma(238), stroke: 1pt + luma(150)))
+  at(6pt, 3pt, text(size: 0.55em, fill: luma(90), weight: "bold")[one package])
+  at(10pt, 14pt, box(width: 146pt, height: 92pt, radius: 0.4em, fill: white, stroke: 1.2pt + accent, clip: true, block(
+    width: 100%,
+    fill: accent,
+    inset: (x: 0.4em, y: 0.2em),
+    text(size: 0.55em, fill: white, weight: "bold")[one chip],
+  )))
+  at(16pt, 32pt, unit(width: 66pt, height: 22pt, size: 0.55em)[#cpu-icon CPU])
+  at(86pt, 32pt, unit(width: 64pt, height: 22pt, size: 0.55em)[🎮 GPU])
+  at(16pt, 58pt, unit(width: 42pt, height: 22pt, size: 0.5em)[🤖 NPU])
+  at(62pt, 58pt, unit(width: 42pt, height: 22pt, size: 0.5em)[🎬 video])
+  at(108pt, 58pt, unit(width: 42pt, height: 22pt, size: 0.5em)[🔌 I/O])
+  at(16pt, 84pt, unit(kind: "slot", width: 134pt, height: 17pt, size: 0.5em)[memory controller, cache])
+  at(164pt, 14pt, unit(kind: "slot", width: 48pt, height: 44pt, size: 0.55em, icon: "🧮")[RAM])
+  at(164pt, 62pt, unit(kind: "slot", width: 48pt, height: 44pt, size: 0.55em, icon: "🧮")[RAM])
+})
+
+// one way to build a computer: a title bar, the drawing and where it is used
+#let way(title, sub, drawing, where, color: accent) = box(
+  width: 100%,
+  radius: 0.5em,
+  clip: true,
+  stroke: 1.2pt + color,
+  fill: white,
+  {
+    block(width: 100%, fill: color, inset: (x: 0.6em, y: 0.35em), below: 0pt, {
+      text(size: 1.15em, weight: "bold", fill: white, title)
+      h(1fr)
+      text(size: 0.8em, fill: white, sub)
+    })
+    block(width: 100%, inset: (x: 0.5em, y: 0.5em), above: 0pt, below: 0pt, drawing)
+    block(width: 100%, fill: color.lighten(88%), stroke: (top: 0.6pt + color), inset: (y: 0.4em), above: 0pt, align(
+      center,
+      text(size: 0.85em, fill: color, weight: "bold", where),
+    ))
+  },
+)
 
 #slide[
   == Two Ways to Build It
@@ -67,19 +142,13 @@
 
   #grid(
     columns: (1fr, 1fr),
-    column-gutter: 1em,
-    card([🖥️ PC])[
-      #set text(size: 0.85em)
-      separate chips and cards (CPU, RAM, GPU, SSD), connected by a *motherboard*
-    ],
-    uncover("2-", card([📱 SoC: System on a Chip])[
-      #set text(size: 0.85em)
-      CPU, GPU, memory controller and I/O inside *one chip*, RAM right next to it
-    ]),
+    column-gutter: 0.8em,
+    way([🖥️ PC], [separate chips and cards], pc-drawing, [🖥️ desktops, 🗄️ servers, gaming laptops], color: rgb("c26a2f")),
+    uncover("2-", way([📱 SoC], [System on a Chip], soc-drawing, [📱 phones, 🍎 Macs, 🍓 Raspberry Pi, 🎮 consoles])),
   )
 
-  #only("3-", place(bottom + center, dy: -0.2em, info(width: 340pt)[Which is which?][
-    a desktop is a PC, a phone is an SoC, a laptop is ... more and more an SoC
+  #only("3-", place(bottom + center, dy: 1.4em, info(width: 340pt)[And laptops?][
+    more and more of them are built around an SoC
   ]))
 ]
 
@@ -189,6 +258,24 @@
     #uncover("2-")[#block[- #cpu-icon *CPU cores*, often two kinds]]
     #uncover("3-")[#block[- *coprocessors*: 🎮 GPU, 🤖 NPU, 🎬 video, 📷 camera]]
     #uncover("4-")[#block[- 🧮 *memory controller* and 🔌 *I/O*; the RAM is soldered right next to the chip]]
+    #v(0.3em)
+    // the same block on an Apple M chip (MacBook)
+    #block(
+      width: 100%,
+      height: 5.6em,
+      inset: (x: 0.6em, y: 0.45em),
+      radius: 0.3em,
+      fill: luma(238),
+      stroke: (left: 3pt + luma(90)),
+      {
+        set text(size: 0.9em)
+        let m(body) = [#text(weight: "bold", fill: luma(50))[💻 Apple M4 (MacBook):] #body]
+        only(1, m[one SoC for the whole laptop])
+        only(2, m[4 performance cores + 6 efficiency cores (ARM)])
+        only(3, m[a 10-core GPU, a 16-core *Neural Engine* (NPU), a media engine for video])
+        only("4-", m[the RAM sits *on the package*, shared by the CPU, the GPU and the NPU (_unified memory_); a *Secure Enclave* keeps the keys])
+      },
+    )
   ][
     #for s in range(1, 5) {
       only(if s == 4 { "4-" } else { s }, soc(s))
@@ -206,93 +293,87 @@
   == SoCs Around You
   Not only phones
 
-  #set text(size: 0.78em)
-  #grid(
-    columns: (1fr, 1fr),
-    column-gutter: 0.8em,
-    row-gutter: 0.6em,
-    card([📱 Phones and tablets])[Apple A, Qualcomm Snapdragon, MediaTek Dimensity, Samsung Exynos],
-    uncover("2-", card([💻 Laptops])[Apple M (MacBook), Qualcomm Snapdragon X (Windows on ARM)]),
-    uncover("3-", card([🍓 Raspberry Pi 5])[Broadcom BCM2712: 4 Arm Cortex-A76 cores and a GPU, on a credit card sized board]),
-    uncover("4-", card([🎮 Game consoles])[PlayStation 5, Xbox Series: one custom AMD chip with x86-64 cores and the GPU]),
+  #nice-table(
+    columns: (auto, 1fr, auto),
+    header: ([where], [SoC], [CPU ISA]),
+    rows: (
+      ([📱 *phones, tablets*], [Apple A, Snapdragon, Dimensity, Exynos], [ARM]),
+      ([💻 *laptops*], [Apple M (MacBook), Snapdragon X (Windows)], [ARM]),
+      ([🍓 *Raspberry Pi 5*], [Broadcom BCM2712: 4 Arm Cortex-A76 cores and a GPU], [ARM]),
+      ([🎮 *PlayStation 5, Xbox Series*], [custom AMD chip, GDDR6 shared by CPU and GPU], [*x86-64*]),
+      ([🎮 *Nintendo Switch 2*], [one custom NVIDIA chip], [ARM]),
+    ),
+    shown: (none, 2, 3, 4, 4),
   )
 
-  #v(0.4em)
-  #set text(size: 1em / 0.78)
-  #only("2-3")[💡 SoCs are not only ARM: the PS5 and Xbox SoCs are x86-64 (the Nintendo Switch 2 is ARM)]
-  #only("4-")[💡 the PS5 and the Xbox use one fast memory (GDDR6) for both the CPU and the GPU: _unified memory_]
+  #only("5-", place(bottom + center, dy: 0.8em, popup(width: 330pt, kind: "info")[Not only ARM][
+    most SoCs are ARM, but the PS5 and Xbox SoCs are x86-64
+  ]))
 ]
 
 #slide[
   == PC or SoC?
   Upgrades and choice, or size and battery
 
-  #set text(size: 0.8em)
-  #grid(
-    columns: (1fr, 1fr),
-    column-gutter: 1em,
-    card([🖥️ PC (motherboard)])[
-      ✅ change the CPU, RAM, GPU, SSD \
-      ✅ repair: replace one part \
-      ✅ huge power for games and AI \
-      ❌ big, 100 - 1000 W \
-      ❌ a graphics card needs its own memory
-    ],
-    uncover("2-", card([📱 SoC])[
-      ✅ small, a few W to \~100 W, long battery \
-      ✅ one memory shared by everyone \
-      ✅ fast links inside the chip \
-      ❌ upgrade almost nothing, RAM is soldered \
-      ❌ repair: replace the whole board
-    ]),
+  #nice-table(
+    columns: (auto, 1fr, 1fr),
+    header: ([], [🖥️ PC (motherboard)], [📱 SoC]),
+    rows: (
+      ([*upgrade*], [✅ change the CPU, RAM, GPU, SSD], [❌ almost nothing, the RAM is soldered]),
+      ([*repair*], [✅ replace one part], [❌ replace the whole board]),
+      ([*power*], [❌ 100 - 1000 W], [✅ a few W to \~100 W, long battery]),
+      ([*memory*], [❌ a graphics card needs its own memory], [✅ one memory shared by everyone]),
+      ([*size*], [❌ a box], [✅ a phone, a thin laptop]),
+      ([*speed*], [✅ huge power for games and AI], [✅ fast links inside the chip]),
+    ),
   )
 
-  #v(0.4em)
-  #set text(size: 1em / 0.8)
-  #uncover("3-")[
-    #tip[💡 the line blurs: today's x86 CPUs hold the memory controller, PCIe and a GPU; laptop chips (Intel Core Ultra, AMD Ryzen AI) are almost SoCs]
-  ]
-  #v(0.2em)
-  #question(4)[Your laptop has 16 GB of RAM. Can you add 16 GB more?][💡 only if it has a free RAM slot: check this *before* you buy]
+  #only("2-", place(bottom + center, dy: -0.2em, popup(width: 380pt, kind: "tip")[The line blurs][
+    today's x86 CPUs hold the memory controller, PCIe and a GPU; laptop chips (Intel Core Ultra, AMD Ryzen AI) are almost SoCs
+  ]))
 ]
 
-// CPU and GPU with separate memories (PC) or one shared memory (SoC);
-// `step` 2 shows where the data goes
-#let memories(unified, step) = drawing(width: 200pt, height: 125pt, {
-  if not unified {
-    at(0pt, 0pt, unit(icon: cpu-icon, width: 70pt, height: 40pt, size: 0.7em)[CPU])
-    at(120pt, 0pt, unit(icon: "🎮", width: 80pt, height: 40pt, size: 0.7em)[GPU])
-    at(0pt, 72pt, unit(kind: "slot", icon: "🧮", width: 70pt, height: 36pt, size: 0.7em)[RAM])
-    at(120pt, 72pt, unit(kind: "slot", icon: "⚡", width: 80pt, height: 36pt, on: step >= 2, size: 0.7em)[VRAM])
-    link-line((35pt, 40pt), (35pt, 72pt))
-    link-line((160pt, 40pt), (160pt, 72pt))
-    line-arrow((70pt, 90pt), (120pt, 90pt), color: if step >= 2 { changed } else { luma(150) }, thickness: 2pt)
-    pin(95pt, 117pt, note(color: if step >= 2 { changed } else { luma(100) })[📋 copy over PCIe])
-  } else {
-    at(0pt, 0pt, unit(icon: cpu-icon, width: 60pt, height: 40pt, size: 0.7em)[CPU])
-    at(70pt, 0pt, unit(icon: "🎮", width: 60pt, height: 40pt, size: 0.7em)[GPU])
-    at(140pt, 0pt, unit(icon: "🤖", width: 60pt, height: 40pt, size: 0.7em)[NPU])
-    at(0pt, 72pt, unit(kind: "slot", icon: "🧮", width: 200pt, height: 36pt, on: step >= 2, size: 0.7em)[one RAM for all])
-    for x in (30pt, 100pt, 170pt) { link-line((x, 40pt), (x, 72pt), on: step >= 2) }
-    pin(100pt, 117pt, note(color: if step >= 2 { changed } else { luma(100) })[no copy: all see the same data])
-  }
+// a piece of data (an image to draw), as a small orange tag
+#let data-tag = box(inset: (x: 3pt, y: 2pt), radius: 2pt, fill: changed-fill, stroke: 0.8pt + changed, text(
+  size: 0.6em,
+  weight: "bold",
+  fill: changed.darken(15%),
+)[🖼️ image])
+
+// PC: CPU and GPU with separate memories, the data is copied over PCIe
+#let pc-memories = drawing(width: 205pt, height: 92pt, {
+  at(0pt, 0pt, unit(icon: cpu-icon, width: 70pt, height: 32pt, size: 0.7em)[CPU])
+  at(125pt, 0pt, unit(icon: "🎮", width: 80pt, height: 32pt, size: 0.7em, sub: [graphics card])[GPU])
+  at(0pt, 54pt, unit(kind: "slot", width: 82pt, height: 38pt, size: 0.7em)[🧮 RAM #h(0.3em) #data-tag])
+  at(125pt, 54pt, unit(kind: "slot", width: 80pt, height: 38pt, size: 0.7em)[⚡ VRAM #h(0.3em) #data-tag])
+  link-line((35pt, 32pt), (35pt, 54pt))
+  link-line((165pt, 32pt), (165pt, 54pt))
+  line-arrow((83pt, 70pt), (124pt, 70pt), color: changed, thickness: 2pt)
+  pin(103pt, 60pt, text(size: 0.6em, weight: "bold", fill: changed)[copy])
+  pin(103pt, 80pt, text(size: 0.55em, fill: changed)[over PCIe])
+})
+
+// SoC: one memory for everyone, nothing to copy
+#let soc-memories = drawing(width: 205pt, height: 92pt, {
+  at(0pt, 0pt, unit(icon: cpu-icon, width: 62pt, height: 32pt, size: 0.7em)[CPU])
+  at(71pt, 0pt, unit(icon: "🎮", width: 62pt, height: 32pt, size: 0.7em)[GPU])
+  at(142pt, 0pt, unit(icon: "🤖", width: 62pt, height: 32pt, size: 0.7em)[NPU])
+  at(0pt, 54pt, unit(kind: "slot", width: 205pt, height: 38pt, size: 0.7em)[🧮 one RAM for all #h(0.6em) #data-tag])
+  for x in (31pt, 102pt, 173pt) { link-line((x, 32pt), (x, 54pt), on: true) }
 })
 
 #slide[
   == Unified Memory
   In an SoC, the CPU and the GPU share the same RAM
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.2em)[
-    #align(center, text(size: 0.85em, weight: "bold")[🖥️ PC with a graphics card])
-    #only(1, memories(false, 1))
-    #only("2-", memories(false, 2))
-  ][
-    #align(center, text(size: 0.85em, weight: "bold")[📱 SoC])
-    #only(1, memories(true, 1))
-    #only("2-", memories(true, 2))
-  ]
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 0.8em,
+    way([🖥️ PC], [CPU and GPU: two memories], pc-memories, [the image is copied to the GPU first], color: rgb("c26a2f")),
+    uncover("2-", way([📱 SoC], [one memory for all], soc-memories, [no copy: everyone sees the same image])),
+  )
 
-  #v(0.2em)
-  #only(1)[💡 a graphics card has its own, very fast memory: _VRAM_]
-  #only("2-")[💡 a PC copies the data to the GPU first; an SoC does not, but the GPU shares the RAM speed and size with everyone]
+  #only("3-", place(bottom + center, dy: 1.2em, popup(width: 420pt, kind: "info")[The trade-off][
+    a graphics card has its own, very fast memory (_VRAM_); in an SoC the GPU shares the RAM speed and size with everyone
+  ]))
 ]

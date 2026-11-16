@@ -1,7 +1,7 @@
 #import "/src/slides.typ": *
 #import "common.typ": *
 
-#show: uso_slides.with(title: "9. Hardware Components")
+#show: uso_slides.with(title: "8. Hardware Components")
 
 #slide[
   == Bibliography
@@ -43,30 +43,39 @@
   == Hardware Components
 
   - The Computer: PC and SoC
+  - How It Boots
   - Processor Architectures
   - Coprocessors
   - Memory and Storage
   - The Chipset
   - Communication
+  - Links Inside Links
+  - Single-Board Computers
   - Inspect and Measure
 ]
 
 #include "pc-soc.typ"
+#include "boot.typ"
 #include "cpu.typ"
 #include "coprocessors.typ"
 #include "storage.typ"
 #include "chipset.typ"
 #include "communication.typ"
+#include "tunnels.typ"
+#include "boards.typ"
 #include "inspect.typ"
 
 #slide[
   == We talked about
 
   - The Computer: PC and SoC
+  - How It Boots
   - Processor Architectures
   - Coprocessors
   - Memory and Storage
   - The Chipset
   - Communication
+  - Links Inside Links
+  - Single-Board Computers
   - Inspect and Measure
 ]

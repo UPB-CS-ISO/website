@@ -50,20 +50,39 @@
 
 #let latency(ns) = if ns < 1000 [#ns ns] else if ns < 1000000 [#(ns / 1000) µs] else [#(ns / 1000000) ms]
 
-// a pyramid, one level per row: small and fast on top
-#let pyramid(shown) = {
-  let h = 19pt
-  let cx = 85pt
-  let width(i) = 34pt + i * 22pt
-  drawing(width: 450pt, height: levels.len() * h + 16pt, {
-    at(190pt, 0pt, text(size: 0.65em, weight: "bold")[size])
-    at(275pt, 0pt, text(size: 0.65em, weight: "bold")[access])
-    at(340pt, 0pt, text(size: 0.65em, weight: "bold")[if L1 took 1 s])
+// where a time goes on the log-scale chart: 0 for 0.1 s, `w` for 10^7 s
+// (8 decades); the value is the human time in s (1 ns of L1 = 1 s)
+#let log-x(t, w) = (calc.log(t) + 1) / 8 * w
+#assert.eq(log-x(1, 160pt), 20pt)
+
+// a pyramid, one level per row: small and fast on top; next to it the size,
+// the real access time and a log-scale bar of "if L1 took 1 s", with
+// gridlines at 1 s, 1 min, 1 h, 1 day and 1 month. `shown`: levels drawn,
+// `new`: the level added on this step (orange bar), none for no level
+#let pyramid(shown, new: none) = {
+  let h = 20pt
+  let top = 18pt
+  let cx = 80pt
+  let width(i) = 30pt + i * 20pt
+  let x0 = 278pt // where the chart starts
+  let cw = 155pt // width of 8 decades
+  let ticks = (([1 s], 1), ([1 min], 60), ([1 h], 3600), ([1 day], 86400), ([1 month], 2592000))
+  drawing(width: 484pt, height: top + levels.len() * h + 14pt, {
+    set text(size: 0.75em)
+    at(172pt, 0pt, text(weight: "bold")[size])
+    at(232pt, 0pt, text(weight: "bold")[real time])
+    at(x0, 0pt, text(weight: "bold", fill: changed.darken(15%))[if L1 took 1 second ...])
+    // the gridlines of the chart, always there (nothing moves)
+    for (label, t) in ticks {
+      let x = x0 + log-x(t, cw)
+      wire((x, top - 2pt), (x, top + levels.len() * h + 2pt), stroke: (paint: luma(200), thickness: 0.5pt, dash: "dashed"))
+      pin(x, top + levels.len() * h + 8pt, text(size: 0.85em, fill: luma(110), label))
+    }
     for (i, (name, size, ns, emoji)) in levels.enumerate() {
       if i < shown {
-        let y = 14pt + i * h
+        let y = top + i * h
         let (wt, wb) = (width(i), width(i + 1))
-        let fill = if i < 4 { accent.lighten(i * 22%) } else if i == 4 { rgb("bac8d3") } else { luma(225) }
+        let fill = if i < 4 { accent.lighten(i * 22%) } else if i == 4 { rgb("bac8d3") } else { luma(215) }
         at(0pt, y, polygon(
           fill: fill,
           stroke: 0.8pt + white,
@@ -72,11 +91,15 @@
           (cx + wb / 2, h),
           (cx - wb / 2, h),
         ))
-        pin(cx, y + h / 2, text(size: 0.62em, weight: "bold", fill: if i < 3 { white } else { black }, name))
-        wire((cx + wb / 2 + 4pt, y + h / 2), (185pt, y + h / 2), stroke: (paint: luma(190), thickness: 0.5pt, dash: "dotted"))
-        at(190pt, y + 6pt, text(size: 0.62em, size))
-        at(275pt, y + 6pt, text(size: 0.62em, latency(ns)))
-        at(340pt, y + 4pt, text(size: 0.65em, weight: if i >= 4 { "bold" } else { "regular" })[#emoji #human(ns)])
+        pin(cx, y + h / 2, text(weight: "bold", fill: if i < 3 { white } else { black }, name))
+        at(172pt, y, box(height: h, align(horizon, size)))
+        at(232pt, y, box(height: h, align(horizon, latency(ns))))
+        // the bar and the human time after it
+        let bw = calc.max(log-x(ns, cw), 3pt)
+        let slow = i >= 4
+        let on = i == new
+        at(x0, y + 4pt, box(width: bw, height: h - 8pt, radius: (right: 2pt), fill: if on { changed } else { fill }, stroke: if on or i < 3 { none } else { 0.5pt + luma(140) }))
+        at(x0 + bw + 4pt, y, box(height: h, align(horizon, text(weight: if slow { "bold" } else { "regular" }, fill: if on { changed.darken(15%) } else { black })[#emoji #human(ns)])))
       }
     }
   })
@@ -87,46 +110,98 @@
   Small and fast close to the CPU, large and slow far from it
 
   #only(1, pyramid(4))
-  #only(2, pyramid(5))
-  #only(3, pyramid(6))
-  #only("4-", pyramid(7))
+  #only(2, pyramid(5, new: 4))
+  #only(3, pyramid(6, new: 5))
+  #only(4, pyramid(7, new: 6))
+  #only("5-", pyramid(7))
 
   #only(1)[💡 a _cache_ keeps a copy of the data used recently, inside the CPU chip]
   #only(2)[💡 RAM is lost at power off (_volatile_): a coffee break for every access]
   #only(3)[💡 storage keeps the data at power off (_persistent_)]
   #only(4)[💡 waiting for a hard disk is like waiting two months for a letter]
-  #only("5-")[💡 why not all as fast as L1? a cache bit (SRAM) needs 6 transistors, a RAM bit (DRAM) 1 transistor + 1 capacitor]
+  #only("5-", place(bottom + center, dy: 0.8em, info(width: 420pt)[Why not all as fast as L1?][
+    a cache bit (SRAM) needs 6 transistors, a RAM bit (DRAM) only 1 + a capacitor: fast memory is big and expensive, so there is little of it
+  ]))
 ]
 
 // what a "1 TB" disk shows in GiB
 #let tb-in-gib = calc.floor(1e12 / calc.pow(2, 30))
 #assert.eq(tb-in-gib, 931)
+#let tb-in-tib = calc.round(1e12 / calc.pow(2, 40), digits: 2)
+#assert.eq(tb-in-tib, 0.91)
+
+// a grid of memory cells: `cols` x `rows` squares of `c` (gap 2pt);
+// `on`: the cells drawn orange (array of (col, row)), `off`: all cells empty
+// (dashed), as after a power off
+#let cells(cols, rows, c: 13pt, on: (), off: false) = {
+  for r in range(rows) {
+    for col in range(cols) {
+      let hot = on.contains((col, r))
+      at(col * (c + 2pt), r * (c + 2pt), box(
+        width: c,
+        height: c,
+        radius: 1.5pt,
+        fill: if off { white } else if hot { changed } else { accent.lighten(55%) },
+        stroke: if off { (paint: luma(170), thickness: 0.6pt, dash: "dashed") } else { none },
+      ))
+    }
+  }
+}
+
+// a panel of the RAM or Storage drawing: a frame with a title bar
+#let mem-panel(x, title, color: accent) = at(x, 0pt, box(
+  width: 235pt,
+  height: 140pt,
+  radius: 0.4em,
+  clip: true,
+  stroke: 1.2pt + color,
+  block(width: 100%, fill: color, inset: (x: 0.5em, y: 0.3em), text(size: 1.15em, weight: "bold", fill: white, title)),
+))
+
+// RAM (the CPU reads one byte) next to storage (the CPU asks a driver for a
+// whole block). `step`: 1 RAM, 2 storage, 3 power off: RAM is empty, the
+// disk keeps its data
+#let ram-storage(step) = drawing(width: 484pt, height: 140pt, {
+  set text(size: 0.8em)
+  let off = step >= 3
+  // RAM: the CPU reads any byte directly
+  mem-panel(0pt, [🧮 Memory (RAM)])
+  at(10pt, 42pt, unit(kind: "dark", width: 50pt, height: 34pt, size: 1em)[#cpu-icon CPU])
+  at(95pt, 30pt, cells(8, 4, on: ((0, 2),), off: off))
+  if not off { line-arrow((60pt, 66pt), (93pt, 66pt), color: changed, thickness: 1.5pt) }
+  at(10pt, 96pt, [reads *any byte*, directly])
+  at(10pt, 109pt, [⚡ \~100 ns #h(0.8em) 📏 tens of GB])
+  at(10pt, 122pt, if off [🔌 power off: *all lost* ❌ (_volatile_)] else [#hide[🔌]])
+  // storage: through a driver, a whole block at a time
+  if step >= 2 {
+    mem-panel(249pt, [💾 Storage (SSD, disk)], color: rgb("8e3b00"))
+    at(259pt, 42pt, unit(kind: "dark", width: 50pt, height: 34pt, size: 1em)[#cpu-icon CPU])
+    line-arrow((309pt, 59pt), (322pt, 59pt))
+    at(323pt, 42pt, unit(width: 50pt, height: 34pt, size: 1em, sub: [kernel])[driver])
+    line-arrow((373pt, 59pt), (386pt, 59pt), color: changed, thickness: 1.5pt)
+    at(388pt, 30pt, cells(6, 4, on: range(6).map(c => (c, 1))))
+    at(386pt, 44pt, box(width: 92pt, height: 17pt, radius: 2pt, stroke: 1.2pt + changed))
+    at(259pt, 96pt, [reads and writes a *block* (4 KiB) at a time])
+    at(259pt, 109pt, [🐢 µs to ms #h(0.8em) 📏 TBs])
+    if off { at(259pt, 122pt, [🔌 power off: *kept* ✅ (_persistent_)]) }
+  }
+})
 
 #slide[
   == RAM or Storage?
   Two different jobs
 
-  #set text(size: 0.85em)
-  #grid(
-    columns: (1fr, 1fr),
-    column-gutter: 1em,
-    card([🧮 Memory (RAM)])[
-      - 🔌 lost at power off (_volatile_)
-      - the CPU reads any *byte* directly
-      - ⚡ \~100 ns, tens of GB
-    ],
-    uncover("2-", card([💾 Storage])[
-      - 🔋 kept at power off (_persistent_)
-      - read and written in *blocks* (4 KiB) by a driver
-      - 🐢 µs to ms, TBs
-    ]),
-  )
+  #only(1, ram-storage(1))
+  #only(2, ram-storage(2))
+  #only("3-", ram-storage(3))
 
-  #set text(size: 1em / 0.85)
   #v(0.4em)
-  #question(3)[I bought a 1 TB disk. Why does Linux show 931G?][
-    💡 makers count $10^12$ bytes (TB), Linux counts $2^30$ bytes (GiB): $10^12 / 2^30 approx #tb-in-gib$
-  ]
+  #uncover("4-", align(center, text(size: 1.25em, weight: "bold", fill: accent)[I bought a 1 TB disk. Why does Linux show 931G?]))
+
+  #only("5-", place(center + horizon, info(width: 360pt)[Two ways to count][
+    makers count *TB* = $10^12$ bytes, Linux counts *TiB* = $2^40$ bytes \
+    1 TB = $10^12 \/ 2^40 approx #tb-in-tib$ TiB = #tb-in-gib GiB, shown as #tb-in-gib\G
+  ]))
 ]
 
 // a hard disk seen from above: the platter with its tracks, the arm and
@@ -236,45 +311,86 @@
   #only("3-")[💡 the warranty gives the writes it survives: _TBW_ (terabytes written), e.g. 600 TBW for a 1 TB TLC SSD]
 ]
 
+// a cell of the M.2 column: orange from step 3 (only the color changes)
+#let m2(body) = [#only("1-2", body)#only("3-", text(fill: changed.darken(15%), weight: "bold", body))]
+#let no = text(fill: luma(170))[-]
+
 #slide[
   == Storage Interfaces
-  The protocol matters more than the shape
+  Two separate questions: how it talks (_protocol_), and what you plug in (_shape_)
 
-  #set text(size: 0.8em)
-  #grid(
-    columns: (1fr, 1fr, 1fr),
-    column-gutter: 0.6em,
-    row-gutter: 0.6em,
-    card([🔌 SATA], height: 7.5em)[
-      made for HDDs (2003), a cable \
-      #tag[\~550 MB/s] \
-      HDDs, 2.5" SSDs
-    ],
-    uncover("2-", card([⚡ NVMe], height: 7.5em)[
-      made for flash, over *PCIe*, many queues \
-      #tag[7 GB/s on PCIe 4.0 x4] #tag[14 GB/s on PCIe 5.0 x4] \
-      every new PC and laptop
-    ]),
-    uncover("3-", card([📏 M.2], height: 7.5em)[
-      a *slot and card shape*, not a protocol \
-      carries SATA *or* NVMe \
-      desktops, laptops
-    ]),
-    uncover("4-", card([📱 eMMC, UFS], height: 6.5em)[
-      flash soldered on the board \
-      #tag[up to \~4 GB/s (UFS 4)] \
-      phones, cheap laptops
-    ]),
-    uncover("5-", card([💳 SD card, USB stick], height: 6.5em)[
-      removable \
-      #tag[0.1 - 1 GB/s] \
-      Raspberry Pi, cameras
-    ]),
+  #nice-table(
+    columns: (auto, 1fr, 1fr, 1fr, 1fr),
+    size: 0.8em,
+    header: ([protocol #h(0.3em) | #h(0.3em) shape], [🗄️ drive + cable], [📏 M.2 card], [📌 soldered], [💳 removable]),
+    rows: (
+      ([🔌 *SATA* \ made for HDDs, \~550 MB/s], [HDDs, 2.5" SSDs], m2[M.2 SATA SSD], no, no),
+      ([⚡ *NVMe* over PCIe \ made for flash, 7 - 14 GB/s], [U.2 (servers)], m2[most new SSDs], [some laptops], no),
+      ([📱 *eMMC*, *UFS* \ up to \~4 GB/s], no, no, [phones, cheap laptops], no),
+      ([💳 *SD*, *USB* \ 0.1 - 1 GB/s], no, no, no, [SD card, USB stick]),
+    ),
+    shown: (none, 2, 4, 4),
   )
 
-  #only(3, place(bottom + right, dy: -0.5em, popup(width: 250pt)[⚠️ M.2 is not a speed][an M.2 SSD may be SATA (slow) or NVMe (fast), and some M.2 slots take only one kind: read the label and the motherboard manual]))
-  #set text(size: 1em / 0.8)
-  #only("5-")[💡 eMMC is the old phone flash, UFS the new one]
+  #only(1)[💡 SATA: the old protocol, from the time of the hard disks (2003)]
+  #only(2)[💡 NVMe talks to the CPU over PCIe, with many queues in parallel: made for fast flash]
+  #only(3)[💡 the same M.2 shape carries SATA *or* NVMe: see the next slide]
+  #only("4-")[💡 eMMC is the old phone flash, UFS the new one]
+]
+
+// an M.2 card seen from above, the connector on the left. `keys`: the
+// notches cut in the connector, "B" (top) and / or "M" (bottom); `on`: the
+// notches and the label are orange
+#let m2-card(x, y, keys, name, on: false) = {
+  let ink = if on { changed } else { luma(120) }
+  at(x, y, box(width: 150pt, height: 42pt, radius: (right: 6pt, left: 1pt), fill: rgb("26332c")))
+  // gold fingers, 12 of them; a key removes two
+  let cut = (B: (2, 3), M: (8, 9))
+  let gone = keys.map(k => cut.at(k)).flatten()
+  for i in range(12) {
+    if i not in gone { at(x + 1pt, y + 2pt + i * 3.2pt, box(width: 9pt, height: 2.4pt, fill: rgb("d4af37"))) }
+  }
+  for k in keys {
+    let r = cut.at(k).at(0)
+    at(x - 1pt, y + 1.6pt + r * 3.2pt, box(width: 7pt, height: 6.6pt, fill: white, stroke: (right: 1pt + ink, y: 1pt + ink)))
+    at(x - 34pt, y + 1pt + r * 3.2pt, text(size: 0.75em, weight: "bold", fill: ink)[#k key])
+  }
+  // the chips
+  at(x + 22pt, y + 9pt, box(width: 30pt, height: 24pt, radius: 2pt, fill: accent))
+  for j in range(2) { at(x + 60pt + j * 40pt, y + 6pt, box(width: 34pt, height: 30pt, radius: 2pt, fill: luma(60))) }
+  at(x + 136pt, y + 16pt, circle(radius: 4pt, fill: white))
+  at(x + 158pt, y + 6pt, box(width: 95pt, text(size: 0.75em, fill: if on { changed.darken(15%) } else { black }, name)))
+}
+
+#let m2-cards(step) = drawing(width: 285pt, height: 120pt, {
+  m2-card(36pt, 4pt, ("B", "M"), on: step >= 2)[*M.2 SATA SSD* \ SATA: \~550 MB/s]
+  m2-card(36pt, 70pt, ("M",), on: step >= 2)[*M.2 NVMe SSD* \ PCIe x4: 7 - 14 GB/s]
+})
+
+#slide[
+  == 📏 What Is M.2?
+  A shape and a slot, not a speed
+
+  #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.2em)[
+    #set text(size: 0.8em)
+    - a small *card*, 22 mm wide, in several lengths: 2242, 2260, *2280* (22 × 80 mm)
+    - same size, same screw, very different speeds
+    #uncover("2-")[#block[
+      - the *notches* (_keys_) show what the card speaks
+        - *B + M* key: usually SATA, slow
+        - *M* key: NVMe, fast
+    ]]
+  ][
+    #only(1, m2-cards(1))
+    #only("2-", m2-cards(2))
+  ]
+
+  #v(0.4em)
+  #only(1)[💡 the name "M.2" says nothing about the speed]
+  #only(2)[💡 look at the connector: two notches (B + M) or one (M)]
+  #only("3-", place(bottom + center, dy: -0.2em, popup(width: 380pt)[Check the slot too][
+    an M.2 slot on the motherboard may take NVMe only, or NVMe and SATA: read the manual before you buy
+  ]))
 ]
 
 // sequential read speeds in GB/s

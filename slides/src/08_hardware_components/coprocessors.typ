@@ -127,12 +127,20 @@
       }
     }
     at(340pt, 104pt, text(size: 0.6em)[8.3 million pixels, \ the same math for each])
+    // a few cores, each one computing one pixel
+    for ((cc, cr), (px, py)) in (((29, 2), (1, 1)), ((31, 7), (4, 2)), ((30, 12), (2, 4))) {
+      let (cx, cy) = (170pt + cc * 4pt, 34pt + cr * 4pt)
+      at(cx - 0.5pt, cy - 0.5pt, box(width: 4pt, height: 4pt, fill: changed))
+      at(340pt + px * 11pt - 0.5pt, 36pt + py * 11pt - 0.5pt, box(width: 11pt, height: 11pt, stroke: 1.2pt + changed))
+      line-arrow((cx + 4pt, cy + 1.5pt), (340pt + px * 11pt - 1pt, 36pt + py * 11pt + 5pt), color: changed, thickness: 0.8pt, head: 4pt)
+    }
+    at(340pt, 6pt, text(size: 0.6em, weight: "bold", fill: changed.darken(15%))[one core, one pixel])
   }
 })
 
 #slide[
-  == Graphics Processing Unit (GPU)
-  Thousands of simple cores doing the same thing on different data
+  == 🎮 The GPU
+  _Graphics Processing Unit_: thousands of simple cores, the same work on different data
 
   #only(1, cpu-gpu(1))
   #only(2, cpu-gpu(2))
@@ -175,8 +183,8 @@
 })
 
 #slide[
-  == Integrated or Dedicated GPU?
-  Inside the CPU chip, or on its own card
+  == Integrated or Dedicated?
+  A GPU inside the CPU chip, or on its own card
 
   #only(1, igpu-dgpu(1))
   #only("2-", igpu-dgpu(2))
@@ -212,8 +220,8 @@
 #assert.eq(mc, ((2, 9), (8, -7)))
 
 #slide[
-  == Neural Processing Unit (NPU)
-  A small, efficient engine for running AI models
+  == 🤖 The NPU
+  _Neural Processing Unit_: a small, efficient engine for running AI models
 
   #grid(
     columns: (1fr, 1fr),
@@ -245,6 +253,64 @@
 ]
 
 // ---------------------------------------------------------------------------
+// TPM
+// ---------------------------------------------------------------------------
+
+// measured boot: three boot stages, each one hashed into the TPM, and the
+// disk key the TPM gives back only for the expected PCR value.
+// `step`: 1 the stages and the TPM, 2 the measurements, 3 the key is
+// released, 4 a changed bootloader: another PCR, the key stays locked
+#let tpm-boot(step) = drawing(width: 270pt, height: 150pt, {
+  let stages = (([firmware], [UEFI]), ([bootloader], [GRUB]), ([kernel], [Linux]))
+  for (i, (name, sub)) in stages.enumerate() {
+    let bad = step >= 4 and i == 1
+    at(i * 95pt, 0pt, unit(width: 80pt, height: 32pt, size: 0.7em, on: bad, sub: if bad [GRUB, changed!] else { sub }, name))
+    if i < 2 { line-arrow((i * 95pt + 80pt, 16pt), (i * 95pt + 95pt, 16pt)) }
+    if step >= 2 {
+      line-arrow((i * 95pt + 40pt, 32pt), (85pt + i * 50pt, 78pt), color: if bad { changed } else { accent }, dash: "dashed")
+    }
+  }
+  if step >= 2 { at(142pt, 48pt, note[measure (hash)]) }
+  at(55pt, 78pt, unit(kind: "dark", on: step >= 4, width: 160pt, height: 40pt, size: 0.7em, icon: none,
+    sub: if step < 2 [PCR = 0000…] else if step < 4 [PCR = a3f1… (expected)] else [PCR = 7c02… (different)],
+  )[🔒 TPM chip])
+  if step >= 3 {
+    at(0pt, 128pt, box(width: 270pt, align(center, text(size: 0.75em, if step < 4 [
+      🔑 disk key: *released* ✅ the disk unlocks, no password
+    ] else [
+      🔑 disk key: *stays locked* ❌ asks for the recovery key
+    ]))))
+  }
+})
+
+#slide[
+  == 🔒 The TPM
+  _Trusted Platform Module_: a small safe for keys, that also watches the boot
+
+  #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.2em)[
+    #set text(size: 0.8em)
+    - a small *security chip* on the board, or a part of the CPU firmware (_fTPM_)
+    - makes and keeps *keys*: they never leave the chip
+    #uncover("2-")[#block[- *measures the boot*: a hash of every stage, kept in its _PCR_ registers]]
+    #uncover("3-")[#block[- *seals* secrets: gives a key back only if the PCRs are the expected ones]]
+  ][
+    #only(1, tpm-boot(1))
+    #only(2, tpm-boot(2))
+    #only(3, tpm-boot(3))
+    #only("4-", tpm-boot(4))
+  ]
+
+  #v(0.6em)
+  #only(1)[💡 every PC sold with Windows since 2016 has one: TPM 2.0]
+  #only(2)[💡 each stage hashes the next one *before* starting it; a PCR can only be extended, never set]
+  #only(3)[💡 the disk key is _sealed_ to these PCR values: a normal boot unlocks the disk by itself]
+  #only(4)[💡 a changed bootloader gives another PCR value: the key stays locked, the disk stays safe]
+  #only("5-", place(bottom + center, dy: -0.2em, info(width: 400pt)[You already use it][
+    Windows 11 needs a TPM 2.0 and uses it for BitLocker; on Linux, `systemd-cryptenroll --tpm2-device=auto` seals the disk key the same way
+  ]))
+]
+
+// ---------------------------------------------------------------------------
 // Who does the job?
 // ---------------------------------------------------------------------------
 
@@ -272,96 +338,111 @@
     row-gutter: 0.5em,
     align: (center + horizon, left + horizon, left + horizon),
     ..job("⌨️", [run `bash`, compile with `gcc`], [#cpu-icon CPU], 2),
-    ..job("🍿", [watch a 4K movie], [🎬 media engine (video decoder)], 3),
-    ..job("🕹️", [play a 3D game], [🎮 GPU], 4),
-    ..job("📹", [blur the background in a video call], [🤖 NPU (or GPU)], 5),
-    ..job("👆", [unlock with your fingerprint], [🔒 security processor], 6),
-    ..job("🏭", [train a large language model], [🎮 thousands of data center GPUs], 7),
+    ..job("🍿", [watch a 4K movie], [🎬 media engine (video decoder)], 2),
+    ..job("🕹️", [play a 3D game], [🎮 GPU], 2),
+    ..job("📹", [blur the background in a video call], [🤖 NPU (or GPU)], 3),
+    ..job("👆", [unlock with your fingerprint], [🔒 security processor], 3),
+    ..job("🏭", [train a large language model], [🎮 thousands of data center GPUs], 3),
+    ..job("⏱️", [switch a pin every millisecond, exactly], [🔌 a microcontroller (real-time coprocessor)], 3),
   ))
 
   #set text(size: 1em / 0.85)
-  #only("8-", place(bottom + center, dy: -0.2em, info(width: 340pt)[The right unit][
+  #only("3-", place(bottom + center, dy: -0.2em, info(width: 340pt)[The right unit][
     faster *and* less battery: a video decoder plays a movie with a few watts, the CPU alone would need much more
   ]))
 ]
 
 // ---------------------------------------------------------------------------
-// In Linux
+// In Linux: the same three questions for every coprocessor
 // ---------------------------------------------------------------------------
 
-#slide[
-  == Coprocessors in Linux
-  Drivers make them visible as devices
+// one of the three inspection questions: a number, the question and the
+// command that answers it; used as the plan of the inspection slides
+// e.g. #question-box(1, [is it there?], "lspci")
+#let question-box(n, q, cmd) = box(
+  width: 128pt,
+  inset: (x: 0.6em, y: 0.45em),
+  radius: 0.4em,
+  fill: accent-fill,
+  stroke: 1.2pt + accent,
+  {
+    set text(size: 0.8em)
+    box(baseline: 0.25em, circle(radius: 0.65em, fill: accent, align(center + horizon, text(fill: white, weight: "bold", str(n)))))
+    h(0.4em)
+    text(weight: "bold", q)
+    linebreak()
+    text(font: mono, size: 0.9em, highlight-shell(cmd))
+  },
+)
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.2em)[
-    #set text(size: 0.9em)
-    #reveal-terminal(before: none, lines: (5, 6), full: false)[```terminal
-    $ ls /sys/class/drm
-    card0
-    card0-Virtual-1
-    renderD128
-    version
-    $ ls /sys/class/accel
-    ```]
-  ][
-    #set text(size: 0.8em)
-    #card([🎮 GPU: the DRM subsystem])[
-      - `/dev/dri/card0`: the display
-      - `/dev/dri/renderD128`: rendering and compute
-      - `card0-Virtual-1`: the virtual screen of this VM
-    ]
-    #v(0.3em)
-    #uncover("2-", card([🤖 NPU: the accel subsystem])[
-      - `/dev/accel/accel0` (Linux 6.2+)
-      - empty here: this VM has no NPU
-    ])
-  ]
-
-  #only("3-", place(bottom + center, dy: -0.2em, info(width: 380pt)[Programs use them through libraries][
-    Mesa, Vulkan, CUDA, OpenVINO, ... #h(1em) watch them with `nvtop`, `intel_gpu_top`, `nvidia-smi`
-  ]))
-]
-
-// one explanation next to a terminal: a bold title and a line, shown from
-// step `at`
-#let explain(at, title, body) = uncover(str(at) + "-", block(
+// one explanation next to a terminal, shown from step `at`; `n` (1-3) marks
+// which of the three questions it answers, none for no number
+#let explain(at, title, body, n: none) = uncover(str(at) + "-", block(
   width: 100%,
   inset: (x: 0.5em, y: 0.35em),
   radius: 0.3em,
   fill: accent-fill,
   stroke: (left: 3pt + accent),
   below: 0.4em,
-  text(size: 0.8em)[*#title* #h(0.3em) #body],
+  text(size: 0.8em)[#if n != none { text(fill: accent, weight: "bold", numbering("1.", n)) + h(0.3em) }*#title* #h(0.3em) #body],
 ))
 
 #slide[
+  == Coprocessors in Linux
+  Drivers make them visible: ask the same three questions for each
+
+  #align(center, stack(
+    dir: ltr,
+    spacing: 0.8em,
+    question-box(1, [is it there?], "lspci"),
+    question-box(2, [which driver?], "lsmod"),
+    question-box(3, [what does it show?], "ls /sys/class/..."),
+  ))
+
+  #v(0.3em)
+  #nice-table(
+    columns: (auto, auto, auto, 1fr),
+    size: 0.8em,
+    header: ([unit], [in /sys/class], [device file], [driver (lsmod)]),
+    rows: (
+      ([🎮 *GPU*], [`drm`], [`/dev/dri/card0`], [`i915`, `xe`, `amdgpu`, `nvidia`]),
+      ([🤖 *NPU*], [`accel`], [`/dev/accel/accel0`], [`intel_vpu`, `amdxdna`]),
+      ([🎲 *random numbers*], [`misc/hw_random`], [`/dev/hwrng`], [`virtio_rng` (in a VM)]),
+      ([🔒 *TPM*], [`tpm`], [`/dev/tpm0`], [`tpm_tis`, `tpm_crb`]),
+    ),
+    shown: (2, 2, 2, 2),
+  )
+]
+
+#slide[
   == Inspect the GPU
-  Find it, its driver and the screen it draws on
+  The three questions, on this VM
 
   #toolbox.side-by-side(columns: (8fr, 5fr), gutter: 1em)[
     #set text(size: 0.76em)
-    #reveal-terminal(before: none, lines: (2, 5, 7, 11), full: false)[```terminal
+    #reveal-terminal(before: none, lines: (2, 5, 10, 12), full: false)[```terminal
     $ lspci | grep -i display
     00:0a.0 Display controller: Red Hat, Inc. Virtio GPU (rev 01)
     $ lsmod | grep gpu
     virtio_gpu             90112  0
     virtio_dma_buf         12288  1 virtio_gpu
+    $ ls /sys/class/drm
+    card0
+    card0-Virtual-1
+    renderD128
+    version
     $ cat /sys/class/drm/card0-Virtual-1/status
     connected
-    $ head -3 /sys/class/drm/card0-Virtual-1/modes
-    1280x800
-    4096x2160
-    4096x2160
     ```]
   ][
-    #explain(1, [the GPU], [is a PCI device: `Display controller` (or `VGA`, `3D`)])
-    #explain(2, [its driver], [`virtio_gpu`, a kernel module (`nvidia`, `amdgpu`, `i915`, `xe` on a PC)])
-    #explain(3, [the screen], [a _connector_ of `card0`: something is plugged in])
-    #explain(4, [the modes], [the resolutions the screen accepts])
+    #explain(1, n: 1, [it is there], [a PCI device: `Display controller` (or `VGA`, `3D`)])
+    #explain(2, n: 2, [its driver], [`virtio_gpu`, a kernel module])
+    #explain(3, n: 3, [its devices], [`card0` draws the screen, `renderD128` renders and computes (in `/dev/dri`)])
+    #explain(4, [the screen], [`card0-Virtual-1`: a _connector_, something is plugged in])
   ]
 
-  #only("5-", place(bottom + center, dy: -0.2em, info(width: 400pt)[On a real PC][
-    `vulkaninfo --summary`: what the GPU supports #h(0.6em) watch it at work: next slide
+  #only("4-", place(bottom + center, dy: -0.2em, info(width: 400pt)[Programs use it through libraries][
+    Mesa, Vulkan, CUDA, ... #h(0.6em) `vulkaninfo --summary`: what the GPU supports
   ]))
 ]
 
@@ -386,7 +467,7 @@
 )
 
 #slide[
-  == Watch the GPU at Work
+  == Watch the GPU
   Each vendor has its own tool, `nvtop` works with all of them
 
   #grid(
@@ -416,30 +497,65 @@
   )))
 ]
 
+// a screenshot of nvtop on a Panther Lake laptop (1600 x 1176 px), with
+// orange frames over its parts; `marks`: (x0, y0, x1, y1) in pixels
+#let shot-width = 270pt
+#let shot(marks) = box(width: shot-width, {
+  image("img/nvtop.jpg", width: shot-width)
+  let k = shot-width / 1600
+  for (x0, y0, x1, y1) in marks {
+    place(top + left, dx: x0 * k, dy: y0 * k, rect(width: (x1 - x0) * k, height: (y1 - y0) * k, radius: 2pt, stroke: 1.8pt + changed))
+  }
+})
+
 #slide[
-  == Inspect Other Coprocessors
-  Security hardware, and crypto inside the CPU
+  == `nvtop` on a Laptop
+  The integrated GPU of a Panther Lake laptop, at work
+
+  #toolbox.side-by-side(columns: (auto, 1fr), gutter: 1em)[
+    #only(1, shot(((60, 132, 1190, 172), (60, 208, 948, 250))))
+    #only(2, shot(((952, 208, 1448, 250), (105, 262, 1542, 848))))
+    #only("3-", shot(((48, 852, 1548, 1088),)))
+  ][
+    #set text(size: 0.8em)
+    - an *integrated* GPU (Arc B390), in the same chip as the CPU
+    - `MEM` 1.3 of *62 GiB*: it uses the system RAM (_unified memory_)
+    #uncover("2-")[#block[
+      - `ENC/DEC`: the *video engine*, apart from the 3D cores
+      - the graph: the load over the last 40 seconds
+    ]]
+    #uncover("3-")[#block[
+      - the processes that use the GPU now
+      - `TYPE`: `Graphic` draws, `Compute` (`C`) calculates, `Both`
+    ]]
+  ]
+]
+
+#slide[
+  == Other Coprocessors
+  The NPU, security hardware and crypto inside the CPU
 
   #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.2em)[
     #set text(size: 0.82em)
-    #reveal-terminal(before: none, lines: (4, 5, 9), full: false)[```terminal
+    #reveal-terminal(before: none, lines: (1, 3, 5, 9), full: false)[```terminal
+    $ ls /sys/class/accel
     $ cat /sys/class/misc/hw_random/rng_current
     virtio_rng.0
-    $ lsmod | grep rng
-    virtio_rng             12288  0
     $ ls /sys/class/tpm
+    tpm0
     $ grep -o -w -E 'aes|sha2|sha512' /proc/cpuinfo | sort -u
     aes
     sha2
     sha512
     ```]
   ][
-    #explain(1, [🎲 random numbers], [a hardware generator for keys and passwords: `virtio_rng` here])
-    #explain(2, [🔒 TPM], [keeps keys, checks the boot; empty here: this VM has none, a PC shows `tpm0`])
-    #explain(3, [🔐 crypto in the CPU], [`aes`, `sha2`: instructions that encrypt and hash, a small "coprocessor" inside every core])
+    #explain(1, [🤖 NPU], [runs AI models; empty here, a laptop with an NPU shows `accel0`])
+    #explain(2, [🎲 random numbers], [a hardware generator for keys and passwords: `virtio_rng` here])
+    #explain(3, [🔒 TPM], [keeps keys, checks the boot: `tpm0` here, used through `/dev/tpm0`])
+    #explain(4, [🔐 crypto in the CPU], [`aes`, `sha2`: instructions that encrypt and hash, no driver needed])
   ]
 
-  #only("4-", place(bottom + center, dy: -0.2em, info(width: 400pt)[And the NPU?][
-    `ls /dev/accel` lists it; its driver is `intel_vpu` (Intel) or `amdxdna` (AMD): check with `lsmod`
+  #only("4-", place(bottom + center, dy: -0.2em, info(width: 400pt)[An empty folder is an answer too][
+    no device: the hardware is missing, or its driver is not loaded (check with `lsmod`)
   ]))
 ]

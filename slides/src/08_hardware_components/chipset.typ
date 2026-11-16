@@ -68,7 +68,9 @@
 
   #v(0.2em)
   #only(1)[💡 the names come from the block diagram: the CPU drawn at the top, "north"]
-  #only("4-")[💡 every byte from RAM went through the northbridge: one more chip on the way, more time]
+  #only("5-", place(center + horizon, info(width: 320pt)[One more chip on the way][
+    every byte from RAM went through the northbridge: more time for every access
+  ]))
 ]
 
 // a CPU package today: the cores and the northbridge in the same package;
@@ -175,80 +177,120 @@
   #only("3-")[💡 most laptops: the chipset is in the CPU package (Intel) or inside the chip (AMD); an SoC has no chipset]
 ]
 
-// two SSDs behind the chipset send their data up the same link;
-// `step` 2 colors the path
-#let bottleneck(step) = scale(88%, reflow: true, drawing(width: 230pt, height: 150pt, {
-  let on = step >= 2
-  at(70pt, 0pt, unit(kind: "dark", width: 90pt, height: 34pt, size: 0.65em, icon: cpu-icon)[CPU + RAM])
-  line-arrow((115pt, 80pt), (115pt, 36pt), color: if on { changed } else { luma(150) }, thickness: 3pt, head: 8pt)
-  at(122pt, 46pt, text(size: 0.65em, weight: "bold", fill: if on { changed } else { luma(80) })[\~8 GB/s up \ for everything])
-  at(70pt, 80pt, unit(width: 90pt, height: 26pt, size: 0.65em)[chipset])
-  line-arrow((50pt, 122pt), (88pt, 107pt), color: if on { changed } else { luma(150) }, thickness: 1.5pt)
-  line-arrow((180pt, 122pt), (142pt, 107pt), color: if on { changed } else { luma(150) }, thickness: 1.5pt)
-  at(0pt, 122pt, dev("💾", [SSD 1: 7 GB/s], on: on, width: 90pt))
-  at(140pt, 122pt, dev("💾", [SSD 2: 7 GB/s], on: on, width: 90pt))
-}))
+// a link drawn as a pipe: its thickness grows with the speed (GB/s), small
+// white squares on it are the data flowing; `on` colors it orange
+#let pipe(a, b, gbs, on: false, packets: 4) = {
+  let col = if on { changed } else { luma(185) }
+  place(top + left, line(start: a, end: b, stroke: (paint: col, thickness: gbs * 1.3pt, cap: "round")))
+  if on {
+    for k in range(packets) {
+      let t = (k + 0.5) / packets
+      let x = a.at(0) + (b.at(0) - a.at(0)) * t
+      let y = a.at(1) + (b.at(1) - a.at(1)) * t
+      place(top + left, dx: x - 2.5pt, dy: y - 2.5pt, box(width: 5pt, height: 5pt, fill: white, radius: 1pt))
+    }
+  }
+}
+
+// the data flow from the SSDs to the CPU: SSD A on its own link (top), SSD B
+// and C through the chipset, sharing one link (bottom). The pipes are as
+// thick as their speed. `step` 1: the direct path, 2: the shared path
+#let data-flow(step) = drawing(width: 470pt, height: 122pt, {
+  set text(size: 0.75em)
+  let d = step == 1
+  let c = step >= 2
+  let label(on, body) = text(fill: if on { changed.darken(15%) } else { luma(110) }, body)
+  let ssd(y, name, on) = at(0pt, y, unit(kind: "slot", width: 84pt, height: 24pt, on: on, size: 1em)[💾 #name])
+  // the CPU on the right, where all the data goes
+  at(392pt, 0pt, unit(kind: "dark", width: 78pt, height: 122pt, size: 1em, icon: cpu-icon)[CPU \ + RAM])
+  // top: direct
+  ssd(2pt, [SSD A], d)
+  pipe((90pt, 14pt), (388pt, 14pt), 7, on: d, packets: 8)
+  at(150pt, 24pt, label(d)[✅ *its own link*: 7 GB/s, full speed])
+  // bottom: through the chipset
+  ssd(50pt, [SSD B], c)
+  ssd(92pt, [SSD C], c)
+  pipe((90pt, 62pt), (196pt, 80pt), 7, on: c, packets: 3)
+  pipe((90pt, 104pt), (196pt, 92pt), 7, on: c, packets: 3)
+  at(200pt, 70pt, unit(width: 64pt, height: 32pt, on: c, size: 1em, sub: [\+ USB, LAN])[chipset])
+  pipe((268pt, 86pt), (388pt, 86pt), 8, on: c, packets: 4)
+  at(272pt, 104pt, label(c)[⚠️ *one shared link*: \~8 GB/s])
+  at(96pt, 112pt, label(c)[7 + 7 = 14 GB/s in ⏳ waits])
+})
 
 #slide[
   == Direct or Through the Chipset?
-  Everything behind the chipset shares one link
+  How the data flows from the SSDs to the CPU
 
-  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.2em)[
-    #set text(size: 0.8em)
-    - two NVMe SSDs behind the chipset, 7 GB/s each
-    #uncover("2-")[#block[
-      - read both at the same time: all the data goes *up* the same link
-        - plus USB, network, ... at the same time
-    ]]
-    #uncover("4-")[
-      === 👍 Rules of thumb
-      - 🎮 graphics card in the *first* x16 slot (CPU)
-      - 💾 system SSD in the *first* M.2 slot (CPU)
-      - 📖 the motherboard manual says which slot goes where
-    ]
-  ][
-    #only(1, bottleneck(1))
-    #only("2-", bottleneck(2))
-  ]
+  #only(1, data-flow(1))
+  #only("2-", data-flow(2))
 
   #v(0.2em)
-  #question(2)[Together they could read 14 GB/s. Why only \~8?][💡 the slowest link on the path decides the speed]
+  #only(1)[💡 the first M.2 slot is wired to the CPU: a link only for this SSD]
+  #only(2)[💡 the other M.2 slots, USB, network: all behind the chipset, all on one link]
+  #uncover("3-", align(center, text(size: 1.25em, weight: "bold", fill: accent)[SSD B and C together could read 14 GB/s. Why only \~8?]))
+
+  #only("4-", place(bottom + center, dy: 0.8em, info(width: 400pt)[The slowest link on the path decides the speed][
+    two SSDs, one \~8 GB/s link above them: the narrowest pipe wins
+  ]))
 ]
 
-#slide[
-  == See the Topology
-  `lspci` lists the devices on the PCI Express buses
+// a motherboard seen from above: the CPU socket with its RAM slots, the
+// slots wired to the CPU and the ones behind the chipset.
+// `step` 1: the board, 2: the graphics card slot, 3: the system M.2 slot,
+// 4-: the chipset and the slots behind it
+#let board(step) = drawing(width: 300pt, height: 178pt, {
+  set text(size: 0.6em)
+  let g = step == 2
+  let m = step == 3
+  let ch = step >= 4
+  let ch-trace = if ch { (paint: changed, thickness: 2pt, dash: "dashed") } else { (paint: luma(120), thickness: 1pt, dash: "dashed") }
+  let slot-fill(on) = if on { changed } else { luma(45) }
+  at(0pt, 0pt, box(width: 300pt, height: 178pt, radius: 4pt, fill: pcb-fill, stroke: 1pt + pcb-stroke))
+  // CPU and RAM
+  at(130pt, 10pt, unit(kind: "dark", width: 64pt, height: 58pt, size: 1.2em, icon: cpu-icon)[CPU])
+  for i in range(4) { at(214pt + i * 9pt, 8pt, box(width: 5pt, height: 66pt, fill: luma(45), radius: 1pt)) }
+  at(206pt, 77pt, text(fill: luma(60))[RAM])
+  // chipset
+  at(238pt, 112pt, unit(width: 50pt, height: 40pt, on: ch, size: 1.1em)[chipset])
+  // traces: CPU slots in orange when shown, chipset slots dashed gray
+  wire((162pt, 68pt), (162pt, 112pt), stroke: if g { 2pt + changed } else { 1pt + luma(140) })
+  wire((140pt, 68pt), (110pt, 90pt), stroke: if m { 2pt + changed } else { 1pt + luma(140) })
+  wire((262pt, 112pt), (194pt, 50pt), stroke: (paint: luma(120), thickness: 1pt, dash: "dashed"))
+  wire((238pt, 128pt), (150pt, 140pt), stroke: ch-trace)
+  wire((250pt, 152pt), (210pt, 160pt), stroke: ch-trace)
+  // M.2 slot 1 (CPU) and the first x16 slot (CPU)
+  at(20pt, 86pt, box(width: 90pt, height: 10pt, radius: 1pt, fill: slot-fill(m)))
+  at(24pt, 74pt, text(weight: "bold", fill: if m { changed.darken(15%) } else { black })[M.2 \#1: CPU])
+  at(12pt, 112pt, box(width: 210pt, height: 9pt, radius: 1pt, fill: slot-fill(g)))
+  at(16pt, 100pt, text(weight: "bold", fill: if g { changed.darken(15%) } else { black })[PCIe x16 \#1: CPU, all 16 lanes])
+  // behind the chipset
+  at(60pt, 136pt, box(width: 90pt, height: 10pt, radius: 1pt, fill: if ch { changed } else { luma(110) }))
+  at(64pt, 124pt, text(weight: "bold", fill: if ch { changed.darken(15%) } else { luma(60) })[M.2 \#2: chipset])
+  at(12pt, 160pt, box(width: 210pt, height: 9pt, radius: 1pt, fill: if ch { changed } else { luma(110) }))
+  at(16pt, 148pt, text(weight: "bold", fill: if ch { changed.darken(15%) } else { luma(60) })[PCIe x16 size \#2: chipset, only x4])
+})
 
-  #toolbox.side-by-side(columns: (1fr, 3fr), gutter: 1.2em)[
+#slide[
+  == 👍 Which Slot?
+  Put the fast parts on the slots wired to the CPU
+
+  #toolbox.side-by-side(columns: (2fr, 3fr), gutter: 1.2em)[
     #set text(size: 0.8em)
-    - `lspci`: one line per device
-      - `bus:device.function`
-      - class and maker
-    #uncover("2-")[#block[
-      - `lspci -tv`: as a tree
-    ]]
+    - the slots *look* the same, but are wired to different chips
+    #uncover("2-")[#block[- 🎮 graphics card: the *first* x16 slot, closest to the CPU]]
+    #uncover("3-")[#block[- 💾 system SSD: the *first* M.2 slot]]
+    #uncover("4-")[#block[- the others hang on the chipset: fine for a second disk, Wi-Fi, a sound card]]
   ][
-    #set text(size: 0.62em)
-    #reveal-terminal(before: none, lines: (9, 15), full: false)[```terminal
-    $ lspci
-    00:00.0 Host bridge: Apple Inc. Device 1a05
-    00:01.0 Ethernet controller: Red Hat, Inc. Virtio network device (rev 01)
-    00:05.0 Non-Volatile memory controller: Apple Inc. Device 1a09
-    00:06.0 Non-Volatile memory controller: Apple Inc. Device 1a09
-    ...
-    00:0a.0 Display controller: Red Hat, Inc. Virtio GPU (rev 01)
-    ...
-    00:0e.0 USB controller: Apple Inc. Device 1a06
-    $ lspci -tv
-    -[0000:00]-+-00.0  Apple Inc. Device 1a05
-               +-01.0  Red Hat, Inc. Virtio network device
-               +-05.0  Apple Inc. Device 1a09
-               +-06.0  Apple Inc. Device 1a09
-    ...
-    ```]
+    #only(1, board(1))
+    #only(2, board(2))
+    #only(3, board(3))
+    #only("4-", board(4))
   ]
 
   #v(0.2em)
-  #only(1)[💡 `00:00.0 Host bridge`: the northbridge, here a virtual one (a VM on a Mac, the devices are made up)]
-  #only("2-")[💡 on a real PC the tree has more levels: the `PCI bridge` lines are the ports where the slots and the chipset hang]
+  #only(1)[💡 a long slot is not always a fast slot: an x16 slot may have only 4 lanes wired]
+  #only(2)[💡 the GPU needs the most bandwidth: 16 lanes straight to the CPU]
+  #only(3)[💡 the system disk is read all the time: its own link, no sharing]
+  #only("4-")[📖 the motherboard manual has a table: for each slot, CPU or chipset, and how many lanes]
 ]

@@ -182,23 +182,53 @@
   align(center, text(size: 1.05em, body)),
 )
 
-// a popup card drawn over the slide: a colored (default red) title bar, a
-// white body and a soft shadow; `width` must be absolute. No inline code in
-// the title (unreadable on the colored bar).
-// e.g. #place(bottom + right, popup(width: 260pt)[⚠️ Title][body])
-#let popup(width: 300pt, color: bad-color, title, body) = {
-  let card = block(width: width, fill: white, stroke: 1.5pt + color, radius: 0.5em, clip: true, stack(
-    block(width: 100%, fill: color, inset: (x: 0.8em, y: 0.4em), text(fill: white, weight: "bold", size: 0.85em, title)),
-    block(width: 100%, inset: (x: 0.8em, y: 0.6em), text(size: 0.8em, body)),
+// the icons of the popups, drawn (emoji are too small and too dark on a
+// colored bar): a round badge with a white letter
+#let popup-icon(kind, color) = box(baseline: 0.2em, circle(
+  radius: 0.62em,
+  fill: color,
+  stroke: none,
+  align(center + horizon, if kind == "tip" {
+    // a small drawn star (no font needed)
+    let pts = range(10).map(i => {
+      let r = if calc.even(i) { 0.42em } else { 0.18em }
+      let a = -90deg + i * 36deg
+      (0.45em + r * calc.cos(a), 0.45em + r * calc.sin(a))
+    })
+    box(width: 0.9em, height: 0.9em, place(top + left, polygon(fill: white, stroke: none, ..pts)))
+  } else {
+    text(size: 0.85em, weight: "bold", fill: white, if kind == "warning" { "!" } else { "i" })
+  }),
+))
+
+// a popup card drawn over the slide: a light title bar with a round icon and
+// the title in the popup's color, a white body, a light border and a soft
+// shadow. Popups have their own colors, different from the teal of the
+// boxes. `kind`: "warning" (red, default), "info" (amber), "tip" (orange).
+// `width` must be absolute (the shadow is sized from the card). No inline
+// code in the title.
+// e.g. #place(bottom + right, popup(width: 260pt)[Title][body])
+#let popup-colors = (info: rgb("a16207"), tip: changed, warning: bad-color)
+
+#let popup(width: 300pt, kind: "warning", color: none, title, body) = {
+  let kind = if color == accent { "info" } else if color == changed { "tip" } else { kind }
+  let color = popup-colors.at(kind)
+  let card = block(width: width, fill: white, stroke: 1pt + color.lighten(55%), radius: 0.6em, clip: true, stack(
+    block(width: 100%, fill: color.lighten(90%), stroke: (bottom: 0.8pt + color.lighten(70%)), inset: (x: 0.7em, y: 0.4em), {
+      popup-icon(kind, color)
+      h(0.5em)
+      text(fill: color.darken(15%), weight: "bold", size: 0.9em, title)
+    }),
+    block(width: 100%, inset: (x: 0.8em, y: 0.6em), text(size: 0.85em, body)),
   ))
   context {
     let h = measure(card).height
-    box(width: width + 5pt, height: h + 5pt, {
-      place(top + left, dx: 5pt, dy: 5pt, rect(
+    box(width: width + 4pt, height: h + 4pt, {
+      place(top + left, dx: 3pt, dy: 4pt, rect(
         width: width,
         height: h,
-        radius: 0.5em,
-        fill: black.transparentize(80%),
+        radius: 0.6em,
+        fill: black.transparentize(88%),
         stroke: none,
       ))
       place(top + left, card)
@@ -298,7 +328,7 @@
 // an info popup: like `popup`, in the theme color, for explanations that
 // appear on one step next to what they explain
 // e.g. #only(2, place(bottom + right, info(width: 220pt)[Title][body]))
-#let info(width: 220pt, title, body) = popup(width: width, color: accent, [ℹ️ #title], body)
+#let info(width: 220pt, title, body) = popup(width: width, kind: "info", title, body)
 
 // a small drawn chip (a square with pins), used as the CPU icon instead of an
 // emoji; it takes the color of the text around it
@@ -316,3 +346,91 @@
     place(top + left, line(start: (0.8em, p), end: (0.98em, p), stroke: s + c))
   }
 })
+
+// a table in the style of the deck: a teal header with white text, light
+// alternating rows, thin light lines. `rows` is an array of arrays of cells;
+// `shown` gives, per row, the step it appears from (none = always)
+// e.g. #nice-table(columns: (auto, 1fr), header: ([A], [B]), rows: (([a], [b]),))
+#let nice-table(columns: auto, header: (), rows: (), shown: none, size: 0.88em, color: accent) = block(width: 100%, {
+  set text(size: size)
+  // bigger icons than in the text (the theme makes emoji small)
+  show regex("\p{Extended_Pictographic}[\u{FE0F}\u{200D}\p{Extended_Pictographic}\p{Emoji_Modifier}]*"): set text(size: 1.45em)
+  table(
+    columns: columns,
+    inset: (x: 0.6em, y: 0.62em),
+    align: left + horizon,
+    stroke: (x, y) => (bottom: 0.5pt + luma(210)),
+    fill: (x, y) => if y == 0 { color } else if calc.even(y) { color.lighten(93%) } else { white },
+    table.header(..header.map(h => text(fill: white, weight: "bold", h))),
+    ..rows
+      .enumerate()
+      .map(((i, r)) => r.map(c => if shown == none or shown.at(i) == none { c } else { uncover(str(shown.at(i)) + "-", c) }))
+      .flatten(),
+  )
+})
+
+// ---------------------------------------------------------------------------
+// Terminals with highlighted words
+// ---------------------------------------------------------------------------
+
+// A terminal session whose parts are highlighted step by step, so that each
+// statement on the slide points at its words in the command or the output.
+// `lines`: the real session, one string per line ("$ " = a command).
+// `steps`: one (upto, marks) per step: the last line shown (0-based) and the
+// (line, "words") to box in orange, the first time they appear on that line.
+// The last step stays. Hidden lines keep
+// their space and the boxes use `outset`: nothing moves between steps.
+// e.g. #mark-terminal(("$ free -h", "..."), ((0, ((0, "-h"),)),))
+#let mark-line(t, hots) = {
+  let is-cmd = t.starts-with("$ ")
+  let body = if is-cmd { t.slice(2) } else { t }
+  // split into (text, hot) segments
+  let segs = ((body, false),)
+  for h in hots {
+    let next = ()
+    for (seg, hot) in segs {
+      if hot or not seg.contains(h) { next.push((seg, hot)) } else {
+        // only the first time the words appear on the line
+        let parts = seg.split(h)
+        let rest = parts.slice(1).join(h)
+        if parts.at(0) != "" { next.push((parts.at(0), false)) }
+        next.push((h, true))
+        if rest != "" { next.push((rest, false)) }
+      }
+    }
+    segs = next
+  }
+  if is-cmd { text(fill: accent, weight: "bold")[\$]; h(0.5em) }
+  // keep the spaces at the start of the line (Typst drops them after a break)
+  let lead = segs.at(0).at(0).len() - segs.at(0).at(0).trim(at: start).len()
+  if lead > 0 and not segs.at(0).at(1) {
+    text("\u{00A0}" * lead)
+    segs.at(0) = (segs.at(0).at(0).trim(at: start), false)
+  }
+  for (i, (seg, hot)) in segs.enumerate() {
+    if hot {
+      box(fill: changed-fill, stroke: 0.8pt + changed, radius: 2pt, outset: (x: 1.5pt, y: 1.5pt), text(fill: changed.darken(25%), weight: "bold", seg))
+    } else if is-cmd {
+      highlight-shell(seg, start-expect-command: i == 0)
+    } else {
+      text(fill: luma(100), seg)
+    }
+  }
+}
+
+#let mark-view(lines, upto, marks) = block(width: 100%, fill: luma(242), radius: 4pt, inset: (x: 0.8em, y: 0.6em), {
+  set text(font: mono)
+  set par(leading: 0.62em)
+  for (n, t) in lines.enumerate() {
+    let l = mark-line(t, marks.filter(((m, _)) => m == n).map(((_, w)) => w))
+    if n <= upto { l } else { hide(l) }
+    if n < lines.len() - 1 { linebreak() }
+  }
+})
+
+// `start`: the slide step of the first entry; `keep: false` hides the session
+// after its last step (to show another session in the same place)
+#let mark-terminal(lines, steps, start: 1, keep: true) = for (i, (upto, marks)) in steps.enumerate() {
+  let n = start + i
+  only(if keep and i == steps.len() - 1 { str(n) + "-" } else { n }, mark-view(lines, upto, marks))
+}
