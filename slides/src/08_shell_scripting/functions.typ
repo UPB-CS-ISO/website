@@ -212,7 +212,7 @@ echo \"$name: $sum\""
 ]
 
 #slide[
-  == The Pitfalls of Functions
+  == Pitfalls of Functions
   A function is a command: it prints and ends with an exit code, nothing more
 
   // one pitfall: the wrong command line, its problem highlighted in red,

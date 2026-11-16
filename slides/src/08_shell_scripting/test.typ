@@ -115,7 +115,7 @@ fi"
 ]
 
 #slide[
-  == The Pitfalls of `[`
+  == Pitfalls of `[`
   `[` only sees *words*
 
   #toolbox.side-by-side(columns: (11fr, 9fr), gutter: 1.5em)[

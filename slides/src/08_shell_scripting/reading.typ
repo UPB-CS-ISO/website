@@ -97,14 +97,14 @@ echo \"$y-$m-$d\""
       note: [💡 cut at the spaces, one word for every variable, the *last* takes the rest #h(0.4em) #box(baseline: 35%, read-map(("Alice", "Mary Smith"), ("first", "last")))]),
     (line: 4, part: "IFS=: read -p \"Date: \" d m y", run: "IFS=: read -p \"Date: \" d m y", status: 0, out: ("Date: 2:11:2026",),
       vars: (d: "2", m: "11", y: "2026"), info: [reads `2:11:2026`],
-      note: [💡 `IFS=:` only for this `read`: the line is cut at `:` #h(0.4em) #box(baseline: 35%, ifs-line("2:11:2026", (":",)))]),
+      note: [💡 `IFS=:` only for this `read`: the line is cut at `:` #h(0.4em) #ifs-line("2:11:2026", (":",))]),
     (line: 5, run: "echo \"2026-11-2\"", status: 0, out: ("2026-11-2",),
       note: [💡 after `read`, `IFS` is back to space, tab and newline]),
   ))
 ]
 
 #slide[
-  == The Pitfalls of `read`
+  == Pitfalls of `read`
   `read` changes the line a little, unless you ask it not to
 
   #toolbox.side-by-side(columns: (2fr, 1fr), gutter: 1.2em)[

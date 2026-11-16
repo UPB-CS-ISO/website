@@ -525,7 +525,11 @@
             for e in explicit {
               let at = l.position(e)
               assert(at != none, message: "debug-run: `" + e + "` is not in line " + str(cur))
-              ms.push((at, e, "expand"))
+              // spaces around the piece (e.g. "f " to find the `f` of
+              // `for f in`, not the one of `for`) only help to find it:
+              // the frame goes around the text, not the spaces
+              let t = e.trim()
+              ms.push((at + e.position(t), t, "expand"))
             }
             for m in l.slice(from, to).matches(expansion-pattern) {
               let at = from + m.start
@@ -542,8 +546,9 @@
               for (at, piece, kind) in ms {
                 let x = measure(raw(l.slice(0, at), lang: "bash")).width
                 let size = measure(raw(piece, lang: "bash"))
-                place(dx: x - 2pt, dy: -3pt, box(
-                  width: size.width + 4pt,
+                // 1pt on each side: more would cover the next character
+                place(dx: x - 1pt, dy: -3pt, box(
+                  width: size.width + 2pt,
                   height: size.height + 6pt,
                   radius: 2pt,
                   fill: if kind == "part" { changed-fill } else if kind == "compute" { compute-fill } else { none },

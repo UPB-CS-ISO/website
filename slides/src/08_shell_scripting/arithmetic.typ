@@ -112,7 +112,7 @@ echo $sum"
 ]
 
 #slide[
-  == The Pitfalls of `expr`
+  == Pitfalls of `expr`
   The shell expands the parameters of `expr` first
 
   // the session takes all the width (its error message is long), what

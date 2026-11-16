@@ -104,16 +104,16 @@ printf '[%s]' $v; echo"
       note: [💡 the script starts, nobody set `IFS`: it has the *default* value, space, tab and newline]),
     (line: 2, run: "v=\"  a   b  \"", vars: (v: "  a   b  ")),
     (line: 3, part: "printf '[%s]' $v", run: "printf '[%s]' a b", status: 0, out: ("[a][b]",),
-      note: [💡 cut at the spaces #h(0.3em) #box(baseline: 30%, ifs-line("  a   b  ", blank)) #h(0.3em) many in a row: *one* cut, at the ends: dropped]),
+      note: [💡 cut at the spaces #h(0.3em) #ifs-line("  a   b  ", blank) #h(0.3em) many in a row: *one* cut, at the ends: dropped]),
     (line: 4, run: "IFS=:", vars: (IFS: ":"), tags: (IFS: none),
       note: [💡 `IFS` is not the default any more: now only `:` is a separator]),
     (line: 5, run: "v=\"a b::c\"", vars: (v: "a b::c")),
     (line: 6, part: "printf '[%s]' $v", run: "printf '[%s]' 'a b' '' c", status: 0, out: ("[a b][][c]",),
-      note: [💡 cut at `:` #h(0.3em) #box(baseline: 30%, ifs-line("a b::c", (":",))) #h(0.3em) `::` makes an *empty* word, the space is a normal character]),
+      note: [💡 cut at `:` #h(0.3em) #ifs-line("a b::c", (":",)) #h(0.3em) `::` makes an *empty* word, the space is a normal character]),
     (line: 7, run: "unset IFS", vars: (IFS: "space tab newline"), tags: (IFS: [not set, default]),
       note: [💡 `IFS` is deleted: when it is *not set*, the shell uses the *default* again]),
     (line: 8, part: "printf '[%s]' $v", run: "printf '[%s]' a b::c", status: 0, out: ("[a][b::c]",),
-      note: [💡 cut at the space again #h(0.3em) #box(baseline: 30%, ifs-line("a b::c", blank)) #h(0.3em) `:` is a normal character]),
+      note: [💡 cut at the space again #h(0.3em) #ifs-line("a b::c", blank) #h(0.3em) `:` is a normal character]),
   ))
 ]
 

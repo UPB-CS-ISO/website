@@ -153,7 +153,7 @@ echo \"done\""
 ]
 
 #slide[
-  == The Pitfalls of `while`
+  == Pitfalls of `while`
   The loop only runs a command and looks at its exit code
 
   // the session takes the width (its lines are long), the file next to it,

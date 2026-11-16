@@ -89,7 +89,7 @@
 
   #toolbox.side-by-side(columns: (11fr, 9fr), gutter: 1.5em)[
     #set text(size: 1.35em)
-    #highlight-code(("all", (1,), (2,), (3,), (4,), lines-range(5, 6), "all"))[```bash
+    #highlight-code(("all", (1,), (2,), (3,), (4,), lines-range(5, 6)))[```bash
 #!/bin/bash
 # back up the notes
 mkdir -p ~/backup
@@ -99,11 +99,11 @@ cp ~/notes.txt \
 ```]
   ][
     #set text(size: 0.9em)
-    #uncover("2-")[#block[- `#!/bin/bash` - the _shebang_: the program that runs the file, for `bash` it is just a comment]]
-    #uncover("3-")[#block[- `#` - a _comment_, until the end of the line]]
-    #uncover("4-")[#block[- one command line on every line]]
-    #uncover("5-")[#block[- `;` - several commands on the same line]]
-    #uncover("6-")[#block[- `\` at the end - the command line goes on, on the next line]]
+    #uncover("2-")[#block[- `#!/bin/bash` - the _shebang_, the first line: the program that runs the script; `bash` itself skips it, like a comment]]
+    #uncover("3-")[#block[- `#` - a _comment_: `bash` ignores the rest of the line]]
+    #uncover("4-")[#block[- usually *one command per line*: `bash` runs it, waits for it to end, then reads the next line]]
+    #uncover("5-")[#block[- `;` - puts *two commands on one line*: `cd ~/backup; ls` runs `cd`, then `ls`]]
+    #uncover("6-")[#block[- `\` as the *last character* of a line - *one command on two lines*: `cp` gets both `~/notes.txt` and `~/backup/`]]
   ]
 ]
 
@@ -125,14 +125,18 @@ cp ~/notes.txt \
 }
 
 // the permissions of a file, every set in the color of lecture 5;
-// `x`: "check" - the `x` letters boxed, "skip" - crossed out, else plain
+// `x`: "check" - only the `x` of the owner (the user who runs the script)
+// boxed, the group and others grayed out: the kernel checks one set only;
+// "skip" - all crossed out, else plain
 
 #let perms(x: none) = {
   let (u, g, o) = set-colors
-  let xs(color) = if x == "check" {
+  let xs(color, owner) = if x == "check" and owner {
     box(stroke: 0.8pt + changed.lighten(45%), fill: changed-fill, outset: (x: 1.5pt, y: 2.5pt), radius: 2pt, text(fill: color, weight: "bold")[x])
   } else if x == "skip" { text(fill: luma(170), strike[x]) } else { text(fill: color)[x] }
-  text(font: mono)[#text(fill: luma(130))[-]#text(fill: u)[rw]#xs(u)#text(fill: g)[r-]#xs(g)#text(fill: o)[r-]#xs(o)]
+  // on "check", the sets the kernel does not look at are gray
+  let other(color) = if x == "check" { luma(175) } else { color }
+  text(font: mono)[#text(fill: luma(130))[-]#text(fill: u)[rw]#xs(u, true)#text(fill: other(g))[r-]#xs(other(g), false)#text(fill: other(o))[r-]#xs(other(o), false)]
 }
 
 // the `#!` of the first line, boxed
@@ -213,7 +217,7 @@ cp ~/notes.txt \
     words(("./backup.sh", "cmd")),
     (
       ("shell", [a *path* (it has a `/`): no `PATH` search, it asks the kernel to run the file]),
-      ("kernel", [checks the permission: #perms(x: "check") - `x` is required]),
+      ("kernel", [checks the `x` of *the user who runs it*: `alice` owns the file, so only the owner's `x` counts #perms(x: "check")]),
       ("kernel", [*reads the first line* of the file: #shebang-boxed - run it with `/bin/bash`]),
       ("kernel", [starts a new process: #words(("/bin/bash", "cmd"), ("./backup.sh", "new"))]),
       ("bash", [runs the file, line by line - `#!/bin/bash` is a comment for it]),
@@ -226,10 +230,10 @@ cp ~/notes.txt \
     6,
     // what happens without `x`
     extra: (3, block(width: 100%, fill: fail-color.lighten(92%), stroke: (left: 3pt + fail-color), radius: (right: 0.3em), inset: 0.6em, {
-      text(size: 0.85em, weight: "bold", fill: fail-color)[❌ without `x`, the kernel refuses]
+      text(size: 0.85em, weight: "bold", fill: fail-color)[❌ without the owner's `x`, the kernel refuses]
       v(-0.2em)
       set text(size: 0.75em)
-      terminal("$ chmod -x backup.sh\n$ ./backup.sh\nbash: ./backup.sh: Permission denied")
+      terminal("$ chmod u-x backup.sh\n$ ./backup.sh\nbash: ./backup.sh: Permission denied")
     })),
   )
 ]
