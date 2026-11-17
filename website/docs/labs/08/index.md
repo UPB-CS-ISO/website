@@ -87,7 +87,7 @@ echo "backup done"; ls backup
 | `#!/bin/bash`            | the **shebang**, always the first line: the program that runs the script            |
 | `# ...`                  | a **comment**: `bash` ignores the rest of the line                                  |
 | the end of a line        | the end of a command: `bash` runs it, waits for it to end, then reads the next line |
-| `a; b`                   | two commands on one line: `a`, then `b`                                             |
+| `command1; command2`                   | two commands on one line: `command1`, then `command2`                                             |
 | `\` at the end of a line | the command goes on, on the next line: `cp` gets both `fruits.txt` and `backup/`    |
 
 Write the scripts with an editor from [Text Editors](/docs/labs/06#text-editors) in lab 06. The `.sh` at the end of
@@ -216,13 +216,19 @@ help of the command under the cursor. The keys are those of lab 07.
 
 | Editor               | What it needs to use `bash-language-server`                                                                                                                               |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vim`                | in `~/.vimrc`, a second `lsp#register_server`, like the one of `clangd`, with `'cmd': {server_info->['bash-language-server', 'start']}` and `'allowlist': ['sh', 'bash']` |
+| `vim`                | the `~/.vimrc` lines below, next to the ones of `clangd` |
 | `nvim` 0.11 or newer | the lines below, in `~/.config/nvim/init.lua`                                                                                                                             |
 | `hx` (Helix)         | nothing: `hx --health bash` shows `✓ bash-language-server`                                                                                                                |
 | `emacs` 29 or newer  | `(add-hook 'sh-mode-hook 'eglot-ensure)` in `~/.emacs.d/init.el`                                                                                                          |
 | `code` (VS Code)     | the extension **Bash IDE** (`code --install-extension mads-hartmann.bash-ide-vscode`), which brings its own server                                                        |
 | `zed` (Zed)          | nothing: it downloads the server by itself                                                                                                                                |
 
+```vim title="~/.vimrc (add)"
+au User lsp_setup call lsp#register_server({
+    \ 'name': 'bash-language-server',
+    \ 'cmd': {server_info->['bash-language-server', 'start']},
+    \ 'allowlist': ['sh', 'bash'],
+    \ })
 ```lua title="~/.config/nvim/init.lua (add)"
 vim.lsp.config('bashls', {
   cmd = { 'bash-language-server', 'start' },
@@ -310,8 +316,8 @@ puts it in variables:
 
 | Command                 | What it does                                                                             |
 | ----------------------- | ---------------------------------------------------------------------------------------- |
-| `read NAME`             | reads a line into `NAME`                                                                 |
-| `read -p "<TEXT>" NAME` | writes the question `<TEXT>` (a _prompt_) first                                          |
+| `read NAME`             | reads a single line from the standard input and assign it to `NAME`                                                                 |
+| `read -p "<TEXT>" NAME` | writes the string `<TEXT>` (a _prompt_) first                                          |
 | `read A B C`            | cuts the line at `IFS`: one word for every variable, and the **last** one takes the rest |
 | `IFS=: read A B C`      | cuts the line at `:`, only for this `read`                                               |
 | `read -r NAME`          | _raw_: keeps the `\` characters; without `-r`, `read` removes them                       |
@@ -333,8 +339,14 @@ root has the UID 0
 - `first` got `Carol`, and `last`, the last variable, got the rest of the line.
 - `IFS=:` before `read` is a variable only for that command: the line was cut at `:`, and `IFS` stayed the default.
 
+
+:::note
+
 `read` ends with `0` when it read a line, and with `1` at the end of the input (<kbd>Ctrl</kbd>+<kbd>D</kbd> on the
 keyboard, or the end of a file): [`while read`](#reading-a-file-while-read) stops on it.
+
+:::
+
 
 ## Command Substitution: `$(...)`
 
@@ -556,7 +568,7 @@ go!
 
 :::caution
 
-The body must change what the condition tests (here, `n`), or the loop never ends: stop it with
+The body must change what the condition tests (in the examples, `n`), or the loop never ends: stop it with
 <kbd>Ctrl</kbd>+<kbd>C</kbd>.
 
 :::
@@ -846,7 +858,8 @@ give back only its output.
 :::danger
 
 A script runs its commands without asking. Before a loop that moves or deletes files, put `echo` in front of the
-command and read what it would do; and quote every variable: with an empty `dir`, `rm -r $dir/*` is `rm -r /*`.
+command and read what it would do. Quote every variable, and check that it is not empty before you use it in a path:
+with an empty `dir`, `rm -r "$dir"/*` is `rm -r /*`, even with the quotes. `shellcheck` warns about it (`SC2115`).
 
 :::
 
@@ -1109,8 +1122,8 @@ exercise says otherwise.
     <details className="reveal">
     <summary>Hint</summary>
 
-    `until` repeats while its condition is **false**: change the test, not the body. Count with
-    `n=$((n + 1))`.
+    `until` repeats while its condition is **false**: change the test, not the body. Count with `n=0` before the
+    loop, and `n=$((n + 1))` in its body.
 
     </details>
 
@@ -1147,10 +1160,10 @@ exercise says otherwise.
     2. `find . -name '*.jpeg' | sort | while IFS= read -r f; do echo "[$f]"; done` prints `[./photos/cat.jpeg]`,
        `[./photos/dog.jpeg]` and `[./photos/summer beach.jpeg]`; with `for`, the last one becomes `[./photos/summer]`
        and `[beach.jpeg]`.
-    3. `echo $(seq 0 20 100)` and `echo {0..100..20}`; `{0..$n..20}` is printed as it is.
+    3. `echo $(seq 0 20 100)` and `echo {0..100..20}`; with `$n`, `echo {0..$n..20}` prints `{0..100..20}`.
 
     **Why:** the glob and `IFS= read -r` keep a name with spaces as one word, but `$(...)` is cut at `IFS`; the braces
-    are expanded before the variables, so they cannot use them.
+    are expanded before the variables: `{0..$n..20}` is not a range yet, so the braces stay, and only `$n` is replaced.
 
     </details>
 
@@ -1232,7 +1245,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
     <details className="reveal">
     <summary>Hint</summary>
 
-    `man env`; for `bash`, the shebang is only a comment, and the rest of the file is Python.
+        `man file`; `man env`; for `bash`, the shebang is only a comment, and the rest of the file is Python.
 
     </details>
 
@@ -1269,8 +1282,8 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
     <details className="reveal">
     <summary>Check</summary>
 
-    1. `nvim`: `:checkhealth vim.lsp` lists `bashls`; `hx --health bash` shows `✓ bash-language-server`; VS Code and
-       Zed mark the warnings of step 2.
+    1. `vim`: `:LspStatus` shows `bash-language-server: running`; `nvim`: `:checkhealth vim.lsp` lists `bashls`;
+       `hx --health bash` shows `✓ bash-language-server`; Emacs, VS Code and Zed mark the warnings of step 2.
     2. `SC2045` under `$(ls *.txt)`, and `SC2086` under `$f`.
     3. `for f in *.txt; do` and `wc -l "$f"`; `shellcheck count.sh` prints nothing.
     4. A short help about `wc`, taken from its manual page.
@@ -1610,8 +1623,8 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
     <details className="reveal">
     <summary>Hint</summary>
 
-    `date +%F` prints `2026-11-16`; `cp -r` copies a folder; keep the exit code in a variable, and `exit` with it
-    at the end.
+    `date +%F` prints `2026-11-16`; `mkdir -p` creates `backups` if it is missing; `cp -r` copies a folder; keep the
+    exit code in a variable, and `exit` with it at the end.
 
     </details>
 
@@ -1627,8 +1640,9 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
 29. **Clean up**: Delete everything that this lab created.
 
-    1. delete `~/lab08`;
-    2. close the terminal, or `unset` the variables that you set in it (`color`, `fruit`, `msg`, `x`).
+    1. leave `~/lab08` with `cd ~`, then delete it;
+    2. close the terminal, or `unset` the variables and the functions that you set in it (`fruit`, `msg`, `x`, `a`,
+       `b`, `n`, `v`, `p`, `color`, `set_n`).
 
     <details className="reveal">
     <summary>Check</summary>
@@ -1738,7 +1752,7 @@ it from `~/exam`.
     3 users
     ```
 
-    `grep -cE 'awk|cut|grep' users.sh` prints `0`.
+        `grep -cwE 'awk|cut|grep' users.sh` prints `0`.
 
     </details>
 
