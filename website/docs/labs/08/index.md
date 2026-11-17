@@ -391,6 +391,11 @@ Inside `((...))`, the variables need no `$`, and the operators are those of C:
 | `= += -= ++ --`   | change a variable                              | `((n += 2))`                                  |
 | `( )`             | group                                          | `$(( (2 + 3) * 4 ))` is `20`                  |
 
+:::info
+
+Some of these operators, such as `**`, `++` and `--`, are not available in every shell, and specifically not in `sh`. Always check which shell you're using with the `echo $SHELL` command.
+
+:::
 ```shell-session
 [student@fedora lab08]$ a=7; b=2
 [student@fedora lab08]$ echo "$a + $b = $((a + b))"
