@@ -675,7 +675,7 @@ every subfolder, and prints one path per line:
 | Written as                       | The numbers                                                                       |
 | -------------------------------- | --------------------------------------------------------------------------------- |
 | `$(seq <FIRST> <STEP> <LAST>)`   | `seq` is a program that prints them; it works with variables: `$(seq 1 $n)`       |
-| `{<FIRST>..<LAST>..<STEP>}`      | written by `bash` (_brace expansion_); **no** variables: `{1..$n}` stays as it is |
+| `{<FIRST>..<LAST>..<STEP>}`      | written by `bash` (_brace expansion_), only with numbers: with `n=5`, `{1..$n}` is not `1 2 3 4 5`, but one word, `{1..5}` |
 | `for ((i = 1; i <= 10; i += 3))` | the C-like `for` of `bash`                                                        |
 
 ```shell-session
