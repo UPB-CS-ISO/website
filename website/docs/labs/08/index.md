@@ -833,25 +833,25 @@ give back only its output.
 
 ## Troubleshooting
 
-| Problem                                                          | Solution                                                                                                                             |     |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |     |
-| `bash: ./x.sh: Permission denied`                                | The script has no `x` permission: `chmod +x x.sh`, or run `bash x.sh`                                                                |     |
-| `bash: x.sh: command not found`, but the file is there           | The current directory is not in `PATH`: run `./x.sh`                                                                                 |     |
-| `/bin/bash^M: bad interpreter: No such file or directory`        | The file has Windows line endings: `sed -i 's/\r$//' x.sh`                                                                           |     |
-| The editor shows no warnings in a script                         | `shellcheck` or the server is missing: `shellcheck --version`, `bash-language-server --version`; for `nvim`, the lines of `init.lua` |     |
-| `bash: name: command not found` after `name = value`             | No spaces around `=`: `name=value`                                                                                                   |     |
-| A file name with spaces is cut in two                            | Quote the variable, `"$f"`; go over files with a glob or `find ... \| while IFS= read -r f`, not with `$(ls)` or `$(find)`           |     |
-| `syntax error: invalid arithmetic operator`                      | `bash` has no decimals: use `bc`                                                                                                     |     |
-| `bash: a+b: command not found`                                   | One pair of parentheses is command substitution: write `$((a + b))`                                                                  |     |
-| `[2: command not found`                                          | `[` is a command: put a space after it, `[ $a -lt $b ]`                                                                              |     |
-| ``[: missing `]'``                                               | Put a space before `]`                                                                                                               |     |
-| `[: =: unary operator expected` or `[: too many arguments`       | A variable is empty or has spaces: quote it, `[ "$x" = abc ]`                                                                        |     |
-| `syntax error near unexpected token` `` `fi' `` (or `done`, `)`) | A `;` or a new line is missing before `then` or `do`, or a `;;` after a branch of `case`                                             |     |
-| `syntax error: unexpected end of file`                           | A `fi`, `done`, `esac` or `}` is missing                                                                                             |     |
-| `[[: not found` or `Syntax error: Bad for loop variable`         | The script ran with `sh`, which is `dash` on Ubuntu: run it with `bash` or `./x.sh`                                                  |     |
-| The script never ends                                            | The condition of `while` never changes: <kbd>Ctrl</kbd>+<kbd>C</kbd>, then change the variable in the body                           |     |
-| A counter is `0` after `cat <FILE> \| while read`                | The loop ran in a subshell: write `done < <FILE>`                                                                                    |     |
-| A `cd` in a script does not change your directory                | The script runs in a new process: `source x.sh`                                                                                      |     |
+| Problem                                                          | Solution |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `bash: ./x.sh: Permission denied`                                | The script has no `x` permission: `chmod +x x.sh`, or run `bash x.sh` |
+| `bash: x.sh: command not found`, but the file is there           | The current directory is not in `PATH`: run `./x.sh` |
+| `/bin/bash^M: bad interpreter: No such file or directory`        | The file has Windows line endings: `sed -i 's/\r$//' x.sh` |
+| The editor shows no warnings in a script                         | `shellcheck` or the server is missing: `shellcheck --version`, `bash-language-server --version`; for `nvim`, the lines of `init.lua` |
+| `bash: name: command not found` after `name = value`             | No spaces around `=`: `name=value` |
+| A file name with spaces is cut in two                            | Quote the variable, `"$f"`; go over files with a glob or `find ... \| while IFS= read -r f`, not with `$(ls)` or `$(find)` |
+| `syntax error: invalid arithmetic operator`                      | `bash` has no decimals: use `bc` |
+| `bash: a+b: command not found`                                   | One pair of parentheses is command substitution: write `$((a + b))` |
+| `[2: command not found`                                          | `[` is a command: put a space after it, `[ $a -lt $b ]` |
+| ``[: missing `]'``                                               | Put a space before `]` |
+| `[: =: unary operator expected` or `[: too many arguments`       | A variable is empty or has spaces: quote it, `[ "$x" = abc ]` |
+| `syntax error near unexpected token` `` `fi' `` (or `done`, `)`) | A `;` or a new line is missing before `then` or `do`, or a `;;` after a branch of `case` |
+| `syntax error: unexpected end of file`                           | A `fi`, `done`, `esac` or `}` is missing |
+| `[[: not found` or `Syntax error: Bad for loop variable`         | The script ran with `sh`, which is `dash` on Ubuntu: run it with `bash` or `./x.sh` |
+| The script never ends                                            | The condition of `while` never changes: <kbd>Ctrl</kbd>+<kbd>C</kbd>, then change the variable in the body |
+| A counter is `0` after `cat <FILE> \| while read`                | The loop ran in a subshell: write `done < <FILE>` |
+| A `cd` in a script does not change your directory                | The script runs in a new process: `source x.sh` |
 
 ## Exercises
 
