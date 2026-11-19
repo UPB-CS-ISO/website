@@ -11,9 +11,8 @@
       - Chapter 2 - _Basic Commands and Directory Hierarchy_
         - Section 2.8 - _Environment and Shell Variables_
       - Chapter 11 - _Introduction to Shell Scripts_
-        - Sections 11.1 - 11.7 - from _Shell Script Basics_ to _Command Substitution_
-        - Sections 11.10, 11.11, 11.13 - _Utilities_, _Subshells_, _Reading User Input_
-        - Section 11.14 - _When (Not) to Use Shell Scripts_
+        - Sections 11.1 - 11.8 - from _Shell Script Basics_ to _Temporary File Management_
+        - Sections 11.10 - 11.14 - from _Utilities_ to _When (Not) to Use Shell Scripts_
   ][
     2. *Razvan Deaconescu, Razvan Rughinis, Mihai Carabas, Alexandru Radovici*, _Utilizarea Sistemelor de Operare_, Printech 2021, #link("https://github.com/systems-cs-pub-ro/carte-uso/releases/download/uso-ed1-2021/uso.pdf")[download]
       - Chapter 7 - _Interfața în linia de comandă_
@@ -27,21 +26,27 @@
 #slide[
   == Shell Scripting
 
-  - Shell Scripts
-  - Variables
-  - Variable Expansion
-  - Reading Input
-  - Command Substitution
-  - Arithmetic
-  - Operators and Decimals
-  - Conditions: `if`
-  - Conditions: `test` and `[`
-  - Conditions: `case`
-  - Loops: `while`
-  - Loops: `for`
-  - Using `IFS` With `for`
-  - Functions
-  - Script Parameters
+  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
+    - Shell Scripts
+    - Variables
+    - Variable Expansion
+    - Reading Input
+    - Command Substitution
+    - Arithmetic
+    - Operators and Decimals
+    - Conditions: `if`
+    - Conditions: `test` and `[`
+  ][
+    - Conditions: `case`
+    - Loops: `while`
+    - Loops: `for`
+    - Using `IFS` With `for`
+    - Functions
+    - Script Parameters
+    - Handling Errors
+    - Strict Mode
+    - Cleaning Up: `trap`
+  ]
 ]
 
 #include "scripts.typ"
@@ -59,23 +64,32 @@
 #include "ifs-for.typ"
 #include "functions.typ"
 #include "parameters.typ"
+#include "errors.typ"
+#include "strict.typ"
+#include "trap.typ"
 
 #slide[
   == We talked about
 
-  - Shell Scripts
-  - Variables
-  - Variable Expansion
-  - Reading Input
-  - Command Substitution
-  - Arithmetic
-  - Operators and Decimals
-  - Conditions: `if`
-  - Conditions: `test` and `[`
-  - Conditions: `case`
-  - Loops: `while`
-  - Loops: `for`
-  - Using `IFS` With `for`
-  - Functions
-  - Script Parameters
+  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
+    - Shell Scripts
+    - Variables
+    - Variable Expansion
+    - Reading Input
+    - Command Substitution
+    - Arithmetic
+    - Operators and Decimals
+    - Conditions: `if`
+    - Conditions: `test` and `[`
+  ][
+    - Conditions: `case`
+    - Loops: `while`
+    - Loops: `for`
+    - Using `IFS` With `for`
+    - Functions
+    - Script Parameters
+    - Handling Errors
+    - Strict Mode
+    - Cleaning Up: `trap`
+  ]
 ]

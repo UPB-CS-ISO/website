@@ -79,6 +79,47 @@ read -s password
   ]
 ]
 
+#slide[
+  == `IFS=: printf` Does Not Cut at `:`
+  The shell cuts the words *before* the command gets `IFS=:`
+
+  #toolbox.side-by-side(columns: (1fr, 1fr), gutter: 1.5em)[
+    #set text(size: 1.05em)
+    #reveal-terminal(before: none, lines: (2, 4), full: false)[```terminal
+    $ x="Bob   Jones:20"
+    $ IFS=: printf '[%s]\n' $x
+    [Bob]
+    [Jones:20]
+    ```]
+    #uncover("5-")[
+      #label[✅ change `IFS` in the shell, on its own]
+      #terminal("$ IFS=:; printf '[%s]\\n' $x; unset IFS\n[Bob   Jones]\n[20]")
+    ]
+  ][
+    #set text(size: 0.85em)
+    #uncover("2-")[#block[
+      + the shell replaces `$x` and cuts it at *its* `IFS`, the default: \
+        #ifs-line("Bob   Jones:20", blank)
+    ]]
+    #uncover("3-")[#block[
+      #set enum(start: 2)
+      + only then it starts `printf`, with `IFS=:` - too late, the words are ready: \
+        #words(("IFS=:", "redir"), ("printf", "cmd"), "[%s]\\n", ("Bob", "new"), ("Jones:20", "new"))
+    ]]
+    #uncover("4-")[#block[
+      #set enum(start: 3)
+      + `printf` never cuts anything; `read` does: it cuts the line *it reads*, while it runs, so it sees `IFS=:`
+    ]]
+  ]
+
+  #v(0.3em)
+  #only(1)[💡 the same `IFS=:` as before `read`: what does `printf` print?]
+  #only(2)[💡 `Bob` and `Jones:20`: the spaces cut, `:` did not]
+  #only(3)[💡 `IFS=:` is a variable *for* `printf`, it does not change how the shell reads the line]
+  #only(4)[💡 `IFS=: read` works because `read` itself uses `IFS`]
+  #only(5)[💡 `IFS=:` on its own line changes the shell; `unset IFS` goes back to the default]
+]
+
 #let hello-code = "#!/bin/bash
 read -p \"Full name: \" first last
 echo \"$last, $first\"
