@@ -1,13 +1,17 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # 08. Shell Scripting
 
 In the seventh lab you built C programs in the terminal, and saw that a shell script is not compiled: `bash` reads it
 and runs it, line by line. In this lab you will write your own **shell scripts**. You will run them with the
-**shebang** `#!/bin/bash` or with `bash`, and find their bugs with **ShellCheck**, in the terminal and, through a
-**language server**, in your editor. You will keep text in **variables**, and see how the shell cuts them into words
-at the characters of **`IFS`**. You will **read input** with `read`, capture the output of a command with **command
-substitution**, and compute with **arithmetic expansion** and `bc`. Then you will make decisions with `if`, `test` and
-`case`, repeat commands with the loops `while` and `for`, group commands into **functions**, and give a script
-**parameters**.
+**shebang** `#!/bin/bash` or with `bash`, in a new process, or with **`source`**, in your own shell, and find their
+bugs with **ShellCheck**, in the terminal and, through a **language server**, in your editor. You will keep text in
+**variables**, and see how the shell cuts them into words at the characters of **`IFS`**. You will **read input** with
+`read`, capture the output of a command with **command substitution**, and compute with **arithmetic expansion** and
+`bc`. Then you will make decisions with `if`, `test` and `case`, repeat commands with the loops `while` and `for`,
+group commands into **functions**, give a script **parameters**, and make it stop at the first **error** with
+`set -e`.
 
 The most important idea of this lab is that a script is a list of **command lines**, and the shell treats each one as
 it treats the line you type: it replaces the variables, cuts the result into **words**, and runs a **command**. Even the
@@ -15,7 +19,8 @@ condition of `if` and `while` is a command, and only its **exit code** decides: 
 
 ## Objectives
 
-- Write a script with a **shebang** and comments, and run it with `./script.sh` and with `bash script.sh`
+- Write a script with a **shebang** and comments, run it with `./script.sh` and with `bash script.sh`, and run it in
+  your own shell with `source script.sh`
 - Follow a script, command by command, with `bash -x`
 - Find the usual bugs of a script before it runs with `shellcheck`, and see them in the editor through the language
   server `bash-language-server`
@@ -30,6 +35,7 @@ condition of `if` and `while` is a command, and only its **exit code** decides: 
   and `{1..5}`
 - Write **functions** with `local` variables, give back a result with `echo` and success or failure with `return`
 - Read the **parameters** of a script, `$0`, `$1`, `$#` and `"$@"`, and end it with `exit`
+- Stop a script at the first error with `set -e`, `set -u` and `set -o pipefail`, and clean up with `trap`
 
 ## Resources
 
@@ -39,17 +45,18 @@ condition of `if` and `while` is a command, and only its **exit code** decides: 
    - Chapter 13 - _Automatizarea sarcinilor_, sections 13.1 - 13.3, 13.4.1 and 13.4.2
 2. _Brian Ward, How LINUX Works, 3rd Edition, No Starch Press, 2021_
    - Chapter 2 - _Basic Commands and Directory Hierarchy_, section 2.8
-   - Chapter 11 - _Introduction to Shell Scripts_, sections 11.1 - 11.7, 11.10, 11.11, 11.13 and 11.14
+   - Chapter 11 - _Introduction to Shell Scripts_, sections 11.1 - 11.8 and 11.10 - 11.14
 3. _[Bash Reference Manual](https://www.gnu.org/software/bash/manual/bash.html)_, section 3.2.5 - _Compound
-   Commands_, section 3.3 - _Shell Functions_ and section 3.5 - _Shell Expansions_;
+   Commands_, section 3.3 - _Shell Functions_, section 3.5 - _Shell Expansions_ and section 4.3.1 - _The Set
+   Builtin_;
    _[ShellCheck](https://www.shellcheck.net)_, and the page of every warning in its
    _[wiki](https://www.shellcheck.net/wiki/)_;
    _[bash-language-server](https://github.com/bash-lsp/bash-language-server)_
 4. The lecture slides: [08. Shell Scripting](/docs/lectures/08)
 5. The manual pages: `man bash` (search for `Compound Commands`, `Word Splitting` and `ARITHMETIC EVALUATION`),
    `man test`, `man seq`, `man bc`, `man expr`, `man basename`, `man dirname`, `man env`, `man find`,
-   `man shellcheck`, and `help read`,
-   `help test`, `help for` for the built-in commands
+   `man shellcheck`, `man mktemp`, and `help read`, `help test`, `help for`, `help source`, `help set` and
+   `help trap` for the built-in commands
 
 ## Fedora and Ubuntu
 
@@ -87,7 +94,7 @@ echo "backup done"; ls backup
 | `#!/bin/bash`            | the **shebang**, always the first line: the program that runs the script            |
 | `# ...`                  | a **comment**: `bash` ignores the rest of the line                                  |
 | the end of a line        | the end of a command: `bash` runs it, waits for it to end, then reads the next line |
-| `command1; command2`                   | two commands on one line: `command1`, then `command2`                                             |
+| `command1; command2`     | two commands on one line: `command1`, then `command2`                               |
 | `\` at the end of a line | the command goes on, on the next line: `cp` gets both `fruits.txt` and `backup/`    |
 
 Write the scripts with an editor from [Text Editors](/docs/labs/06#text-editors) in lab 06. The `.sh` at the end of
@@ -105,29 +112,77 @@ fruits.txt
 [student@fedora lab08]$ ./backup.sh
 backup done
 fruits.txt
+[student@fedora lab08]$ source backup.sh
+backup done
+fruits.txt
 ```
 
 - `./backup.sh` failed: a new file does not have the `x` permission (see [`chmod`](/docs/labs/05#chmod) in lab 05).
 - `bash backup.sh` worked anyway: the program is `bash`, and the script is only a file that it reads.
 - After `chmod +x`, the kernel read the shebang of `./backup.sh` and ran `/bin/bash ./backup.sh`.
+- `source backup.sh` started no new process: your shell read the file and ran its lines itself.
 
-![How ./backup.sh and bash backup.sh run](./images/run-script.svg)
+![How ./backup.sh, bash backup.sh and source backup.sh run](./images/run-script.svg)
 
-| Command          | What it needs                                                                                  |
-| ---------------- | ---------------------------------------------------------------------------------------------- |
-| `./backup.sh`    | the `x` permission and the shebang; `./`, because the current folder is not in `PATH` (lab 04) |
-| `bash backup.sh` | only the `r` permission; for `bash`, the shebang is a comment                                  |
+| Command            | Who runs the lines | What it needs                                                                                  |
+| ------------------ | ------------------ | ---------------------------------------------------------------------------------------------- |
+| `./backup.sh`      | a new `bash`       | the `x` permission and the shebang; `./`, because the current folder is not in `PATH` (lab 04) |
+| `bash backup.sh`   | a new `bash`       | only the `r` permission; for `bash`, the shebang is a comment                                  |
+| `source backup.sh` | your shell         | only the `r` permission; the shebang is a comment                                              |
 
 The shebang works for any language: a file that starts with `#!/usr/bin/python3` is run by Python.
 
-The script runs in a **new** `bash` process, a child of your shell. A `cd` or a variable of the script changes only
-that process, and the process ends with the script: your shell stays where it was. The exercises at home and the
-challenges need the details: they are in [Subshells](#subshells).
+With `./` and `bash`, the script runs in a **new** `bash` process, a child of your shell. A `cd` or a variable of the
+script changes only that process, and the process ends with the script: your shell stays where it was. With
+`source`, what the script changes stays in your shell: see [the next section](#running-a-script-in-your-shell-source).
+The exercises at home and the challenges need the details: they are in [Subshells](#subshells).
 
 :::caution
 
 Run your scripts with `./script.sh` or with `bash script.sh`, not with `sh script.sh`: `sh` skips the shebang, and on
 Ubuntu it is `dash`, which does not know many features of `bash` (see [Fedora and Ubuntu](#fedora-and-ubuntu)).
+
+:::
+
+### Running a Script in Your Shell: `source`
+
+**`source <FILE>`**, or its short name **`. <FILE>`**, starts no new process: it is a built-in command, and **your**
+shell reads the file and runs its lines, as if you typed them. What the file changes stays in your shell. Think of the
+way to a shop: with `bash`, you send a friend, and you stay home; with `source`, you walk there yourself.
+
+```bash title="~/lab08/go.sh"
+#!/bin/bash
+cd photos
+where="photos"
+```
+
+```shell-session
+[student@fedora lab08]$ bash go.sh
+[student@fedora lab08]$ echo "$PWD [$where]"
+/home/student/lab08 []
+[student@fedora lab08]$ source go.sh
+[student@fedora photos]$ echo "$PWD [$where]"
+/home/student/lab08/photos [photos]
+[student@fedora photos]$ cd ..
+```
+
+- `bash go.sh` went into `photos` and set `where` in a new `bash`, which then ended: your shell did not change.
+- `source go.sh` ran the same lines in your shell: the prompt shows `photos`, and `where` is still set.
+
+| Command                   | Who runs the lines | What it needs                      | What the file changes |
+| ------------------------- | ------------------ | ---------------------------------- | --------------------- |
+| `./go.sh`                 | a new `bash`       | the `x` permission and the shebang | is lost when it ends  |
+| `bash go.sh`              | a new `bash`       | the `r` permission                 | is lost when it ends  |
+| `source go.sh`, `. go.sh` | your shell         | the `r` permission                 | stays in your shell   |
+
+Use `source` only for a file that must change your shell: `~/.bashrc`, which `bash` reads in the same way when it
+starts (after you edit it, `source ~/.bashrc` applies it without a new terminal), or a file of functions that several
+scripts share. Run every other script with `./` or `bash`, so that it cannot change your shell by mistake.
+
+:::caution
+
+`exit` in a file run with `source` ends **your** shell, and the terminal closes. A file meant for `source` does not
+call `exit`.
 
 :::
 
@@ -214,30 +269,139 @@ In [An Editor with a Language Server](/docs/labs/07#an-editor-with-a-language-se
 change and marks the warnings in the text, completes the names of the commands and of the variables, and shows the
 help of the command under the cursor. The keys are those of lab 07.
 
-| Editor               | What it needs to use `bash-language-server`                                                                                                                               |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vim`                | the `~/.vimrc` lines below, next to the ones of `clangd` |
-| `nvim` 0.11 or newer | the lines below, in `~/.config/nvim/init.lua`                                                                                                                             |
-| `hx` (Helix)         | nothing: `hx --health bash` shows `✓ bash-language-server`                                                                                                                |
-| `emacs` 29 or newer  | `(add-hook 'sh-mode-hook 'eglot-ensure)` in `~/.emacs.d/init.el`                                                                                                          |
-| `code` (VS Code)     | the extension **Bash IDE** (`code --install-extension mads-hartmann.bash-ide-vscode`), which brings its own server                                                        |
-| `zed` (Zed)          | nothing: it downloads the server by itself                                                                                                                                |
+Every editor needs `shellcheck` installed: without it, the language server completes names, but shows no warnings.
+Set up your editor:
 
-```vim title="~/.vimrc (add)"
-au User lsp_setup call lsp#register_server({
-    \ 'name': 'bash-language-server',
-    \ 'cmd': {server_info->['bash-language-server', 'start']},
-    \ 'allowlist': ['sh', 'bash'],
-    \ })
-```lua title="~/.config/nvim/init.lua (add)"
+<Tabs groupId="editor">
+<TabItem value="vim" label="vim">
+
+`vim` needs the plugin `vim-lsp`:
+
+```bash
+git clone https://github.com/prabirshrestha/vim-lsp ~/.vim/pack/lsp/start/vim-lsp
+```
+
+:::info
+
+**It might already be installed**
+
+If you set up `vim` in lab 07, you already have `vim-lsp` (`ls ~/.vim/pack/lsp/start`) and the lines marked
+`might already be here` in `~/.vimrc`: add only the block marked `new`.
+
+:::
+
+Add these lines to `~/.vimrc`: they start `bash-language-server` for the shell scripts, show the warnings at the end
+of the line, and give the keys of lab 07.
+
+```vim title="~/.vimrc"
+" might already be here, from lab 07
+let g:lsp_diagnostics_virtual_text_enabled = 1
+
+" new, for the shell scripts
+filetype plugin on
+if executable('bash-language-server')
+  au User lsp_setup call lsp#register_server({
+        \ 'name': 'bash-language-server',
+        \ 'cmd': {server_info->['bash-language-server', 'start']},
+        \ 'allowlist': ['sh', 'bash'],
+        \ })
+endif
+
+" might already be here, from lab 07
+function! s:on_lsp_buffer_enabled() abort
+  setlocal omnifunc=lsp#complete
+  nmap <buffer> gd <plug>(lsp-definition)
+  nmap <buffer> gr <plug>(lsp-references)
+  nmap <buffer> K <plug>(lsp-hover)
+  nmap <buffer> <leader>rn <plug>(lsp-rename)
+  nmap <buffer> <leader>ca <plug>(lsp-code-action)
+  nmap <buffer> ]d <plug>(lsp-next-diagnostic)
+endfunction
+augroup lsp_install
+  au!
+  autocmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
+augroup END
+```
+
+Check: open a `.sh` file, and run `:LspStatus`; it shows `bash-language-server: running`.
+
+</TabItem>
+<TabItem value="nvim" label="nvim">
+
+Add these lines to `~/.config/nvim/init.lua` (Neovim 0.11 or newer). The last line shows the warnings at the end of
+the line; without it, Neovim only marks them at the left.
+
+:::info
+
+**It might already be there**
+
+If you set up `nvim` in lab 07, your `init.lua` already has the line marked `might already be here`: add only the
+lines marked `new`.
+
+:::
+
+```lua title="~/.config/nvim/init.lua"
+-- new, for the shell scripts
 vim.lsp.config('bashls', {
   cmd = { 'bash-language-server', 'start' },
   filetypes = { 'sh', 'bash' },
 })
 vim.lsp.enable('bashls')
+
+-- might already be here, from lab 07
+vim.diagnostic.config({ virtual_text = true })
 ```
 
-Every editor needs `shellcheck` installed: without it, the language server completes names, but shows no warnings.
+Check: open a `.sh` file, and run `:checkhealth vim.lsp`; it lists `bashls` among the active clients.
+
+</TabItem>
+<TabItem value="hx" label="hx">
+
+Helix needs no settings: it starts `bash-language-server` by itself for every shell script.
+
+```shell-session
+[student@fedora lab08]$ hx --health bash
+...
+Configured language servers:
+  ✓ bash-language-server: /usr/bin/bash-language-server
+...
+```
+
+- Helix found `bash-language-server` in `PATH`. A `✘` there means that it is not installed.
+
+</TabItem>
+<TabItem value="emacs" label="emacs">
+
+Eglot already knows `bash-language-server`: add this line to `~/.emacs.d/init.el` (or to `~/.emacs`, if you have
+that file), next to the ones you might already have from lab 07:
+
+```lisp title="~/.emacs.d/init.el"
+(add-hook 'sh-mode-hook 'eglot-ensure)
+```
+
+Check: open a `.sh` file (`emacs -nw script.sh`); the mode line, at the bottom, shows `eglot`.
+
+</TabItem>
+<TabItem value="vscode" label="VS Code">
+
+Install the extension **Bash IDE**, which brings its own server: from the **Extensions** bar
+(<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>, search `Bash IDE`, by **Mads Hartmann**), or from the terminal:
+
+```bash
+code --install-extension mads-hartmann.bash-ide-vscode
+```
+
+Check: open a `.sh` file and make an error, such as `x = 1`: it is underlined at once.
+
+</TabItem>
+<TabItem value="zed" label="Zed">
+
+Zed needs no settings: it downloads the server by itself the first time you open a shell script.
+
+Check: open a `.sh` file and make an error, such as `x = 1`: it is underlined at once.
+
+</TabItem>
+</Tabs>
 
 ## Variables
 
@@ -316,8 +480,8 @@ puts it in variables:
 
 | Command                 | What it does                                                                             |
 | ----------------------- | ---------------------------------------------------------------------------------------- |
-| `read NAME`             | reads a single line from the standard input and assign it to `NAME`                                                                 |
-| `read -p "<TEXT>" NAME` | writes the string `<TEXT>` (a _prompt_) first                                          |
+| `read NAME`             | reads a single line from the standard input and assign it to `NAME`                      |
+| `read -p "<TEXT>" NAME` | writes the string `<TEXT>` (a _prompt_) first                                            |
 | `read A B C`            | cuts the line at `IFS`: one word for every variable, and the **last** one takes the rest |
 | `IFS=: read A B C`      | cuts the line at `:`, only for this `read`                                               |
 | `read -r NAME`          | _raw_: keeps the `\` characters; without `-r`, `read` removes them                       |
@@ -339,6 +503,23 @@ root has the UID 0
 - `first` got `Carol`, and `last`, the last variable, got the rest of the line.
 - `IFS=:` before `read` is a variable only for that command: the line was cut at `:`, and `IFS` stayed the default.
 
+:::caution
+
+**`IFS=:` before another command does not cut its parameters**
+
+```shell-session
+[student@fedora lab08]$ x="Bob   Jones:20"
+[student@fedora lab08]$ IFS=: printf '[%s]\n' $x
+[Bob]
+[Jones:20]
+```
+
+The shell cuts `$x` into words **before** it starts `printf`, with its own `IFS`, the default. `IFS=:` reaches only the
+program that starts after that, and `printf` does not cut anything. `read` is different: it cuts the line that **it**
+reads, while it runs, so it sees `IFS=:`. To cut a variable at `:`, change `IFS` in the shell, on its own:
+`IFS=:; printf '[%s]\n' $x; unset IFS` prints `[Bob   Jones]` and `[20]`.
+
+:::
 
 :::note
 
@@ -672,11 +853,11 @@ every subfolder, and prints one path per line:
 
 ### Counting: `seq`, `{1..5}` and `for ((...))`
 
-| Written as                       | The numbers                                                                       |
-| -------------------------------- | --------------------------------------------------------------------------------- |
-| `$(seq <FIRST> <STEP> <LAST>)`   | `seq` is a program that prints them; it works with variables: `$(seq 1 $n)`       |
+| Written as                       | The numbers                                                                                                                |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `$(seq <FIRST> <STEP> <LAST>)`   | `seq` is a program that prints them; it works with variables: `$(seq 1 $n)`                                                |
 | `{<FIRST>..<LAST>..<STEP>}`      | written by `bash` (_brace expansion_), only with numbers: with `n=5`, `{1..$n}` is not `1 2 3 4 5`, but one word, `{1..5}` |
-| `for ((i = 1; i <= 10; i += 3))` | the C-like `for` of `bash`                                                        |
+| `for ((i = 1; i <= 10; i += 3))` | the C-like `for` of `bash`                                                                                                 |
 
 ```shell-session
 [student@fedora lab08]$ for i in $(seq 1 3 10); do echo -n "$i "; done; echo
@@ -785,6 +966,141 @@ fi
 `>&2` sends the message to the error output, `2`, as an error should be (see
 [Errors](/docs/labs/03#errors-2-and-2) in lab 03).
 
+## Handling Errors
+
+When a command fails, `bash` prints its error and goes on with the next line, as in the terminal. A script that goes on
+after an error can do the right thing in the wrong place:
+
+```bash title="~/lab08/tidy.sh"
+#!/bin/bash
+# clean up the photos
+cd photoz
+rm -f *.tmp
+echo "photos cleaned"
+```
+
+```shell-session
+[student@fedora lab08]$ bash tidy.sh
+tidy.sh: line 3: cd: photoz: No such file or directory
+photos cleaned
+[student@fedora lab08]$ echo $?
+0
+```
+
+- `cd` failed (the folder is `photos`), but `rm` ran anyway, in `~/lab08`: it deleted the `.tmp` files of the wrong
+  folder.
+- The script ended with `0`, the exit code of `echo`, its last command: whoever ran it thinks that it worked.
+
+You can check a command yourself: `cd photoz || exit 1` ends the script when `cd` fails (see
+[Chaining Commands](/docs/labs/06#chaining-commands--and-) in lab 06). To check **every** command, use `set`.
+
+### Stopping at the First Error: `set -e`
+
+`set` changes the options of the shell that runs it. **`set -e`** (_errexit_), on its own line near the top of the
+script, stops the script at the **first command that fails**, with the exit code of that command:
+
+```bash title="~/lab08/tidy.sh"
+#!/bin/bash
+# clean up the photos
+set -e
+cd photoz
+rm -f *.tmp
+echo "photos cleaned"
+```
+
+```shell-session
+[student@fedora lab08]$ bash tidy.sh
+tidy.sh: line 4: cd: photoz: No such file or directory
+[student@fedora lab08]$ echo $?
+1
+```
+
+A command whose exit code is **checked** does not stop the script: that is how you allow a failure.
+
+| Line, with `set -e`                         | When the first command fails                                                        |
+| ------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `cd photoz`                                 | the script stops                                                                    |
+| `cd photoz \|\| exit 2`                     | `exit 2` runs: you choose the exit code, or what to do instead                      |
+| `grep -q mango fruits.txt \|\| echo "none"` | `echo` runs, and the script goes on                                                 |
+| `if grep -q mango fruits.txt; then`         | `if` runs its `else` branch; the same for `while` and `until`: a condition may fail |
+| `! grep -q mango fruits.txt`                | the script goes on: `!` turns the exit code around                                  |
+
+:::caution
+
+With `set -e`, a `((...))` whose result is `0` stops the script: `n=0; ((n++))` computes the old value of `n`, `0`,
+so it ends with `1`. Count with `n=$((n + 1))`.
+
+:::
+
+### More Options: `set -u` and `set -o pipefail`
+
+| Option            | Name       | What it does                                                                       |
+| ----------------- | ---------- | ---------------------------------------------------------------------------------- |
+| `set -e`          | `errexit`  | stops the script at the first command that fails, outside a condition              |
+| `set -u`          | `nounset`  | a variable that is not set is an error, which stops the script; not an empty text  |
+| `set -o pipefail` | `pipefail` | a pipe fails when **any** of its commands fails, not only when the last one fails  |
+| `set -x`          | `xtrace`   | prints every command before it runs, like [`bash -x`](#following-a-script-bash--x) |
+
+`set +e` (with `+`) turns an option off again. Most scripts turn on the first three together, on the line after the
+shebang: `set -euo pipefail`.
+
+```shell-session
+[student@fedora lab08]$ cat like.sh
+#!/bin/bash
+set -u
+fruit="kiwi"
+echo "I like $fruti"
+[student@fedora lab08]$ bash like.sh
+like.sh: line 4: fruti: unbound variable
+[student@fedora lab08]$ grep kiwi nope.txt | wc -l; echo $?
+grep: nope.txt: No such file or directory
+0
+0
+[student@fedora lab08]$ set -o pipefail
+[student@fedora lab08]$ grep kiwi nope.txt | wc -l; echo $?
+grep: nope.txt: No such file or directory
+0
+2
+[student@fedora lab08]$ set +o pipefail
+```
+
+- Without `set -u`, the typo `$fruti` would have printed `I like `. In `rm -r "$dri"/*`, the same typo deletes `/*`.
+- `$1` is not set when the script gets no parameters: with `set -u`, check `$#` before you use `$1`.
+- A pipe ends with the exit code of its last command (see
+  [The Exit Code of a Pipeline](/docs/labs/06#the-exit-code-of-a-pipeline) in lab 06): `wc` worked, so `set -e` would
+  not see that `grep` failed; with `pipefail`, the pipe ends with the `2` of `grep`.
+
+### Cleaning Up: `trap`
+
+**`trap '<COMMANDS>' EXIT`** runs the commands when the script ends, however it ends: after the last line, at `exit`,
+or stopped by `set -e`. Use it to delete the temporary files, made with **`mktemp`** (a new empty file with a unique
+name in `/tmp`). **`trap '<COMMANDS>' ERR`** runs the commands after every command that fails, where `set -e` would
+stop: with `$LINENO`, it says where the script stopped.
+
+```bash title="~/lab08/mango.sh"
+#!/bin/bash
+set -e
+tmp=$(mktemp)
+trap 'rm -f "$tmp"; echo "removed $tmp"' EXIT
+trap 'echo "failed at line $LINENO" >&2' ERR
+sort fruits.txt > "$tmp"
+grep -q mango "$tmp"
+echo "found a mango"
+```
+
+```shell-session
+[student@fedora lab08]$ bash mango.sh
+failed at line 7
+removed /tmp/tmp.7gIFP38nMM
+[student@fedora lab08]$ echo $?
+1
+```
+
+- `grep -q` printed nothing, and ended with `1`: `set -e` stopped the script, which, without the `ERR` trap, would
+  have stopped in silence.
+- The `EXIT` trap deleted the temporary file, even if the script did not reach its last line.
+- The single quotes keep `$tmp` and `$LINENO` as they are, until the trap runs.
+
 ## Subshells
 
 :::note
@@ -803,6 +1119,7 @@ exit code:
 | --------------------------------------------- | ----------------------------------- | --------------------------------------------- |
 | `./script.sh`, `bash script.sh`               | a new `bash` program                | only the **exported** variables (lab 04)      |
 | `( ... )`, `$(...)`, each command of `a \| b` | a **subshell**: a copy of the shell | a copy of **all** the variables and functions |
+| `source script.sh`                            | your shell itself, no new process   | **all** the variables, and its changes stay   |
 
 Think of a photocopy of your notebook: you can write on the copy, but the original does not change.
 
@@ -827,38 +1144,40 @@ inside: 2, outside: 1
 - The `cd` and the `x=2` changed only the copy.
 - After `|`, the `while` counted in a subshell, and its `c` was lost; with `< fruits.txt`, the loop ran in your shell.
 
-To run a script **in your shell**, so that its `cd` and its variables stay, use `source script.sh` (or
-`. script.sh`): this is how `bash` reads `~/.bashrc`. A function called inside `$(...)` also runs in a subshell: it can
-give back only its output.
+A function called inside `$(...)` also runs in a subshell: it can give back only its output. Only
+[`source`](#running-a-script-in-your-shell-source) runs a file in your shell.
 
 ## Troubleshooting
 
-| Problem                                                          | Solution |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `bash: ./x.sh: Permission denied`                                | The script has no `x` permission: `chmod +x x.sh`, or run `bash x.sh` |
-| `bash: x.sh: command not found`, but the file is there           | The current directory is not in `PATH`: run `./x.sh` |
-| `/bin/bash^M: bad interpreter: No such file or directory`        | The file has Windows line endings: `sed -i 's/\r$//' x.sh` |
-| The editor shows no warnings in a script                         | `shellcheck` or the server is missing: `shellcheck --version`, `bash-language-server --version`; for `nvim`, the lines of `init.lua` |
-| `bash: name: command not found` after `name = value`             | No spaces around `=`: `name=value` |
-| A file name with spaces is cut in two                            | Quote the variable, `"$f"`; go over files with a glob or `find ... \| while IFS= read -r f`, not with `$(ls)` or `$(find)` |
-| `syntax error: invalid arithmetic operator`                      | `bash` has no decimals: use `bc` |
-| `bash: a+b: command not found`                                   | One pair of parentheses is command substitution: write `$((a + b))` |
-| `[2: command not found`                                          | `[` is a command: put a space after it, `[ $a -lt $b ]` |
-| ``[: missing `]'``                                               | Put a space before `]` |
-| `[: =: unary operator expected` or `[: too many arguments`       | A variable is empty or has spaces: quote it, `[ "$x" = abc ]` |
-| `syntax error near unexpected token` `` `fi' `` (or `done`, `)`) | A `;` or a new line is missing before `then` or `do`, or a `;;` after a branch of `case` |
-| `syntax error: unexpected end of file`                           | A `fi`, `done`, `esac` or `}` is missing |
-| `[[: not found` or `Syntax error: Bad for loop variable`         | The script ran with `sh`, which is `dash` on Ubuntu: run it with `bash` or `./x.sh` |
-| The script never ends                                            | The condition of `while` never changes: <kbd>Ctrl</kbd>+<kbd>C</kbd>, then change the variable in the body |
-| A counter is `0` after `cat <FILE> \| while read`                | The loop ran in a subshell: write `done < <FILE>` |
-| A `cd` in a script does not change your directory                | The script runs in a new process: `source x.sh` |
+| Problem                                                          | Solution                                                                                                                                                     |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `bash: ./x.sh: Permission denied`                                | The script has no `x` permission: `chmod +x x.sh`, or run `bash x.sh`                                                                                        |
+| `bash: x.sh: command not found`, but the file is there           | The current directory is not in `PATH`: run `./x.sh`                                                                                                         |
+| `/bin/bash^M: bad interpreter: No such file or directory`        | The file has Windows line endings: `sed -i 's/\r$//' x.sh`                                                                                                   |
+| The editor shows no warnings in a script                         | `shellcheck` or the server is missing: `shellcheck --version`, `bash-language-server --version`; for `nvim`, the lines of `init.lua`                         |
+| `bash: name: command not found` after `name = value`             | No spaces around `=`: `name=value`                                                                                                                           |
+| A file name with spaces is cut in two                            | Quote the variable, `"$f"`; go over files with a glob or `find ... \| while IFS= read -r f`, not with `$(ls)` or `$(find)`                                   |
+| `syntax error: invalid arithmetic operator`                      | `bash` has no decimals: use `bc`                                                                                                                             |
+| `bash: a+b: command not found`                                   | One pair of parentheses is command substitution: write `$((a + b))`                                                                                          |
+| `[2: command not found`                                          | `[` is a command: put a space after it, `[ $a -lt $b ]`                                                                                                      |
+| ``[: missing `]'``                                               | Put a space before `]`                                                                                                                                       |
+| `[: =: unary operator expected` or `[: too many arguments`       | A variable is empty or has spaces: quote it, `[ "$x" = abc ]`                                                                                                |
+| `syntax error near unexpected token` `` `fi' `` (or `done`, `)`) | A `;` or a new line is missing before `then` or `do`, or a `;;` after a branch of `case`                                                                     |
+| `syntax error: unexpected end of file`                           | A `fi`, `done`, `esac` or `}` is missing                                                                                                                     |
+| `[[: not found` or `Syntax error: Bad for loop variable`         | The script ran with `sh`, which is `dash` on Ubuntu: run it with `bash` or `./x.sh`                                                                          |
+| The script never ends                                            | The condition of `while` never changes: <kbd>Ctrl</kbd>+<kbd>C</kbd>, then change the variable in the body                                                   |
+| A counter is `0` after `cat <FILE> \| while read`                | The loop ran in a subshell: write `done < <FILE>`                                                                                                            |
+| A `cd` in a script does not change your directory                | The script runs in a new process: `source x.sh`                                                                                                              |
+| `exit` in a script closes the terminal                           | The script ran with `source`, in your shell: run it with `./x.sh` or `bash x.sh`                                                                             |
+| The script stops with no message, after `set -e`                 | A command failed without printing anything (`grep -q`, `((n++))` when `n` is `0`): run `bash -x x.sh`, or add `trap 'echo "failed at line $LINENO" >&2' ERR` |
+| `<NAME>: unbound variable`                                       | `set -u` and a variable that is not set: check its name; for `$1`, check `$#` first                                                                          |
 
 ## Exercises
 
-- 🧪 [First Steps](#first-steps) (exercises 1 - 12): one idea at a time, in the order of the lab, to do in the lab;
-- 🏠 [Going Further](#going-further) (exercises 13 - 29): longer scripts, to do at home; some of them look at what
+- 🧪 [First Steps](#first-steps) (exercises 1 - 13): one idea at a time, in the order of the lab, to do in the lab;
+- 🏠 [Going Further](#going-further) (exercises 14 - 32): longer scripts, to do at home; some of them look at what
   runs in a **copy** of the shell, explained in [Subshells](#subshells);
-- 📝 [Challenges](#challenges) (exercises 30 - 35): the hardest ones, like the ones at the exam.
+- 📝 [Challenges](#challenges) (exercises 33 - 39): the hardest ones, like the ones at the exam.
 
 :::danger
 
@@ -911,20 +1230,23 @@ exercise says otherwise.
 
 **Shell scripts**
 
-2. **The first script**: Write a script that greets you and moves to another folder, run it in two ways, and find out
-    where your shell is after it ends. <small>→ [Writing a Script](#writing-a-script) · [Running a Script](#running-a-script) · [Following a Script](#following-a-script-bash--x)</small>
+2. **The first script**: Write a script that greets you and moves to another folder, run it in three ways, and find
+    out where your shell is after it ends. <small>→ [Writing a Script](#writing-a-script) · [Running a Script](#running-a-script) · [Running a Script in Your Shell](#running-a-script-in-your-shell-source) · [Following a Script](#following-a-script-bash--x)</small>
 
     1. write `hello.sh`: a shebang, a comment on its own line, then commands that print `Hello, ` followed by your user
        name, go to `/tmp`, and print the current directory;
     2. run it with `bash`; then run it by its path, read the error, fix it, and run it again;
     3. print the current directory of your shell;
-    4. run the script once more, so that every command is printed before it runs.
+    4. run the script once more, so that every command is printed before it runs;
+    5. run it in your own shell, print the current directory of your shell again, then go back with `cd -`;
+    6. add a line that sets the variable `where` to `tmp`; run the script with `bash`, then with `source`, and after
+       each one print `where` in your shell; then go back with `cd -`.
 
     <details className="reveal">
     <summary>Hint</summary>
 
     The variable `USER` ([lab 04](/docs/labs/04#variables-defined-by-the-system)); `man chmod`; `man bash`: search for
-    `-x`, or read [Following a Script](#following-a-script-bash--x).
+    `-x`, or read [Following a Script](#following-a-script-bash--x); `help source`.
 
     </details>
 
@@ -936,8 +1258,11 @@ exercise says otherwise.
        `chmod +x hello.sh`.
     3. `/home/student/lab08`.
     4. `bash -x hello.sh` prints `+ echo 'Hello, student'`, `+ cd /tmp` and `+ pwd`, each before its output.
+    5. `source hello.sh` prints `Hello, student` and `/tmp`; now your shell is in `/tmp` too (the prompt shows `tmp`).
+    6. After `bash hello.sh`, `echo "$where"` prints an empty line; after `source hello.sh`, it prints `tmp`.
 
-    **Why:** the script runs in a new `bash` process: its `cd` changes only that process, which ends with the script.
+    **Why:** `./` and `bash` run the script in a new `bash` process: its `cd` and its variables change only that
+    process, which ends with the script; `source` runs the lines in your shell.
 
     </details>
 
@@ -1232,6 +1557,41 @@ exercise says otherwise.
 
     </details>
 
+**Errors**
+
+13. **Stop at the first error**: Find out what a script does after a command that fails, and make it stop there.
+    <small>→ [Handling Errors](#handling-errors) · [More Options](#more-options-set--u-and-set--o-pipefail)</small>
+
+    1. write `fail.sh`, which goes into the folder `pictures` (it does not exist), prints the current directory, then
+       prints `done`; run it with `bash`, and print its exit code;
+    2. make it stop at the first command that fails, with one line after the shebang; run it again, and print its exit
+       code;
+    3. before the `cd`, add a line that prints `no mango` when `fruits.txt` does not contain `mango`; run it again;
+    4. make it also stop at a variable that is not set; before the `cd`, print `first: ` followed by the first
+       parameter; run it without parameters, then with the parameter `kiwi`.
+
+    <details className="reveal">
+    <summary>Hint</summary>
+
+    `help set`: search for `-e` and `-u`; `grep -q` and `||` from
+    [Chaining Commands](/docs/labs/06#chaining-commands--and-) in lab 06.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    1. `fail.sh: line 2: cd: pictures: No such file or directory`, then `/home/student/lab08`, `done`, and `0`.
+    2. The line is `set -e`; only the error of `cd` (now on line 3), then `1`.
+    3. `no mango`, then the error of `cd`: the script did not stop at `grep`.
+    4. The line is `set -eu`; without parameters: `no mango`, then `fail.sh: line <N>: $1: unbound variable`; with
+       `kiwi`: `no mango`, `first: kiwi`, then the error of `cd`.
+
+    **Why:** `set -e` stops at the first command whose exit code nobody checks; the `||` checked the exit code of
+    `grep`.
+
+    </details>
+
 ### 🏠 Going Further {/* #going-further */}
 
 Each exercise starts with its **goal**; you choose the commands. At the end, check the goal itself, not only that each
@@ -1239,7 +1599,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
 **Scripts**
 
-13. **Any language**: `bob` writes his tools in Python, and wants to run them like any program. Make a Python script
+14. **Any language**: `bob` writes his tools in Python, and wants to run them like any program. Make a Python script
     run with `./`, and find out what the kernel does with a wrong shebang. <small>→ [Running a Script](#running-a-script)</small>
 
     1. write `hello.py`, with the shebang `#!/usr/bin/python3` and the line `print("Hello from Python!")`; run it with
@@ -1266,7 +1626,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
     </details>
 
-14. **An editor that checks scripts**: `dave` wants to see the bugs of his scripts while he types, as he saw the
+15. **An editor that checks scripts**: `dave` wants to see the bugs of his scripts while he types, as he saw the
     errors of C in lab 07. Set up `bash-language-server` in your editor, and use it on a script with bugs.
     <small>→ [In the Editor](#in-the-editor-bash-language-server) · [Finding Bugs](#finding-bugs-shellcheck)</small>
 
@@ -1297,7 +1657,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
     </details>
 
-15. **Find the bug**: `carol` wrote a script that should print the average of her grades, but it prints only an
+16. **Find the bug**: `carol` wrote a script that should print the average of her grades, but it prints only an
     error. Find the two bugs with `bash -x`, and fix them. <small>→ [Following a Script](#following-a-script-bash--x) · [Subshells](#subshells)</small>
 
     1. create the grades and the script:
@@ -1341,7 +1701,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
 **Variables and input**
 
-16. **Predict the words**: Before you trust a script with file names, you must know what the shell does with an
+17. **Predict the words**: Before you trust a script with file names, you must know what the shell does with an
     unquoted variable. For each line, **first** write down what it prints, then run it.
     <small>→ [Splitting Words](#splitting-words-ifs) · [Globbing](/docs/labs/04#globbing)</small>
 
@@ -1379,7 +1739,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
     </details>
 
-17. **Exact lines**: `grace` keeps Windows paths in a file, with spaces around them. Read the line back exactly as it
+18. **Exact lines**: `grace` keeps Windows paths in a file, with spaces around them. Read the line back exactly as it
     is. <small>→ [Reading Input](#reading-input-read)</small>
 
     1. create the file with `printf '%s\n' '  C:\Users\grace  ' > path.txt`;
@@ -1396,7 +1756,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
 **Subshells**
 
-18. **Lost in a copy**: Find out which changes come back from a copy of the shell. For each line, **first** write down
+19. **Lost in a copy**: Find out which changes come back from a copy of the shell. For each line, **first** write down
     what it prints, then run it. <small>→ [Subshells](#subshells)</small>
 
     | Line                                         |
@@ -1423,20 +1783,17 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
     </details>
 
-19. **Run it here**: `dave` wants a script that takes him to his photos, and one that shows a setting. Find out when a
-    script sees the variables of your shell, and when it changes your shell. <small>→ [Subshells](#subshells)</small>
+20. **Exported or not**: `dave` wants a script that shows a setting of his shell. Find out when a script
+    sees the variables of your shell. <small>→ [Subshells](#subshells) · [Running a Script in Your Shell](#running-a-script-in-your-shell-source)</small>
 
     1. write `show.sh`, which prints `color: [<COLOR>]` with the value of `color`, and make it executable;
     2. in your shell, set `color` to `red`; run `show.sh` with `./`, then with `source`; export `color`, and run it
-       with `./` again;
-    3. write `goto.sh`, which goes to `~/lab08/photos`; run it with `bash`, then with `source`, and each time print
-       the current directory; go back with `cd -`.
+       with `./` again.
 
     <details className="reveal">
     <summary>Check</summary>
 
     2. `color: []`, then `color: [red]`, then `color: [red]`.
-    3. With `bash`: `/home/student/lab08`; with `source`: `/home/student/lab08/photos`.
 
     **Why:** a script run with `./` is a new `bash`, which gets only the exported variables; `source` runs it in your
     shell.
@@ -1445,7 +1802,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
 **Conditions and loops**
 
-20. **Guess the number**: `grace` wants a game for her little brother: the script picks a number from `1` to `100`,
+21. **Guess the number**: `grace` wants a game for her little brother: the script picks a number from `1` to `100`,
     and says `too small` or `too big` after every guess, until it is found. <small>→ [`while` and `until`](#while-and-until) · [`[[ ]]` and `(( ))`](#--and--)</small>
 
     1. write `guess.sh`: it picks `secret` with `$RANDOM`, then repeats: it reads a guess with the prompt
@@ -1467,7 +1824,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
     </details>
 
-21. **Rename the photos**: The camera of `erin` writes `.jpeg`, but her album wants `.jpg`. Rename every `.jpeg` file
+22. **Rename the photos**: The camera of `erin` writes `.jpeg`, but her album wants `.jpg`. Rename every `.jpeg` file
     of `photos` and of its subfolders, also the one with a space in its name, with **one** loop.
     <small>→ [Files in Subfolders](#files-in-subfolders-find) · [Splitting Words](#splitting-words-ifs)</small>
 
@@ -1495,7 +1852,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
     </details>
 
-22. **The grades report**: `carol` has the grades of her group in a CSV file. Write `grades.sh`, which prints the
+23. **The grades report**: `carol` has the grades of her group in a CSV file. Write `grades.sh`, which prints the
     average of every student, with two decimals, and the best one. <small>→ [Reading a File](#reading-a-file-while-read) · [Decimals](#decimals-bc)</small>
 
     1. create the file with `printf '%s\n' name,math,physics bob,9,7 carol,10,8 dave,6,9 > grades.csv`;
@@ -1510,7 +1867,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
     </details>
 
-23. **A to-do list**: Write `todo.sh`, a small program that reads commands until `quit`, and keeps the tasks of
+24. **A to-do list**: Write `todo.sh`, a small program that reads commands until `quit`, and keeps the tasks of
     `grace` in `todo.txt`. <small>→ [`while` and `until`](#while-and-until) · [Choosing by Pattern](#choosing-by-pattern-case)</small>
 
     1. it repeats: it shows the prompt `> `, reads a command and the rest of the line, and:
@@ -1536,7 +1893,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
     </details>
 
-24. **A multiplication table**: Write `table.sh`, which reads `n` and prints the multiplication table from `1` to `n`,
+25. **A multiplication table**: Write `table.sh`, which reads `n` and prints the multiplication table from `1` to `n`,
     in columns of 4 characters. <small>→ [Counting](#counting-seq-15-and-for-)</small>
 
     1. write it with two `for ((...))` loops, one inside the other;
@@ -1558,7 +1915,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
 **Functions and parameters**
 
-25. **Exit codes of functions**: For each line, **first** write down what it prints, then run it.
+26. **Exit codes of functions**: For each line, **first** write down what it prints, then run it.
     <small>→ [Functions](#functions)</small>
 
     | Line                                              |
@@ -1583,8 +1940,8 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
     </details>
 
-26. **A library of functions**: `bob` wants to use `max` and `is_even` in several scripts, without copying them. Put
-    them in a file of their own. <small>→ [Functions](#functions) · [Subshells](#subshells)</small>
+27. **A library of functions**: `bob` wants to use `max` and `is_even` in several scripts, without copying them. Put
+    them in a file of their own. <small>→ [Functions](#functions) · [Running a Script in Your Shell](#running-a-script-in-your-shell-source)</small>
 
     1. move the two functions of `max.sh` into `lib.sh`, which only defines them;
     2. write `use.sh`, which loads `lib.sh` with `source`, and prints `max: <MAX>` for its two parameters, and
@@ -1599,7 +1956,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
     </details>
 
-27. **Every parameter**: Find out what `"$@"` keeps that `$@` loses. <small>→ [Script Parameters](#script-parameters)</small>
+28. **Every parameter**: Find out what `"$@"` keeps that `$@` loses. <small>→ [Script Parameters](#script-parameters)</small>
 
     1. write `words.sh`, which prints every word of `"$@"` between brackets, on one line, then every word of `$@`,
        without quotes, on a second line;
@@ -1615,7 +1972,7 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
     </details>
 
-28. **A safe backup**: `erin` wants to back up several folders with one command, and to know if something failed.
+29. **A safe backup**: `erin` wants to back up several folders with one command, and to know if something failed.
     Write `save.sh`, which copies every folder given as a parameter into `~/lab08/backups/<NAME>-<DATE>`.
     <small>→ [Script Parameters](#script-parameters)</small>
 
@@ -1641,9 +1998,71 @@ command worked. The exercises use the files and the scripts of `~/lab08` from th
 
     </details>
 
+**Errors**
+
+30. **When does `set -e` stop?**: Before you trust `set -e` with your files, you must know when it does **not** stop a
+    script. For each line, **first** write down what it prints, then run it.
+    <small>→ [Stopping at the First Error](#stopping-at-the-first-error-set--e) · [More Options](#more-options-set--u-and-set--o-pipefail)</small>
+
+    | Line                                                                               |
+    | ---------------------------------------------------------------------------------- |
+    | `bash -c 'set -e; false; echo end'; echo $?`                                       |
+    | `bash -c 'set -e; false \|\| echo no; echo end'; echo $?`                          |
+    | `bash -c 'set -e; n=0; ((n++)); echo "end $n"'; echo $?`                           |
+    | `bash -c 'set -e; x=$(false); echo end'; echo $?`                                  |
+    | `bash -c 'set -e; f() { false; echo in; }; f \|\| echo failed; echo end'; echo $?` |
+    | `bash -c 'set -e; grep kiwi nope.txt \| wc -l; echo end'; echo $?`                 |
+    | `bash -c 'set -eo pipefail; grep kiwi nope.txt \| wc -l; echo end'; echo $?`       |
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    | Line | Prints                               |
+    | ---- | ------------------------------------ |
+    | 1    | `1`                                  |
+    | 2    | `no`, `end`, `0`                     |
+    | 3    | `1`                                  |
+    | 4    | `1`                                  |
+    | 5    | `in`, `end`, `0`                     |
+    | 6    | the error of `grep`, `0`, `end`, `0` |
+    | 7    | the error of `grep`, `0`, `2`        |
+
+    **Why:** `set -e` stops only at a failure that nobody checks; a function called before `||` is checked as a whole,
+    so `set -e` is off inside it, and a pipe fails only with `pipefail`.
+
+    </details>
+
+31. **Clean up after yourself**: `grace` wants a script that uses a temporary file, and never leaves it behind, even
+    when it fails. <small>→ [More Options](#more-options-set--u-and-set--o-pipefail) · [Cleaning Up](#cleaning-up-trap)</small>
+
+    1. write `top.sh <FILE>`, which starts with `set -euo pipefail`, checks that it got one parameter, sorts the lines
+       of `<FILE>` into a temporary file, and prints the first 3 lines of that file;
+    2. make it delete the temporary file when it ends, and print `removed <NAME>` to the error output; when a command
+       fails, make it also print `failed at line <N>` to the error output;
+    3. run `./top.sh fruits.txt`, then `./top.sh nope.txt`, and print the exit code each time; check that the two
+       temporary files are gone.
+
+    <details className="reveal">
+    <summary>Hint</summary>
+
+    `man mktemp`; `help trap`: search for `EXIT` and `ERR`; the variable `LINENO`.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    3. `apple`, `apple`, `banana`, `removed /tmp/tmp.<...>`, then `0`; `sort: cannot read: nope.txt: No such file or
+       directory`, `failed at line <N>`, `removed /tmp/tmp.<...>`, then `2`; `ls` of each name says
+       `No such file or directory`.
+
+    **Why:** the `EXIT` trap runs however the script ends, also when `set -e` stops it.
+
+    </details>
+
 **Clean up**
 
-29. **Clean up**: Delete everything that this lab created.
+32. **Clean up**: Delete everything that this lab created.
 
     1. leave `~/lab08` with `cd ~`, then delete it;
     2. close the terminal, or `unset` the variables and the functions that you set in it (`fruit`, `msg`, `x`, `a`,
@@ -1663,8 +2082,8 @@ the commands. Each one ends with the **Check** that will be used to grade it. So
 [Subshells](#subshells).
 
 All the challenges start from the same setup, the one you will find at the exam: the folder `~/exam`, with a copy of a
-password file, two folders of files, and two scripts. Copy and run these commands before the first challenge; run them
-again to get the original files back:
+password file, two folders of files, an empty folder, and two scripts. Copy and run these commands before the first
+challenge; run them again to get the original files back:
 
 ```bash
 mkdir -p ~/exam
@@ -1673,8 +2092,8 @@ printf '%s\n' 'root:x:0:0:Super User:/root:/bin/bash' 'daemon:x:2:2:daemon:/sbin
     'bob:x:1001:1001:Bob Jones:/home/bob:/bin/bash' 'carol:x:1002:1002:Carol Smith:/home/carol:/bin/zsh' \
     'dave:x:1003:1003:Dave Brown:/home/dave:/bin/bash' \
     'nobody:x:65534:65534:Kernel Overflow User:/:/usr/sbin/nologin' > passwd
-rm -rf mess organize
-mkdir mess organize
+rm -rf mess organize empty
+mkdir mess organize empty
 touch mess/a.txt mess/b.TXT 'mess/my notes.txt' 'mess/c d.jpg' mess/e.png mess/notes
 touch organize/report.txt organize/README.md 'organize/summer beach.JPG' organize/cat.png organize/run.sh \
     organize/Makefile
@@ -1724,7 +2143,7 @@ chmod +x broken.sh
 When you are done, delete everything with `rm -rf ~/exam`. Write every script in `~/exam`, make it executable, and run
 it from `~/exam`.
 
-30. **FizzBuzz**: Write `fizzbuzz.sh <N>`, which prints the numbers from `1` to `<N>`, one per line, but writes `Fizz`
+33. **FizzBuzz**: Write `fizzbuzz.sh <N>`, which prints the numbers from `1` to `<N>`, one per line, but writes `Fizz`
     instead of the multiples of `3`, `Buzz` instead of the multiples of `5`, and `FizzBuzz` instead of the multiples
     of both. Without exactly one parameter, it prints `usage: <SCRIPT> <N>` to the error output, and ends with `1`.
 
@@ -1741,7 +2160,7 @@ it from `~/exam`.
 
     </details>
 
-31. **The real users**: Write `users.sh <FILE>`, which reads a file in the format of `/etc/passwd` and prints, for
+34. **The real users**: Write `users.sh <FILE>`, which reads a file in the format of `/etc/passwd` and prints, for
     every user with a UID from `1000` to `65533`, a line `<USER> (<UID>): <SHELL>`, then `<N> users`. Use only the
     commands of the shell: no `awk`, `cut` or `grep`.
 
@@ -1757,11 +2176,11 @@ it from `~/exam`.
     3 users
     ```
 
-        `grep -cwE 'awk|cut|grep' users.sh` prints `0`.
+    `grep -cwE 'awk|cut|grep' users.sh` prints `0`.
 
     </details>
 
-32. **Predict the output**: On paper, write down the 8 lines that `predict.sh` prints, **without** running it. Then
+35. **Predict the output**: On paper, write down the 8 lines that `predict.sh` prints, **without** running it. Then
     run `bash predict.sh`, and explain every line that you got wrong.
 
     <details className="reveal">
@@ -1780,7 +2199,7 @@ it from `~/exam`.
 
     </details>
 
-33. **Fix the script**: `broken.sh` should print the text files of `mess` (the names that end in `.txt`, in any case),
+36. **Fix the script**: `broken.sh` should print the text files of `mess` (the names that end in `.txt`, in any case),
     then how many there are. It has five bugs. Fix them, changing only the lines that are wrong.
 
     <details className="reveal">
@@ -1792,7 +2211,7 @@ it from `~/exam`.
 
     </details>
 
-34. **A calculator**: Write `calc.sh <A> <OP> <B>`, which computes with two integers. `<OP>` is `+`, `-`, `x` (not
+37. **A calculator**: Write `calc.sh <A> <OP> <B>`, which computes with two integers. `<OP>` is `+`, `-`, `x` (not
     `*`: the shell would expand it as a glob) or `/`, which gives a result with two decimals. Every error goes to the
     error output, with an exit code: `1` when the number of parameters is not `3`, `2` for another operator, `3` for a
     division by zero.
@@ -1813,7 +2232,7 @@ it from `~/exam`.
 
     </details>
 
-35. **Tidy up a folder**: Write `organize.sh <DIR>`, which moves every file of `<DIR>` into a folder inside `<DIR>`,
+38. **Tidy up a folder**: Write `organize.sh <DIR>`, which moves every file of `<DIR>` into a folder inside `<DIR>`,
     from the end of its name, in any case: `.txt` and `.md` into `text`, `.jpg`, `.jpeg` and `.png` into `images`,
     `.sh` into `scripts`, and anything else into `other`. It moves only files, not folders, so a second run changes
     nothing. It must work with names that contain spaces.
@@ -1834,19 +2253,40 @@ it from `~/exam`.
 
     </details>
 
+39. **A strict script**: Write `strict.sh <DIR>`, whose second line is `set -euo pipefail`, and which prints
+    `<N> text files`, where `<N>` is the number of names in `<DIR>` that end in `.txt`, in any case. Without exactly
+    one parameter, it prints `usage: <SCRIPT> <DIR>` to the error output, and ends with `1`; when it cannot enter
+    `<DIR>`, it stops at the error of `cd`, with `1`.
+
+    <details className="reveal">
+    <summary>Check</summary>
+
+    | Command                         | Prints                                            | `$?` |
+    | ------------------------------- | ------------------------------------------------- | ---- |
+    | `./strict.sh mess`              | `3 text files`                                    | `0`  |
+    | `./strict.sh empty`             | `0 text files`                                    | `0`  |
+    | `./strict.sh nope 2> /dev/null` | nothing                                           | `1`  |
+    | `./strict.sh`                   | `usage: ./strict.sh <DIR>`, no `unbound variable` | `1`  |
+    | `./strict.sh mess empty`        | `usage: ./strict.sh <DIR>`                        | `1`  |
+    | `sed -n 2p strict.sh`           | `set -euo pipefail`                               |      |
+
+    </details>
+
 ## Wrap-up Questions
 
 Use the **last 5 minutes** of the lab to answer these questions together with your colleagues and the teaching
 assistant. There are no wrong answers for the last two.
 
-1. What is the difference between `./script.sh` and `bash script.sh`? What does the **shebang** do?
+1. What is the difference between `./script.sh`, `bash script.sh` and `source script.sh`? What does the **shebang**
+   do?
 2. What does `shellcheck` find that `bash -x` cannot find, and the other way around?
-3. Why does `msg="I like $fruit"` not change when `fruit` changes? Why is `$a+$b` not a sum?
+3. Why does `msg="I like $fruit"` not change when `fruit` changes? What is the difference between `$(...)` and
+   `$((...))`?
 4. When does the shell cut a variable into words, and where? How do you stop it?
-5. What is the difference between `$(...)` and `$((...))`?
-6. What does `if` really check? Why must there be spaces inside `[ ... ]`?
-7. How do you go over the lines of a file, and how over the files of a folder? Why not `for f in $(ls)`?
-8. How does a function give back a number, and how does it say that it failed? What are `$1`, `$#` and `"$@"`?
+5. What does `if` really check? Why must there be spaces inside `[ ... ]`?
+6. How do you go over the lines of a file, and how over the files of a folder? Why not `for f in $(ls)`?
+7. How does a function give back a number, and how does it say that it failed? What are `$1`, `$#` and `"$@"`?
+8. What does `set -e` change in a script? Why does it not stop at a failed condition of `if`?
 9. Which error of the shell surprised you most today?
 10. Which task of yours, done by hand until now, will you turn into a script?
 
@@ -1856,10 +2296,8 @@ assistant. There are no wrong answers for the last two.
    Install it (`sudo dnf install shfmt`; Ubuntu: `sudo apt install shfmt`), then `shfmt -d what.sh` shows what it
    would change; `bash-language-server` uses it to format the file from the editor.
    <small>→ [github.com/mvdan/sh](https://github.com/mvdan/sh)</small>
-2. **Safer scripts**: `set -euo pipefail` at the start of a script stops it at the first failed command (`-e`), at an
-   unset variable (`-u`), and when any command of a pipe fails. <small>→ `help set`</small>
-3. **Parameter expansion**: `bash` can change the value of a variable without other programs: `${f%.jpeg}` drops the
+2. **Parameter expansion**: `bash` can change the value of a variable without other programs: `${f%.jpeg}` drops the
    end `.jpeg`, `${f##*/}` keeps what follows the last `/`, `${name:-guest}` gives `guest` when `name` is empty.
    <small>→ `man bash`, search for `Parameter Expansion`</small>
-4. **Arrays**: `fruits=(apple kiwi "star fruit")` keeps several values in one variable; `"${fruits[@]}"` gives them
+3. **Arrays**: `fruits=(apple kiwi "star fruit")` keeps several values in one variable; `"${fruits[@]}"` gives them
    back, one word each, like `"$@"`. <small>→ `man bash`, search for `Arrays`</small>
