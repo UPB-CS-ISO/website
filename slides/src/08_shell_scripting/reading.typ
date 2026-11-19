@@ -157,8 +157,8 @@ echo \"$y-$m-$d\""
     C:newtemp
     $ read -r p < path.txt; echo "$p"
     C:\new\temp
-    $ cat -A spaces.txt
-       two  spaces  $
+    $ cat spaces.txt
+       two  spaces  
     $ read l < spaces.txt; echo "[$l]"
     [two  spaces]
     $ IFS= read -r l < spaces.txt; echo "[$l]"

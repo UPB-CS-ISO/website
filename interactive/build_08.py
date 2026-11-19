@@ -533,7 +533,7 @@ page("pitfalls", "The pitfalls of `read`", "`-r`, `IFS=`, and pipes", J(
          "Without `-r`, `read` treats `\\` as an escape and removes it."),
         ("read -r", ["", ["read -r p"], " < path.txt; echo \"$p\""], [["C:\\new\\temp", "new"]], "$ read -r p < path.txt; echo \"$p\"\nC:\\new\\temp", True,
          "`read -r` keeps the line as it is."),
-        ("spaces cut", ["", ["read l"], " < spaces.txt; echo \"[$l]\""], [["two  spaces", "new"]], "$ cat -A spaces.txt\n   two  spaces  $\n$ read l < spaces.txt; echo \"[$l]\"\n[two  spaces]", False,
+        ("spaces cut", ["", ["read l"], " < spaces.txt; echo \"[$l]\""], [["two  spaces", "new"]], "$ cat spaces.txt\n   two  spaces  \n$ read l < spaces.txt; echo \"[$l]\"\n[two  spaces]", False,
          "The spaces at the start and at the end are cut: they are in `IFS`."),
         ("IFS= read -r", ["", ["IFS= read -r l"], " < spaces.txt; echo \"[$l]\""], [["   two  spaces  ", "new"]], "$ IFS= read -r l < spaces.txt; echo \"[$l]\"\n[   two  spaces  ]", True,
          "`IFS=` (empty) only for this `read`: nothing is cut."),
