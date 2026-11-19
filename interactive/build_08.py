@@ -21,7 +21,7 @@ J = lambda *parts: "\n".join(parts)
 # ---------------------------------------------------------------- bash highlighting (the same as ISOBASH.hl)
 KW = {"if", "then", "elif", "else", "fi", "for", "in", "do", "done", "while", "until", "case", "esac", "function", "select", "time"}
 CMDS = set("echo printf read test expr bc seq cat wc head tail grep date ls cp mv rm mkdir touch chmod sort uniq cut tr local export unset "
-           "return exit break continue shift cd pwd type sleep true false bash python3 node env whoami basename dirname".split())
+           "return exit break continue shift cd pwd type sleep true false bash python3 node env whoami basename dirname set source trap mktemp".split())
 DOLLAR = re.compile(r"\$(?:\{[^}]*\}|\(\(|\(|[A-Za-z_]\w*|[0-9#?@*$!])")
 
 
@@ -314,6 +314,23 @@ done"""),
     w("runsc"),
     bad("`backup.sh` instead of `./backup.sh`", "Without a `/`, the shell searches the name in `PATH`, and the current folder is not in `PATH`: `bash: backup.sh: command not found`.", "write the path, `./backup.sh`, or run `bash backup.sh`."),
 ))
+GO = """#!/bin/bash
+cd ~/backup
+where="backup\""""
+page("source", "`source backup.sh`: in your own shell", "Running a script with `source`", J(
+    p("`source backup.sh` (or `. backup.sh`) starts **no new process**: your shell reads the file and runs its lines itself, as if you typed them. What the file changes stays in your shell."),
+    '<div data-w="runsc" data-list="source,bash"></div>',
+    duo(bash(GO, "go.sh"),
+        sh('$ bash go.sh\n$ echo "$PWD [$where]"\n/home/student []\n$ source go.sh\n$ echo "$PWD [$where]"\n/home/student/backup [backup]')),
+    table(["Command", "Who runs the lines", "It needs", "The `cd` and the variables"], [
+        ("`./go.sh`", "a new `bash`, started by the kernel", "`x` and the shebang", "lost when it ends"),
+        ("`bash go.sh`", "a new `bash`", "`r`", "lost when it ends"),
+        ("`source go.sh`, `. go.sh`", "**your** shell", "`r`", "**stay** in your shell")]),
+    bad("`exit` in a file run with `source`", "It ends **your** shell, and the terminal closes.",
+        "use `source` only for files that must change your shell (`~/.bashrc`, a file of functions), and leave `exit` out of them."),
+    quiz("`go.sh` runs `cd ~/backup`. After which command is **your** shell in `~/backup`?", ["`./go.sh`", "`bash go.sh`", "`source go.sh`", "`sh go.sh`"], 2,
+         "Only `source` runs the lines in your shell; the others start a new process, whose `cd` is lost when it ends."),
+))
 page("shebang", "The shebang, for any language", "`#!/usr/bin/python3`, `#!/usr/bin/env node`", J(
     p("The kernel runs the program written after `#!`, with the file as its parameter. The same `chmod +x` and `./name` work for any language."),
     duo(code('''#!/usr/bin/python3
@@ -331,8 +348,9 @@ page("practice", "Cheat sheet and practice", "Shell scripts", J(
     table(["Write", "Means"], [
         ("`#!/bin/bash`", "the first line: the program that runs the file"), ("`# text`", "a comment"),
         ("`cmd1; cmd2`", "two commands on one line"), ("`cmd \\`", "the line goes on below"),
-        ("`chmod +x s.sh`, `./s.sh`", "run the file: the kernel reads `#!`"), ("`bash s.sh`", "run `bash`, the script is its parameter")], "k"),
-    lab("scripts", BACKUP, "./backup.sh", files=["notes.txt", "fruits.txt"]),
+        ("`chmod +x s.sh`, `./s.sh`", "run the file: the kernel reads `#!`"), ("`bash s.sh`", "run `bash`, the script is its parameter"),
+        ("`source s.sh`, `. s.sh`", "run the lines in this shell: its `cd` and variables stay")], "k"),
+    lab("scripts", BACKUP, "./backup.sh", files=["notes.txt", "fruits.txt", "lib.sh"]),
 ))
 
 # ================================================================ 02 variables
@@ -486,6 +504,14 @@ $ echo "$rest"
 0:root:/root:/bin/bash"""),
     split_w("read", "colon,def", ["root:x:0:0:root:/root:/bin/bash", "Alice Mary Smith", "2:11:2026"], names="user x uid rest",
             title="What read puts in every variable", sub="One word for every variable; the **last** one takes the rest of the line."),
+    pit("IFS=: before another command", [
+        ("IFS=: printf", ["", ["IFS=: "], "printf '[%s]\\n' $x"], [["IFS=:", "asg"], ["printf", "cmd"], ["[%s]\\n", ""], ["Bob", "new"], ["Jones:20", "new"]],
+         "$ x=\"Bob   Jones:20\"\n$ IFS=: printf '[%s]\\n' $x\n[Bob]\n[Jones:20]", False,
+         "The shell cuts `$x` **before** it starts `printf`, with its own `IFS`, the default: the spaces cut, `:` does not. `IFS=:` reaches only `printf`, which never cuts anything. `read` is different: it cuts the line **it** reads, while it runs, so it sees `IFS=:`."),
+        ("IFS=:; printf", ["", ["IFS=:; "], "printf '[%s]\\n' $x; unset IFS"], [["printf", "cmd"], ["[%s]\\n", ""], ["Bob   Jones", "new"], ["20", "new"]],
+         "$ IFS=:; printf '[%s]\\n' $x; unset IFS\n[Bob   Jones]\n[20]", True,
+         "`IFS=:` on its own changes the `IFS` of the shell, so the shell cuts `$x` at `:`. `unset IFS` goes back to the default.")],
+        sub="`IFS=: read` works; the same `IFS=:` before `printf` does not.", wh="the words the shell gives to the command"),
 ))
 page("debug", "The script waits for the keyboard", "🐞 `read`", J(
     dbg("read", [sc("hello.sh", HELLO, "./hello.sh", [
@@ -507,7 +533,7 @@ page("pitfalls", "The pitfalls of `read`", "`-r`, `IFS=`, and pipes", J(
          "Without `-r`, `read` treats `\\` as an escape and removes it."),
         ("read -r", ["", ["read -r p"], " < path.txt; echo \"$p\""], [["C:\\new\\temp", "new"]], "$ read -r p < path.txt; echo \"$p\"\nC:\\new\\temp", True,
          "`read -r` keeps the line as it is."),
-        ("spaces cut", ["", ["read l"], " < spaces.txt; echo \"[$l]\""], [["two  spaces", "new"]], "$ cat -A spaces.txt\n   two  spaces  $\n$ read l < spaces.txt; echo \"[$l]\"\n[two  spaces]", False,
+        ("spaces cut", ["", ["read l"], " < spaces.txt; echo \"[$l]\""], [["two  spaces", "new"]], "$ cat spaces.txt\n   two  spaces  \n$ read l < spaces.txt; echo \"[$l]\"\n[two  spaces]", False,
          "The spaces at the start and at the end are cut: they are in `IFS`."),
         ("IFS= read -r", ["", ["IFS= read -r l"], " < spaces.txt; echo \"[$l]\""], [["   two  spaces  ", "new"]], "$ IFS= read -r l < spaces.txt; echo \"[$l]\"\n[   two  spaces  ]", True,
          "`IFS=` (empty) only for this `read`: nothing is cut."),
@@ -556,6 +582,23 @@ fruits.txt notes.txt words.txt"""),
     shell_first("The way to get a result from a command is to **capture its output**: commands print text."),
     quiz("What does `x=$(echo hi; echo there)` put in `x`?", ["`hi there`", "`hi` and a newline and `there`", "`hi`", "`there`"], 1,
          "The whole output, as text: `hi`, a newline, `there`. Only the **last** newline is removed."),
+))
+page("count", "Measuring a variable: `wc -c` and `wc -l`", "`wc` counts the text it gets from a pipe", J(
+    p("`wc` does not see the variable, only the **text** that `echo` prints into the pipe, and the newline of `echo` counts too."),
+    sh("""$ name="Alice Smith"
+$ echo "$name" | wc -c
+12
+$ echo -n "$name" | wc -c
+11
+$ fruits=$(sort -u fruits.txt)
+$ echo "$fruits" | wc -l
+4"""),
+    table(["Write", "Gives"], [
+        ("`echo \"$name\" | wc -c`", "the characters, **and** the newline of `echo`: `12`"),
+        ("`echo -n \"$name\" | wc -c`", "the length of the text: `11` (`-n`: no newline)"),
+        ("`echo \"${#name}\"`", "the same `11`, counted by `bash` itself"),
+        ("`echo \"$fruits\" | wc -l`", "the lines: `4`, one fruit per line")], "k"),
+    bad("An empty variable is one line", "With `x=\"\"`, `echo \"$x\" | wc -l` prints `1`: `echo` prints the newline anyway.", "check that the variable is not empty first."),
 ))
 page("practice", "Cheat sheet and practice", "Command substitution", J(
     table(["Write", "Means"], [
@@ -1275,16 +1318,192 @@ page("practice", "Cheat sheet and practice", "Script parameters", J(
     lab("params", PARAMS.replace("#!/bin/bash\n", ""), "./params.sh", args='alice "Alice Smith" bob'),
 ))
 
+# ================================================================ 13 handling errors, 14 strict mode, 15 trap
+TIDY = """#!/bin/bash
+# clean up the photos
+cd photoz
+rm -f *.tmp
+echo "photos cleaned\""""
+TIDY_E = TIDY.replace("cd photoz", "set -e\ncd photoz")
+TIDY_OR = TIDY.replace("cd photoz", "cd photoz || exit 1")
+TIDY_IF = TIDY.replace("cd photoz", 'if ! cd photoz; then\n    echo "no photoz folder" >&2\n    exit 1\nfi')
+SAVE = """#!/bin/bash
+# save the photos
+mkdir -p backup || exit 1
+cd photos || exit 1
+cp *.jpeg ../backup/ || exit 1
+echo "photos saved\""""
+CLEAN = """#!/bin/bash
+set -u
+dir=~/backup
+rm -r "$dri"/*"""
+MANGO = """#!/bin/bash
+set -e
+tmp=$(mktemp)
+trap 'rm -f "$tmp"; echo "removed $tmp"' EXIT
+trap 'echo "failed at line $LINENO" >&2' ERR
+sort fruits.txt > "$tmp"
+grep -q mango "$tmp"
+echo "found a mango\""""
+TMP = "/tmp/tmp.vQuc2eoya6"
+GREET = """#!/bin/bash
+set -u
+echo "Hello, $1!\""""
+GREET_CHECKED = """#!/bin/bash
+set -u
+if [ $# -eq 0 ]; then
+    echo "usage: $0 <NAME>" >&2
+    exit 1
+fi
+echo "Hello, $1!\""""
+CD_ERR = "./tidy.sh: line {}: cd: photoz: No such file or directory"
+
+page = chapter("errors", "Handling errors", "When a command fails: the script goes on, unless you check it", 8)
+page("goes-on", "A failed command does not stop the script", "After an error", J(
+    p("When a command fails, `bash` prints its error and runs the next line, as in the terminal. A script that goes on can do the right thing in the wrong place."),
+    dbg("A script goes on after an error", [sc("tidy.sh", TIDY, "./tidy.sh", [
+        S(3, run="cd photoz", status=1, out=["!" + CD_ERR.format(3)], note="`cd` fails: the folder is `photos`, not `photoz`."),
+        S(4, expand="*.tmp", run="rm -f *.tmp", status=0, note="`rm` runs anyway, in `/home/student`: it deletes the `.tmp` files of the **wrong** folder."),
+        S(5, run='echo "photos cleaned"', status=0, out=["photos cleaned"], note="The script ends with `0`, the exit code of `echo`: whoever ran it thinks that it worked.")])]),
+))
+page("check", "Check it yourself: `||` and `if !`", "Run something only when a command fails", J(
+    p("`||` and `if !` run something only when a command fails: the script can stop there, with an exit code that says it failed."),
+    dbg("Check it yourself", [
+        sc("cd || exit 1", TIDY_OR, "./tidy.sh", [
+            S(3, part="cd photoz", run="cd photoz", status=1, out=["!" + CD_ERR.format(3)], note="`cd` fails, so `||` runs the command after it."),
+            S(3, part="exit 1", run="exit 1", status=1, info="the script ends",
+              note="`exit 1` ends the script with `1`: `rm` never runs, and the caller knows that it failed.")]),
+        sc("if ! cd", TIDY_IF, "./tidy.sh", [
+            S(3, part="! cd photoz", run="cd photoz", status=1, out=["!" + CD_ERR.format(3)], note="`!` turns the exit code around: `cd` failed, so the condition is true."),
+            S(4, run='echo "no photoz folder" >&2', status=0, out=["!no photoz folder"], note="Your own message, to the error output (`>&2`)."),
+            S(5, run="exit 1", status=1, info="the script ends", note="Then `exit 1`: the script ends there, `rm` never runs.")]),
+    ], sub="Pick a way to check `cd`, then step through it."),
+    bash(SAVE, "save.sh"),
+    bad("A check after every command", "Every command that may fail needs its own `|| exit 1`, and one is easy to forget.", "let `bash` check all of them: strict mode, in the next chapter."),
+))
+
+page = chapter("strict", "Strict mode", "`set -e`, `set -u` and `set -o pipefail`", 14)
+page("set-e", "`set -e`: stop at the first error", "*errexit*", J(
+    p("`set -e`, on a line near the top of the script, stops the script at the **first command that fails**, with the exit code of that command."),
+    dbg("set -e", [sc("tidy.sh", TIDY_E, "./tidy.sh", [
+        S(3, run="set -e", status=0, info="turns on `errexit`", note="`set` changes the options of the shell that runs the script."),
+        S(4, run="cd photoz", status=1, info="the script stops", out=["!" + CD_ERR.format(4)],
+          note="Nobody checks the exit code of `cd`: lines 5 and 6 never run, and the script ends with `1`.")])]),
+))
+page("checked", "When `set -e` does not stop", "A checked failure is allowed", J(
+    p("A command whose exit code is **checked** may fail: `set -e` lets it fail, and the script goes on. That is how you allow a failure."),
+    table(["Line, with `set -e`", "When its first command fails"], [
+        ("`cd photoz`", "🛑 the script stops"),
+        ("`cd photoz || exit 2`", "`exit 2` runs: you choose the exit code"),
+        ("`grep -q mango fruits.txt || echo \"none\"`", "✅ `echo` runs, the script goes on"),
+        ("`if grep -q mango fruits.txt; then`", "✅ `if` runs `else`; the same for `while` and `until`"),
+        ("`! grep -q mango fruits.txt`", "✅ the script goes on")], "k"),
+    bad("`((n++))` stops the script", "With `set -e`, `n=0; ((n++))` computes the old value of `n`, `0`: `((...))` ends with `1`, and the script stops without a message.",
+        "count with `n=$((n + 1))`."),
+    quiz("With `set -e`, which line stops the script when `grep` finds nothing?", ["`grep -q kiwi f.txt || echo none`", "`if grep -q kiwi f.txt; then echo yes; fi`", "`grep -q kiwi f.txt`", "`! grep -q kiwi f.txt`"], 2,
+         "Only the bare `grep` is not checked: `||`, `if` and `!` look at its exit code, so `set -e` lets it fail."),
+))
+page("set-u", "`set -u`: unset variables are errors", "*nounset*", J(
+    p("Without `set -u`, a variable that is not set is an empty text, and a typo in its name goes unnoticed. With `set -u`, it is an error that stops the script."),
+    dbg("set -u", [
+        sc("without set -u", CLEAN.replace("set -u\n", ""), "./clean.sh", [
+            S(2, run="dir=/home/student/backup", vars={"dir": "/home/student/backup"}),
+            S(3, part='rm -r "$dri"/*', run="rm -r /*", info="⚠️ deletes every file you may delete",
+              note="A typo: `dri` is not set, so `\"$dri\"/*` is `/*`. Do not run this!")]),
+        sc("with set -u", CLEAN, "./clean.sh", [
+            S(2, run="set -u", status=0, info="turns on `nounset`"),
+            S(3, run="dir=/home/student/backup", vars={"dir": "/home/student/backup"}),
+            S(4, part="$dri", info="the script stops", out=["!./clean.sh: line 4: dri: unbound variable"],
+              note="`dri` is not set: the script stops **before** `rm` runs, with `1`.")]),
+    ], sub="The same typo, without and with `set -u`."),
+    "<h2>" + md("`set -u` and the parameters") + "</h2>",
+    p("`$1` is not set when the script gets no parameters: `set -u` stops the script with an error that does not help the user. `$#` is always set: check it **before** you use `$1`."),
+    dbg("set -u and $1", [
+        sc("no check", GREET, "./greet.sh", [
+            S(2, run="set -u", status=0, info="turns on `nounset`"),
+            S(3, part="$1", info="the script stops", out=["!./greet.sh: line 3: $1: unbound variable"],
+              note="No parameters: `$1` is **not set**, and `set -u` stops the script with `1`.")]),
+        sc("check $# first", GREET_CHECKED, "./greet.sh", [
+            S(2, run="set -u", status=0, info="turns on `nounset`"),
+            S(3, part="[ $# -eq 0 ]", run="[ 0 -eq 0 ]", status=0, vars={"$#": "0"}, note="`$#` is always set: here `0`."),
+            S(4, run='echo "usage: ./greet.sh <NAME>" >&2', status=0, out=["!usage: ./greet.sh <NAME>"], note="Say how to run the script, on the error output."),
+            S(5, run="exit 1", status=1, info="the script ends", note="Then end with `1`: line 7, with `$1`, never runs.")]),
+    ], sub="`./greet.sh`, without parameters."),
+))
+page("pipefail", "`set -o pipefail`", "A pipe fails when any of its commands fails", J(
+    p("A pipe ends with the exit code of its **last** command: when `grep` fails but `wc` works, `set -e` does not see the error. With `pipefail`, the pipe ends with the exit code of the last command that failed."),
+    sh("$ grep kiwi nope.txt | wc -l\ngrep: nope.txt: No such file or directory\n0\n$ echo $?\n0\n$ set -o pipefail\n$ grep kiwi nope.txt | wc -l\ngrep: nope.txt: No such file or directory\n0\n$ echo $?\n2"),
+))
+page("all", "All three: `set -euo pipefail`", "Strict mode, on the line after the shebang", J(
+    table(["Option", "Name", "What it does"], [
+        ("`set -e`", "*errexit*", "stops at the first command that fails, outside a condition"),
+        ("`set -u`", "*nounset*", "a variable that is not set is an error, not an empty text"),
+        ("`set -o pipefail`", "*pipefail*", "a pipe fails when **any** of its commands fails"),
+        ("`set -x`", "*xtrace*", "prints every command before it runs, like `bash -x`")], "k"),
+    p("`set +e` (with `+`) turns an option off again. Start your scripts with the first three: a mistake stops the script, it does not go on in the wrong place."),
+    bash("#!/bin/bash\nset -euo pipefail\nmkdir -p ~/backup\ncp ~/notes.txt ~/backup/", "backup.sh"),
+))
+page("practice", "Cheat sheet and practice", "Strict mode", J(
+    table(["Write", "Means"], [
+        ("`cmd || exit 1`", "end the script when `cmd` fails"), ("`set -e`", "stop at the first command that fails"),
+        ("`set -u`", "a variable that is not set is an error"), ("`set -o pipefail`", "a pipe fails when any of its commands fails"),
+        ("`set -euo pipefail`", "the three, on the line after the shebang")], "k"),
+    lab("errors", TIDY, "./tidy.sh", files=["fruits.txt", "notes.txt", "lib.sh"], ex=[("set -e", TIDY_E)]),
+))
+
+TRAP_SYNTAX = ('<div class="b8pm">'
+               '<div><span class="w8 cmd">trap</span><b>the command</b></div>'
+               '<div><span class="w8 new">\'rm -f "$tmp"\'</span><b>what to run, in single quotes</b></div>'
+               '<div><span class="w8">EXIT</span><b>when to run it</b></div></div>')
+page = chapter("trap", "Cleaning up: `trap`", "Commands that run when the script ends", 10)
+page("syntax", "`trap` syntax", "Remember commands now, run them later", J(
+    TRAP_SYNTAX,
+    ul("`trap` runs **nothing** now: `bash` **remembers** the commands",
+       "the single quotes keep `$tmp` as it is: it is replaced when the trap runs",
+       "`trap -p` lists the traps, `trap - EXIT` forgets one"),
+    table(["When", "The commands run"], [
+        ("`EXIT`", "when the script ends, however it ends: after the last line, at `exit`, or stopped by `set -e`"),
+        ("`ERR`", "after every command that fails, where `set -e` would stop")], "k"),
+))
+page("debug", "When the traps run", "🐞 `trap`", J(
+    dbg("When the traps run", [sc("mango.sh", MANGO, "./mango.sh", [
+        S(2, run="set -e", status=0, info="turns on `errexit`"),
+        S(3, part="mktemp", who="copy", run="mktemp", status=0, info="prints the name",
+          note="`mktemp` creates a new, **empty** file with a unique name in `/tmp`, and prints its name."),
+        S(3, run="tmp=" + TMP, vars={"tmp": TMP}, note="`tmp` keeps the name of the temporary file."),
+        S(4, run="trap 'rm -f \"$tmp\"; echo \"removed $tmp\"' EXIT", status=0, info="nothing runs now",
+          note="`bash` **remembers** the commands, for when the script ends; the single quotes keep `$tmp` for then."),
+        S(5, run="trap 'echo \"failed at line $LINENO\" >&2' ERR", status=0, info="nothing runs now",
+          note="Remembered too, for after a command that fails."),
+        S(6, run="sort fruits.txt > " + TMP, status=0, note="`sort` writes the sorted fruits into the temporary file."),
+        S(7, run="grep -q mango " + TMP, status=1, note="There is no `mango`: `grep` ends with `1`."),
+        S(5, part='echo "failed at line $LINENO" >&2', run='echo "failed at line 7" >&2', status=0, out=["!failed at line 7"],
+          note="A command failed: first, the `ERR` trap runs – `$LINENO` is `7`, the line of `grep`."),
+        S(7, info="`set -e` stops the script", note="Nobody checks the exit code of `grep`: `set -e` stops the script, line 8 never runs."),
+        S(4, part='rm -f "$tmp"', run="rm -f " + TMP, status=0, note="The script ends: now the `EXIT` trap runs, and deletes the temporary file."),
+        S(4, part='echo "removed $tmp"', run='echo "removed ' + TMP + '"', status=0, out=["removed " + TMP],
+          note="The script ends with `1`, the exit code of `grep`; with a `mango`, the same `EXIT` trap runs after line 8.")],
+        files={"fruits.txt": FRUITS})]),
+))
+page("practice", "Cheat sheet and practice", "`trap`", J(
+    table(["Write", "Means"], [
+        ("`trap '...' EXIT`", "run at the end, however the script ends"), ("`trap '...' ERR`", "run after every command that fails"),
+        ("`trap -p`", "list the traps"), ("`trap - EXIT`", "forget a trap"), ("`tmp=$(mktemp)`", "a new, empty temporary file")], "k"),
+    lab("trap", MANGO, "./mango.sh", files=["fruits.txt", "notes.txt"]),
+))
+
 # ================================================================ flashcards
 FLASH = [
     ("01", "Scripts", "scripts/commands", "Everything is a command line", "Variables, `if`, loops were added on top of a shell that runs commands: ask *what command runs here?*"),
     ("01", "Scripts", "scripts/run", "`./s.sh` needs `x`, `bash s.sh` does not", "With `./`, the kernel runs the file and reads `#!`; with `bash`, the script is only a parameter."),
+    ("01", "Scripts", "scripts/source", "`source s.sh` runs in your shell", "No new process: its `cd` and its variables stay; an `exit` in it closes your terminal."),
     ("02", "Variables", "vars/wrong", "No spaces around `=`", "`name = alice` runs the command `name`; `name= alice` runs `alice` with an empty `name`."),
     ("02", "Variables", "vars/text", "A variable holds text", "`$name` is replaced when the line runs: `greeting` keeps the text, not a formula."),
     ("03", "IFS", "words/spaces", "An unquoted `$x` is cut at `IFS`", "Many spaces are one cut; `::` with `IFS=:` makes an empty word."),
     ("03", "IFS", "words/quotes", "`\"$x\"` is always one word", "Quote variables unless you want them cut."),
     ("04", "read", "read/syntax", "The last variable takes the rest", "`read first last` on `Alice Mary Smith` puts `Mary Smith` in `last`."),
     ("04", "read", "read/pitfalls", "`IFS= read -r line`", "Reads a line exactly: no backslash removed, no space cut."),
+    ("04", "read", "read/ifs", "`IFS=: printf ... $x` does not cut at `:`", "The shell cuts `$x` before the command starts; only `read` uses `IFS` itself, on the line it reads."),
     ("05", "$( )", "subst/syntax", "`$(cmd)` is the output, as text", "It runs in a copy of bash; the last newline is removed."),
     ("06", "Arithmetic", "arith/text", "`$a+$b` is the text `2+3`", "Compute with `$((a + b))` or with the program `expr`."),
     ("06", "Arithmetic", "arith/syntax", "Integers only", "`$((7 / 2))` is `3`; for decimals use the program `bc`."),
@@ -1299,6 +1518,10 @@ FLASH = [
     ("11", "Functions", "func/output", "Print the data, return the status", "`sum=$(add 2 3)` captures the output; `return` is only `0` – `255`."),
     ("11", "Functions", "func/debug", "`local` keeps a variable inside", "Without it, a function changes the variables of the script."),
     ("12", "Parameters", "params/all", "`\"$@\"` keeps the words", "Unquoted `$@` is cut again at `IFS`."),
+    ("13", "Errors", "errors/goes-on", "A script goes on after an error", "A failed command prints its error, then `bash` runs the next line: check it with `||`, or use `set -e`."),
+    ("14", "Strict mode", "strict/checked", "`set -e` lets a checked command fail", "The condition of `if` and `while`, a command before `||` or `&&`, and `! cmd` do not stop the script."),
+    ("14", "Strict mode", "strict/all", "`set -euo pipefail`", "Stop at the first failed command, at a variable that is not set, and at a failed command of a pipe."),
+    ("15", "trap", "trap/syntax", "`trap '...' EXIT` cleans up", "`trap` remembers the commands; they run however the script ends: delete the temporary files of `mktemp` there."),
 ]
 page = chapter("flashcards", "Flashcards", "The ideas of the lecture, one card each", 10)
 page("recap", "The ideas, in short", "Quick recap", J(
@@ -1502,7 +1725,7 @@ pre.sh .db-err{color:#b3261e}
 .rs-perm b.chk{color:#b35900;background:#ffe6cc;box-shadow:0 0 0 1.5px #d79b00;border-radius:2px}
 .rs-perm s{color:#9aa9ae}
 .rs-perm b.no{color:#b3261e;background:#fde3df;border-radius:2px}
-.rs-f pre span{display:block;padding:0 4px;border-radius:3px}
+.rs-f pre>span{display:block;padding:0 4px;border-radius:3px}
 .rs-f pre span.bang{background:#ffe6cc;font-weight:700}.rs-f pre span.bang b{color:#b35900;box-shadow:0 0 0 1.5px #d79b00;border-radius:2px}
 .rs-f pre span.bang em{font:700 11px system-ui,sans-serif;color:#b35900;margin-left:6px}
 .rs-f pre span.dim{color:#9aa9ae}.rs-f pre span.dim *{color:#9aa9ae!important}

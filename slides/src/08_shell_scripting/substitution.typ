@@ -123,74 +123,60 @@ VAR=`command arg1 arg2`
 #let subst-code = "#!/bin/bash
 count=$(wc -l < fruits.txt)
 today=$(date +%A)
-echo \"$count fruits on $today\""
+echo \"$count fruits on $today\"
+files=$(ls *.txt)
+echo $files"
 
 #slide[
   == 🐞 Command Substitution
   ```bash $(command)``` is replaced by the output of the command
 
-  #debug-run(subst-code, size: 1.15em, columns: (11fr, 9fr), command: "./fruits.sh", blocks: true, files: (("fruits.txt", fruits-lines),), (
+  #debug-run(subst-code, size: 1.05em, columns: (11fr, 9fr), command: "./fruits.sh", blocks: true, files: (("fruits.txt", fruits-lines),), (
     (line: 2, part: "wc -l < fruits.txt", who: "copy", run: "wc -l < fruits.txt", status: 0, info: [prints `7`],
       note: [💡 first, a copy of `bash` runs the command, its output is captured, nothing reaches the screen]),
     (line: 2, run: "count=7", vars: (count: "7"),
       note: [💡 then the output takes the place of ```bash $(...)```, the shell runs the line]),
     (line: 3, part: "date +%A", who: "copy", run: "date +%A", status: 0, info: [prints `Thursday`]),
     (line: 3, run: "today=Thursday", vars: (today: "Thursday")),
-    (line: 4, run: "echo \"7 fruits on Thursday\"", status: 0, out: ("7 fruits on Thursday",)),
+    (line: 4, run: "echo \"7 fruits on Thursday\"", status: 0, out: ("7 fruits on Thursday",),
+      note: [💡 commands give a result by printing it: capture their output]),
+    (line: 5, part: "ls *.txt", who: "copy", run: "ls fruits.txt notes.txt words.txt", status: 0, info: [prints 3 lines],
+      note: [💡 the copy expands `*.txt` and runs `ls`: one name per line, captured]),
+    (line: 5, run: "files=\"fruits.txt\\nnotes.txt\\nwords.txt\"", vars: (files: "fruits.txt\nnotes.txt\nwords.txt")),
+    (line: 6, run: "echo fruits.txt notes.txt words.txt", status: 0, out: ("fruits.txt notes.txt words.txt",),
+      note: [💡 unquoted, the _newlines_ of `$files` separate words, like spaces: `echo` gets three parameters]),
   ))
 ]
 
 #slide[
-  == Capturing Output
-  The output of a command becomes text in the command line
+  == Measuring a Variable
+  `wc` counts the text it gets from a pipe
 
-  #toolbox.side-by-side(columns: (11fr, 9fr), gutter: 1.5em)[
-    #set text(size: 0.95em)
-    #grid(columns: (1fr, auto), column-gutter: 0.5em, [
-    #reveal-terminal(before: none, lines: (1, 3, 5, 7), full: false)[```terminal
-    $ count=$(wc -l < fruits.txt)
-    $ echo "$count fruits"
-    7 fruits
-    $ echo "today is $(date +%A)"
-    today is Thursday
-    $ files=$(ls *.txt); echo $files
-    fruits.txt notes.txt words.txt
+  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
+    #set text(size: 1em)
+    #reveal-terminal(before: none, lines: (3, 5, 8, 11), full: false)[```terminal
+    $ name="Alice Smith"
+    $ echo "$name" | wc -c
+    12
+    $ echo -n "$name" | wc -c
+    11
+    $ fruits=$(sort -u fruits.txt)
+    $ echo "$fruits" | wc -l
+    4
+    $ x=""
+    $ echo "$x" | wc -l
+    1
     ```]
-    ], file-view("fruits.txt", fruits-lines))
   ][
     #set text(size: 0.9em)
-    // what runs on a step: the command of the copy of bash (if there is
-    // one) and what it prints, then the command line of the shell
-    #let runs(inner, prints, outer) = {
-      if inner != none {
-        label[a copy of `bash` runs]
-        v(-0.2em)
-        block(inset: 0.3em, radius: 0.3em, fill: changed-fill, inner)
-        v(-0.2em)
-        grid(columns: 2, column-gutter: 0.5em, label[it prints], text(font: mono, size: 0.9em, fill: changed, prints))
-        v(0.3em)
-      }
-      label[the shell runs]
-      v(-0.2em)
-      block(inset: 0.3em, radius: 0.3em, fill: changed-fill, outer)
-    }
-    #only(1)[#runs(words(("wc", "cmd"), "-l", ("<", "redir"), ("fruits.txt", "redir")), [7],
-      words(("count=7", "new")))]
-    #only(2)[#runs(none, none, words(("echo", "cmd"), ("7 fruits", "new")))]
-    #only(3)[#runs(words(("date", "cmd"), "+%A"), [Thursday],
-      words(("echo", "cmd"), ("today is Thursday", "new")))]
-    #only("4-")[#runs(words(("ls", "cmd"), ("fruits.txt", "new"), ("notes.txt", "new"), ("words.txt", "new")),
-      [fruits.txt \ notes.txt \ words.txt],
-      words(("echo", "cmd"), ("fruits.txt", "new"), ("notes.txt", "new"), ("words.txt", "new")))]
+    #only(1)[`wc -c` counts the characters: `Alice Smith` has `11`, but `echo` adds a newline at the end: `12`]
+    #only(2)[`echo -n` - no newline: `11`, the length of the text \ #v(0.3em) 💡 `bash` can also count by itself: ```bash ${#name}``` is `11`]
+    #only(3)[`wc -l` counts the lines: `fruits` holds one fruit per line, `apple`, `banana`, `cherry`, `kiwi`: `4`]
+    #only("4-")[⚠️ an *empty* variable still gives `1`: `echo` prints the newline anyway \ #v(0.3em) check that it is not empty first]
   ]
 
   #v(0.3em)
-  #set text(size: 0.9em)
-  #only(1)[💡 the copy runs `wc -l < fruits.txt`, its output `7` takes the place of ```bash $(...)```]
-  #only(2)[💡 no ```bash $(...)``` here: `count` holds the text `7`]
-  #only(3)[💡 works anywhere in a command line, also inside `"..."`; the last _newline_ is removed]
-  #only("4-")[
-    💡 unquoted, the _newlines_ of the output separate words, like spaces
-    #shell-first[the way to get a result from a command is to *capture its output*: commands print text]
+  #uncover("2-")[
+    #shell-first[`wc` does not see the variable, only the *text* that `echo` prints: the newline of `echo` counts too]
   ]
 ]

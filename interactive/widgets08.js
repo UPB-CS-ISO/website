@@ -4,7 +4,8 @@
    - data-w="lab"    the script lab: edit a script, run it or step through it, missions (window.ISO_LABS)
    - data-w="split"  IFS: how an unquoted $x, a quoted "$x" and read cut a value
    - data-w="pit"    "the shell sees the words": a pitfall, the words bash makes, the terminal (+ try your own line)
-   - data-w="runsc"  ./backup.sh and bash backup.sh: shell, kernel and bash, step by step
+   - data-w="runsc"  ./backup.sh, bash backup.sh and source backup.sh: shell, kernel and bash, step by step
+                     (data-list: the scenarios, from dot,bash,nox,source)
    - data-w="subst"  $(command): the copy of bash, the captured output, the line that runs
    - data-w="globs"  case patterns: which pattern matches a word, which branch case picks
    - data-w="calc"   $(( )) and bc on the same expression */
@@ -55,8 +56,15 @@ function markLine(line,marks){
 function codeHTML(sc,s){
   const lines=sc.code.split('\n');
   return lines.map((l,k)=>{const n=k+1,cur=s&&s.line===n;let marks=[];
-    if(cur){[].concat(s.part||[]).forEach(t=>marks.push({t,c:'db-part'}));if(s.compute)marks.push({t:s.compute,c:'db-cmp'});[].concat(s.expand||[]).forEach(t=>marks.push({t,c:'db-exp'}));
-      if(s.run!=null||s.compute){const rx=/\$\{[^}]*\}|\$\(\(.*?\)\)|\$\([^)]*\)|\$[A-Za-z_]\w*|\$[0-9#?@*]|~(?=\/|\s|$)/g;let m;const pt=[].concat(s.part||[]).map(t=>[l.indexOf(t),l.indexOf(t)+t.length]).filter(x=>x[0]>=0);
+    if(cur){
+      // the part that runs: at its column (s.at, from bashrun.js) when known, so that the right one of two equal
+      // pieces is marked (tmp=$(mktemp);tmp2=$(mktemp)); otherwise the first one found from the left
+      const parts=[].concat(s.part||[]),ats=[].concat(s.at);
+      const span=(t,k)=>ats[k]!=null&&l.slice(ats[k],ats[k]+t.length)===t?[ats[k],ats[k]+t.length]:[l.indexOf(t),l.indexOf(t)+t.length];
+      parts.forEach((t,k)=>{if(t===s.compute)return;const[a,b]=span(t,k);marks.push(a>=0?{s:a,e:b,c:'db-part'}:{t,c:'db-part'})});
+      if(s.compute){const k=parts.indexOf(s.compute),[a,b]=k>=0?span(s.compute,k):[-1,-1];marks.push(a>=0?{s:a,e:b,c:'db-cmp'}:{t:s.compute,c:'db-cmp'})}
+      [].concat(s.expand||[]).forEach(t=>marks.push({t,c:'db-exp'}));
+      if(s.run!=null||s.compute){const rx=/\$\{[^}]*\}|\$\(\(.*?\)\)|\$\([^)]*\)|\$[A-Za-z_]\w*|\$[0-9#?@*]|~(?=\/|\s|$)/g;let m;const pt=parts.map(span).filter(x=>x[0]>=0);
         while((m=rx.exec(l)))if(!pt.length||pt.some(([a,b])=>m.index>=a&&m.index+m[0].length<=b))marks.push({s:m.index,e:m.index+m[0].length,c:'db-exp'})}}
     if(s&&s.also)for(const[ln,t]of s.also)if(ln===n)marks.push({t,c:'db-also'});
     return `<span class="db-ln${cur?' cur':''}"><b>${n}</b><span>${marks.length?markLine(l,marks):hl(l)||' '}</span></span>`}).join('')}
@@ -117,6 +125,7 @@ Object.assign(LABS,{
     {t:'Add a comment that explains the script (it must still run).',h:'a line that starts with #',ok:r=>/^\s*#(?!!).+/m.test(r.src)&&r.status===0},
     {t:'Put two commands on the same line.',h:'separate them with ;',ok:r=>r.status===0&&/^[^#'"\n]*\w[^#'"\n]*;\s*\w/m.test(r.src)},
     {t:'Write one command on two lines.',h:'a \\ at the end of the first line',ok:r=>/\\\n/.test(r.src)&&r.status===0},
+    {t:'Load <code>lib.sh</code> into this shell, then print the larger of <code>4</code> and <code>11</code> with its function <code>max</code>.',h:'source lib.sh; max 4 11',ok:r=>has(r,/^\s*(source|\.)\s+(\.\/)?lib\.sh\b/m)&&/^11$/m.test(r.out)},
   ],
   vars:[
     {t:'Put <code>Alice Smith</code> in <code>name</code> and print <code>Hi, Alice Smith</code>.',h:'quotes keep the space in the value',ok:r=>r.vars.name==='Alice Smith'&&/Hi, Alice Smith/.test(r.out)},
@@ -179,6 +188,21 @@ Object.assign(LABS,{
     {t:'Make a function end with <code>1</code> when it gets no parameters, and print <code>nobody</code> with <code>||</code>.',h:'[ $# -eq 0 ] && return 1',ok:r=>/^nobody$/m.test(r.out)&&has(r,/return\s+1/)&&has(r,/\|\|/)},
     {t:'Change a variable inside a function with <code>local</code>, so the <code>name</code> of the script stays <code>alice</code>.',h:'local name="bob"',ok:r=>has(r,/\blocal\b/)&&r.vars.name==='alice'},
     {t:'Write <code>max</code>, which prints the bigger of two numbers; <code>m=$(max 4 9)</code>.',h:'if [ $1 -gt $2 ]',ok:r=>r.vars.m==='9'&&has(r,/max\s*\(\)/)},
+  ],
+  errors:[
+    {t:'Run the script as it is: it prints <code>photos cleaned</code> and ends with <code>0</code>, after an error.',h:'the ▶ Run button',free:true,ok:r=>/photos cleaned/.test(r.out)&&r.status===0},
+    {t:'With <b>one</b> line after the shebang, make the script stop at the first command that fails.',h:'set -e',ok:r=>has(r,/^\s*set\s+-\w*e/m)&&r.status!==0&&!/photos cleaned/.test(r.out)},
+    {t:'Without <code>set -e</code>: when <code>cd</code> fails, end the script with the exit code <code>2</code>.',h:'cd photoz || exit 2',ok:r=>!has(r,/set\s+-\w*e/)&&has(r,/\bcd\b[^\n]*(\|\||then)/)&&r.status===2},
+    {t:'With <code>set -e</code>, print <code>no mango</code> when <code>fruits.txt</code> has no <code>mango</code>, and reach the next line.',h:'grep -q mango fruits.txt || echo "no mango"',ok:r=>has(r,/set\s+-\w*e/)&&has(r,/grep/)&&/no mango\n(?!.*unbound)[\s\S]*\S/.test(r.out)},
+    {t:'Make a typo in the name of a variable stop the script.',h:'set -u, then echo "$fruti"',ok:r=>has(r,/set\s+(-\w*u|-o\s+nounset)/)&&/unbound variable/.test(r.out)&&r.status!==0},
+    {t:'Make <code>grep kiwi nope.txt | wc -l</code> fail the script, although <code>wc</code> works.',h:'set -eo pipefail',ok:r=>has(r,/pipefail/)&&has(r,/\|\s*wc/)&&r.status!==0},
+  ],
+  trap:[
+    {t:'Run the script as it is: the <code>ERR</code> trap, then the <code>EXIT</code> trap.',h:'the ▶ Run button',free:true,ok:r=>/failed at line 7/.test(r.out)&&/removed/.test(r.out)},
+    {t:'Look for a fruit that is in the file: the script ends with <code>0</code>, and the <code>EXIT</code> trap still runs.',h:'grep -q kiwi "$tmp"',ok:r=>r.status===0&&/removed/.test(r.out)&&has(r,/trap\s[^\n]*\bEXIT\b/)},
+    {t:'Also print <code>bye</code> at the very end, however the script ends.',h:"trap 'rm -f \"$tmp\"; echo bye' EXIT",ok:r=>has(r,/trap\s[^\n]*\bEXIT\b/)&&/bye\s*$/.test(r.out)},
+    {t:'Remove the <code>ERR</code> trap: see the script stop in silence.',h:'delete line 5',ok:r=>!has(r,/\bERR\b/)&&r.status!==0&&!/failed at line/.test(r.out)&&has(r,/set\s+-\w*e/)},
+    {t:'Use two temporary files, and delete both in the <code>EXIT</code> trap.',h:"a=$(mktemp); b=$(mktemp); trap 'rm -f \"$a\" \"$b\"' EXIT",ok:r=>(strip(r.src).match(/mktemp/g)||[]).length>=2&&!Object.keys(r.files||{}).some(k=>k.startsWith('/tmp/tmp.'))},
   ],
   params:[
     {t:'Print <code>first: alice</code>, with <code>alice</code> taken from the parameters.',h:'echo "first: $1"',ok:r=>/first: alice/.test(r.out)&&has(r,/\$\{?1/)&&r.args[0]==='alice'},
@@ -327,15 +351,21 @@ const RS={
     {who:'kernel',t:'checks the <code>x</code> of <code>/bin/bash</code>, <b>not</b> of <code>backup.sh</code>',perm:'skip',x:'<code>chmod +x</code> is not needed: the kernel runs <code>bash</code>, which only <i>reads</i> the script.'},
     {who:'kernel',t:'starts a new process: <span class="w8 cmd">/bin/bash</span><span class="w8">backup.sh</span> – <code>#!</code> is not read',x:'The kernel never opens the script, so it never sees <code>#!</code>.'},
     {who:'bash',t:'opens <code>backup.sh</code> and runs it, line by line',bang:'comment',lines:[2,3,4,5],out:true,x:'Same result: <code>#!/bin/bash</code> is just a comment.'}]},
+  source:{typed:[['source','cmd'],['backup.sh','']],steps:[
+    {who:'you',t:'type <code>source backup.sh</code> (or <code>. backup.sh</code>) and press Enter',x:'The command is <code>source</code>, the script is its parameter.'},
+    {who:'shell',t:'<code>source</code> is a <b>built-in</b> command: no new process, the kernel is not asked to run anything',x:'No <code>fork</code>, no <code>execve</code>: the shell you type in does everything itself.'},
+    {who:'shell',t:'opens <code>backup.sh</code> and reads it: <code>r</code> is enough, <code>#!</code> is not read',perm:'skip',x:'As with <code>bash backup.sh</code>, the file is only read: <code>chmod +x</code> is not needed.'},
+    {who:'shell',t:'runs the lines <b>itself</b>, one by one, as if you typed them',bang:'comment',lines:[2,3,4,5],out:true,x:'A <code>cd</code> or a variable of the script <b>stays</b> in your shell after it ends; an <code>exit</code> would close your terminal.'}]},
   nox:{typed:[['./backup.sh','cmd']],pre:'$ chmod -x backup.sh',steps:[
     {who:'you',t:'remove the <code>x</code>: <code>chmod -x backup.sh</code>, then <code>./backup.sh</code>',x:'The same script, without the execute permission.',perms:'-rw-r--r--'},
     {who:'shell',t:'a <b>path</b>: it asks the kernel to run the file',perms:'-rw-r--r--',x:'The shell does not check anything itself.'},
     {who:'kernel',t:'checks the permission: no <code>x</code> – it <b>refuses</b>',perm:'none',perms:'-rw-r--r--',err:true,x:'<code>execve</code> fails with <code>EACCES</code>; the shell prints <i>Permission denied</i>, exit code <code>126</code>. <code>bash backup.sh</code> still works.'}]},
 };
+const RSL={dot:'./backup.sh',bash:'bash backup.sh',nox:'without x',source:'source backup.sh'};
 function wRunsc(root){
-  let sc='dot';
-  root.innerHTML=`<div class="wd rs"><div class="wd-h"><div><h3>What happens after Enter</h3><p>Who does what when a script starts: the <b>shell</b> you type in, the <b>kernel</b>, the new <b>bash</b> that runs the file.</p></div><span class="badge" data-r="b"></span></div>
-  <div class="ctrls ps-c"><div class="seg" data-r="seg"><button type="button" data-v="dot" class="on">./backup.sh</button><button type="button" data-v="bash">bash backup.sh</button><button type="button" data-v="nox">without x</button></div>${NAV()}</div>
+  const list=(root.dataset.list||'dot,bash,nox').split(',');let sc=list[0];
+  root.innerHTML=`<div class="wd rs"><div class="wd-h"><div><h3>What happens after Enter</h3><p>Who does what when a script starts: the <b>shell</b> you type in, the <b>kernel</b>${list.includes('source')?', and maybe':','} the new <b>bash</b> that runs the file.</p></div><span class="badge" data-r="b"></span></div>
+  <div class="ctrls ps-c"><div class="seg" data-r="seg">${list.map((v,j)=>`<button type="button" data-v="${v}" class="${j?'':'on'}">${esc(RSL[v])}</button>`).join('')}</div>${NAV()}</div>
   <div class="ps-x" data-r="x"></div>
   <div class="rs-b"><div><div class="db-h">you type</div><div class="rs-typed" data-r="typed"></div><ol class="rs-steps" data-r="steps"></ol></div>
   <div><div class="db-file rs-f"><div><b>backup.sh</b> <span data-r="perm"></span></div><pre data-r="file"></pre></div><div class="db-h">output</div><pre class="db-out rs-out" data-r="out"></pre></div></div></div>`;

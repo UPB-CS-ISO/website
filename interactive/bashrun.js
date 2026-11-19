@@ -1,6 +1,7 @@
 /* ISO lecture 08 (Shell Scripting): a small bash interpreter, pure logic, no DOM.
    It runs a script the way bash does (words, quotes, IFS, $(...), $((...)), if, while, until, for, case,
-   functions, local, read, test and [, [[ ]], (( )), pipes, redirects) on a few files kept in memory, and records
+   functions, local, read, test and [, [[ ]], (( )), pipes, redirects, set -e/-u/-x/-o pipefail, trap EXIT/ERR,
+   source) on a few files kept in memory, and records
    a step for every command it runs, the way the debugger of the slides shows it: the line, the part of the line
    that runs, the command line after the expansions, its exit code, the variables that changed and the output.
    Used by the script lab and the small simulators of widgets08.js, and by the node tests. */
@@ -20,6 +21,7 @@ const POOL={
   'path.txt':'C:\\new\\temp\n',
   'spaces.txt':'   two  spaces  \n',
   'scores.txt':'alice 7\nbob 9\ncarol 4\n',
+  'lib.sh':'# functions for other scripts: source lib.sh\nmax() {\n    if [ "$1" -gt "$2" ]; then echo "$1"; else echo "$2"; fi\n}\nbackup_dir=~/backup\n',
   '/etc/passwd':'root:x:0:0:root:/root:/bin/bash\nstudent:x:1000:1000:Student:/home/student:/bin/bash\n',
 };
 class FS{
@@ -69,7 +71,7 @@ function lex(src,line0){
   function dollar(j,q){
     const c=src[j+1];
     if(c==='('&&src[j+2]==='('){const e=matchArith(j+3);return[{k:'a',src:src.slice(j+3,e),q},e+2]}
-    if(c==='('){const e=matchParen(j+2);return[{k:'c',src:src.slice(j+2,e),q},e+1]}
+    if(c==='('){const e=matchParen(j+2);return[{k:'c',src:src.slice(j+2,e),q,s:j+2},e+1]}
     if(c==='{'){const e=src.indexOf('}',j+2);if(e<0)SYN("unexpected EOF while looking for matching `}'");
       const b=src.slice(j+2,e);let m;
       if((m=/^#([A-Za-z_]\w*|[0-9@#*])$/.exec(b)))return[{k:'v',name:m[1],op:'#',q},e+1];
@@ -97,14 +99,14 @@ function lex(src,line0){
         while(i<n&&src[i]!=='"'){const d=src[i];
           if(d==='\\'&&'$`"\\\n'.includes(src[i+1])){if(src[i+1]==='\n')line++;else lit(src[i+1],true);i+=2;continue}
           if(d==='$'){const r=dollar(i,true);if(r){segs.push(r[0]);newl(i,r[1]);i=r[1];continue}}
-          if(d==='`'){const e=src.indexOf('`',i+1);if(e<0)SYN("unexpected EOF while looking for matching ``'");segs.push({k:'c',src:src.slice(i+1,e),q:true});i=e+1;continue}
+          if(d==='`'){const e=src.indexOf('`',i+1);if(e<0)SYN("unexpected EOF while looking for matching ``'");segs.push({k:'c',src:src.slice(i+1,e),q:true,s:i+1});i=e+1;continue}
           if(d==='\n')line++;
           lit(d,true);i++}
         if(i>=n)SYN('unexpected EOF while looking for matching `"\'');
         i++;continue}
       if(c==='\\'){if(src[i+1]==='\n'){i+=2;line++;continue}plain=false;lit(src[i+1]||'',true);i+=2;continue}
       if(c==='$'){const r=dollar(i,false);if(r){plain=false;segs.push(r[0]);newl(i,r[1]);i=r[1];continue}}
-      if(c==='`'){plain=false;const e=src.indexOf('`',i+1);if(e<0)SYN("unexpected EOF while looking for matching ``'");segs.push({k:'c',src:src.slice(i+1,e),q:false});i=e+1;continue}
+      if(c==='`'){plain=false;const e=src.indexOf('`',i+1);if(e<0)SYN("unexpected EOF while looking for matching ``'");segs.push({k:'c',src:src.slice(i+1,e),q:false,s:i+1});i=e+1;continue}
       if(c==='~'&&i===s&&(i+1>=n||/[\s/;|&)]/.test(src[i+1]))){plain=false;segs.push({k:'t'});i++;continue}
       lit(c,false);i++}
     return{t:'w',segs,raw:src.slice(s,i),plain,s,e:i};
@@ -370,10 +372,33 @@ class Sh{
     this.vars.set('IFS',{v:DEFIFS,x:false,init:true});
     for(const[k,v]of Object.entries(o.vars||{}))this.vars.set(k,{v:String(v),x:false});
     this.funcs=new Map();this.frames=[];this.status=0;this.fs=o.fs;this.T=o.T;this.depth=0;this.loops=0;this.line=1;this.substStatus=0;this.inter=!!o.inter;
+    this.base=0;this.opts={e:false,u:false,x:false,pipefail:false};this.cond=0;this.traps={};this.sourcing=0;this.inTrap=false;
   }
   clone(){const c=Object.create(Sh.prototype);Object.assign(c,this);
     c.vars=new Map([...this.vars].map(([k,v])=>[k,Object.assign({},v)]));c.funcs=new Map(this.funcs);c.pos=this.pos.slice();
-    c.frames=this.frames.map(f=>({saved:new Map(f.saved),locals:new Set(f.locals)}));c.depth=this.depth+1;return c}
+    c.frames=this.frames.map(f=>({saved:new Map(f.saved),locals:new Set(f.locals)}));c.depth=this.depth+1;
+    c.opts=Object.assign({},this.opts);c.traps={};return c}
+  /* the column of a node in its line of the script, so the debugger marks the right one of two equal pieces
+     (tmp=$(mktemp);tmp2=$(mktemp)); undefined for code that is not in the script (a trap, a sourced file) */
+  /* where a piece of text of the current line starts in the script (the commands of a trap), or null */
+  lineAt(t){if(this.base==null||this.T.src==null)return null;const L=this.T.src.split('\n');if(this.line<1||this.line>L.length)return null;
+    const at=L[this.line-1].indexOf(t);return at<0?null:L.slice(0,this.line-1).reduce((n,l)=>n+l.length+1,0)+at}
+  col(n){if(this.base==null||n==null||n.s==null||this.T.src==null)return undefined;const a=this.base+n.s;return a-(this.T.src.lastIndexOf('\n',a-1)+1)}
+  /* set -e and trap ERR: after a command that ended with st, outside a condition (if, while, until, before the last
+     && or ||, after !) */
+  fail(st,io){
+    if(!st||this.cond||this.inTrap)return;
+    if(this.traps.ERR&&!this.frames.length)this.runTrap('ERR',io);
+    if(this.opts.e){this.emit({line:this.line,info:'`set -e`: the command failed, so bash stops the script, exit code `'+st+'`'});throw new Flow('exit',1,st)}}
+  runTrap(k,io,t){                                    // t: {src, line}, the trap and the line of its `trap`
+    t=t||this.traps[k];if(!t)return;const saved=this.status;this.inTrap=true;this.trapAt=this.line;
+    const b=this.base;this.base=t.at==null?null:t.at;
+    try{this.emit({line:t.line,info:'the `'+k+'` trap runs: `'+t.src+'`'});this.exec(parseC(t.src,t.line),io)}
+    catch(f){if(f instanceof Flow&&f.kind!=='limit'&&f.kind!=='exit')return;throw f}
+    finally{this.inTrap=false;this.status=saved;this.line=this.trapAt;this.base=b}}
+  /* the words of a command for set -x, quoted the way bash prints them */
+  xq(w){return w===''?"''":/[\s'"\\$`|&;<>()*?[\]#~{}]/.test(w)?"'"+w.replace(/'/g,"'\\''")+"'":w}
+  xtrace(io,ws){if(this.opts.x&&!this.inTrap)io.err('+'.repeat(this.depth+1)+' '+ws.join(' ')+'\n')}
   ifs(){const e=this.vars.get('IFS');return e?e.v:DEFIFS}
   get(n){const e=this.vars.get(n);return e?e.v:undefined}
   setVar(n,v){if(n==='IFS')this.T.showIFS=true;else this.T.show.add(n);const e=this.vars.get(n);this.vars.set(n,{v:String(v),x:e?e.x:false})}
@@ -412,10 +437,15 @@ class Sh{
     else if(n==='#')v=String(this.pos.length-1);
     else if(n==='?')v=String(this.status);
     else if(n==='@'||n==='*')v=this.pos.slice(1).join(' ');
-    else if(n==='$')v='4100';else if(n==='!')v='';else if(n==='-')v='hB';
+    else if(n==='$')v='4100';else if(n==='!')v='';else if(n==='-')v=(this.opts.e?'e':'')+'h'+(this.opts.u?'u':'')+(this.opts.x?'x':'')+'B';
     else if(n==='RANDOM')v=String((this.T.rnd=(this.T.rnd*1103515245+12345)%32768));
-    else if(n==='LINENO')v=String(this.line);
+    else if(n==='LINENO')v=String(this.inTrap?this.trapAt:this.line);
     else v=this.get(n);
+    if(v==null&&this.opts.u&&!(g.op&&/^:?[-=+?]$/.test(g.op))){
+      const nm=/^[0-9]+$/.test(n)?'$'+n:n;
+      this.T.term+='\u0001'+(this.inter?'bash: ':this.name+': line '+this.line+': ')+nm+': unbound variable\n\u0002';
+      this.emit({line:this.line,info:'`set -u`: `'+nm+'` is not set, so bash stops the script, exit code `1`'});
+      throw new Flow('exit',1,1)}
     if(g.op==='#')return String((v||'').length);
     if(g.op){const empty=v==null||(g.op[0]===':'&&v==='');const o=g.op.replace(':','');const arg=this.expandText(g.arg||'');
       if(o==='-')return empty?arg:v;
@@ -423,9 +453,9 @@ class Sh{
       if(o==='+')return empty?'':arg;
       if(o==='?'){if(empty)throw new BErr(n+': '+(arg||'parameter null or not set'));return v}}
     return v==null?'':v}
-  expandText(s){if(!/[$`]/.test(s))return s;const w=lex('"'+s.replace(/(["\\])/g,'\\$1')+'"',this.line)[0];return w?this.expand(w,null,'str'):''}
-  subst(src,io){
-    const prog=parseC(src,this.line);const c=this.clone();let buf='';
+  expandText(s){if(!/[$`]/.test(s))return s;const w=lex('"'+s.replace(/(["\\])/g,'\\$1')+'"',this.line)[0];if(w)for(const g of w.segs)delete g.s;return w?this.expand(w,null,'str'):''}
+  subst(src,io,at){
+    const prog=parseC(src,this.line);const c=this.clone();c.base=this.base!=null&&at!=null?this.base+at:null;let buf='';
     const io2={in:io?io.in:null,out:s=>{buf+=s},err:io?io.err:(s=>{this.T.term+='\u0001'+s+'\u0002'}),tty:false};
     try{c.exec(prog,io2)}catch(f){if(f instanceof Flow){if(f.kind==='limit')throw f;c.status=f.status}else throw f}
     if(prog.error){c.line=prog.error.line;c.errl(io2,prog.error.message);c.status=2}
@@ -475,7 +505,7 @@ class Sh{
         if(g.name==='@'&&g.q&&!g.op&&mode!=='str'){const ps=this.pos.slice(1);if(!ps.length){atZero=true;continue}
           ps.forEach((p,k)=>{if(k)fb.add(chars.length);push(p,false,false,true)});continue}
         val=this.param(g)}
-      else if(g.k==='c')val=this.subst(g.src,io);
+      else if(g.k==='c')val=this.subst(g.src,io,g.s);
       else if(g.k==='a')val=String(this.arithExp(g.src));
       push(val,!g.q,!g.q,g.q)}
     if(mode==='str')return chars.map(x=>x.c).join('');
@@ -528,8 +558,9 @@ class Sh{
   exec(n,io){
     switch(n.T){
       case 'list':{let s=this.status;for(const it of n.items)s=this.exec(it,io);return s}
-      case 'andor':{let s=this.exec(n.first,io);for(const r of n.rest)if(r.op==='&&'?s===0:s!==0)s=this.exec(r.node,io);return this.status=s}
-      case 'not':{const s=this.exec(n.node,io);return this.status=s?0:1}
+      case 'andor':{const L=n.rest.length;let s=this.inCond(L>0,()=>this.exec(n.first,io));
+        n.rest.forEach((r,k)=>{if(r.op==='&&'?s===0:s!==0)s=this.inCond(k<L-1,()=>this.exec(r.node,io))});return this.status=s}
+      case 'not':{const s=this.inCond(true,()=>this.exec(n.node,io));return this.status=s?0:1}
       case 'pipe':return this.pipe(n,io);
       case 'simple':return this.simple(n,io,false);
     }
@@ -537,20 +568,22 @@ class Sh{
     if(n.redirs&&n.redirs.length){this.line=n.line;try{io2=this.redirIO(n.redirs,io)}catch(e){if(e instanceof BErr){this.errl(io,e.message);this.emit({line:n.line,part:n.src.split('\n')[0],status:1});return this.status=1}throw e}}
     return this.compound(n,io2)}
   loop(fn){this.loops++;try{return fn()}finally{this.loops--}}
+  inCond(on,fn){if(!on)return fn();this.cond++;try{return fn()}finally{this.cond--}}
   body(n,io){                                            // runs a loop body: true to stop the loop
     try{return[this.exec(n,io),false]}
     catch(f){if(f instanceof Flow&&(f.kind==='break'||f.kind==='continue')){if(f.n>1){f.n--;throw f}return[0,f.kind==='break']}throw f}}
   compound(n,io){
     switch(n.T){
       case 'group':return this.exec(n.body,io);
-      case 'sub':{const c=this.clone();try{c.exec(n.body,io)}catch(f){if(f instanceof Flow&&f.kind!=='limit')c.status=f.status;else throw f}return this.status=c.status}
+      case 'sub':{const c=this.clone();try{c.exec(n.body,io)}catch(f){if(f instanceof Flow&&f.kind!=='limit')c.status=f.status;else throw f}this.status=c.status;this.fail(c.status,io);return c.status}
       case 'arith':{this.line=n.line;this.tick();let r,st;
         const ex=this.expandText(n.src),disp=this.arithDisp(ex);
-        try{r=this.arith(ex);st=r!==0n?0:1}catch(e){if(e instanceof BErr){this.errl(io,e.message);this.emit({line:n.line,part:'(('+n.src+'))',status:1});return this.status=1}throw e}
-        this.emit({line:n.line,part:'(('+n.src+'))',compute:'(('+n.src+'))',info:'computes `'+disp+'` = `'+r+'`',status:st});
-        return this.status=st}
-      case 'if':{for(const cl of n.clauses){if(this.exec(cl.cond,io)===0)return this.exec(cl.body,io)}if(n.els)return this.exec(n.els,io);return this.status=0}
-      case 'while':return this.loop(()=>{let s=0;for(;;){this.tick();const c=this.exec(n.cond,io);if(n.until?c===0:c!==0)break;const[r,stop]=this.body(n.body,io);s=r;if(stop)break}return this.status=s});
+        try{r=this.arith(ex);st=r!==0n?0:1}catch(e){if(e instanceof BErr){this.errl(io,e.message);this.emit({line:n.line,part:n.src,at:this.col(n),status:1});this.status=1;this.fail(1,io);return 1}throw e}
+        this.xtrace(io,[ex.trim()]);
+        this.emit({line:n.line,part:n.src,at:this.col(n),compute:n.src,info:'computes `'+disp+'` = `'+r+'`',status:st});
+        this.status=st;this.fail(st,io);return st}
+      case 'if':{for(const cl of n.clauses){if(this.inCond(true,()=>this.exec(cl.cond,io))===0)return this.exec(cl.body,io)}if(n.els)return this.exec(n.els,io);return this.status=0}
+      case 'while':return this.loop(()=>{let s=0;for(;;){this.tick();const c=this.inCond(true,()=>this.exec(n.cond,io));if(n.until?c===0:c!==0)break;const[r,stop]=this.body(n.body,io);s=r;if(stop)break}return this.status=s});
       case 'for':{this.line=n.line;let list;
         if(n.words){list=[];let ex=false;
           try{for(const w of n.words){if(!w.plain||/[*?[]/.test(w.raw))ex=true;list.push(...this.expand(w,io))}}
@@ -575,33 +608,37 @@ class Sh{
     }
     return 0}
   pipe(n,io){
-    this.line=n.line;let data=null,st=0;const disp=[];
+    this.line=n.line;let data=null,st=0;const disp=[],all=[];
     const parts=n.cmds.map((c,k)=>{const sub=this.clone();return{c,sub}});
     parts.forEach(({c,sub},k)=>{
       const last=k===parts.length-1;let buf='';
       const io2={in:data==null?io.in:{data,pos:0},out:last?io.out:(s=>{buf+=s}),err:io.err,tty:last?io.tty:false};
       try{if(c.T==='simple'){const r=sub.simple(c,io2,true);st=r;disp.push(sub.lastRun||c.src)}else{st=sub.exec(c,io2);disp.push(c.src)}}
       catch(f){if(f instanceof Flow&&f.kind!=='limit')st=f.status;else throw f}
-      data=buf});
+      all.push(st);data=buf});
+    if(this.opts.pipefail)st=all.reduce((a,x)=>x?x:a,0);
     this.status=st;
-    this.emit({line:n.line,part:n.cmds.map(c=>c.src),run:disp.join(' | '),status:st});
+    this.xtrace(io,disp);
+    this.emit(Object.assign({line:n.line,part:n.cmds.map(c=>c.src),at:n.cmds.map(c=>this.col(c)),run:disp.join(' | '),status:st},this.opts.pipefail&&st&&all[all.length-1]===0?{info:'`pipefail`: a command of the pipe failed'}:{}));
+    this.fail(st,io);
     return st}
   simple(n,io,inPipe){
     this.tick();this.line=n.line;
     if(n.words.length&&n.words[0].plain&&n.words[0].raw==='[[')return this.dbl(n,io,inPipe);
-    const step=st=>{if(!inPipe)this.emit(Object.assign({line:n.line,part:n.src},st))};
+    const step=st=>{if(!inPipe)this.emit(Object.assign({line:n.line,part:n.src,at:this.col(n)},st))};
     let fields=[],disp=[];
     this.substStatus=0;
     try{for(const w of n.words){const f=this.expand(w,io);fields.push(...f);disp.push(...this.dispFields(w,f))}}
-    catch(e){if(e instanceof BErr){this.errl(io,e.message);step({status:1});return this.status=1}throw e}
+    catch(e){if(e instanceof BErr){this.errl(io,e.message);step({status:1});this.status=1;if(!inPipe)this.fail(1,io);return 1}throw e}
     if(!fields.length){
       const shown=[];
       try{for(const a of n.asg){const{name,val,app}=this.asgVal(a,io);this.setVar(name,app?(this.get(name)||'')+val:val);shown.push(name+'='+qv(this.get(name)))}
         if(n.redirs.length)this.redirIO(n.redirs,io)}
-      catch(e){if(e instanceof BErr){this.errl(io,e.message);step({status:1});return this.status=1}throw e}
+      catch(e){if(e instanceof BErr){this.errl(io,e.message);step({status:1});this.status=1;if(!inPipe)this.fail(1,io);return 1}throw e}
       this.lastRun=shown.join(' ')||n.src;
+      if(!inPipe)this.xtrace(io,n.asg.map(a=>{const i=a.raw.indexOf('='),nm=a.raw.slice(0,i).replace(/\+$/,'');return nm+'='+this.xq(this.get(nm)||'')}));
       step({run:this.lastRun});
-      return this.status=this.substStatus}
+      this.status=this.substStatus;if(!inPipe)this.fail(this.status,io);return this.status}
     const name=fields[0],args=fields.slice(1);
     const saved=[];let io2=io,st=0,pre='';
     try{
@@ -609,10 +646,15 @@ class Sh{
       io2=n.redirs.length?this.redirIO(n.redirs,io):io}
     catch(e){if(e instanceof BErr){for(const[k,v]of saved.reverse()){if(v)this.vars.set(k,v);else this.vars.delete(k)}this.errl(io,e.message);step({status:1});return this.status=1}throw e}
     const run=pre+disp.join(' ')+this.redirText(n.redirs,io);this.lastRun=run;
+    if(!inPipe)this.xtrace(io,fields.map(f=>this.xq(f)));
     let printed='';if(this.depth>0&&!io2.tty){const o=io2.out;io2=Object.assign({},io2,{out:s=>{printed+=s;o(s)}})}
     this.T.note=null;
     const restore=()=>{for(const[k,v]of saved.reverse()){if(v)this.vars.set(k,v);else this.vars.delete(k)}};
-    if(this.funcs.has(name)){step({run});try{st=this.call(name,args,io2)}finally{restore()}return this.status=st}
+    if(this.funcs.has(name)){const ext=this.funcs.get(name).ext;
+      if(ext){const q=this.T.quiet,line=this.line;this.T.quiet=true;try{st=this.call(name,args,io2)}finally{this.T.quiet=q;this.line=line;restore()}
+        step({run,status:st,info:'a function of `'+ext+'`'})}
+      else{step({run});try{st=this.call(name,args,io2)}finally{restore()}}
+      this.status=st;if(!inPipe)this.fail(st,io);return st}
     const fn=BUILTIN[name]||EXT[name];
     try{
       if(fn)st=fn.call(this,args,io2,{name,line:n.line});
@@ -626,6 +668,7 @@ class Sh{
     let info=this.T.note;this.T.note=null;
     if(printed){const l=printed.replace(/\n$/,'').split('\n');info=(info?info+', ':'')+'prints '+(l.length>3?l.slice(0,3).map(x=>'`'+x+'`').join(', ')+' …':l.map(x=>'`'+x+'`').join(', '))}
     step(info?{run,status:st,info}:{run,status:st});
+    if(!inPipe)this.fail(st,io);
     return st}
   asgVal(a,io){const raw=a.raw,i=raw.indexOf('='),app=raw[i-1]==='+';const name=raw.slice(0,app?i-1:i);
     const w={segs:a.segs.map(x=>Object.assign({},x)),raw:raw.slice(i+1)};const s0=w.segs[0];s0.s=s0.s.slice(i+1);
@@ -643,7 +686,7 @@ class Sh{
     return this.status=st}
   dbl(n,io,inPipe){
     const ws=n.words.slice(1),end=ws.findIndex(w=>w.plain&&w.raw===']]');
-    const step=st=>{if(!inPipe)this.emit(Object.assign({line:n.line,part:n.src},st))};
+    const step=st=>{if(!inPipe)this.emit(Object.assign({line:n.line,part:n.src,at:this.col(n)},st))};
     if(end<0||end!==ws.length-1){this.errl(io,end<0?"syntax error: `]]' expected":"syntax error near `"+ws[end+1].raw+"'");step({status:2});return this.status=2}
     const t=ws.slice(0,end);let p=0;const R=k=>t[k]&&t[k].plain?t[k].raw:null;const shown=[];
     const val=w=>{const v=this.expand(w,io,'str');shown.push(qv(v));return v};
@@ -666,7 +709,7 @@ class Sh{
     try{const v=orE();if(p<t.length)throw new BErr("syntax error near `"+t[p].raw+"'",2);st=v?0:1}
     catch(e){if(e instanceof BErr){this.errl(io,e.message);st=e.status}else throw e}
     this.lastRun='[[ '+shown.join(' ')+' ]]';step({run:this.lastRun,status:st});
-    return this.status=st}
+    this.status=st;if(!inPipe)this.fail(st,io);return st}
   un(o,x){const fs=this.fs;switch(o){case '-z':return x==='';case '-n':return x!=='';case '-e':return fs.isFile(x)||fs.isDir(x);case '-f':return fs.isFile(x);case '-d':return fs.isDir(x);
     case '-r':case '-w':return fs.isFile(x)||fs.isDir(x);case '-x':return fs.isDir(x)||fs.x.has(fs.rel(x));case '-s':return(fs.read(x)||'')!==''}return false}
   bin(x,o,y){
@@ -768,9 +811,49 @@ const BUILTIN={
   export(a){for(const x of a){const i=x.indexOf('='),nm=i<0?x:x.slice(0,i);const e=this.vars.get(nm);this.vars.set(nm,{v:i<0?(e?e.v:''):x.slice(i+1),x:true});if(nm==='IFS')this.T.showIFS=true;else this.T.show.add(nm)}return 0},
   unset(a){for(const x of a){if(x==='-v')continue;if(x==='-f'){continue}if(a[0]==='-f'){this.funcs.delete(x);continue}this.vars.delete(x)}return 0},
   shift(a,io){const k=a.length?+a[0]:1;if(k>this.pos.length-1)return 1;this.pos.splice(1,k);return 0},
-  return(a,io){if(!this.frames.length){this.errl(io,"return: can only `return' from a function or sourced script");return 1}
+  return(a,io){if(!this.frames.length&&!this.sourcing){this.errl(io,"return: can only `return' from a function or sourced script");return 1}
     if(a.length&&!isInt(a[0])){this.errl(io,'return: '+a[0]+': numeric argument required');throw new Flow('return',1,2)}
     throw new Flow('return',1,Number(BigInt.asUintN(8,BigInt(a.length?a[0].trim():this.status))))},
+  set(a,io){
+    const NM={errexit:'e',nounset:'u',xtrace:'x',pipefail:'pipefail'},on=[],off=[];
+    const opt=(nm,v)=>{if(!NM[nm]){this.errl(io,'set: '+nm+': invalid option name');return false}this.opts[NM[nm]]=v;(v?on:off).push(nm);return true};
+    const list=()=>{for(const k of Object.keys(NM))io.out(k.padEnd(15)+'\t'+(this.opts[NM[k]]?'on':'off')+'\n')};
+    if(!a.length){for(const[k,v]of[...this.vars].sort((x,y)=>x[0]<y[0]?-1:1))io.out(k+'='+qv(v.v)+'\n');return 0}
+    for(let i=0;i<a.length;i++){const x=a[i];
+      if(x==='--'){this.pos=[this.pos[0]].concat(a.slice(i+1));return 0}
+      if(/^[-+][a-zA-Z]+$/.test(x)){const v=x[0]==='-';
+        for(const c of x.slice(1)){
+          if(c==='o'){const nm=a[++i];if(nm==null){list();continue}if(!opt(nm,v))return 1}
+          else if(c==='e')opt('errexit',v);else if(c==='u')opt('nounset',v);else if(c==='x')opt('xtrace',v);
+          else{this.errl(io,'set: '+x[0]+c+': invalid option');return 2}}
+        continue}
+      this.pos=[this.pos[0]].concat(a.slice(i));return 0}
+    if(on.length||off.length)this.T.note=[on.length?'turns on '+on.map(x=>'`'+x+'`').join(', '):'',off.length?'turns off '+off.map(x=>'`'+x+'`').join(', '):''].filter(Boolean).join('; ');
+    return 0},
+  trap(a,io){
+    const SIG=['EXIT','ERR','INT','TERM','HUP','QUIT'];
+    if(!a.length||a[0]==='-p'){for(const[k,v]of Object.entries(this.traps))io.out("trap -- '"+v.src.replace(/'/g,"'\\''")+"' "+k+'\n');return 0}
+    if(a.length<2){this.errl(io,'trap: usage: trap [-p] [arg signal_spec ...]');return 2}
+    const done=[];
+    for(const s0 of a.slice(1)){const s=s0.toUpperCase().replace(/^SIG/,''),k=s==='0'?'EXIT':s;
+      if(!SIG.includes(k)){this.errl(io,'trap: '+s0+': invalid signal specification');return 1}
+      if(a[0]==='-')delete this.traps[k];else this.traps[k]={src:a[0],line:this.line,at:this.lineAt(a[0])};done.push(k)}
+    this.T.note=a[0]==='-'?'removes the trap of '+done.map(x=>'`'+x+'`').join(', '):'keeps `'+a[0]+'` for '+done.map(x=>'`'+x+'`').join(', ')+', nothing runs now';
+    return 0},
+  source(a,io,c){
+    if(!a.length){this.errl(io,(c&&c.name||'source')+': filename argument required');return 2}
+    const f=a[0],d=this.fs.read(f);
+    if(d==null){this.errl(io,f+': No such file or directory');return 1}
+    const prog=parse(d,1);if(prog.error){this.errl(io,f+': '+prog.error.message);return 2}
+    const T=this.T,q=T.quiet,name=this.name,line=this.line,pos=this.pos;
+    if(a.length>1)this.pos=[this.pos[0]].concat(a.slice(1));
+    T.quiet=true;this.sourcing++;this.name=f;let st=0;const base=this.base;this.base=null;const before=new Set(this.funcs.values());
+    try{st=this.exec(prog,io)}
+    catch(e){if(e instanceof Flow&&e.kind==='return')st=e.status;else throw e}
+    finally{T.quiet=q;this.sourcing--;this.name=name;this.line=line;this.base=base;if(a.length>1)this.pos=pos;
+      for(const fn of this.funcs.values())if(!before.has(fn))fn.ext=f}
+    this.T.note='runs `'+f+'` in this shell: its functions and variables stay';
+    return st},
   exit(a,io){if(a.length&&!isInt(a[0])){this.errl(io,'exit: '+a[0]+': numeric argument required');throw new Flow('exit',1,2)}
     throw new Flow('exit',1,Number(BigInt.asUintN(8,BigInt(a.length?a[0].trim():this.status))))},
   break(a,io){if(!this.loops){this.errl(io,"break: only meaningful in a `for', `while', or `until' loop");return 0}throw new Flow('break',a.length?+a[0]:1)},
@@ -870,13 +953,17 @@ const EXT={
   whoami(a,io){io.out('student\n');return 0},
   basename(a,io){io.out((a[0]||'').replace(/\/+$/,'').split('/').pop().replace(a[1]&&a[0].endsWith(a[1])?new RegExp(a[1].replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'$'):/$^/,'')+'\n');return 0},
   dirname(a,io){const p=(a[0]||'').replace(/\/+$/,'');io.out((p.includes('/')?p.slice(0,p.lastIndexOf('/'))||'/':'.')+'\n');return 0},
+  mktemp(a,io){const AB='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';let n='/tmp/tmp.';
+    for(let k=0;k<10;k++){this.T.rnd=(this.T.rnd*1103515245+12345)%2147483648;n+=AB[this.T.rnd%AB.length]}
+    if(a.includes('-d'))this.fs.d.add(n);else this.fs.write(n,'');io.out(n+'\n');return 0},
 };
+BUILTIN['.']=BUILTIN.source;
 function headtail(a,io,cmd){let n=10;const files=[];
   for(let i=0;i<a.length;i++){const x=a[i];if(x==='-n')n=+a[++i];else if(/^-n\d+$/.test(x))n=+x.slice(2);else if(/^-\d+$/.test(x))n=+x.slice(1);else files.push(x)}
   let st=0;for(const f of this.inputs(files,io,cmd)){if(!f){st=1;continue}const l=lines(f.data);io.out((cmd==='head'?l.slice(0,n):l.slice(Math.max(0,l.length-n))).map(x=>x+'\n').join(''))}return st}
 
 /* ================================================================ the public functions */
-function newT(src,o){return{steps:[],term:'',last:0,prev:new Map(),show:new Set(),max:o.maxSteps||500,ops:0,quiet:!!o.quiet,rnd:42,headtail,
+function newT(src,o){return{src,steps:[],term:'',last:0,prev:new Map(),show:new Set(),max:o.maxSteps||500,ops:0,quiet:!!o.quiet,rnd:42,headtail,
   showIFS:/\bIFS\b/.test(src),showPos:/\$\{?[0-9#@*]/.test(src)||!!(o.args&&o.args.length),show0:/\$\{?0/.test(src)}}
 function pickFiles(o){if(o.files&&!Array.isArray(o.files))return o.files;const names=o.files||['fruits.txt','notes.txt','words.txt'];const f={};for(const n of names.concat(['/etc/passwd']))if(POOL[n]!=null)f[n]=POOL[n];return f}
 /* run a script: {name, args, input (the keyboard), files (names from POOL or {name: text}), maxSteps}
@@ -891,6 +978,8 @@ function run(src,o={}){
   let status=0,limit=false;
   try{status=sh.exec(prog,io)}
   catch(f){if(f instanceof Flow){if(f.kind==='limit'){limit=true;T.term+='\u0001[demo] stopped after '+T.steps.length+' steps: an endless loop?\n\u0002'}else status=f.status}else throw f}
+  if(sh.traps.EXIT&&!limit&&!prog.error){const src=sh.traps.EXIT;delete sh.traps.EXIT;sh.status=status;sh.inTrap=false;sh.cond=0;
+    try{sh.runTrap('EXIT',io,src)}catch(f){if(f instanceof Flow){if(f.kind==='exit')status=f.status;else if(f.kind==='limit')limit=true}else throw f}}
   if(prog.error&&!limit){sh.line=prog.error.line;sh.errl(io,prog.error.message);status=2;try{sh.emit({line:prog.error.line,info:'a syntax error: bash stops here',status:2})}catch(e){}}
   if(T.term.length>T.last&&T.steps.length){const l=T.steps[T.steps.length-1];l.o=(l.o||'')+T.term.slice(T.last);T.last=T.term.length}
   const vars={};for(const[k,v]of sh.snap())vars[k]=v.v;
@@ -929,7 +1018,7 @@ function words(t){try{return lex(t,1).filter(x=>x.t==='w').map(w=>w.segs.map(g=>
 /* syntax highlighting of bash, with the hl-* classes of engine.hl */
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const KW=new Set(['if','then','elif','else','fi','for','in','do','done','while','until','case','esac','function','select','time']);
-const CMDS=new Set(['echo','printf','read','test','expr','bc','seq','cat','wc','head','tail','grep','date','ls','cp','mv','rm','mkdir','touch','chmod','sort','uniq','cut','tr','local','export','unset','return','exit','break','continue','shift','cd','pwd','type','sleep','true','false','bash','python3','node','env','whoami','basename','dirname']);
+const CMDS=new Set(['echo','printf','read','test','expr','bc','seq','cat','wc','head','tail','grep','date','ls','cp','mv','rm','mkdir','touch','chmod','sort','uniq','cut','tr','local','export','unset','return','exit','break','continue','shift','cd','pwd','type','sleep','true','false','bash','python3','node','env','whoami','basename','dirname','set','source','trap','mktemp']);
 function hl(text){
   return text.split('\n').map(l=>{
     let o='',i=0;const n=l.length;let cmdPos=true,asg=false;
