@@ -1,13 +1,17 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # 08. Scripturi de shell
 
 În laboratorul 7 ați compilat programe C în terminal și ați văzut că un script de shell nu se compilează: `bash` îl
 citește și îl rulează, linie cu linie. În acest laborator scrieți propriile **scripturi de shell**. Le rulați cu
-**shebang**-ul `#!/bin/bash` sau cu `bash` și le găsiți bug-urile cu **ShellCheck**, în terminal și, printr-un **server
-de limbaj** (*language server*), direct în editor. Păstrați text în **variabile** și vedeți cum îl taie shell-ul în
-cuvinte la caracterele din **`IFS`**. **Citiți date de intrare** cu `read`, preluați rezultatul unei comenzi cu
-**substituția de comenzi** și faceți calcule cu **expandarea aritmetică** și cu `bc`. Apoi luați decizii cu `if`, `test`
-și `case`, repetați comenzi cu buclele `while` și `for`, grupați comenzi în **funcții** și dați unui script
-**parametri**.
+**shebang**-ul `#!/bin/bash` sau cu `bash`, într-un proces nou, ori cu **`source`**, în propriul shell, și le găsiți
+bug-urile cu **ShellCheck**, în terminal și, printr-un **server de limbaj** (*language server*), direct în editor.
+Păstrați text în **variabile** și vedeți cum îl taie shell-ul în cuvinte la caracterele din **`IFS`**. **Citiți date de
+intrare** cu `read`, preluați rezultatul unei comenzi cu **substituția de comenzi** și faceți calcule cu **expandarea
+aritmetică** și cu `bc`. Apoi luați decizii cu `if`, `test` și `case`, repetați comenzi cu buclele `while` și `for`,
+grupați comenzi în **funcții**, dați unui script **parametri** și îl faceți să se oprească la prima **eroare** cu
+`set -e`.
 
 Cea mai importantă idee a laboratorului: un script este o listă de **linii de comandă**, iar shell-ul o tratează pe
 fiecare exact ca pe linia pe care o tastați voi: înlocuiește variabilele, taie rezultatul în **cuvinte** și rulează o
@@ -16,7 +20,8 @@ fiecare exact ca pe linia pe care o tastați voi: înlocuiește variabilele, tai
 
 ## Obiective {/* #objectives */}
 
-- Să scrieți un script cu **shebang** și comentarii și să îl rulați cu `./script.sh` și cu `bash script.sh`
+- Să scrieți un script cu **shebang** și comentarii, să îl rulați cu `./script.sh` și cu `bash script.sh` și să îl
+  rulați în propriul shell cu `source script.sh`
 - Să urmăriți un script, comandă cu comandă, cu `bash -x`
 - Să găsiți bug-urile obișnuite ale unui script înainte să ruleze, cu `shellcheck`, și să le vedeți în editor prin
   serverul de limbaj `bash-language-server`
@@ -34,6 +39,7 @@ fiecare exact ca pe linia pe care o tastați voi: înlocuiește variabilele, tai
   `while read`, `seq` și `{1..5}`
 - Să scrieți **funcții** cu variabile `local`, care întorc un rezultat cu `echo`, iar succesul sau eșecul cu `return`
 - Să citiți **parametrii** unui script, `$0`, `$1`, `$#` și `"$@"`, și să îl încheiați cu `exit`
+- Să opriți un script la prima eroare cu `set -e`, `set -u` și `set -o pipefail` și să faceți curat cu `trap`
 
 ## Resurse {/* #resources */}
 
@@ -43,28 +49,29 @@ fiecare exact ca pe linia pe care o tastați voi: înlocuiește variabilele, tai
    - Capitolul 13 - _Automatizarea sarcinilor_, secțiunile 13.1 - 13.3, 13.4.1 și 13.4.2
 2. _Brian Ward, How LINUX Works, 3rd Edition, No Starch Press, 2021_
    - Capitolul 2 - _Basic Commands and Directory Hierarchy_, secțiunea 2.8
-   - Capitolul 11 - _Introduction to Shell Scripts_, secțiunile 11.1 - 11.7, 11.10, 11.11, 11.13 și 11.14
+   - Capitolul 11 - _Introduction to Shell Scripts_, secțiunile 11.1 - 11.8 și 11.10 - 11.14
 3. _[Bash Reference Manual](https://www.gnu.org/software/bash/manual/bash.html)_, secțiunea 3.2.5 - _Compound
-   Commands_, secțiunea 3.3 - _Shell Functions_ și secțiunea 3.5 - _Shell Expansions_;
+   Commands_, secțiunea 3.3 - _Shell Functions_, secțiunea 3.5 - _Shell Expansions_ și secțiunea 4.3.1 - _The Set
+   Builtin_;
    _[ShellCheck](https://www.shellcheck.net)_ și pagina fiecărui avertisment din
    _[wiki](https://www.shellcheck.net/wiki/)_-ul său;
    _[bash-language-server](https://github.com/bash-lsp/bash-language-server)_
 4. Slide-urile cursului: [08. Scripturi de shell](/docs/lectures/08)
 5. Paginile de manual: `man bash` (căutați `Compound Commands`, `Word Splitting` și `ARITHMETIC EVALUATION`),
    `man test`, `man seq`, `man bc`, `man expr`, `man basename`, `man dirname`, `man env`, `man find`,
-   `man shellcheck`, iar pentru comenzile interne ale shell-ului `help read`,
-   `help test`, `help for`
+   `man shellcheck`, `man mktemp`, iar pentru comenzile interne ale shell-ului `help read`, `help test`, `help for`,
+   `help source`, `help set` și `help trap`
 
 ## Fedora și Ubuntu {/* #fedora-and-ubuntu */}
 
 Calculatoarele din laborator rulează **Fedora** cu **Sway**, iar exemplele sunt luate de pe ele. Acasă puteți folosi și
 **Ubuntu**: scripturile sunt aceleași, cu câteva diferențe:
 
-|                                                   | Fedora                                                    | Ubuntu                                                                             |
-| ------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `/bin/sh`                                         | `bash`                                                    | `dash`, un shell mai mic: fără `[[ ]]`, `((...))`, `{1..5}`                        |
-| instalarea `bc`, dacă lipsește                    | `sudo dnf install bc`                                     | `sudo apt install bc`                                                              |
-| instalarea ShellCheck și a serverului de limbaj   | `sudo dnf install ShellCheck nodejs-bash-language-server` | `sudo apt install shellcheck npm`, apoi `sudo npm install -g bash-language-server` |
+|                                                 | Fedora                                                    | Ubuntu                                                                             |
+| ----------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `/bin/sh`                                       | `bash`                                                    | `dash`, un shell mai mic: fără `[[ ]]`, `((...))`, `{1..5}`                        |
+| instalarea `bc`, dacă lipsește                  | `sudo dnf install bc`                                     | `sudo apt install bc`                                                              |
+| instalarea ShellCheck și a serverului de limbaj | `sudo dnf install ShellCheck nodejs-bash-language-server` | `sudo apt install shellcheck npm`, apoi `sudo npm install -g bash-language-server` |
 
 ## Scripturi de shell {/* #shell-scripts */}
 
@@ -86,20 +93,20 @@ cp fruits.txt \
 echo "backup done"; ls backup
 ```
 
-| Scris ca                         | Ce înseamnă                                                                                     |
-| -------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `#!/bin/bash`                    | **shebang**-ul, mereu pe prima linie: programul care rulează scriptul                           |
-| `# ...`                          | un **comentariu**: `bash` ignoră restul liniei                                                  |
-| sfârșitul unei linii             | sfârșitul unei comenzi: `bash` o rulează, așteaptă să se termine, apoi citește linia următoare |
-| `command1; command2`             | două comenzi pe aceeași linie: întâi `command1`, apoi `command2`                                |
-| `\` la sfârșitul unei linii      | comanda continuă pe linia următoare: `cp` primește atât `fruits.txt`, cât și `backup/`          |
+| Scris ca                    | Ce înseamnă                                                                                    |
+| --------------------------- | ---------------------------------------------------------------------------------------------- |
+| `#!/bin/bash`               | **shebang**-ul, mereu pe prima linie: programul care rulează scriptul                          |
+| `# ...`                     | un **comentariu**: `bash` ignoră restul liniei                                                 |
+| sfârșitul unei linii        | sfârșitul unei comenzi: `bash` o rulează, așteaptă să se termine, apoi citește linia următoare |
+| `command1; command2`        | două comenzi pe aceeași linie: întâi `command1`, apoi `command2`                               |
+| `\` la sfârșitul unei linii | comanda continuă pe linia următoare: `cp` primește atât `fruits.txt`, cât și `backup/`         |
 
 Scrieți scripturile cu unul dintre editoarele din [Editoare de text](/docs/labs/06#text-editors), din laboratorul 06.
 Terminația `.sh` din nume este doar o convenție: Linux se uită la conținutul unui fișier, nu la numele lui.
 
 ### Rularea unui script {/* #running-a-script */}
 
-Încercăm să rulăm scriptul în cele două moduri:
+Încercăm să rulăm scriptul în cele trei moduri:
 
 ```shell-session
 [student@fedora lab08]$ ./backup.sh
@@ -111,29 +118,80 @@ fruits.txt
 [student@fedora lab08]$ ./backup.sh
 backup done
 fruits.txt
+[student@fedora lab08]$ source backup.sh
+backup done
+fruits.txt
 ```
 
 - `./backup.sh` a eșuat: un fișier nou nu are permisiunea `x` (vedeți [`chmod`](/docs/labs/05#chmod) în laboratorul 05).
 - `bash backup.sh` a mers totuși: programul este `bash`, iar scriptul e doar un fișier pe care acesta îl citește.
 - După `chmod +x`, nucleul a citit shebang-ul din `./backup.sh` și a rulat `/bin/bash ./backup.sh`.
+- `source backup.sh` nu a pornit niciun proces nou: shell-ul vostru a citit fișierul și i-a rulat singur liniile.
 
-![Cum rulează ./backup.sh și bash backup.sh](./images/run-script.svg)
+![Cum rulează ./backup.sh, bash backup.sh și source backup.sh](./images/run-script.svg)
 
-| Comandă          | De ce are nevoie                                                                                              |
-| ---------------- | ------------------------------------------------------------------------------------------------------------- |
-| `./backup.sh`    | de permisiunea `x` și de shebang; de `./`, pentru că directorul curent nu este în `PATH` (laboratorul 04)    |
-| `bash backup.sh` | doar de permisiunea `r`; pentru `bash`, shebang-ul este un comentariu                                         |
+| Comandă            | Cine rulează liniile | De ce are nevoie                                                                                          |
+| ------------------ | -------------------- | --------------------------------------------------------------------------------------------------------- |
+| `./backup.sh`      | un `bash` nou        | de permisiunea `x` și de shebang; de `./`, pentru că directorul curent nu este în `PATH` (laboratorul 04) |
+| `bash backup.sh`   | un `bash` nou        | doar de permisiunea `r`; pentru `bash`, shebang-ul este un comentariu                                     |
+| `source backup.sh` | shell-ul vostru      | doar de permisiunea `r`; shebang-ul este un comentariu                                                    |
 
 Shebang-ul funcționează pentru orice limbaj: un fișier care începe cu `#!/usr/bin/python3` este rulat de Python.
 
-Scriptul rulează într-un proces `bash` **nou**, copil al shell-ului vostru. Un `cd` sau o variabilă din script schimbă
-doar acel proces, iar procesul se termină odată cu scriptul: shell-ul vostru rămâne unde era. Exercițiile de acasă și
+Cu `./` și cu `bash`, scriptul rulează într-un proces `bash` **nou**, copil al shell-ului vostru. Un `cd` sau o
+variabilă din script schimbă doar acel proces, iar procesul se termină odată cu scriptul: shell-ul vostru rămâne unde
+era. Cu `source`, ce schimbă scriptul rămâne în shell-ul vostru: vedeți [secțiunea următoare](#running-a-script-in-your-shell-source). Exercițiile de acasă și
 provocările au nevoie de detalii, pe care le găsiți în [Subshell-uri](#subshells).
 
 :::caution
 
 Rulați scripturile cu `./script.sh` sau cu `bash script.sh`, nu cu `sh script.sh`: `sh` ignoră shebang-ul, iar pe Ubuntu
 este `dash`, care nu cunoaște multe dintre funcționalitățile `bash` (vedeți [Fedora și Ubuntu](#fedora-and-ubuntu)).
+
+:::
+
+### Rularea unui script în propriul shell: `source` {/* #running-a-script-in-your-shell-source */}
+
+**`source <FILE>`**, sau numele lui scurt, **`. <FILE>`**, nu pornește niciun proces nou: este o comandă internă, iar
+shell-ul **vostru** citește fișierul și îi rulează liniile, ca și cum le-ați fi tastat voi. Ce schimbă fișierul rămâne
+în shell-ul vostru. Gândiți-vă la drumul până la un magazin: cu `bash`, trimiteți un prieten și voi rămâneți acasă; cu
+`source`, mergeți chiar voi acolo.
+
+```bash title="~/lab08/go.sh"
+#!/bin/bash
+cd photos
+where="photos"
+```
+
+```shell-session
+[student@fedora lab08]$ bash go.sh
+[student@fedora lab08]$ echo "$PWD [$where]"
+/home/student/lab08 []
+[student@fedora lab08]$ source go.sh
+[student@fedora photos]$ echo "$PWD [$where]"
+/home/student/lab08/photos [photos]
+[student@fedora photos]$ cd ..
+```
+
+- `bash go.sh` a intrat în `photos` și a setat `where` într-un `bash` nou, care apoi s-a terminat: shell-ul vostru nu
+  s-a schimbat.
+- `source go.sh` a rulat aceleași linii în shell-ul vostru: prompt-ul arată `photos`, iar `where` este încă setată.
+
+| Comanda                   | Cine rulează liniile | De ce are nevoie                 | Ce schimbă fișierul       |
+| ------------------------- | -------------------- | -------------------------------- | ------------------------- |
+| `./go.sh`                 | un `bash` nou        | de permisiunea `x` și de shebang | se pierde când se termină |
+| `bash go.sh`              | un `bash` nou        | de permisiunea `r`               | se pierde când se termină |
+| `source go.sh`, `. go.sh` | shell-ul vostru      | de permisiunea `r`               | rămâne în shell-ul vostru |
+
+Folosiți `source` doar pentru un fișier care trebuie să vă schimbe shell-ul: `~/.bashrc`, pe care `bash` îl citește în
+același fel când pornește (după ce îl modificați, `source ~/.bashrc` îl aplică fără un terminal nou), sau un fișier cu
+funcții folosite de mai multe scripturi. Rulați orice alt script cu `./` sau cu `bash`, ca să nu vă poată schimba
+shell-ul din greșeală.
+
+:::caution
+
+`exit` într-un fișier rulat cu `source` încheie shell-ul **vostru**, iar terminalul se închide. Un fișier făcut pentru
+`source` nu apelează `exit`.
 
 :::
 
@@ -197,14 +255,14 @@ wc -l "$file"
 
 Avertismentele pe care le întâlniți în acest laborator:
 
-| Cod      | Ce înseamnă                                                                              |
-| -------- | ---------------------------------------------------------------------------------------- |
-| `SC2086` | o variabilă fără ghilimele: este tăiată în cuvinte, iar globurile din ea sunt expandate  |
-| `SC2162` | `read` fără `-r`: elimină caracterele `\`                                                |
-| `SC2045` | `for f in $(ls ...)`: un nume de fișier cu spații se strică; folosiți un glob            |
-| `SC2044` | `for f in $(find ...)`: aceeași problemă; folosiți `find ... \| while read` sau `-exec`  |
+| Cod      | Ce înseamnă                                                                                              |
+| -------- | -------------------------------------------------------------------------------------------------------- |
+| `SC2086` | o variabilă fără ghilimele: este tăiată în cuvinte, iar globurile din ea sunt expandate                  |
+| `SC2162` | `read` fără `-r`: elimină caracterele `\`                                                                |
+| `SC2045` | `for f in $(ls ...)`: un nume de fișier cu spații se strică; folosiți un glob                            |
+| `SC2044` | `for f in $(find ...)`: aceeași problemă; folosiți `find ... \| while read` sau `-exec`                  |
 | `SC2034` | o variabilă care primește o valoare, dar nu e folosită niciodată: deseori, o greșeală de tastare în nume |
-| `SC1009` | o eroare de sintaxă, de exemplu un `fi` sau un `done` care lipsește                      |
+| `SC1009` | o eroare de sintaxă, de exemplu un `fi` sau un `done` care lipsește                                      |
 
 :::tip
 
@@ -220,33 +278,139 @@ arătați cititorului că ați ales asta intenționat.
 după fiecare modificare și marchează avertismentele în text, completează numele comenzilor și ale variabilelor și
 afișează ajutorul pentru comanda de sub cursor. Tastele sunt cele din laboratorul 07.
 
-| Editor               | Ce îi trebuie ca să folosească `bash-language-server`                                                                          |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `vim`                | liniile de mai jos în `~/.vimrc`, lângă cele pentru `clangd`                                                                   |
-| `nvim` 0.11 sau mai nou | liniile de mai jos, în `~/.config/nvim/init.lua`                                                                            |
-| `hx` (Helix)         | nimic: `hx --health bash` afișează `✓ bash-language-server`                                                                    |
-| `emacs` 29 sau mai nou | `(add-hook 'sh-mode-hook 'eglot-ensure)` în `~/.emacs.d/init.el`                                                             |
-| `code` (VS Code)     | extensia **Bash IDE** (`code --install-extension mads-hartmann.bash-ide-vscode`), care vine cu propriul server                 |
-| `zed` (Zed)          | nimic: descarcă singur serverul                                                                                                |
+Orice editor are nevoie de `shellcheck` instalat: fără el, serverul de limbaj completează nume, dar nu afișează niciun
+avertisment. Configurați-vă editorul:
 
-```vim title="~/.vimrc (add)"
-au User lsp_setup call lsp#register_server({
-    \ 'name': 'bash-language-server',
-    \ 'cmd': {server_info->['bash-language-server', 'start']},
-    \ 'allowlist': ['sh', 'bash'],
-    \ })
+<Tabs groupId="editor">
+<TabItem value="vim" label="vim">
+
+`vim` are nevoie de pluginul `vim-lsp`:
+
+```bash
+git clone https://github.com/prabirshrestha/vim-lsp ~/.vim/pack/lsp/start/vim-lsp
 ```
 
-```lua title="~/.config/nvim/init.lua (add)"
+:::info
+
+**S-ar putea să fie deja instalat**
+
+Dacă ați configurat `vim` în laboratorul 07, aveți deja `vim-lsp` (`ls ~/.vim/pack/lsp/start`) și liniile marcate
+`s-ar putea să existe deja` în `~/.vimrc`: adăugați doar blocul marcat `nou`.
+
+:::
+
+Adăugați aceste linii în `~/.vimrc`: ele pornesc `bash-language-server` pentru scripturile de shell, afișează
+avertismentele la capătul liniei și definesc tastele din laboratorul 07.
+
+```vim title="~/.vimrc"
+" s-ar putea să existe deja, din laboratorul 07
+let g:lsp_diagnostics_virtual_text_enabled = 1
+
+" nou, pentru scripturile de shell
+filetype plugin on
+if executable('bash-language-server')
+  au User lsp_setup call lsp#register_server({
+        \ 'name': 'bash-language-server',
+        \ 'cmd': {server_info->['bash-language-server', 'start']},
+        \ 'allowlist': ['sh', 'bash'],
+        \ })
+endif
+
+" s-ar putea să existe deja, din laboratorul 07
+function! s:on_lsp_buffer_enabled() abort
+  setlocal omnifunc=lsp#complete
+  nmap <buffer> gd <plug>(lsp-definition)
+  nmap <buffer> gr <plug>(lsp-references)
+  nmap <buffer> K <plug>(lsp-hover)
+  nmap <buffer> <leader>rn <plug>(lsp-rename)
+  nmap <buffer> <leader>ca <plug>(lsp-code-action)
+  nmap <buffer> ]d <plug>(lsp-next-diagnostic)
+endfunction
+augroup lsp_install
+  au!
+  autocmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
+augroup END
+```
+
+Verificare: deschideți un fișier `.sh` și rulați `:LspStatus`; apare `bash-language-server: running`.
+
+</TabItem>
+<TabItem value="nvim" label="nvim">
+
+Adăugați aceste linii în `~/.config/nvim/init.lua` (Neovim 0.11 sau mai nou). Ultima linie afișează avertismentele
+la capătul liniei; fără ea, Neovim doar le marchează în stânga.
+
+:::info
+
+**S-ar putea să existe deja**
+
+Dacă ați configurat `nvim` în laboratorul 07, fișierul `init.lua` are deja linia marcată `s-ar putea să existe deja`:
+adăugați doar liniile marcate `nou`.
+
+:::
+
+```lua title="~/.config/nvim/init.lua"
+-- nou, pentru scripturile de shell
 vim.lsp.config('bashls', {
   cmd = { 'bash-language-server', 'start' },
   filetypes = { 'sh', 'bash' },
 })
 vim.lsp.enable('bashls')
+
+-- s-ar putea să existe deja, din laboratorul 07
+vim.diagnostic.config({ virtual_text = true })
 ```
 
-Orice editor are nevoie de `shellcheck` instalat: fără el, serverul de limbaj completează nume, dar nu afișează niciun
-avertisment.
+Verificare: deschideți un fișier `.sh` și rulați `:checkhealth vim.lsp`; `bashls` apare printre clienții activi.
+
+</TabItem>
+<TabItem value="hx" label="hx">
+
+Helix nu are nevoie de nicio setare: pornește singur `bash-language-server` pentru fiecare script de shell.
+
+```shell-session
+[student@fedora lab08]$ hx --health bash
+...
+Configured language servers:
+  ✓ bash-language-server: /usr/bin/bash-language-server
+...
+```
+
+- Helix a găsit `bash-language-server` în `PATH`. Un `✘` acolo înseamnă că serverul nu este instalat.
+
+</TabItem>
+<TabItem value="emacs" label="emacs">
+
+Eglot cunoaște deja `bash-language-server`: adăugați această linie în `~/.emacs.d/init.el` (sau în `~/.emacs`, dacă
+aveți acest fișier), lângă cele pe care s-ar putea să le aveți deja din laboratorul 07:
+
+```lisp title="~/.emacs.d/init.el"
+(add-hook 'sh-mode-hook 'eglot-ensure)
+```
+
+Verificare: deschideți un fișier `.sh` (`emacs -nw script.sh`); linia de mod, din partea de jos, afișează `eglot`.
+
+</TabItem>
+<TabItem value="vscode" label="VS Code">
+
+Instalați extensia **Bash IDE**, care vine cu propriul server: din bara **Extensions**
+(<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>, căutați `Bash IDE`, de la **Mads Hartmann**) sau din terminal:
+
+```bash
+code --install-extension mads-hartmann.bash-ide-vscode
+```
+
+Verificare: deschideți un fișier `.sh` și faceți o greșeală, de exemplu `x = 1`: este subliniată imediat.
+
+</TabItem>
+<TabItem value="zed" label="Zed">
+
+Zed nu are nevoie de nicio setare: descarcă singur serverul prima dată când deschideți un script de shell.
+
+Verificare: deschideți un fișier `.sh` și faceți o greșeală, de exemplu `x = 1`: este subliniată imediat.
+
+</TabItem>
+</Tabs>
 
 ## Variabile {/* #variables */}
 
@@ -309,10 +473,10 @@ $' \t\n'
 
 ![Cum taie shell-ul o variabilă în cuvinte](./images/ifs-split.svg)
 
-| Caracterul din `IFS`       | Cum taie                                                                                        |
-| -------------------------- | ----------------------------------------------------------------------------------------------- |
-| spațiu, tab, linie nouă    | mai multe la rând fac **o singură** tăietură; la începutul și la sfârșitul valorii sunt eliminate |
-| oricare altul (`:`, `,`)   | taie **fiecare**: `a::c` dă trei cuvinte, `a`, un cuvânt gol și `c`                              |
+| Caracterul din `IFS`     | Cum taie                                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------------------- |
+| spațiu, tab, linie nouă  | mai multe la rând fac **o singură** tăietură; la începutul și la sfârșitul valorii sunt eliminate |
+| oricare altul (`:`, `,`) | taie **fiecare**: `a::c` dă trei cuvinte, `a`, un cuvânt gol și `c`                               |
 
 :::caution
 
@@ -326,15 +490,15 @@ schimbați `IFS`, rulați `unset IFS`: până atunci, orice variabilă fără gh
 `read` este o comandă internă a shell-ului (manualul ei se afișează cu `help read`). Așteaptă o linie, până la
 <kbd>Enter</kbd>, și o pune în variabile:
 
-| Comandă                 | Ce face                                                                                         |
-| ----------------------- | ----------------------------------------------------------------------------------------------- |
-| `read NAME`             | citește o singură linie de la intrarea standard și o pune în `NAME`                             |
-| `read -p "<TEXT>" NAME` | afișează mai întâi textul `<TEXT>` (un *prompt*)                                                |
-| `read A B C`            | taie linia la `IFS`: câte un cuvânt pentru fiecare variabilă, iar **ultima** primește restul    |
-| `IFS=: read A B C`      | taie linia la `:`, doar pentru acest `read`                                                     |
-| `read -r NAME`          | *raw*: păstrează caracterele `\`; fără `-r`, `read` le elimină                                  |
-| `IFS= read -r NAME`     | citește linia **exact** cum este, cu spațiile de la început și de la sfârșit                    |
-| `read NAME < <FILE>`    | citește prima linie din `<FILE>`                                                                |
+| Comandă                 | Ce face                                                                                      |
+| ----------------------- | -------------------------------------------------------------------------------------------- |
+| `read NAME`             | citește o singură linie de la intrarea standard și o pune în `NAME`                          |
+| `read -p "<TEXT>" NAME` | afișează mai întâi textul `<TEXT>` (un *prompt*)                                             |
+| `read A B C`            | taie linia la `IFS`: câte un cuvânt pentru fiecare variabilă, iar **ultima** primește restul |
+| `IFS=: read A B C`      | taie linia la `:`, doar pentru acest `read`                                                  |
+| `read -r NAME`          | *raw*: păstrează caracterele `\`; fără `-r`, `read` le elimină                               |
+| `IFS= read -r NAME`     | citește linia **exact** cum este, cu spațiile de la început și de la sfârșit                 |
+| `read NAME < <FILE>`    | citește prima linie din `<FILE>`                                                             |
 
 ```shell-session
 [student@fedora lab08]$ read -p "Full name: " first last
@@ -352,6 +516,23 @@ root has the UID 0
 - `IFS=:` înaintea lui `read` este o variabilă doar pentru acea comandă: linia s-a tăiat la `:`, iar `IFS` a rămas la
   valoarea implicită.
 
+:::caution
+
+**`IFS=:` înaintea altei comenzi nu îi taie parametrii**
+
+```shell-session
+[student@fedora lab08]$ x="Bob   Jones:20"
+[student@fedora lab08]$ IFS=: printf '[%s]\n' $x
+[Bob]
+[Jones:20]
+```
+
+Shell-ul taie `$x` în cuvinte **înainte** să pornească `printf`, cu propriul `IFS`, cel implicit. `IFS=:` ajunge doar la
+programul care pornește după aceea, iar `printf` nu taie nimic. `read` este altfel: taie linia pe care o citește
+**el**, în timp ce rulează, așa că vede `IFS=:`. Ca să tăiați o variabilă la `:`, schimbați `IFS` în shell, separat:
+`IFS=:; printf '[%s]\n' $x; unset IFS` afișează `[Bob   Jones]` și `[20]`.
+
+:::
 
 :::note
 
@@ -387,22 +568,22 @@ Pentru shell, `2` și `3` sunt text: `echo $a+$b` afișează `2+3`. Ca să face�
 
 ### Numere întregi: `$((...))` și `((...))` {/* #integers--and- */}
 
-| Scris ca         | Ce face                                                                                                        |
-| ---------------- | -------------------------------------------------------------------------------------------------------------- |
-| `$((<EXPR>))`    | shell-ul calculează `<EXPR>` și pune **rezultatul** în locul expresiei, ca text                                |
-| `((<EXPR>))`     | o comandă care calculează `<EXPR>`: pentru a schimba o variabilă, `((n++))`, sau drept condiție                |
+| Scris ca         | Ce face                                                                                                           |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `$((<EXPR>))`    | shell-ul calculează `<EXPR>` și pune **rezultatul** în locul expresiei, ca text                                   |
+| `((<EXPR>))`     | o comandă care calculează `<EXPR>`: pentru a schimba o variabilă, `((n++))`, sau drept condiție                   |
 | `expr <A> + <B>` | un **program** vechi care afișează rezultatul; fiecare număr și operator este un parametru, iar `*` se scrie `\*` |
 
 În interiorul `((...))`, variabilele nu au nevoie de `$`, iar operatorii sunt cei din C:
 
-| Operator          | Ce face                                                   | Exemplu                                         |
-| ----------------- | --------------------------------------------------------- | ----------------------------------------------- |
-| `+ - * /`         | adunare, scădere, înmulțire, împărțire: doar numere întregi | `$((7 / 2))` este `3`                         |
-| `% **`            | restul împărțirii, ridicare la putere                     | `$((7 % 2))` este `1`, `$((2 ** 10))` este `1024` |
-| `< <= > >= == !=` | comparații: `1` înseamnă adevărat, `0` fals               | `$((3 > 2))` este `1`                           |
-| `&& \|\| !`       | și, sau, negație                                          | `$((1 && 0))` este `0`                          |
-| `= += -= ++ --`   | schimbă o variabilă                                       | `((n += 2))`                                    |
-| `( )`             | grupare                                                   | `$(( (2 + 3) * 4 ))` este `20`                  |
+| Operator          | Ce face                                                     | Exemplu                                           |
+| ----------------- | ----------------------------------------------------------- | ------------------------------------------------- |
+| `+ - * /`         | adunare, scădere, înmulțire, împărțire: doar numere întregi | `$((7 / 2))` este `3`                             |
+| `% **`            | restul împărțirii, ridicare la putere                       | `$((7 % 2))` este `1`, `$((2 ** 10))` este `1024` |
+| `< <= > >= == !=` | comparații: `1` înseamnă adevărat, `0` fals                 | `$((3 > 2))` este `1`                             |
+| `&& \|\| !`       | și, sau, negație                                            | `$((1 && 0))` este `0`                            |
+| `= += -= ++ --`   | schimbă o variabilă                                         | `((n += 2))`                                      |
+| `( )`             | grupare                                                     | `$(( (2 + 3) * 4 ))` este `20`                    |
 
 :::info
 
@@ -483,14 +664,14 @@ comparații, folosiți `test`.
 `test` este o comandă care verifică o condiție, nu afișează nimic și se termină cu `0` (adevărat) sau cu `1` (fals).
 `[` este aceeași comandă, cu o regulă în plus: ultimul ei parametru trebuie să fie `]`.
 
-| Test                                             | Adevărat când                                                |
-| ------------------------------------------------ | ------------------------------------------------------------ |
-| `<A> -eq <B>`, `-ne`, `-lt`, `-le`, `-gt`, `-ge` | **numerele** sunt egale, diferite, `<`, `<=`, `>`, `>=`      |
-| `"<S>" = "<T>"`, `"<S>" != "<T>"`                | **textele** sunt egale, diferite                             |
-| `-z "<S>"`, `-n "<S>"`                           | textul este gol, nu este gol                                 |
-| `-e <FILE>`, `-f <FILE>`, `-d <FILE>`            | există; este un fișier obișnuit; este un director            |
-| `-r <FILE>`, `-w <FILE>`, `-x <FILE>`            | aveți voie să îl citiți, să îl scrieți, să îl rulați         |
-| `! <TEST>`                                       | testul este fals                                             |
+| Test                                             | Adevărat când                                           |
+| ------------------------------------------------ | ------------------------------------------------------- |
+| `<A> -eq <B>`, `-ne`, `-lt`, `-le`, `-gt`, `-ge` | **numerele** sunt egale, diferite, `<`, `<=`, `>`, `>=` |
+| `"<S>" = "<T>"`, `"<S>" != "<T>"`                | **textele** sunt egale, diferite                        |
+| `-z "<S>"`, `-n "<S>"`                           | textul este gol, nu este gol                            |
+| `-e <FILE>`, `-f <FILE>`, `-d <FILE>`            | există; este un fișier obișnuit; este un director       |
+| `-r <FILE>`, `-w <FILE>`, `-x <FILE>`            | aveți voie să îl citiți, să îl scrieți, să îl rulați    |
+| `! <TEST>`                                       | testul este fals                                        |
 
 ```shell-session
 [student@fedora lab08]$ a=2; b=3
@@ -522,10 +703,10 @@ interiorul `[ ]`, `<` și `>` sunt redirectări.
 `bash` are două forme mai comode. Ele fac parte din limbajul `bash` (sunt cuvinte cheie), nu sunt comenzi, așa că
 funcționează doar în `bash`, nu și în `sh`:
 
-| Formă          | Ce aduce în plus                                                                                                 |
-| -------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Formă          | Ce aduce în plus                                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `[[ <TEST> ]]` | ca `[`, dar o variabilă fără ghilimele **nu** se taie, `&&` și `\|\|` funcționează în interior, iar `==` acceptă un glob |
-| `(( <EXPR> ))` | aritmetica din `$((...))`, folosită drept condiție: adevărată când rezultatul **nu** este `0`                    |
+| `(( <EXPR> ))` | aritmetica din `$((...))`, folosită drept condiție: adevărată când rezultatul **nu** este `0`                            |
 
 ```shell-session
 [student@fedora lab08]$ if (( a < b )); then echo "smaller"; fi
@@ -583,13 +764,13 @@ echo "go!"
 go!
 ```
 
-| Scris ca                        | Ce face                                                         |
-| ------------------------------- | --------------------------------------------------------------- |
-| `while <COMMAND>; do ...; done` | repetă cât timp `<COMMAND>` se termină cu `0`                   |
-| `until <COMMAND>; do ...; done` | repetă până când `<COMMAND>` se termină cu `0`                  |
-| `while true; do ...; done`      | repetă la nesfârșit, până la un `break`                         |
-| `break`                         | iese din buclă                                                  |
-| `continue`                      | sare peste restul corpului și trece la iterația următoare       |
+| Scris ca                        | Ce face                                                   |
+| ------------------------------- | --------------------------------------------------------- |
+| `while <COMMAND>; do ...; done` | repetă cât timp `<COMMAND>` se termină cu `0`             |
+| `until <COMMAND>; do ...; done` | repetă până când `<COMMAND>` se termină cu `0`            |
+| `while true; do ...; done`      | repetă la nesfârșit, până la un `break`                   |
+| `break`                         | iese din buclă                                            |
+| `continue`                      | sare peste restul corpului și trece la iterația următoare |
 
 :::caution
 
@@ -627,12 +808,12 @@ variabilele pe care le schimbă se pierd când se termină (vedeți [Subshell-ur
 
 `for` dă unei variabile, pe rând, fiecare cuvânt dintr-o listă și rulează corpul o dată pentru fiecare cuvânt:
 
-| Scris ca                | Cuvintele                                                                                  |
-| ----------------------- | ------------------------------------------------------------------------------------------ |
-| `for f in apple kiwi`   | cuvintele scrise după `in`                                                                 |
+| Scris ca                | Cuvintele                                                                                 |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| `for f in apple kiwi`   | cuvintele scrise după `in`                                                                |
 | `for f in *.txt`        | numele fișierelor care se potrivesc cu globul, fiecare câte un cuvânt, chiar și cu spații |
-| `for w in $(<COMMAND>)` | rezultatul comenzii, tăiat la `IFS`                                                        |
-| `for p in "$@"`         | parametrii scriptului (vedeți [Parametrii scriptului](#script-parameters))                 |
+| `for w in $(<COMMAND>)` | rezultatul comenzii, tăiat la `IFS`                                                       |
+| `for p in "$@"`         | parametrii scriptului (vedeți [Parametrii scriptului](#script-parameters))                |
 
 ```shell-session
 [student@fedora lab08]$ for f in *.txt; do echo "$f: $(wc -l < "$f") lines"; done
@@ -668,11 +849,11 @@ este o eroare de sintaxă, pentru că `for` este un cuvânt cheie, nu o comandă
 Un glob vede un singur director. `find` (vedeți [Găsirea fișierelor](/docs/labs/02#finding-files-find) în laboratorul
 02) caută și în toate subdirectoarele și afișează câte o cale pe linie:
 
-| Scris ca                                                          | Ce face                                                                                                          |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `find <DIR> -name '<GLOB>' \| while IFS= read -r f; do ...; done` | o iterație pentru fiecare cale, chiar și cu spații; variabilele buclei se pierd după pipe                       |
-| `find <DIR> -name '<GLOB>' -exec <COMMAND> {} +`                  | `find` rulează singur `<COMMAND>`, cu căile în locul lui `{}`: fără buclă și fără tăiere în cuvinte              |
-| `for f in $(find ...)`                                            | rezultatul se taie la `IFS`: un nume cu spații se strică, la fel ca la `$(ls)`                                  |
+| Scris ca                                                          | Ce face                                                                                             |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `find <DIR> -name '<GLOB>' \| while IFS= read -r f; do ...; done` | o iterație pentru fiecare cale, chiar și cu spații; variabilele buclei se pierd după pipe           |
+| `find <DIR> -name '<GLOB>' -exec <COMMAND> {} +`                  | `find` rulează singur `<COMMAND>`, cu căile în locul lui `{}`: fără buclă și fără tăiere în cuvinte |
+| `for f in $(find ...)`                                            | rezultatul se taie la `IFS`: un nume cu spații se strică, la fel ca la `$(ls)`                      |
 
 ```shell-session
 [student@fedora lab08]$ find . -name '*.jpeg' | sort | while IFS= read -r f; do echo "[$f]"; done
@@ -694,11 +875,11 @@ Un glob vede un singur director. `find` (vedeți [Găsirea fișierelor](/docs/la
 
 ### Numărare: `seq`, `{1..5}` și `for ((...))` {/* #counting-seq-15-and-for- */}
 
-| Scris ca                         | Numerele                                                                                                                         |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `$(seq <FIRST> <STEP> <LAST>)`   | le afișează `seq`, un program; merge și cu variabile: `$(seq 1 $n)`                                                             |
+| Scris ca                         | Numerele                                                                                                                                           |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$(seq <FIRST> <STEP> <LAST>)`   | le afișează `seq`, un program; merge și cu variabile: `$(seq 1 $n)`                                                                                |
 | `{<FIRST>..<LAST>..<STEP>}`      | le scrie `bash` (*brace expansion*, expandarea acoladelor), doar cu numere: cu `n=5`, `{1..$n}` nu este `1 2 3 4 5`, ci un singur cuvânt, `{1..5}` |
-| `for ((i = 1; i <= 10; i += 3))` | `for`-ul în stil C din `bash`                                                                                                    |
+| `for ((i = 1; i <= 10; i += 3))` | `for`-ul în stil C din `bash`                                                                                                                      |
 
 ```shell-session
 [student@fedora lab08]$ for i in $(seq 1 3 10); do echo -n "$i "; done; echo
@@ -767,12 +948,12 @@ total: 5, sum: []
 
 Cuvintele de după numele unui script sunt **parametrii** lui, la fel ca la o funcție:
 
-| Parametru              | Valoare                                                               |
-| ---------------------- | --------------------------------------------------------------------- |
-| `$0`                   | numele scriptului, așa cum l-ați tastat                               |
-| `$1` ... `$9`, `${10}` | parametrii                                                            |
-| `$#`                   | câți parametri sunt                                                   |
-| `"$@"`                 | toți parametrii, fiecare un cuvânt separat, chiar dacă are spații     |
+| Parametru              | Valoare                                                           |
+| ---------------------- | ----------------------------------------------------------------- |
+| `$0`                   | numele scriptului, așa cum l-ați tastat                           |
+| `$1` ... `$9`, `${10}` | parametrii                                                        |
+| `$#`                   | câți parametri sunt                                               |
+| `"$@"`                 | toți parametrii, fiecare un cuvânt separat, chiar dacă are spații |
 
 ```bash title="~/lab08/args.sh"
 #!/bin/bash
@@ -808,6 +989,143 @@ fi
 `>&2` trimite mesajul la ieșirea de eroare, `2`, cum se cuvine pentru o eroare (vedeți
 [Erori](/docs/labs/03#errors-2-and-2) în laboratorul 03).
 
+## Tratarea erorilor {/* #handling-errors */}
+
+Când o comandă eșuează, `bash` îi afișează eroarea și trece la linia următoare, ca în terminal. Un script care continuă
+după o eroare poate face lucrul corect în locul greșit:
+
+```bash title="~/lab08/tidy.sh"
+#!/bin/bash
+# clean up the photos
+cd photoz
+rm -f *.tmp
+echo "photos cleaned"
+```
+
+```shell-session
+[student@fedora lab08]$ bash tidy.sh
+tidy.sh: line 3: cd: photoz: No such file or directory
+photos cleaned
+[student@fedora lab08]$ echo $?
+0
+```
+
+- `cd` a eșuat (directorul este `photos`), dar `rm` a rulat oricum, în `~/lab08`: a șters fișierele `.tmp` din
+  directorul greșit.
+- Scriptul s-a terminat cu `0`, codul de ieșire al lui `echo`, ultima lui comandă: cine l-a rulat crede că a mers.
+
+Puteți verifica singuri o comandă: `cd photoz || exit 1` încheie scriptul când `cd` eșuează (vedeți
+[Înlănțuirea comenzilor](/docs/labs/06#chaining-commands--and-) în laboratorul 06). Ca să verificați **fiecare**
+comandă, folosiți `set`.
+
+### Oprirea la prima eroare: `set -e` {/* #stopping-at-the-first-error-set--e */}
+
+`set` schimbă opțiunile shell-ului care îl rulează. **`set -e`** (_errexit_), pe o linie separată, aproape de începutul
+scriptului, oprește scriptul la **prima comandă care eșuează**, cu codul de ieșire al acelei comenzi:
+
+```bash title="~/lab08/tidy.sh"
+#!/bin/bash
+# clean up the photos
+set -e
+cd photoz
+rm -f *.tmp
+echo "photos cleaned"
+```
+
+```shell-session
+[student@fedora lab08]$ bash tidy.sh
+tidy.sh: line 4: cd: photoz: No such file or directory
+[student@fedora lab08]$ echo $?
+1
+```
+
+O comandă al cărei cod de ieșire este **verificat** nu oprește scriptul: așa permiteți un eșec.
+
+| Linia, cu `set -e`                          | Când prima comandă eșuează                                                          |
+| ------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `cd photoz`                                 | scriptul se oprește                                                                 |
+| `cd photoz \|\| exit 2`                     | rulează `exit 2`: voi alegeți codul de ieșire sau ce se face în loc                 |
+| `grep -q mango fruits.txt \|\| echo "none"` | rulează `echo`, iar scriptul continuă                                               |
+| `if grep -q mango fruits.txt; then`         | `if` rulează ramura `else`; la fel pentru `while` și `until`: o condiție poate eșua |
+| `! grep -q mango fruits.txt`                | scriptul continuă: `!` inversează codul de ieșire                                   |
+
+:::caution
+
+Cu `set -e`, un `((...))` al cărui rezultat este `0` oprește scriptul: `n=0; ((n++))` calculează vechea valoare a lui
+`n`, `0`, așa că se termină cu `1`. Numărați cu `n=$((n + 1))`.
+
+:::
+
+### Alte opțiuni: `set -u` și `set -o pipefail` {/* #more-options-set--u-and-set--o-pipefail */}
+
+| Opțiunea          | Numele     | Ce face                                                                                 |
+| ----------------- | ---------- | --------------------------------------------------------------------------------------- |
+| `set -e`          | `errexit`  | oprește scriptul la prima comandă care eșuează, în afara unei condiții                  |
+| `set -u`          | `nounset`  | o variabilă nesetată este o eroare care oprește scriptul, nu un text gol                |
+| `set -o pipefail` | `pipefail` | un pipe eșuează când eșuează **oricare** dintre comenzile lui, nu doar ultima           |
+| `set -x`          | `xtrace`   | afișează fiecare comandă înainte să ruleze, ca [`bash -x`](#following-a-script-bash--x) |
+
+`set +e` (cu `+`) dezactivează din nou o opțiune. Majoritatea scripturilor le activează pe primele trei împreună, pe
+linia de după shebang: `set -euo pipefail`.
+
+```shell-session
+[student@fedora lab08]$ cat like.sh
+#!/bin/bash
+set -u
+fruit="kiwi"
+echo "I like $fruti"
+[student@fedora lab08]$ bash like.sh
+like.sh: line 4: fruti: unbound variable
+[student@fedora lab08]$ grep kiwi nope.txt | wc -l; echo $?
+grep: nope.txt: No such file or directory
+0
+0
+[student@fedora lab08]$ set -o pipefail
+[student@fedora lab08]$ grep kiwi nope.txt | wc -l; echo $?
+grep: nope.txt: No such file or directory
+0
+2
+[student@fedora lab08]$ set +o pipefail
+```
+
+- Fără `set -u`, greșeala de scriere `$fruti` ar fi afișat `I like `. În `rm -r "$dri"/*`, aceeași greșeală șterge
+  `/*`.
+- `$1` nu este setat când scriptul nu primește parametri: cu `set -u`, verificați `$#` înainte să folosiți `$1`.
+- Un pipe se termină cu codul de ieșire al ultimei comenzi (vedeți
+  [Codul de ieșire al unui pipeline](/docs/labs/06#the-exit-code-of-a-pipeline) în laboratorul 06): `wc` a mers, așa
+  că `set -e` nu ar vedea că `grep` a eșuat; cu `pipefail`, pipe-ul se termină cu `2`, codul lui `grep`.
+
+### Curățenia: `trap` {/* #cleaning-up-trap */}
+
+**`trap '<COMMANDS>' EXIT`** rulează comenzile când scriptul se termină, oricum s-ar termina: după ultima linie, la
+`exit` sau oprit de `set -e`. Folosiți-l ca să ștergeți fișierele temporare, create cu **`mktemp`** (un fișier nou, gol,
+cu un nume unic în `/tmp`). **`trap '<COMMANDS>' ERR`** rulează comenzile după fiecare comandă care eșuează, acolo unde
+`set -e` s-ar opri: cu `$LINENO`, spune unde s-a oprit scriptul.
+
+```bash title="~/lab08/mango.sh"
+#!/bin/bash
+set -e
+tmp=$(mktemp)
+trap 'rm -f "$tmp"; echo "removed $tmp"' EXIT
+trap 'echo "failed at line $LINENO" >&2' ERR
+sort fruits.txt > "$tmp"
+grep -q mango "$tmp"
+echo "found a mango"
+```
+
+```shell-session
+[student@fedora lab08]$ bash mango.sh
+failed at line 7
+removed /tmp/tmp.7gIFP38nMM
+[student@fedora lab08]$ echo $?
+1
+```
+
+- `grep -q` nu a afișat nimic și s-a terminat cu `1`: `set -e` a oprit scriptul, care, fără trap-ul `ERR`, s-ar fi
+  oprit în tăcere.
+- Trap-ul `EXIT` a șters fișierul temporar, chiar dacă scriptul nu a ajuns la ultima linie.
+- Ghilimelele simple păstrează `$tmp` și `$LINENO` neschimbate, până când rulează trap-ul.
+
 ## Subshell-uri {/* #subshells */}
 
 :::note
@@ -822,10 +1140,11 @@ departe și 📝 Provocările o folosesc.
 Unele comenzi rulează într-un proces nou, iar nimic din ce schimbă nu ajunge înapoi în shell-ul vostru, în afară de
 rezultatul afișat și de codul de ieșire:
 
-| Unde                                            | Cine o rulează                          | Cu ce pornește                                       |
-| ----------------------------------------------- | --------------------------------------- | ---------------------------------------------------- |
-| `./script.sh`, `bash script.sh`                 | un program `bash` nou                   | doar cu variabilele **exportate** (laboratorul 04)   |
-| `( ... )`, `$(...)`, fiecare comandă din `a \| b` | un **subshell**: o copie a shell-ului | cu o copie a **tuturor** variabilelor și funcțiilor |
+| Unde                                              | Cine o rulează                         | Cu ce pornește                                      |
+| ------------------------------------------------- | -------------------------------------- | --------------------------------------------------- |
+| `./script.sh`, `bash script.sh`                   | un program `bash` nou                  | doar cu variabilele **exportate** (laboratorul 04)  |
+| `( ... )`, `$(...)`, fiecare comandă din `a \| b` | un **subshell**: o copie a shell-ului  | cu o copie a **tuturor** variabilelor și funcțiilor |
+| `source script.sh`                                | chiar shell-ul vostru, fără proces nou | cu **toate** variabilele, iar schimbările lui rămân |
 
 Gândiți-vă la o fotocopie a caietului: puteți scrie pe copie, dar originalul nu se schimbă.
 
@@ -851,39 +1170,41 @@ inside: 2, outside: 1
 - După `|`, `while` a numărat într-un subshell, iar `c`-ul lui s-a pierdut; cu `< fruits.txt`, bucla a rulat în shell-ul
   vostru.
 
-Ca să rulați un script **în shell-ul vostru**, astfel încât `cd`-ul și variabilele lui să rămână, folosiți
-`source script.sh` (sau `. script.sh`): așa citește `bash` fișierul `~/.bashrc`. Și o funcție apelată în `$(...)`
-rulează într-un subshell: nu poate întoarce decât ce afișează.
+Și o funcție apelată în `$(...)` rulează într-un subshell: nu poate întoarce decât ce afișează. Doar
+[`source`](#running-a-script-in-your-shell-source) rulează un fișier în shell-ul vostru.
 
 ## Depanare {/* #troubleshooting */}
 
-| Problemă                                                         | Soluție                                                                                                                                       |
-| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bash: ./x.sh: Permission denied`                                | Scriptul nu are permisiunea `x`: rulați `chmod +x x.sh` sau `bash x.sh`                                                                       |
-| `bash: x.sh: command not found`, deși fișierul există            | Directorul curent nu este în `PATH`: rulați `./x.sh`                                                                                          |
-| `/bin/bash^M: bad interpreter: No such file or directory`        | Fișierul are terminații de linie Windows: `sed -i 's/\r$//' x.sh`                                                                             |
-| Editorul nu afișează niciun avertisment într-un script           | Lipsește `shellcheck` sau serverul: `shellcheck --version`, `bash-language-server --version`; pentru `nvim`, verificați liniile din `init.lua` |
-| `bash: name: command not found` după `name = value`              | Fără spații în jurul lui `=`: `name=value`                                                                                                    |
-| Un nume de fișier cu spații este tăiat în două                   | Puneți variabila între ghilimele, `"$f"`; parcurgeți fișierele cu un glob sau cu `find ... \| while IFS= read -r f`, nu cu `$(ls)` sau `$(find)` |
-| `syntax error: invalid arithmetic operator`                      | `bash` nu lucrează cu zecimale: folosiți `bc`                                                                                                 |
-| `bash: a+b: command not found`                                   | O singură pereche de paranteze înseamnă substituție de comenzi: scrieți `$((a + b))`                                                          |
-| `[2: command not found`                                          | `[` este o comandă: puneți un spațiu după el, `[ $a -lt $b ]`                                                                                 |
-| ``[: missing `]'``                                               | Puneți un spațiu înaintea lui `]`                                                                                                             |
-| `[: =: unary operator expected` sau `[: too many arguments`      | O variabilă este goală sau conține spații: puneți-o între ghilimele, `[ "$x" = abc ]`                                                         |
-| `syntax error near unexpected token` `` `fi' `` (sau `done`, `)`) | Lipsește un `;` sau o linie nouă înaintea lui `then` sau `do`, ori un `;;` după o ramură din `case`                                          |
-| `syntax error: unexpected end of file`                           | Lipsește un `fi`, `done`, `esac` sau `}`                                                                                                      |
-| `[[: not found` sau `Syntax error: Bad for loop variable`        | Scriptul a rulat cu `sh`, care pe Ubuntu este `dash`: rulați-l cu `bash` sau cu `./x.sh`                                                      |
-| Scriptul nu se mai termină                                       | Condiția din `while` nu se schimbă niciodată: apăsați <kbd>Ctrl</kbd>+<kbd>C</kbd>, apoi modificați variabila în corpul buclei                |
-| Un contor este `0` după `cat <FILE> \| while read`               | Bucla a rulat într-un subshell: scrieți `done < <FILE>`                                                                                       |
-| Un `cd` din script nu schimbă directorul vostru                  | Scriptul rulează într-un proces nou: folosiți `source x.sh`                                                                                   |
+| Problemă                                                          | Soluție                                                                                                                                                            |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `bash: ./x.sh: Permission denied`                                 | Scriptul nu are permisiunea `x`: rulați `chmod +x x.sh` sau `bash x.sh`                                                                                            |
+| `bash: x.sh: command not found`, deși fișierul există             | Directorul curent nu este în `PATH`: rulați `./x.sh`                                                                                                               |
+| `/bin/bash^M: bad interpreter: No such file or directory`         | Fișierul are terminații de linie Windows: `sed -i 's/\r$//' x.sh`                                                                                                  |
+| Editorul nu afișează niciun avertisment într-un script            | Lipsește `shellcheck` sau serverul: `shellcheck --version`, `bash-language-server --version`; pentru `nvim`, verificați liniile din `init.lua`                     |
+| `bash: name: command not found` după `name = value`               | Fără spații în jurul lui `=`: `name=value`                                                                                                                         |
+| Un nume de fișier cu spații este tăiat în două                    | Puneți variabila între ghilimele, `"$f"`; parcurgeți fișierele cu un glob sau cu `find ... \| while IFS= read -r f`, nu cu `$(ls)` sau `$(find)`                   |
+| `syntax error: invalid arithmetic operator`                       | `bash` nu lucrează cu zecimale: folosiți `bc`                                                                                                                      |
+| `bash: a+b: command not found`                                    | O singură pereche de paranteze înseamnă substituție de comenzi: scrieți `$((a + b))`                                                                               |
+| `[2: command not found`                                           | `[` este o comandă: puneți un spațiu după el, `[ $a -lt $b ]`                                                                                                      |
+| ``[: missing `]'``                                                | Puneți un spațiu înaintea lui `]`                                                                                                                                  |
+| `[: =: unary operator expected` sau `[: too many arguments`       | O variabilă este goală sau conține spații: puneți-o între ghilimele, `[ "$x" = abc ]`                                                                              |
+| `syntax error near unexpected token` `` `fi' `` (sau `done`, `)`) | Lipsește un `;` sau o linie nouă înaintea lui `then` sau `do`, ori un `;;` după o ramură din `case`                                                                |
+| `syntax error: unexpected end of file`                            | Lipsește un `fi`, `done`, `esac` sau `}`                                                                                                                           |
+| `[[: not found` sau `Syntax error: Bad for loop variable`         | Scriptul a rulat cu `sh`, care pe Ubuntu este `dash`: rulați-l cu `bash` sau cu `./x.sh`                                                                           |
+| Scriptul nu se mai termină                                        | Condiția din `while` nu se schimbă niciodată: apăsați <kbd>Ctrl</kbd>+<kbd>C</kbd>, apoi modificați variabila în corpul buclei                                     |
+| Un contor este `0` după `cat <FILE> \| while read`                | Bucla a rulat într-un subshell: scrieți `done < <FILE>`                                                                                                            |
+| Un `cd` din script nu schimbă directorul vostru                   | Scriptul rulează într-un proces nou: folosiți `source x.sh`                                                                                                        |
+| `exit` dintr-un script închide terminalul                         | Scriptul a rulat cu `source`, în shell-ul vostru: rulați-l cu `./x.sh` sau cu `bash x.sh`                                                                          |
+| Scriptul se oprește fără niciun mesaj, după `set -e`              | O comandă a eșuat fără să afișeze ceva (`grep -q`, `((n++))` când `n` este `0`): rulați `bash -x x.sh` sau adăugați `trap 'echo "failed at line $LINENO" >&2' ERR` |
+| `<NAME>: unbound variable`                                        | `set -u` și o variabilă nesetată: verificați-i numele; pentru `$1`, verificați mai întâi `$#`                                                                      |
 
 ## Exerciții {/* #exercises */}
 
-- 🧪 [Primii pași](#first-steps) (exercițiile 1 - 12): câte o idee pe rând, în ordinea din laborator, de făcut în
+- 🧪 [Primii pași](#first-steps) (exercițiile 1 - 13): câte o idee pe rând, în ordinea din laborator, de făcut în
   laborator;
-- 🏠 [Mai departe](#going-further) (exercițiile 13 - 29): scripturi mai lungi, de făcut acasă; unele se uită la ce
+- 🏠 [Mai departe](#going-further) (exercițiile 14 - 32): scripturi mai lungi, de făcut acasă; unele se uită la ce
   rulează într-o **copie** a shell-ului, explicată în [Subshell-uri](#subshells);
-- 📝 [Provocări](#challenges) (exercițiile 30 - 35): cele mai grele, asemănătoare cu cele de la examen.
+- 📝 [Provocări](#challenges) (exercițiile 33 - 39): cele mai grele, asemănătoare cu cele de la examen.
 
 :::danger
 
@@ -937,20 +1258,21 @@ dacă exercițiul nu spune altfel.
 
 **Scripturi de shell**
 
-2. **Primul script**: Scrieți un script care vă salută și trece în alt director, rulați-l în două moduri și aflați unde
-    se află shell-ul vostru după ce scriptul se termină. <small>→ [Scrierea unui script](#writing-a-script) · [Rularea unui script](#running-a-script) · [Urmărirea unui script](#following-a-script-bash--x)</small>
+2. **Primul script**: Scrieți un script care vă salută și trece în alt director, rulați-l în trei moduri și aflați
+    unde se află shell-ul vostru după ce scriptul se termină. <small>→ [Scrierea unui script](#writing-a-script) · [Rularea unui script](#running-a-script) · [Rularea unui script în propriul shell](#running-a-script-in-your-shell-source) · [Urmărirea unui script](#following-a-script-bash--x)</small>
 
     1. scrieți `hello.sh`: un shebang, un comentariu pe o linie separată, apoi comenzi care afișează `Hello, ` urmat de
        numele vostru de utilizator, trec în `/tmp` și afișează directorul curent;
     2. rulați-l cu `bash`; apoi rulați-l folosind calea lui, citiți eroarea, rezolvați-o și rulați-l din nou;
     3. afișați directorul curent al shell-ului vostru;
-    4. rulați scriptul încă o dată, astfel încât fiecare comandă să fie afișată înainte să ruleze.
+    4. rulați scriptul încă o dată, astfel încât fiecare comandă să fie afișată înainte să ruleze;
+    5. rulați-l în propriul shell, afișați din nou directorul curent al shell-ului vostru, apoi reveniți cu `cd -`.
 
     <details className="reveal">
     <summary>Indiciu</summary>
 
     Variabila `USER` ([laboratorul 04](/docs/labs/04#variables-defined-by-the-system)); `man chmod`; `man bash`: căutați
-    `-x` sau citiți [Urmărirea unui script](#following-a-script-bash--x).
+    `-x` sau citiți [Urmărirea unui script](#following-a-script-bash--x); `help source`.
 
     </details>
 
@@ -962,9 +1284,11 @@ dacă exercițiul nu spune altfel.
        `chmod +x hello.sh`.
     3. `/home/student/lab08`.
     4. `bash -x hello.sh` afișează `+ echo 'Hello, student'`, `+ cd /tmp` și `+ pwd`, fiecare înaintea rezultatului ei.
+    5. `source hello.sh` afișează `Hello, student` și `/tmp`; acum și shell-ul vostru este în `/tmp` (prompt-ul arată
+       `tmp`).
 
-    **De ce:** scriptul rulează într-un proces `bash` nou: `cd`-ul lui schimbă doar acel proces, care se termină odată
-    cu scriptul.
+    **De ce:** `./` și `bash` rulează scriptul într-un proces `bash` nou: `cd`-ul lui schimbă doar acel proces, care se
+    termină odată cu scriptul; `source` rulează liniile în shell-ul vostru.
 
     </details>
 
@@ -1262,6 +1586,42 @@ dacă exercițiul nu spune altfel.
 
     </details>
 
+**Erori**
+
+13. **Oprirea la prima eroare**: Aflați ce face un script după o comandă care eșuează și faceți-l să se oprească acolo.
+    <small>→ [Tratarea erorilor](#handling-errors) · [Alte opțiuni](#more-options-set--u-and-set--o-pipefail)</small>
+
+    1. scrieți `fail.sh`, care intră în directorul `pictures` (care nu există), afișează directorul curent, apoi
+       afișează `done`; rulați-l cu `bash` și afișați-i codul de ieșire;
+    2. faceți-l să se oprească la prima comandă care eșuează, cu o linie după shebang; rulați-l din nou și afișați-i
+       codul de ieșire;
+    3. înainte de `cd`, adăugați o linie care afișează `no mango` când `fruits.txt` nu conține `mango`; rulați-l din
+       nou;
+    4. faceți-l să se oprească și la o variabilă nesetată; înainte de `cd`, afișați `first: ` urmat de primul
+       parametru; rulați-l fără parametri, apoi cu parametrul `kiwi`.
+
+    <details className="reveal">
+    <summary>Indiciu</summary>
+
+    `help set`: căutați `-e` și `-u`; `grep -q` și `||` din
+    [Înlănțuirea comenzilor](/docs/labs/06#chaining-commands--and-) în laboratorul 06.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Verificare</summary>
+
+    1. `fail.sh: line 2: cd: pictures: No such file or directory`, apoi `/home/student/lab08`, `done` și `0`.
+    2. Linia este `set -e`; doar eroarea lui `cd` (acum pe linia 3), apoi `1`.
+    3. `no mango`, apoi eroarea lui `cd`: scriptul nu s-a oprit la `grep`.
+    4. Linia este `set -eu`; fără parametri: `no mango`, apoi `fail.sh: line <N>: $1: unbound variable`; cu `kiwi`:
+       `no mango`, `first: kiwi`, apoi eroarea lui `cd`.
+
+    **De ce:** `set -e` se oprește la prima comandă al cărei cod de ieșire nu îl verifică nimeni; `||` a verificat codul
+    de ieșire al lui `grep`.
+
+    </details>
+
 ### 🏠 Mai departe {/* #going-further */}
 
 Fiecare exercițiu începe cu **obiectivul** lui; comenzile le alegeți voi. La final, verificați chiar obiectivul, nu doar
@@ -1269,7 +1629,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
 **Scripturi**
 
-13. **Orice limbaj**: `bob` își scrie uneltele în Python și vrea să le ruleze ca pe orice program. Faceți un script
+14. **Orice limbaj**: `bob` își scrie uneltele în Python și vrea să le ruleze ca pe orice program. Faceți un script
     Python să ruleze cu `./` și aflați ce face nucleul cu un shebang greșit. <small>→ [Rularea unui script](#running-a-script)</small>
 
     1. scrieți `hello.py`, cu shebang-ul `#!/usr/bin/python3` și linia `print("Hello from Python!")`; rulați-l cu
@@ -1296,7 +1656,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
     </details>
 
-14. **Un editor care verifică scripturile**: `dave` vrea să vadă bug-urile scripturilor chiar în timp ce tastează, așa
+15. **Un editor care verifică scripturile**: `dave` vrea să vadă bug-urile scripturilor chiar în timp ce tastează, așa
     cum a văzut erorile de C în laboratorul 07. Configurați `bash-language-server` în editor și folosiți-l pe un script
     cu bug-uri. <small>→ [În editor](#in-the-editor-bash-language-server) · [Găsirea bug-urilor](#finding-bugs-shellcheck)</small>
 
@@ -1329,7 +1689,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
     </details>
 
-15. **Găsiți bug-ul**: `carol` a scris un script care ar trebui să afișeze media notelor ei, dar afișează doar o eroare.
+16. **Găsiți bug-ul**: `carol` a scris un script care ar trebui să afișeze media notelor ei, dar afișează doar o eroare.
     Găsiți cele două bug-uri cu `bash -x` și rezolvați-le. <small>→ [Urmărirea unui script](#following-a-script-bash--x) · [Subshell-uri](#subshells)</small>
 
     1. creați notele și scriptul:
@@ -1374,7 +1734,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
 **Variabile și date de intrare**
 
-16. **Ghiciți cuvintele**: Înainte să aveți încredere într-un script care lucrează cu nume de fișiere, trebuie să știți
+17. **Ghiciți cuvintele**: Înainte să aveți încredere într-un script care lucrează cu nume de fișiere, trebuie să știți
     ce face shell-ul cu o variabilă fără ghilimele. Pentru fiecare linie, scrieți **mai întâi** ce afișează, apoi
     rulați-o. <small>→ [Împărțirea în cuvinte](#splitting-words-ifs) · [Globbing](/docs/labs/04#globbing)</small>
 
@@ -1412,7 +1772,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
     </details>
 
-17. **Linii exacte**: `grace` păstrează căi Windows într-un fișier, cu spații în jurul lor. Citiți linia înapoi exact așa
+18. **Linii exacte**: `grace` păstrează căi Windows într-un fișier, cu spații în jurul lor. Citiți linia înapoi exact așa
     cum este. <small>→ [Citirea datelor de intrare](#reading-input-read)</small>
 
     1. creați fișierul cu `printf '%s\n' '  C:\Users\grace  ' > path.txt`;
@@ -1429,7 +1789,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
 **Subshell-uri**
 
-18. **Pierdut într-o copie**: Aflați ce modificări se întorc dintr-o copie a shell-ului. Pentru fiecare linie, scrieți
+19. **Pierdut într-o copie**: Aflați ce modificări se întorc dintr-o copie a shell-ului. Pentru fiecare linie, scrieți
     **mai întâi** ce afișează, apoi rulați-o. <small>→ [Subshell-uri](#subshells)</small>
 
     | Linie                                        |
@@ -1456,20 +1816,17 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
     </details>
 
-19. **Rulați-l aici**: `dave` vrea un script care îl duce la pozele lui și unul care afișează o setare. Aflați când vede
-    un script variabilele shell-ului vostru și când îl schimbă. <small>→ [Subshell-uri](#subshells)</small>
+20. **Exportată sau nu**: `dave` vrea un script care afișează o setare a shell-ului lui. Aflați când vede un script
+    variabilele shell-ului vostru. <small>→ [Subshell-uri](#subshells) · [Rularea unui script în propriul shell](#running-a-script-in-your-shell-source)</small>
 
     1. scrieți `show.sh`, care afișează `color: [<COLOR>]` cu valoarea lui `color`, și faceți-l executabil;
     2. în shell-ul vostru, dați lui `color` valoarea `red`; rulați `show.sh` cu `./`, apoi cu `source`; exportați
-       `color` și rulați-l din nou cu `./`;
-    3. scrieți `goto.sh`, care trece în `~/lab08/photos`; rulați-l cu `bash`, apoi cu `source`, și de fiecare dată
-       afișați directorul curent; reveniți cu `cd -`.
+       `color` și rulați-l din nou cu `./`.
 
     <details className="reveal">
     <summary>Verificare</summary>
 
     2. `color: []`, apoi `color: [red]`, apoi `color: [red]`.
-    3. Cu `bash`: `/home/student/lab08`; cu `source`: `/home/student/lab08/photos`.
 
     **De ce:** un script rulat cu `./` este un `bash` nou, care primește doar variabilele exportate; `source` îl rulează
     în shell-ul vostru.
@@ -1478,7 +1835,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
 **Condiții și bucle**
 
-20. **Ghiciți numărul**: `grace` vrea un joc pentru fratele ei mai mic: scriptul alege un număr de la `1` la `100` și
+21. **Ghiciți numărul**: `grace` vrea un joc pentru fratele ei mai mic: scriptul alege un număr de la `1` la `100` și
     spune `too small` sau `too big` după fiecare încercare, până când numărul este ghicit. <small>→ [`while` și `until`](#while-and-until) · [`[[ ]]` și `(( ))`](#--and--)</small>
 
     1. scrieți `guess.sh`: alege `secret` cu `$RANDOM`, apoi repetă: citește o încercare cu promptul `Your guess: ` și
@@ -1500,7 +1857,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
     </details>
 
-21. **Redenumiți pozele**: Camera foto a lui `erin` scrie fișiere `.jpeg`, dar albumul ei vrea `.jpg`. Redenumiți fiecare
+22. **Redenumiți pozele**: Camera foto a lui `erin` scrie fișiere `.jpeg`, dar albumul ei vrea `.jpg`. Redenumiți fiecare
     fișier `.jpeg` din `photos` și din subdirectoarele lui, inclusiv pe cel cu spațiu în nume, cu **o singură** buclă.
     <small>→ [Fișiere din subdirectoare](#files-in-subfolders-find) · [Împărțirea în cuvinte](#splitting-words-ifs)</small>
 
@@ -1529,7 +1886,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
     </details>
 
-22. **Raportul notelor**: `carol` are notele grupei ei într-un fișier CSV. Scrieți `grades.sh`, care afișează media
+23. **Raportul notelor**: `carol` are notele grupei ei într-un fișier CSV. Scrieți `grades.sh`, care afișează media
     fiecărui student, cu două zecimale, și pe cel mai bun dintre ei. <small>→ [Citirea unui fișier](#reading-a-file-while-read) · [Numere zecimale](#decimals-bc)</small>
 
     1. creați fișierul cu `printf '%s\n' name,math,physics bob,9,7 carol,10,8 dave,6,9 > grades.csv`;
@@ -1543,7 +1900,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
     </details>
 
-23. **O listă de sarcini**: Scrieți `todo.sh`, un mic program care citește comenzi până la `quit` și păstrează sarcinile
+24. **O listă de sarcini**: Scrieți `todo.sh`, un mic program care citește comenzi până la `quit` și păstrează sarcinile
     lui `grace` în `todo.txt`. <small>→ [`while` și `until`](#while-and-until) · [Alegerea după tipar](#choosing-by-pattern-case)</small>
 
     1. programul repetă: afișează promptul `> `, citește o comandă și restul liniei și:
@@ -1569,7 +1926,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
     </details>
 
-24. **Tabla înmulțirii**: Scrieți `table.sh`, care citește `n` și afișează tabla înmulțirii de la `1` la `n`, pe coloane
+25. **Tabla înmulțirii**: Scrieți `table.sh`, care citește `n` și afișează tabla înmulțirii de la `1` la `n`, pe coloane
     de câte 4 caractere. <small>→ [Numărare](#counting-seq-15-and-for-)</small>
 
     1. scrieți-l cu două bucle `for ((...))`, una în interiorul celeilalte;
@@ -1591,7 +1948,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
 **Funcții și parametri**
 
-25. **Codurile de ieșire ale funcțiilor**: Pentru fiecare linie, scrieți **mai întâi** ce afișează, apoi rulați-o.
+26. **Codurile de ieșire ale funcțiilor**: Pentru fiecare linie, scrieți **mai întâi** ce afișează, apoi rulați-o.
     <small>→ [Funcții](#functions)</small>
 
     | Linie                                             |
@@ -1616,8 +1973,8 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
     </details>
 
-26. **O bibliotecă de funcții**: `bob` vrea să folosească `max` și `is_even` în mai multe scripturi, fără să le copieze.
-    Puneți-le într-un fișier separat. <small>→ [Funcții](#functions) · [Subshell-uri](#subshells)</small>
+27. **O bibliotecă de funcții**: `bob` vrea să folosească `max` și `is_even` în mai multe scripturi, fără să le copieze.
+    Puneți-le într-un fișier separat. <small>→ [Funcții](#functions) · [Rularea unui script în propriul shell](#running-a-script-in-your-shell-source)</small>
 
     1. mutați cele două funcții din `max.sh` în `lib.sh`, care doar le definește;
     2. scrieți `use.sh`, care încarcă `lib.sh` cu `source` și afișează `max: <MAX>` pentru cei doi parametri ai săi,
@@ -1633,7 +1990,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
     </details>
 
-27. **Fiecare parametru**: Aflați ce păstrează `"$@"` și pierde `$@`. <small>→ [Parametrii scriptului](#script-parameters)</small>
+28. **Fiecare parametru**: Aflați ce păstrează `"$@"` și pierde `$@`. <small>→ [Parametrii scriptului](#script-parameters)</small>
 
     1. scrieți `words.sh`, care afișează pe o linie fiecare cuvânt din `"$@"` între paranteze drepte, apoi, pe a doua
        linie, fiecare cuvânt din `$@`, fără ghilimele;
@@ -1650,7 +2007,7 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
     </details>
 
-28. **O copie de rezervă sigură**: `erin` vrea să facă o copie de rezervă pentru mai multe directoare cu o singură
+29. **O copie de rezervă sigură**: `erin` vrea să facă o copie de rezervă pentru mai multe directoare cu o singură
     comandă și să afle dacă ceva a eșuat. Scrieți `save.sh`, care copiază fiecare director primit ca parametru în
     `~/lab08/backups/<NAME>-<DATE>`. <small>→ [Parametrii scriptului](#script-parameters)</small>
 
@@ -1676,9 +2033,71 @@ că fiecare comandă a mers. Exercițiile folosesc fișierele și scripturile di
 
     </details>
 
+**Erori**
+
+30. **Când se oprește `set -e`?**: Înainte să îi încredințați fișierele lui `set -e`, trebuie să știți când **nu**
+    oprește un script. Pentru fiecare linie, scrieți **mai întâi** ce afișează, apoi rulați-o.
+    <small>→ [Oprirea la prima eroare](#stopping-at-the-first-error-set--e) · [Alte opțiuni](#more-options-set--u-and-set--o-pipefail)</small>
+
+    | Linia                                                                              |
+    | ---------------------------------------------------------------------------------- |
+    | `bash -c 'set -e; false; echo end'; echo $?`                                       |
+    | `bash -c 'set -e; false \|\| echo no; echo end'; echo $?`                          |
+    | `bash -c 'set -e; n=0; ((n++)); echo "end $n"'; echo $?`                           |
+    | `bash -c 'set -e; x=$(false); echo end'; echo $?`                                  |
+    | `bash -c 'set -e; f() { false; echo in; }; f \|\| echo failed; echo end'; echo $?` |
+    | `bash -c 'set -e; grep kiwi nope.txt \| wc -l; echo end'; echo $?`                 |
+    | `bash -c 'set -eo pipefail; grep kiwi nope.txt \| wc -l; echo end'; echo $?`       |
+
+    <details className="reveal">
+    <summary>Verificare</summary>
+
+    | Linia | Afișează                            |
+    | ----- | ----------------------------------- |
+    | 1     | `1`                                 |
+    | 2     | `no`, `end`, `0`                    |
+    | 3     | `1`                                 |
+    | 4     | `1`                                 |
+    | 5     | `in`, `end`, `0`                    |
+    | 6     | eroarea lui `grep`, `0`, `end`, `0` |
+    | 7     | eroarea lui `grep`, `0`, `2`        |
+
+    **De ce:** `set -e` se oprește doar la un eșec pe care nu îl verifică nimeni; o funcție apelată înainte de `||` este
+    verificată ca întreg, așa că `set -e` este dezactivat în ea, iar un pipe eșuează doar cu `pipefail`.
+
+    </details>
+
+31. **Faceți curat după voi**: `grace` vrea un script care folosește un fișier temporar și nu îl lasă niciodată în
+    urmă, nici când eșuează. <small>→ [Alte opțiuni](#more-options-set--u-and-set--o-pipefail) · [Curățenia](#cleaning-up-trap)</small>
+
+    1. scrieți `top.sh <FILE>`, care începe cu `set -euo pipefail`, verifică că a primit un parametru, sortează liniile
+       din `<FILE>` într-un fișier temporar și afișează primele 3 linii din acel fișier;
+    2. faceți-l să șteargă fișierul temporar când se termină și să afișeze `removed <NAME>` la ieșirea de eroare; când
+       o comandă eșuează, faceți-l să afișeze și `failed at line <N>` la ieșirea de eroare;
+    3. rulați `./top.sh fruits.txt`, apoi `./top.sh nope.txt`, și afișați de fiecare dată codul de ieșire; verificați
+       că cele două fișiere temporare au dispărut.
+
+    <details className="reveal">
+    <summary>Indiciu</summary>
+
+    `man mktemp`; `help trap`: căutați `EXIT` și `ERR`; variabila `LINENO`.
+
+    </details>
+
+    <details className="reveal">
+    <summary>Verificare</summary>
+
+    3. `apple`, `apple`, `banana`, `removed /tmp/tmp.<...>`, apoi `0`; `sort: cannot read: nope.txt: No such file or
+       directory`, `failed at line <N>`, `removed /tmp/tmp.<...>`, apoi `2`; `ls` pentru fiecare nume afișează
+       `No such file or directory`.
+
+    **De ce:** trap-ul `EXIT` rulează oricum s-ar termina scriptul, și atunci când îl oprește `set -e`.
+
+    </details>
+
 **Curățenie**
 
-29. **Curățenie**: Ștergeți tot ce a creat acest laborator.
+32. **Curățenie**: Ștergeți tot ce a creat acest laborator.
 
     1. ieșiți din `~/lab08` cu `cd ~`, apoi ștergeți-l;
     2. închideți terminalul sau dați `unset` variabilelor și funcțiilor setate în el (`fruit`, `msg`, `x`, `a`, `b`,
@@ -1698,8 +2117,8 @@ alegeți voi. Fiecare se încheie cu **Verificarea** după care va fi notat. Une
 [Subshell-uri](#subshells).
 
 Toate provocările pornesc de la aceeași configurație, cea pe care o veți găsi la examen: directorul `~/exam`, cu o copie
-a unui fișier de parole, două directoare cu fișiere și două scripturi. Copiați și rulați comenzile de mai jos înainte de
-prima provocare; rulați-le din nou ca să obțineți înapoi fișierele originale:
+a unui fișier de parole, două directoare cu fișiere, un director gol și două scripturi. Copiați și rulați comenzile de
+mai jos înainte de prima provocare; rulați-le din nou ca să obțineți înapoi fișierele originale:
 
 ```bash
 mkdir -p ~/exam
@@ -1708,8 +2127,8 @@ printf '%s\n' 'root:x:0:0:Super User:/root:/bin/bash' 'daemon:x:2:2:daemon:/sbin
     'bob:x:1001:1001:Bob Jones:/home/bob:/bin/bash' 'carol:x:1002:1002:Carol Smith:/home/carol:/bin/zsh' \
     'dave:x:1003:1003:Dave Brown:/home/dave:/bin/bash' \
     'nobody:x:65534:65534:Kernel Overflow User:/:/usr/sbin/nologin' > passwd
-rm -rf mess organize
-mkdir mess organize
+rm -rf mess organize empty
+mkdir mess organize empty
 touch mess/a.txt mess/b.TXT 'mess/my notes.txt' 'mess/c d.jpg' mess/e.png mess/notes
 touch organize/report.txt organize/README.md 'organize/summer beach.JPG' organize/cat.png organize/run.sh \
     organize/Makefile
@@ -1759,7 +2178,7 @@ chmod +x broken.sh
 Când ați terminat, ștergeți tot cu `rm -rf ~/exam`. Scrieți fiecare script în `~/exam`, faceți-l executabil și rulați-l
 din `~/exam`.
 
-30. **FizzBuzz**: Scrieți `fizzbuzz.sh <N>`, care afișează numerele de la `1` la `<N>`, câte unul pe linie, dar scrie
+33. **FizzBuzz**: Scrieți `fizzbuzz.sh <N>`, care afișează numerele de la `1` la `<N>`, câte unul pe linie, dar scrie
     `Fizz` în locul multiplilor lui `3`, `Buzz` în locul multiplilor lui `5` și `FizzBuzz` în locul multiplilor
     amândurora. Dacă nu primește exact un parametru, afișează `usage: <SCRIPT> <N>` la ieșirea de eroare și se termină
     cu `1`.
@@ -1777,7 +2196,7 @@ din `~/exam`.
 
     </details>
 
-31. **Utilizatorii reali**: Scrieți `users.sh <FILE>`, care citește un fișier în formatul lui `/etc/passwd` și afișează,
+34. **Utilizatorii reali**: Scrieți `users.sh <FILE>`, care citește un fișier în formatul lui `/etc/passwd` și afișează,
     pentru fiecare utilizator cu UID între `1000` și `65533`, o linie `<USER> (<UID>): <SHELL>`, apoi `<N> users`.
     Folosiți doar comenzile shell-ului: fără `awk`, `cut` sau `grep`.
 
@@ -1797,26 +2216,26 @@ din `~/exam`.
 
     </details>
 
-32. **Ghiciți rezultatul**: Pe hârtie, scrieți cele 8 linii pe care le afișează `predict.sh`, **fără** să îl rulați.
+35. **Ghiciți rezultatul**: Pe hârtie, scrieți cele 8 linii pe care le afișează `predict.sh`, **fără** să îl rulați.
     Apoi rulați `bash predict.sh` și explicați fiecare linie pe care ați greșit-o.
 
     <details className="reveal">
     <summary>Verificare</summary>
 
-    | Linie | Afișează    | De ce                                                         |
-    | ----- | ----------- | ------------------------------------------------------------- |
-    | 1     | `[a][b:c]`  | tăiere la spații; două la rând fac o singură tăietură         |
-    | 2     | `[a  b][c]` | tăiere doar la `:`; spațiile se păstrează                     |
-    | 3     | `1 6`       | `n` a fost `local` în `inc`; `m` nu                           |
-    | 4     | `1 18`      | `n=9` a schimbat doar subshell-ul din `$(...)`                |
-    | 5     | `A`         | `photo.jpeg` se potrivește cu `*.jp*`, primul tipar           |
-    | 6     | `1`         | `257` se păstrează într-un octet: `257 % 256`                 |
-    | 7     | `<1 2><3>`  | `"1 2"` este un singur cuvânt                                 |
-    | 8     | `0`         | `while` de după `\|` a numărat într-un subshell               |
+    | Linie | Afișează    | De ce                                                 |
+    | ----- | ----------- | ----------------------------------------------------- |
+    | 1     | `[a][b:c]`  | tăiere la spații; două la rând fac o singură tăietură |
+    | 2     | `[a  b][c]` | tăiere doar la `:`; spațiile se păstrează             |
+    | 3     | `1 6`       | `n` a fost `local` în `inc`; `m` nu                   |
+    | 4     | `1 18`      | `n=9` a schimbat doar subshell-ul din `$(...)`        |
+    | 5     | `A`         | `photo.jpeg` se potrivește cu `*.jp*`, primul tipar   |
+    | 6     | `1`         | `257` se păstrează într-un octet: `257 % 256`         |
+    | 7     | `<1 2><3>`  | `"1 2"` este un singur cuvânt                         |
+    | 8     | `0`         | `while` de după `\|` a numărat într-un subshell       |
 
     </details>
 
-33. **Reparați scriptul**: `broken.sh` ar trebui să afișeze fișierele text din `mess` (numele care se termină cu
+36. **Reparați scriptul**: `broken.sh` ar trebui să afișeze fișierele text din `mess` (numele care se termină cu
     `.txt`, scris cu litere mari sau mici), apoi câte sunt. Are cinci bug-uri. Rezolvați-le, modificând doar liniile
     greșite.
 
@@ -1829,7 +2248,7 @@ din `~/exam`.
 
     </details>
 
-34. **Un calculator**: Scrieți `calc.sh <A> <OP> <B>`, care face calcule cu două numere întregi. `<OP>` este `+`, `-`,
+37. **Un calculator**: Scrieți `calc.sh <A> <OP> <B>`, care face calcule cu două numere întregi. `<OP>` este `+`, `-`,
     `x` (nu `*`: shell-ul l-ar expanda ca pe un glob) sau `/`, care dă un rezultat cu două zecimale. Fiecare eroare
     ajunge la ieșirea de eroare, cu un cod de ieșire: `1` când numărul de parametri nu este `3`, `2` pentru alt
     operator, `3` pentru o împărțire la zero.
@@ -1850,7 +2269,7 @@ din `~/exam`.
 
     </details>
 
-35. **Faceți ordine într-un director**: Scrieți `organize.sh <DIR>`, care mută fiecare fișier din `<DIR>` într-un
+38. **Faceți ordine într-un director**: Scrieți `organize.sh <DIR>`, care mută fiecare fișier din `<DIR>` într-un
     director din interiorul lui `<DIR>`, după terminația numelui, scrisă cu litere mari sau mici: `.txt` și `.md` în
     `text`, `.jpg`, `.jpeg` și `.png` în `images`, `.sh` în `scripts`, iar orice altceva în `other`. Mută doar fișiere,
     nu și directoare, așa că o a doua rulare nu mai schimbă nimic. Trebuie să funcționeze cu nume care conțin spații.
@@ -1871,19 +2290,39 @@ din `~/exam`.
 
     </details>
 
+39. **Un script strict**: Scrieți `strict.sh <DIR>`, a cărui a doua linie este `set -euo pipefail` și care afișează
+    `<N> text files`, unde `<N>` este numărul de nume din `<DIR>` care se termină în `.txt`, cu litere mari sau mici.
+    Fără exact un parametru, afișează `usage: <SCRIPT> <DIR>` la ieșirea de eroare și se termină cu `1`; când nu poate
+    intra în `<DIR>`, se oprește la eroarea lui `cd`, cu `1`.
+
+    <details className="reveal">
+    <summary>Verificare</summary>
+
+    | Comanda                         | Afișează                                            | `$?` |
+    | ------------------------------- | --------------------------------------------------- | ---- |
+    | `./strict.sh mess`              | `3 text files`                                      | `0`  |
+    | `./strict.sh empty`             | `0 text files`                                      | `0`  |
+    | `./strict.sh nope 2> /dev/null` | nimic                                               | `1`  |
+    | `./strict.sh`                   | `usage: ./strict.sh <DIR>`, fără `unbound variable` | `1`  |
+    | `./strict.sh mess empty`        | `usage: ./strict.sh <DIR>`                          | `1`  |
+    | `sed -n 2p strict.sh`           | `set -euo pipefail`                                 |      |
+
+    </details>
+
 ## Întrebări de recapitulare {/* #wrap-up-questions */}
 
 Folosiți **ultimele 5 minute** ale laboratorului ca să răspundeți la aceste întrebări împreună cu colegii și cu
 asistentul. La ultimele două nu există răspunsuri greșite.
 
-1. Care este diferența dintre `./script.sh` și `bash script.sh`? Ce face **shebang**-ul?
+1. Care este diferența dintre `./script.sh`, `bash script.sh` și `source script.sh`? Ce face **shebang**-ul?
 2. Ce găsește `shellcheck` și nu poate găsi `bash -x`, și invers?
-3. De ce nu se schimbă `msg="I like $fruit"` când se schimbă `fruit`? De ce `$a+$b` nu este o sumă?
+3. De ce nu se schimbă `msg="I like $fruit"` când se schimbă `fruit`? Care este diferența dintre `$(...)` și
+   `$((...))`?
 4. Când taie shell-ul o variabilă în cuvinte și unde? Cum îl opriți?
-5. Care este diferența dintre `$(...)` și `$((...))`?
-6. Ce verifică de fapt `if`? De ce trebuie să existe spații în interiorul `[ ... ]`?
-7. Cum parcurgeți liniile unui fișier și cum parcurgeți fișierele unui director? De ce nu `for f in $(ls)`?
-8. Cum întoarce o funcție un număr și cum anunță că a eșuat? Ce sunt `$1`, `$#` și `"$@"`?
+5. Ce verifică de fapt `if`? De ce trebuie să existe spații în interiorul `[ ... ]`?
+6. Cum parcurgeți liniile unui fișier și cum parcurgeți fișierele unui director? De ce nu `for f in $(ls)`?
+7. Cum întoarce o funcție un număr și cum anunță că a eșuat? Ce sunt `$1`, `$#` și `"$@"`?
+8. Ce schimbă `set -e` într-un script? De ce nu se oprește la o condiție eșuată a lui `if`?
 9. Ce eroare a shell-ului v-a surprins cel mai mult azi?
 10. Ce sarcină pe care o făceați până acum de mână o veți transforma într-un script?
 
@@ -1893,11 +2332,9 @@ asistentul. La ultimele două nu există răspunsuri greșite.
    pentru C. Instalați-l (`sudo dnf install shfmt`; pe Ubuntu: `sudo apt install shfmt`), apoi `shfmt -d what.sh` arată
    ce ar schimba; `bash-language-server` îl folosește ca să formateze fișierul direct din editor.
    <small>→ [github.com/mvdan/sh](https://github.com/mvdan/sh)</small>
-2. **Scripturi mai sigure**: `set -euo pipefail` la începutul unui script îl oprește la prima comandă care eșuează
-   (`-e`), la o variabilă nesetată (`-u`) și atunci când eșuează oricare comandă dintr-un pipe. <small>→ `help set`</small>
-3. **Expandarea parametrilor**: `bash` poate schimba valoarea unei variabile fără alte programe: `${f%.jpeg}` elimină
+2. **Expandarea parametrilor**: `bash` poate schimba valoarea unei variabile fără alte programe: `${f%.jpeg}` elimină
    terminația `.jpeg`, `${f##*/}` păstrează ce urmează după ultimul `/`, iar `${name:-guest}` dă `guest` când `name`
    este goală. <small>→ `man bash`, căutați `Parameter Expansion`</small>
-4. **Vectori** (*arrays*): `fruits=(apple kiwi "star fruit")` păstrează mai multe valori într-o singură variabilă;
+3. **Vectori** (*arrays*): `fruits=(apple kiwi "star fruit")` păstrează mai multe valori într-o singură variabilă;
    `"${fruits[@]}"` le dă înapoi, fiecare ca un cuvânt separat, la fel ca `"$@"`. <small>→ `man bash`, căutați
    `Arrays`</small>

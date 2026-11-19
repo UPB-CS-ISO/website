@@ -30,10 +30,14 @@ export default function prismIncludeLanguages(PrismObject) {
   // Also colour the first word of every line (after an optional sudo) as a
   // command, so swaylock, grim, systemctl, realpath, ... are highlighted too.
   // This also applies inside ```shell-session blocks, which embed bash.
+  // Two exceptions: reserved words (if, case, done, ...) keep the keyword
+  // colour, and a word followed by `| pattern ... )` is a pattern of a case
+  // branch (`banana | lemon)`), not a command.
   if (PrismObject.languages.bash) {
     PrismObject.languages.insertBefore('bash', 'function', {
       'command-name': {
-        pattern: /(^[ \t]*(?:sudo[ \t]+)?)[A-Za-z_][\w.+-]*(?=[ \t]|$)/m,
+        pattern:
+          /(^[ \t]*(?:sudo[ \t]+)?)(?!(?:case|do|done|elif|else|esac|fi|for|function|if|in|select|then|until|while)(?![\w.+-]))[A-Za-z_][\w.+-]*(?=[ \t]|$)(?![ \t]*(?:\|[ \t]*[^\s|()]+[ \t]*)*\))/m,
         lookbehind: true,
         greedy: true,
         alias: 'function',
