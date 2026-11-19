@@ -134,8 +134,8 @@ The shebang works for any language: a file that starts with `#!/usr/bin/python3`
 
 With `./` and `bash`, the script runs in a **new** `bash` process, a child of your shell. A `cd` or a variable of the
 script changes only that process, and the process ends with the script: your shell stays where it was. With
-`source`, what the script changes stays in your shell: see [the next section](#running-a-script-in-your-shell-source). The exercises at home and the
-challenges need the details: they are in [Subshells](#subshells).
+`source`, what the script changes stays in your shell: see [the next section](#running-a-script-in-your-shell-source).
+The exercises at home and the challenges need the details: they are in [Subshells](#subshells).
 
 :::caution
 
@@ -1238,7 +1238,9 @@ exercise says otherwise.
     2. run it with `bash`; then run it by its path, read the error, fix it, and run it again;
     3. print the current directory of your shell;
     4. run the script once more, so that every command is printed before it runs;
-    5. run it in your own shell, print the current directory of your shell again, then go back with `cd -`.
+    5. run it in your own shell, print the current directory of your shell again, then go back with `cd -`;
+    6. add a line that sets the variable `where` to `tmp`; run the script with `bash`, then with `source`, and after
+       each one print `where` in your shell; then go back with `cd -`.
 
     <details className="reveal">
     <summary>Hint</summary>
@@ -1257,9 +1259,10 @@ exercise says otherwise.
     3. `/home/student/lab08`.
     4. `bash -x hello.sh` prints `+ echo 'Hello, student'`, `+ cd /tmp` and `+ pwd`, each before its output.
     5. `source hello.sh` prints `Hello, student` and `/tmp`; now your shell is in `/tmp` too (the prompt shows `tmp`).
+    6. After `bash hello.sh`, `echo "$where"` prints an empty line; after `source hello.sh`, it prints `tmp`.
 
-    **Why:** `./` and `bash` run the script in a new `bash` process: its `cd` changes only that process, which ends with
-    the script; `source` runs the lines in your shell.
+    **Why:** `./` and `bash` run the script in a new `bash` process: its `cd` and its variables change only that
+    process, which ends with the script; `source` runs the lines in your shell.
 
     </details>
 

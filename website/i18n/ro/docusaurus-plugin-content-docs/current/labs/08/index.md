@@ -140,8 +140,9 @@ Shebang-ul funcționează pentru orice limbaj: un fișier care începe cu `#!/us
 
 Cu `./` și cu `bash`, scriptul rulează într-un proces `bash` **nou**, copil al shell-ului vostru. Un `cd` sau o
 variabilă din script schimbă doar acel proces, iar procesul se termină odată cu scriptul: shell-ul vostru rămâne unde
-era. Cu `source`, ce schimbă scriptul rămâne în shell-ul vostru: vedeți [secțiunea următoare](#running-a-script-in-your-shell-source). Exercițiile de acasă și
-provocările au nevoie de detalii, pe care le găsiți în [Subshell-uri](#subshells).
+era. Cu `source`, ce schimbă scriptul rămâne în shell-ul vostru: vedeți
+[secțiunea următoare](#running-a-script-in-your-shell-source). Exercițiile de acasă și provocările au nevoie de
+detalii, pe care le găsiți în [Subshell-uri](#subshells).
 
 :::caution
 
@@ -1266,7 +1267,9 @@ dacă exercițiul nu spune altfel.
     2. rulați-l cu `bash`; apoi rulați-l folosind calea lui, citiți eroarea, rezolvați-o și rulați-l din nou;
     3. afișați directorul curent al shell-ului vostru;
     4. rulați scriptul încă o dată, astfel încât fiecare comandă să fie afișată înainte să ruleze;
-    5. rulați-l în propriul shell, afișați din nou directorul curent al shell-ului vostru, apoi reveniți cu `cd -`.
+    5. rulați-l în propriul shell, afișați din nou directorul curent al shell-ului vostru, apoi reveniți cu `cd -`;
+    6. adăugați o linie care dă variabilei `where` valoarea `tmp`; rulați scriptul cu `bash`, apoi cu `source`, și după
+       fiecare afișați `where` în shell-ul vostru; apoi reveniți cu `cd -`.
 
     <details className="reveal">
     <summary>Indiciu</summary>
@@ -1286,9 +1289,10 @@ dacă exercițiul nu spune altfel.
     4. `bash -x hello.sh` afișează `+ echo 'Hello, student'`, `+ cd /tmp` și `+ pwd`, fiecare înaintea rezultatului ei.
     5. `source hello.sh` afișează `Hello, student` și `/tmp`; acum și shell-ul vostru este în `/tmp` (prompt-ul arată
        `tmp`).
+    6. După `bash hello.sh`, `echo "$where"` afișează o linie goală; după `source hello.sh`, afișează `tmp`.
 
-    **De ce:** `./` și `bash` rulează scriptul într-un proces `bash` nou: `cd`-ul lui schimbă doar acel proces, care se
-    termină odată cu scriptul; `source` rulează liniile în shell-ul vostru.
+    **De ce:** `./` și `bash` rulează scriptul într-un proces `bash` nou: `cd`-ul și variabilele lui schimbă doar acel
+    proces, care se termină odată cu scriptul; `source` rulează liniile în shell-ul vostru.
 
     </details>
 
