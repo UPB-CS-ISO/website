@@ -199,3 +199,36 @@ echo \"$greeting!\""
     #shell-first[a line starts with a *command*; a `NAME=value` word before it is a variable only for that command]
   ]
 ]
+
+#slide[
+  == Measuring a Variable
+  `wc` counts the text it gets from a pipe
+
+  #toolbox.side-by-side(columns: (3fr, 2fr), gutter: 1.5em)[
+    #set text(size: 1em)
+    #reveal-terminal(before: none, lines: (3, 5, 8, 11), full: false)[```terminal
+    $ name="Alice Smith"
+    $ echo "$name" | wc -c
+    12
+    $ echo -n "$name" | wc -c
+    11
+    $ fruits=$(sort -u fruits.txt)
+    $ echo "$fruits" | wc -l
+    4
+    $ x=""
+    $ echo "$x" | wc -l
+    1
+    ```]
+  ][
+    #set text(size: 0.9em)
+    #only(1)[`wc -c` counts the characters: `Alice Smith` has `11`, but `echo` adds a newline at the end: `12`]
+    #only(2)[`echo -n` - no newline: `11`, the length of the text \ #v(0.3em) 💡 `bash` can also count by itself: ```bash ${#name}``` is `11`]
+    #only(3)[`wc -l` counts the lines: `fruits` holds one fruit per line, `apple`, `banana`, `cherry`, `kiwi`: `4`]
+    #only("4-")[⚠️ an *empty* variable still gives `1`: `echo` prints the newline anyway \ #v(0.3em) check that it is not empty first]
+  ]
+
+  #v(0.3em)
+  #uncover("2-")[
+    #shell-first[`wc` does not see the variable, only the *text* that `echo` prints: the newline of `echo` counts too]
+  ]
+]
