@@ -405,23 +405,6 @@ page("wrong", "Wrong definitions: a space splits the line", "No spaces around `=
          "One word: **no spaces** around `=`, the quotes keep the space in the value.")],
         try_=dict(v="$name=alice", vars={"name": "bob"}, note="`name=bob` is already set. The dashed chip is a variable only for the command; the dark one is the command.")),
 ))
-page("count", "Measuring a variable: `wc -c` and `wc -l`", "`wc` counts the text it gets from a pipe", J(
-    p("`wc` does not see the variable, only the **text** that `echo` prints into the pipe, and the newline of `echo` counts too."),
-    sh("""$ name="Alice Smith"
-$ echo "$name" | wc -c
-12
-$ echo -n "$name" | wc -c
-11
-$ fruits=$(sort -u fruits.txt)
-$ echo "$fruits" | wc -l
-4"""),
-    table(["Write", "Gives"], [
-        ("`echo \"$name\" | wc -c`", "the characters, **and** the newline of `echo`: `12`"),
-        ("`echo -n \"$name\" | wc -c`", "the length of the text: `11` (`-n`: no newline)"),
-        ("`echo \"${#name}\"`", "the same `11`, counted by `bash` itself"),
-        ("`echo \"$fruits\" | wc -l`", "the lines: `4`, one fruit per line")], "k"),
-    bad("An empty variable is one line", "With `x=\"\"`, `echo \"$x\" | wc -l` prints `1`: `echo` prints the newline anyway.", "check that the variable is not empty first."),
-))
 page("practice", "Cheat sheet and practice", "Variables", J(
     table(["Write", "Means"], [
         ("`name=\"alice\"`", "define or change, no spaces around `=`"), ("`$name`, `\"$name\"`", "the value takes its place"),
@@ -599,6 +582,23 @@ fruits.txt notes.txt words.txt"""),
     shell_first("The way to get a result from a command is to **capture its output**: commands print text."),
     quiz("What does `x=$(echo hi; echo there)` put in `x`?", ["`hi there`", "`hi` and a newline and `there`", "`hi`", "`there`"], 1,
          "The whole output, as text: `hi`, a newline, `there`. Only the **last** newline is removed."),
+))
+page("count", "Measuring a variable: `wc -c` and `wc -l`", "`wc` counts the text it gets from a pipe", J(
+    p("`wc` does not see the variable, only the **text** that `echo` prints into the pipe, and the newline of `echo` counts too."),
+    sh("""$ name="Alice Smith"
+$ echo "$name" | wc -c
+12
+$ echo -n "$name" | wc -c
+11
+$ fruits=$(sort -u fruits.txt)
+$ echo "$fruits" | wc -l
+4"""),
+    table(["Write", "Gives"], [
+        ("`echo \"$name\" | wc -c`", "the characters, **and** the newline of `echo`: `12`"),
+        ("`echo -n \"$name\" | wc -c`", "the length of the text: `11` (`-n`: no newline)"),
+        ("`echo \"${#name}\"`", "the same `11`, counted by `bash` itself"),
+        ("`echo \"$fruits\" | wc -l`", "the lines: `4`, one fruit per line")], "k"),
+    bad("An empty variable is one line", "With `x=\"\"`, `echo \"$x\" | wc -l` prints `1`: `echo` prints the newline anyway.", "check that the variable is not empty first."),
 ))
 page("practice", "Cheat sheet and practice", "Command substitution", J(
     table(["Write", "Means"], [
