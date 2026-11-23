@@ -12,6 +12,7 @@ lecture writes the page; everything (CSS, JS, SVG) is inlined.
 | `04-command-line/index.html` | `build_04.py` |
 | `07-software-development/index.html` | `build_07.py` |
 | `08-shell-scripting/index.html` | `build_08.py` |
+| `09-network/index.html` | `build_09.py` |
 
 The pages are **generated, not committed** (`website/static/courses` is
 git-ignored). CI builds them before the website.
@@ -47,7 +48,7 @@ or through the website (`npm start` in `website/`, then `/courses/`).
 | `shell-core.js`, `shell-ui.js` | the demo shell: in-memory file system, commands with `man` pages, pipes and redirects, missions; and its terminal widget |
 | `shell-cli.js`, `shell-make.js`, `shell-git.js` | the shell additions of lectures 04 (variables, jobs) and 07 (`gcc`, `make`, `git`) |
 | `dev.js` | the "interactive on this page" button for every lecture, and the widgets of lecture 07 |
-| `widgets02.js`, `procs.js`, `widgets04.js`, `widgets07.js`, `widgets08.js` | the widgets of one lecture (02, 03, 04, 07, 08) |
+| `widgets02.js`, `procs.js`, `widgets04.js`, `widgets07.js`, `widgets08.js`, `widgets09.js` | the widgets of one lecture (02, 03, 04, 07, 08, 09); `widgets09.js` also has the simulated laptop of lecture 09 (network commands, the `net` and `trouble` side panels) |
 | `bashrun.js` | lecture 08: a small bash interpreter (variables, `IFS`, `$( )`, `$(( ))`, `if`, `case`, loops, functions, `read`, `test`, `bc`, `expr`) that runs the scripts of the script lab and records the debugger steps |
 | `build_index.py` | the main page; finds the lectures from `build_NN.py` and the docs |
 
