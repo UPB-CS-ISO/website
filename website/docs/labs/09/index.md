@@ -78,7 +78,13 @@ one that must receive it. Think of a long story sent by post as many letters, ea
 | **network card** | connects a computer to a network, with a cable or with radio waves (Wi-Fi)        |
 | **switch**       | connects the computers of **one** local network (the lab room) with cables        |
 | **router**       | connects **two or more** networks, and forwards the packets from one to the other |
-| the Internet     | a network of networks, joined by routers                                          |
+
+:::note
+
+The **Internet** is a network of networks, joined by routers.
+
+:::
+
 | a home router    | a switch, a Wi-Fi access point and a router in one box                            |
 
 A **server** is a program that waits for requests (a web server); a **client** is a program that sends them (the
@@ -1307,7 +1313,8 @@ again with the commands of exercises 9, 10 and 11.
     follow one ping of `pc1` across your computer. <small>→ [The Way of a Packet](#the-way-of-a-packet)</small>
 
     1. capture one ICMP frame of your card, with its MAC addresses, while you ping `8.8.8.8`, then your colleague;
-    2. capture one ICMP frame on `podman0` and one on your card, in two terminals, while `pc1` pings `8.8.8.8`;
+        2. capture one ICMP frame on `podman0` and one on your card, in two terminals, while `pc1` pings `8.8.8.8` from a
+       third terminal;
     3. find whose each MAC address is.
 
     <details className="reveal">
