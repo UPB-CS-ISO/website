@@ -78,7 +78,8 @@
   label(p.router.at(0), p.router.at(1) + 24pt, text(size: 7pt)[*home router* \ DHCP server `192.168.1.1`])
 }
 #let all-from(src, to) = to.map(d => (dhcp-pts.at(src), dhcp-pts.sw, dhcp-pts.at(d)))
-#let paths(..ps) = for path in ps.pos() { trail(..path, arrows: true) }
+// (`split`: the pieces stop before the switch, so the lines do not hide it)
+#let paths(..ps) = for path in ps.pos() { trail(..path, split: true) }
 
 // who sends to whom, with a drawn arrow (arrow characters are missing from the fonts)
 #let to(a, b) = [#a #arrow #b]
