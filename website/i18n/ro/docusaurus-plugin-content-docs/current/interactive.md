@@ -17,6 +17,7 @@ Cursurile în capitole scurte, parcurse în browser: terminale demo în care put
 | <a href="/courses/04-command-line/index.html">04. Interfața în linia de comandă</a> | simulatoare pentru terminale, sesiuni, variabile și linia de comandă, un terminal cu joburi |
 | <a href="/courses/07-software-development/index.html">07. Dezvoltarea aplicațiilor</a> | simulatoare pentru compilare și `make`, terminale demo pentru `gcc`, `make` și `git` |
 | <a href="/courses/08-shell-scripting/index.html">08. Scripturi shell</a> | un depanator de scripturi, linie cu linie, un laborator de scripturi cu misiuni, simulatoare pentru `IFS`, `$( )`, tiparele din `case` și `$(( ))` / `bc` |
+| <a href="/courses/09-network/index.html">09. Infrastructura rețelei</a> | cadre și pachete pas cu pas, simulatoare pentru hub și switch, mască, tabela de rutare și filtrele `tcpdump`, un laptop demo cu `ip`, `ping`, `nmcli`, `ss`, `tcpdump` și misiuni, un laptop stricat de depanat |
 
 :::note
 

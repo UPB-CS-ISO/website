@@ -17,6 +17,7 @@ The lectures as short chapters you go through in the browser: demo terminals you
 | <a href="/courses/04-command-line/index.html">04. Command Line Interface</a> | simulators of terminals, sessions, variables and the command line, a terminal with jobs |
 | <a href="/courses/07-software-development/index.html">07. Software Development</a> | simulators of compilation and `make`, demo terminals for `gcc`, `make` and `git` |
 | <a href="/courses/08-shell-scripting/index.html">08. Shell Scripting</a> | a script debugger, line by line, a script lab with missions, simulators of `IFS`, `$( )`, `case` patterns and `$(( ))` / `bc` |
+| <a href="/courses/09-network/index.html">09. Network Infrastructure</a> | frames and packets step by step, simulators of a hub and a switch, the mask, the routing table and `tcpdump` filters, a demo laptop with `ip`, `ping`, `nmcli`, `ss`, `tcpdump` and missions, a broken laptop to troubleshoot |
 
 :::note
 
