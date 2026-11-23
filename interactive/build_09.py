@@ -243,7 +243,7 @@ def xtable(rows, head=None):
 
 
 # ---------------------------------------------------------------- the scene widget (steps drawn here, shown by widgets09.js)
-def scene(title, sub, scs, badge=None, layout="side"):
+def scene(title, sub, scs, badge=None, layout="side", cap=None):
     """scs: [(label, [(explanation md, picture html, state html or None), ...]), ...]
     layout: side (the state next to the picture when there is room) or stack (under it)"""
     labels = "|".join(l for l, _ in scs)
@@ -255,6 +255,8 @@ def scene(title, sub, scs, badge=None, layout="side"):
     a = f' data-title="{E(title)}" data-sub="{E(md(sub))}" data-labels="{E(labels)}" data-layout="{layout}"'
     if badge:
         a += f' data-badge="{E(badge)}"'
+    if cap:  # the largest height of the pictures, in px (the widget must fit a laptop screen)
+        a += f' style="--cap:{cap}px"'
     return f'<div data-w="scene"{a}>' + "".join(tpl) + "</div>"
 
 
@@ -266,8 +268,8 @@ def w(name, **attrs):
 def term(missions, title, sub=None, cmds=(), side="net", variant=None):
     """the demo terminal of the lecture: the laptop, with the network commands"""
     a = f' data-profile="09" data-side="{side}" data-title="{E(title)}"' + (f' data-missions="{missions}"' if missions else "")
-    if sub:
-        a += f' data-sub="{E(md(sub))}"'
+    # a one-line subtitle (the default of shell-ui.js takes two lines): the widget must fit a laptop screen
+    a += f' data-sub="{E(md(sub or "A simulated laptop: only the commands of the lecture work. `reset` starts again."))}"'
     if cmds:
         a += f' data-cmds="{E("|".join(cmds))}"'
     if variant:
@@ -688,6 +690,7 @@ def sec_svg(kind):
     if kind == "wpa":
         b += key(ph[0] + 22, ph[1] - 44, "K1", "#1565c0") + key(lp[0] + 30, lp[1] - 44, "K2", "#2e7d46") + key(p2[0] + 22, p2[1] - 34, "K3", "#8e24aa")
         b += key(ap[0] + 30, ap[1] - 50, "K1", "#1565c0") + key(ap[0] + 82, ap[1] - 50, "K2", "#2e7d46") + key(ap[0] + 134, ap[1] - 50, "K3", "#8e24aa")
+        b += tag(104, 30, ["first key: the Wi-Fi password", "then a key for each device"], GREY, 12.5, bold_first=True)
     reads = kind != "wpa"
     b += tag(430, 270, ["reads: hello" if reads else "sees only: x7#q%…"], ((("#fdecea", BADC) if reads else ("#e3f1e4", OKC))), 14, mono=True)
     b += _a([(302, 266), (352, 270)], "red" if reads else "green", 1.6, head=False)
@@ -699,7 +702,8 @@ def sec_state(kind):
     c = ("#fdecea", BADC) if kind == "open" else ("#fff3bf", "#e67700") if kind == "wep" else ("#e3f1e4", OKC)
     pts = {"open": ["no password, **no key**", "every frame travels **in clear**"],
            "wep": ["**one key** for everyone, phone 2 has it too", "the WEP key can be **broken in minutes**: anyone nearby reads everything"],
-           "wpa": ["each device gets **its own key** when it joins", "phone 2 has another key: it **cannot** read the frame"]}[kind]
+           "wpa": ["the first key is the **Wi-Fi password**: every device knows it", "when a device joins, it and the AP make from it **a key for that device** (K1, K2, K3)",
+                   "phone 2 has another key: it **cannot** read the frame"]}[kind]
     ic = svgfig(70, 40, icon(like, 35, 20, 1), like)
     return (f'<div class="ws-v" style="border-color:{c[1]};background:{c[0]}"><div class="ws-i">{ic}</div><div><small>the access point behaves like a</small><b style="color:{c[1]}">{like.upper()}</b>'
             f'<small>{"everyone can read everything" if like == "hub" else "each one reads only its own frames"}</small></div></div>' + ul(*pts))
@@ -752,7 +756,7 @@ page("security", "Who can read a frame?", "Wi-Fi security", J(
     scene("The phone sends a frame, phone 2 listens", "Choose the security of the network.", [
         ("🔓 Open", [("**Open**: no password, no key. Phone 2 reads everything.", sec_svg("open"), sec_state("open"))]),
         ("⚠️ WEP", [("**WEP**: one key for everyone, and it can be broken. Phone 2 reads everything.", sec_svg("wep"), sec_state("wep"))]),
-        ("🔒 WPA2 / WPA3", [("**WPA2 / WPA3**: a key for each device. Phone 2 hears the frame but cannot read it.", sec_svg("wpa"), sec_state("wpa"))])]),
+        ("🔒 WPA2 / WPA3", [("**WPA2 / WPA3**: the first key is the **Wi-Fi password**, the same for everyone. When a device joins, it and the AP make from it **a key for that device**. Phone 2 hears the frame but cannot read it.", sec_svg("wpa"), sec_state("wpa"))])]),
 ))
 page("frame", "The Wi-Fi frame: three addresses", "Wi-Fi frame", J(
     p("The same idea as Ethernet, with a few more fields."),
@@ -990,10 +994,12 @@ def router_svg(router=True, on=(), trails=(), tags=(), marks=(), gw=None):
 
 
 def frame_state(rows, neigh, title="The frame Ana sends", note=None):
-    fr = "".join(f'<tr class="{"ch" if ch else ""}"><td>{k}</td><td><code>{E(v)}</code></td></tr>' for k, v, ch in rows)
+    # the fields side by side (one column each) and the neighbors next to them: a short strip under the picture
+    fr = ("<tr>" + "".join(f'<th>{k}</th>' for k, v, ch in rows) + "</tr><tr>"
+          + "".join(f'<td class="{"ch" if ch else ""}"><code>{E(v)}</code></td>' for k, v, ch in rows) + "</tr>")
     ng = "".join(f'<tr class="{"ch" if ch else ""}"><td><code>{a}</code></td><td><code>{m}</code></td></tr>' for a, m, ch in neigh) or '<tr><td colspan="2"><em>empty</em></td></tr>'
-    return (f'<div class="sc-row"><div><div class="sc-h">{title}</div><table class="t sc-t">{fr}</table></div>'
-            f'<div><div class="sc-h">Ana\'s neighbors (<code>ip neigh</code>)</div><table class="t sc-t"><tr><th>IP</th><th>MAC</th></tr>{ng}</table></div></div>' + (f'<p class="sc-n">{md(note)}</p>' if note else ""))
+    return (f'<div class="sc-row sc-fr"><div><div class="sc-h">{title}</div><table class="t sc-t">{fr}</table></div>'
+            f'<div><div class="sc-h">Ana\'s neighbors (<code>ip neigh</code>)</div><table class="t sc-t"><tr><th>IP</th><th>MAC</th></tr>{ng}</table></div></div>' + (f'<p class="sc-n sc-n2">{md(note)}</p>' if note else ""))
 
 
 def FR(mto, mfrom, ito, ifrom, ttl, ch=()):
@@ -1095,7 +1101,7 @@ def fig_routers():
 page = chapter("routing", "Routing", "From one network to another: routers, `ip route`, `traceroute`, NAT", 26)
 page("router", "A router joins two networks", "Router", J(
     p("A **router** is a computer with **two or more network cards**, one in each network. It forwards **packets** from one network to another: it works on **layer 3**, with IP addresses."),
-    scene("Ana sends a packet", "To Bogdan, in her network; to Carla, in another one.", [("Same network", SAME), ("No gateway", NOGW), ("Through the router", VIA)], layout="stack"),
+    scene("Ana sends a packet", "To Bogdan, in her network; to Carla, in another one.", [("Same network", SAME), ("No gateway", NOGW), ("Through the router", VIA)], layout="stack", cap=266),
     p("Ana's computer decides with its **mask**: same network, send **directly** (ARP for the destination's MAC); another network, send to the **gateway** (ARP for the router's MAC)."),
 ))
 page("neigh", "`ip neigh`: the MACs Ana found", "Neighbors", J(
@@ -1207,7 +1213,7 @@ def getport_svg(step):
 
 def port_table(rows, new=None, bad=None):
     tr = "".join(f'<tr class="{"ch" if p_ == new else ""}"><td><code>{p_}</code></td><td>{n}</td><td><code>{st}</code></td></tr>' for p_, n, st in rows)
-    return f'<div class="sc-h">The ports of the server, in the operating system</div><table class="t sc-t"><tr><th>port</th><th>program</th><th>state</th></tr>{tr}</table>' + (f'<p class="sc-n bad">{md(bad)}</p>' if bad else "")
+    return f'<div class="sc-h">The ports of the server, in the operating system</div><table class="t sc-t"><tr><th>port</th><th>program</th><th>state</th></tr>{tr}</table>' + (f'<p class="sc-n sc-bad">{md(bad)}</p>' if bad else "")
 
 
 BASEP = [("22", "`sshd`", "LISTEN"), ("53", "DNS server", "LISTEN"), ("443", "`nginx`", "LISTEN")]
@@ -1310,7 +1316,7 @@ LISTEN 0      511          0.0.0.0:80         0.0.0.0:*     users:(("nginx",pid=
 page = chapter("transport", "Transport: ports, TCP and UDP", "Programs talk to programs", 22)
 page("ports", "The port finds the program", "Ports", J(
     p("The transport layer has two jobs: **to which program** the data goes (the **port**), and **how** it is delivered (**TCP** or **UDP**, chosen by the program). It runs in the kernel, like IP."),
-    scene("Ports", "A request to a web server, and how a program gets its port.", [("Who gets the data", PORTS_STEPS), ("Getting a port", GETPORT_STEPS)], layout="stack"),
+    scene("Ports", "A request to a web server, and how a program gets its port.", [("Who gets the data", PORTS_STEPS), ("Getting a port", GETPORT_STEPS)]),
 ))
 page("tcpudp", "TCP and UDP", "Two ways to deliver", J(
     table(["", "📞 TCP", "📮 UDP"], [("like", "a phone call", "a postcard"), ("connection", "yes: first a *hello* (the handshake), then the data", "no: just send"),
@@ -1490,7 +1496,7 @@ def dhcp_state(n, cfg=None, bad=False):
     chips = "".join(f'<span class="dh-c{" on" if i < n else ""}{" cur" if i == n - 1 else ""}">{x}</span>' for i, x in enumerate(names))
     cfg = cfg or {}
     rows = "".join(f'<tr class="{"ch" if cfg.get(k) else ""}"><td>{k}</td><td><code>{cfg.get(k, "–")}</code></td></tr>' for k in ("address", "gateway", "DNS server", "lease"))
-    return f'<div class="dh-s">{chips}</div><div class="sc-h">The laptop{" (no Internet!)" if bad else ""}</div><table class="t sc-t{" bad" if bad else ""}">{rows}</table>'
+    return f'<div class="dh-s">{chips}</div><div class="sc-h">The laptop{" (no Internet!)" if bad else ""}</div><table class="t sc-t{" sc-bad" if bad else ""}">{rows}</table>'
 
 
 OKCFG = {"address": "192.168.1.105/24", "gateway": "192.168.1.1", "DNS server": "192.168.1.1", "lease": "24 hours"}
@@ -1688,7 +1694,7 @@ page("checks", "Check from the bottom up", "Troubleshooting", J(
 ))
 page("lab", "The broken laptop", "Troubleshooting lab", J(
     p("Something is broken on this laptop. Run the checks, from the bottom up, then say which layer is broken. Each new problem is chosen at random."),
-    term("", "Find what is broken", "Run the checks in the terminal, then answer on the right. `reset` restores this problem; **New problem** picks another one.", side="trouble", variant="random"),
+    term("", "Find what is broken", "Run the checks in the terminal, then answer under it. `reset` restores this problem; **New problem** picks another one.", side="trouble", variant="random"),
 ))
 
 
@@ -1776,9 +1782,9 @@ table.t.sc-t{margin:0 0 8px;font-size:13.5px;width:100%}
 .sc-t td code{font-size:12.5px;white-space:normal;overflow-wrap:anywhere;background:none;padding:0}
 .sc-t tr.ch td{background:#ffe6cc}.sc-t tr.ch td:first-child{color:#b35900;font-weight:700}
 .sc-t tr.hit td{background:#e3f1e4}
-.sc-t.bad td{color:#b3261e}
+.sc-t.sc-bad td{color:#b3261e}
 .sc-row{display:flex;flex-wrap:wrap;gap:4px 22px}.sc-row>div{flex:1 1 240px;min-width:0}
-.sc-n{font-size:14px;margin:4px 0 0;color:#33555f}.sc-n.bad{color:#b3261e}
+.sc-n{font-size:14px;margin:4px 0 0;color:#33555f}.sc-n.sc-bad{color:#b3261e}
 table.t.sc-xt{margin:8px 0 0;font-size:14px}
 .sc-xt td{padding:5px 10px;vertical-align:top}
 .sc-kv{display:flex;flex-wrap:wrap;gap:4px 18px;margin:8px 0 0;font-size:14.5px}.sc-kv span{white-space:nowrap}.sc-kv code{font-weight:700}.sc-xt td:first-child{white-space:nowrap;font-weight:700;color:var(--navy);width:1%}
@@ -1850,20 +1856,20 @@ pre.sh mark.nm{color:#8a4b00}
 table.t.rt-t{margin:0;font-size:14px;width:100%}
 .rt-t td{vertical-align:middle}.rt-t td code{white-space:normal;background:none;padding:0}
 .rt-t tr.off td{opacity:.35;text-decoration:line-through}
-.rt-t tr.win td{background:#ffe6cc}.rt-t tr.win td:first-child{box-shadow:inset 3px 0 0 #d79b00}
+.rt-t tr.rt-win td{background:#ffe6cc}.rt-t tr.rt-win td:first-child{box-shadow:inset 3px 0 0 #d79b00}
 .rt-t .y{color:#2e7d46;font-weight:700;white-space:nowrap}.rt-t .n{color:#b3261e;white-space:nowrap}
 .rt-r{margin-top:10px;padding:8px 12px;border-radius:8px;font-size:15px;background:#e3f1e4;border:1px solid #82b366}
-.rt-r.bad{background:#fdecea;border-color:#b85450}
+.rt-r.rt-bad{background:#fdecea;border-color:#b85450}
 
 /* ---- tcpdump filters ---- */
 .tf-c{display:grid;gap:8px;padding:10px 18px}
 .tf-in{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font:14.5px 'SF Mono',Menlo,monospace}
 .tf-in b{color:#004d65}
 .tf-in input{flex:1 1 240px;min-width:0;font:15px 'SF Mono',Menlo,monospace;border:1.5px solid #6c8ebf;background:#eef4fb;border-radius:6px;padding:5px 8px}
-.tf-in input.bad{border-color:#b85450;background:#fdecea}
+.tf-in input.tf-err{border-color:#b85450;background:#fdecea}
 .tf-ch{display:flex;flex-wrap:wrap;gap:5px}
 .tf-x{padding:8px 18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:14.5px;background:#f6fafa;min-height:40px}
-.tf-x.bad{background:#fdecea;color:#b3261e}
+.tf-x.tf-xbad{background:#fdecea;color:#b3261e}
 .tf-why{color:#5b2a26}.chip.tf-bad{border-color:#e3a19a;color:#b3261e}
 .tf-l{list-style:none;margin:0;padding:8px 18px 12px;font:12.5px/1.5 'SF Mono',Menlo,Consolas,monospace;display:grid;gap:2px}
 .tf-l li{padding:2px 8px;border-radius:5px;color:#9aa9ae;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -1923,6 +1929,59 @@ svg.f3{display:block;width:100%;height:auto;margin:0 auto}
  .wrap{width:min(1840px,calc(100% - 140px))}
  .layout{grid-template-columns:270px minmax(0,1fr);gap:64px}
 }
+
+/* ---- every widget fits a laptop screen (1280 x 720: ~575 px between the top and the bottom bar), no scrolling ---- */
+.wd-h{padding:9px 18px}
+.wd-h h3{font-size:18px}
+.wd-h h3::before{display:inline-block;vertical-align:3px;margin:0 10px 0 0}
+.wd-h p{margin-top:2px}
+.ps-c{padding:7px 18px}
+.ps-x{padding:6px 18px;line-height:1.4;min-height:0}
+.sc-b>div{padding:6px 18px}
+.sc-pic svg.f3{max-height:min(var(--cap,360px),calc(100vh - 330px))}
+.sc-n2{margin-top:0}.sc-fr table.t.sc-t{margin-bottom:2px}.sc-fr .sc-h{margin-bottom:4px}.sc-fr>div:first-child{flex:2 1 520px}.sc-fr>div+div{flex:1 1 230px}
+table.t.sc-t td.ch{background:#ffe6cc;color:#b35900}table.t.sc-t td.ch code{font-weight:700}
+table.t.sc-t td,table.t.sc-t th{padding:3px 8px}
+table.t.sc-t{margin-bottom:6px}
+table.t.sc-xt td{padding:3px 10px}
+@container (min-width:760px){.sc-b.side.two{grid-template-columns:minmax(0,1fr) 300px}}
+/* hub and switch: a wider column on the right, the list of frames sent under the tables */
+@container (min-width:700px){.st-b{grid-template-columns:minmax(0,1fr) 310px}}
+.st-b>div{padding:8px 16px}
+.st-svg{max-height:290px}
+.st-c+.ps-x{min-height:0}
+.st-log{padding:5px 18px 6px}
+.st-lh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;margin-bottom:4px}.st-lh .sc-h{margin:0}
+.st-more{flex-basis:auto}
+.st-log ol{font-size:13.5px;max-height:44px;gap:0}
+/* the free switch: three frames of the list visible (the picture a bit smaller to make room) */
+[data-mode=free] .st-log ol{max-height:66px}
+[data-mode=free] .st-svg{max-height:278px}
+[data-mode=free] .st-b>div{padding:6px 16px}
+[data-mode=free] .st-log{padding:4px 18px 5px}[data-mode=free] .st-lh{margin-bottom:2px}
+.st-fr{font-size:13px;line-height:1.35}.st-fr small{color:var(--muted)}
+.sc-t td small{color:var(--muted)}
+/* the filters: a denser list of packets */
+.tf-c{gap:6px;padding:8px 18px}
+.tf-ch .chip{padding:3px 9px;font-size:12px}
+.tf-x{padding:6px 18px;min-height:0}
+.tf-l{padding:6px 18px 10px;gap:1px;line-height:1.3}
+.tf-l li{padding:1px 8px}
+/* the laptop terminals: the terminal grows with the height of the screen, the panel and the missions are compact */
+.wd.extw .cmdchips{padding:7px 18px}
+.wd .wd-b.sb.ext .term{height:clamp(180px,calc(100vh - 525px),360px)}
+.wd.extw .wd-f{display:none}
+.wd.extw .missions{padding:8px 18px}
+.extp{padding:8px 14px}
+.nl-t td{padding:2px 6px}
+.nl-what{padding:6px 10px}
+.extp .nl-cols{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.tb-ck{gap:1px}
+.tb-ans{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tb-ans button{padding:5px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@container (min-width:760px){.extp .nl-cols:has(.tb-ans){grid-template-columns:minmax(0,1fr) minmax(0,1.5fr)}}
+.tb-fb{margin-top:6px}
+.tb-new{margin-top:6px;padding:5px 12px}
 """
 
 META = dict(

@@ -83,11 +83,11 @@ W.star=root=>{
    <div class="st-g"><span class="st-l">from</span>${segHTML('from',HOSTS.map(h=>h.n),0)}</div>
    <div class="st-g"><span class="st-l">to</span>${segHTML('to',HOSTS.map(h=>h.n).concat('everyone'),2)}</div>
    <div class="st-g"><button type="button" class="btn" data-r="send">Send →</button><button type="button" class="btn ghost" data-r="reply" disabled>↩ Reply</button></div>
-   <div class="st-g st-more"><span class="st-l">more</span><button type="button" class="chip" data-r="two">${isSw?'Ana + Bogdan → Carla, at once':'Ana + Dan, at once'}</button><button type="button" class="chip" data-r="clr">${isSw?'restart the switch':'start again'}</button></div></div>`
+</div>`
   :`<div class="ctrls ps-c"><span class="st-l">${isSw?'the switch learns':'the hub repeats'}</span>${NAV()}</div>`}
   <div class="ps-x" data-r="x" aria-live="polite"></div>
   <div class="st-b"><div data-r="pic"></div><div data-r="tab"></div></div>
-  ${free?'<div class="st-log"><div class="sc-h">Frames sent</div><ol data-r="log"><li class="st-none">none yet</li></ol></div>':''}</div>`;
+  ${free?`<div class="st-log"><div class="st-lh"><span class="sc-h">Frames sent</span><span class="st-g st-more"><button type="button" class="chip" data-r="two">${isSw?'Ana + Bogdan → Carla, at once':'Ana + Dan, at once'}</button><button type="button" class="chip" data-r="clr">${isSw?'restart the switch':'start again'}</button></span></div><ol data-r="log"><li class="st-none">none yet</li></ol></div>`:''}</div>`;
   const q=Q(root);
   const pt=(i,t)=>[HOSTS[i].x+(CX-HOSTS[i].x)*t,HOSTS[i].y+(CY-HOSTS[i].y)*t];
   /* an arrow on the wire of host i; the head is a plain triangle (no SVG markers) */
@@ -138,12 +138,12 @@ W.star=root=>{
     if(L&&!L.boom){for(const f of L.frames)g+=env(f.from,f.c);for(const [j,ok] of L.marks){const h=HOSTS[j];g+=mk(h.x+(h.x<CX?42:-42),h.y-26,ok)}}
     if(L&&L.queue){g+=svgT(392,150,'queue of port 3',11.5,700,'#5b6b71');for(let k=0;k<3;k++)g+=`<rect x="${362+k*22}" y="158" width="18" height="14" rx="2" fill="${k<L.queue?'#ffe6cc':'#fff'}" stroke="${k<L.queue?'#d79b00':'#9aa9ae'}" stroke-width="1.4"/>`}
     q('pic').innerHTML=`<svg class="st-svg" viewBox="0 0 520 300" role="img" aria-label="Four computers connected to a ${dev}">${g}</svg>`;
-    const fr=L&&!L.boom?L.frames.map(f=>`<tr><td>${f.c==='n'?'<b style="color:'+NAVY+'">frame 2</b>':'<b style="color:'+HL+'">frame</b>'}</td><td>to <code>${f.dst===BC?BC:f.dst.slice(0,8)+'…'}</code> (${name(f.dst)})<br>from <code>${HOSTS[f.from].mac.slice(0,8)}…</code> (${HOSTS[f.from].n})</td></tr>`).join(''):'';
+    const fr=L&&!L.boom?L.frames.map(f=>`<tr><td>${f.c==='n'?'<b style="color:'+NAVY+'">frame 2</b>':'<b style="color:'+HL+'">frame</b>'}</td><td class="st-fr">${HOSTS[f.from].n} → ${name(f.dst)}<br><small>from <code>${HOSTS[f.from].mac.slice(0,8)}…</code> to <code>${f.dst===BC?BC:f.dst.slice(0,8)+'…'}</code></small></td></tr>`).join(''):'';
     q('tab').innerHTML=(fr?`<div class="sc-h">The frame</div><table class="t sc-t">${fr}</table>`:'')+(isSw?
       `<div class="sc-h">The MAC table of the switch</div><table class="t sc-t"><tr><th>MAC address</th><th>port</th></tr>${s.table.length?s.table.map((r,k)=>`<tr class="${s.newRows.includes(k)?'ch':''}"><td><code>${r.mac}</code> <small>${name(r.mac)}</small></td><td>${r.port}</td></tr>`).join(''):'<tr><td colspan="2"><em>empty</em></td></tr>'}</table>`:
       '<div class="sc-h">The hub</div><p class="sc-n">No MAC table: a hub repeats the <b>bits</b> on every port, it does not read the frames.</p>');
     q('x').innerHTML=s.x;holdH();
-    if(free){q('log').innerHTML=log.length?log.map((l,k)=>`<li class="${k===log.length-1?'on':''}">${l}</li>`).join(''):'<li class="st-none">none yet</li>';
+    if(free){q('log').innerHTML=log.length?log.map((l,k)=>`<li class="${k===log.length-1?'on':''}">${l}</li>`).join(''):'<li class="st-none">none yet</li>';q('log').scrollTop=q('log').scrollHeight;
       q('b').textContent=isSw?S.table.length+' / 4 learned · '+S.frames+' frames':S.frames+' frames'}
   }
   if(!free){
@@ -216,14 +216,14 @@ W.route=root=>{
   const q=Q(root);
   function draw(){
     const d=ip2n(q('d').value), useDef=q('def').checked;
-    if(d===null){q('t').innerHTML='';q('r').className='rt-r bad';q('r').innerHTML='Type an IPv4 address, like <code>192.168.2.20</code>.';q('b').textContent='?';return}
+    if(d===null){q('t').innerHTML='';q('r').className='rt-r rt-bad';q('r').innerHTML='Type an IPv4 address, like <code>192.168.2.20</code>.';q('b').textContent='?';return}
     const rows=R.filter(r=>useDef||r.p>0).map(r=>({...r,ok:inNet(d,r.net,r.p)}));
     const win=rows.filter(r=>r.ok).sort((a,b)=>b.p-a.p)[0];
     q('t').innerHTML='<tr><th>the line of <code>ip route</code></th><th>does it match?</th></tr>'+R.map(r=>{const x=rows.find(y=>y.dst===r.dst);if(!x)return `<tr class="off"><td><code>${r.txt}</code></td><td>removed</td></tr>`;
       const chk=r.p===0?`<span class="y">✓ /0: every address</span>`:x.ok?`<span class="y">✓ /${r.p}: ${n2ip((d&maskN(r.p))>>>0)} = ${n2ip(r.net)}</span>`:`<span class="n">✗ /${r.p}: ${n2ip((d&maskN(r.p))>>>0)} ≠ ${n2ip(r.net)}</span>`;
-      return `<tr class="${x===win?'win':''}"><td><code>${r.txt}</code></td><td>${chk}</td></tr>`}).join('');
+      return `<tr class="${x===win?'rt-win':''}"><td><code>${r.txt}</code></td><td>${chk}</td></tr>`}).join('');
     const r=q('r');
-    if(!win){r.className='rt-r bad';r.innerHTML=`No line matches <code>${n2ip(d)}</code>: <code>ping: connect: Network is unreachable</code>. No frame is sent.`;q('b').textContent='unreachable'}
+    if(!win){r.className='rt-r rt-bad';r.innerHTML=`No line matches <code>${n2ip(d)}</code>: <code>ping: connect: Network is unreachable</code>. No frame is sent.`;q('b').textContent='unreachable'}
     else if(win.p===0){r.className='rt-r';r.innerHTML=`<b>default</b> wins (the only match): sent to the <b>gateway</b> <code>192.168.1.1</code>. Ana asks ARP for the <b>router's</b> MAC; the IP destination stays <code>${n2ip(d)}</code>.`;q('b').textContent='via the gateway'}
     else{r.className='rt-r';r.innerHTML=`<code>/24</code> wins (longer than <code>/0</code>): <code>${n2ip(d)}</code> is in Ana's network, sent <b>directly</b>. Ana asks ARP for <b>its</b> MAC.`;q('b').textContent='directly'}
   }
@@ -361,9 +361,9 @@ W.filter=root=>{
   const q=Q(root);
   function draw(){
     const f=q('f').value, r=parseFilter(f);
-    q('f').classList.toggle('bad',!!r.err);
+    q('f').classList.toggle('tf-err',!!r.err);
     const lines=PK.map((p,i)=>pkLine(p,{n:true,t:true,i}));
-    if(r.err){q('x').className='tf-x bad';const m=/^'(\w+)' modifier applied to (\w+)$/.exec(r.err);
+    if(r.err){q('x').className='tf-x tf-xbad';const m=/^'(\w+)' modifier applied to (\w+)$/.exec(r.err);
       q('x').innerHTML='<code>tcpdump: '+esc(r.err)+'</code>'+(m?` <span class="tf-why">The real tcpdump refuses it too: <code>${m[1]}</code> ${m[1]==='tcp'||m[1]==='udp'?'goes only before <code>port</code>':m[1]==='icmp'?'stands alone':'goes only before <code>host</code> or <code>net</code>'}. To combine them, join two filters: <code>${m[1]} and ${m[2]} …</code></span>`:'');q('l').innerHTML=lines.map(l=>`<li>${esc(l)}</li>`).join('');q('b').textContent='error';return}
     const m=PK.map(p=>match(r.ast,p)), n=m.filter(Boolean).length;
     const quote=/[()!]/.test(f)?` <span class="small">In bash, quote it: <code>sudo tcpdump -n '${esc(f.trim())}'</code></span>`:'';
