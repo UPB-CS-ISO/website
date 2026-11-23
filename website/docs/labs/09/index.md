@@ -99,8 +99,12 @@ below it:
 | 2. link        | which card, in the local network?    | a **MAC address**            | `8c:16:45:a2:3b:91` |
 | 1. physical    | how do the bits travel?              | none: a cable or radio waves |                     |
 
-The card sends each packet inside a **frame**: the envelope of the link layer, with the MAC addresses. This lab goes
-through the layers from the bottom up.
+The card does not send the packet alone: it puts it inside a **frame**, which adds the MAC addresses of the card that
+sends it and of the card that must receive it. A frame travels only inside one local network. Think of a letter put
+in a second envelope, addressed only to the next stop.
+
+This lab goes through the layers from the bottom up: the network cards and their MAC addresses (link), the IP
+addresses and the routes (network), the ports (transport), and DNS (application).
 
 ## Network Cards
 
@@ -132,6 +136,7 @@ enp3s0           UP             8c:16:45:a2:3b:91 <BROADCAST,MULTICAST,UP,LOWER_
 | `en...`, `wl...` | an Ethernet card, a Wi-Fi card; `p3s0` is its place on the PCI bus |
 | `UP`, `DOWN`     | the card can send data now, or it cannot                           |
 | `LOWER_UP`       | the cable (or the radio) is connected; `NO-CARRIER`: no cable      |
+| `BROADCAST`, `MULTICAST`        | the card can send to every card of the network, or to a group of them                 |
 
 ### Printing One Value
 
@@ -550,7 +555,7 @@ the data:
 |              | TCP (like a phone call)              | UDP (like a postcard)           |
 | ------------ | ------------------------------------ | ------------------------------- |
 | a connection | yes: opened first, closed at the end | no: each datagram travels alone |
-| lost data    | sent again, in order                 | lost                            |
+| lost data    | noticed, and sent again                                         | lost: the program handles it, if it cares                    |
 | used by      | the Web, SSH, e-mail                 | DNS, DHCP, video calls, games   |
 
 ### Listening Programs: `ss`
@@ -791,7 +796,7 @@ Do these exercises in order, during the lab. Each one starts with what it wants 
 from the lab: read the section linked under its goal if you get stuck. Run the commands in `~/lab09`, unless the
 exercise says otherwise.
 
-1. **The practice tree**: Check that the tools are installed and that the image of the containers of this lab is ready.
+1. **Ready to start**: Check that the tools are installed and that the image of the containers of this lab is ready.
     <small>→ [Fedora and Ubuntu](#fedora-and-ubuntu) · [Running Containers](#running-containers-podman)</small>
 
     1. create `~/lab09`, and go into it;
@@ -1026,7 +1031,8 @@ exercise says otherwise.
 
     2. open a shell in `pc1` (in a second terminal), and print the cards, the addresses and the routing table of `pc1`;
     3. print them on your computer too, in the first terminal: what is new?
-    4. ping `pc1` from your computer; from `pc1`, ping `8.8.8.8` and print the address that `ifconfig.me` sees.
+        4. ping `pc1` twice from your computer; from `pc1`, ping `8.8.8.8` twice and print the address that `ifconfig.me`
+       sees.
 
     <details className="reveal">
     <summary>Check</summary>
@@ -1527,9 +1533,10 @@ again with the commands of exercises 9, 10 and 11.
     <details className="reveal">
     <summary>Check</summary>
 
-    1. `sudo tcpdump -i enp3s0 -n -t -e -c 50 | awk '{print $3}' | tr -d , | sort | uniq -c`: only your card, the
-       gateway, `ff:ff:ff:ff:ff:ff` and multicast (`01:00:5e:...`, `33:33:...`): the switch does not send you the frames
-       of the others.
+    1. `sudo tcpdump -i enp3s0 -n -t -e -c 50 | awk '{print $3}' | tr -d , | sort | uniq -c`: almost only your card,
+       the gateway, `ff:ff:ff:ff:ff:ff` and multicast (`01:00:5e:...`, `33:33:...`): the switch does not send you the
+       frames of the others. A frame for another card can appear now and then: a switch sends a frame to every card
+       while it does not know yet where its destination is.
 
     </details>
 
@@ -1554,7 +1561,8 @@ again with the commands of exercises 9, 10 and 11.
 
 29. **Clean up**: Delete everything that this lab created.
 
-    1. delete the containers `pc1`, `web`, `dhcp` and `client`, then the images `lab09` and `debian`;
+        1. delete the containers `pc1`, `web`, `dhcp` and `client`, then the images `lab09` and `debian` (keep them if you
+       will do the Challenges, which use `lab09` too);
     2. delete `~/lab09`, and `/tmp/dhcp.pcap`, which belongs to the user `tcpdump`.
 
     <details className="reveal">
@@ -1599,7 +1607,7 @@ At the end, clean up:
 
 ```bash
 sudo podman rm -f -t 0 exam-a exam-b exam-c exam-web exam-dhcp exam-nonet exam-nodns exam-local
-sudo podman rmi lab09
+sudo podman rmi lab09    # only at home: on the lab computers, keep the image
 rm -rf ~/exam
 sudo rm -f /tmp/exam-ping.pcap
 ```
@@ -1627,7 +1635,7 @@ sudo rm -f /tmp/exam-ping.pcap
     </details>
 
 31. **Predict the route**: On paper, write how `exam-a` sends a packet to each address: **directly**, **via** a
-    gateway, or **local**. Prove each answer with one command in `exam-a`.
+    gateway, **local** (to itself), or **to all** (a broadcast). Prove each answer with one command in `exam-a`.
 
     `10.88.0.22`, `10.88.0.1`, `10.89.0.5`, the address of your computer on its card, `8.8.8.8`, `127.0.0.1`,
     `10.88.255.255`.
@@ -1701,8 +1709,8 @@ sudo rm -f /tmp/exam-ping.pcap
     </details>
 
 36. **The four addresses of a ping**: `exam-a` pings `8.8.8.8` once. On paper, write the source and destination MAC
-    and IP addresses of the _echo request_ on `podman0` and on your card, whose they are and their values. Prove each
-    line with `tcpdump`.
+    and IP addresses of the _echo request_ as it crosses `podman0`, and as it crosses your card: the value of each,
+    and whose card or computer it belongs to. Prove each line with `tcpdump`.
 
     <details className="reveal">
     <summary>Check</summary>
