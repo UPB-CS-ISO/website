@@ -1680,7 +1680,7 @@ page("practice", "Cheat sheet and practice", "Capturing packets", J(
     table(["Command", "Does"], [("`sudo tcpdump -D`", "the cards"), ("`sudo tcpdump -i wlp2s0 -n -c 5 icmp`", "5 ping packets, as numbers"),
                                 ("`sudo tcpdump -n -e arp`", "ARP, with the MAC addresses"), ("`sudo tcpdump -n 'udp port 53'`", "DNS"),
                                 ("`sudo tcpdump -w cap.pcap`, `tcpdump -r cap.pcap`", "save, read later (or in Wireshark)")], "k"),
-    term("capture", "The laptop: capturing packets", "The laptop sends the same few packets over and over (ARP, DNS, ping, HTTPS, SSH); `tcpdump` shows the ones your filter keeps.", ("sudo tcpdump -D",)),
+    term("capture", "The laptop: capturing packets", "The laptop repeats a few packets (ARP, DNS, ping, HTTPS, SSH); `tcpdump` shows the ones your filter keeps.", ("sudo tcpdump -D",)),
 ))
 
 
@@ -1929,6 +1929,9 @@ svg.f3{display:block;width:100%;height:auto;margin:0 auto}
  .wrap{width:min(1840px,calc(100% - 140px))}
  .layout{grid-template-columns:270px minmax(0,1fr);gap:64px}
 }
+
+/* the terminals stay in the column (extra.css widens them for a 1180 px page; this page is wider on large screens) */
+[data-w=shell]{margin-right:0!important}
 
 /* ---- every widget fits a laptop screen (1280 x 720: ~575 px between the top and the bottom bar), no scrolling ---- */
 .wd-h{padding:9px 18px}
