@@ -19,6 +19,8 @@ const PROGRAMS = new Set([
   "trap", "unset", "shopt", "alias", "unalias", "command", "help", "exit", "true", "false",
   "seq", "printenv", "ip", "uname", "date", "nohup", "yes", "chage", "systemctl", "coredumpctl", "openssl",
   "yazi", "swaylock", "grim",
+  "ping", "host", "dig", "traceroute", "tracepath", "nmcli", "ss", "netstat", "resolvectl", "tcpdump", "podman",
+  "dhclient", "dnsmasq", "ipcalc", "ethtool", "mtr", "wireshark",
 ]);
 const SUDO = new Set(["sudo", "doas"]);
 const SUDO_ARG_OPTIONS = new Set(["-u", "-g", "-U", "-C", "-D", "-p", "-r", "-t", "-T"]);
