@@ -728,7 +728,11 @@
 // the path already traveled: a dashed line through the points
 // (`arrows`: an arrow head on each piece, to show the direction)
 // (`gap`: the line stops this far from the first and the last device)
-#let trail(..pts, color: hl, arrows: false, gap: 17pt) = {
+// (`split`: every piece stops `gap` before *each* device, also the ones in
+// the middle like a switch, and ends in a head: the line never crosses a
+// device and the direction is clear)
+// #trail(a, s1, r, split: true)
+#let trail(..pts, color: hl, arrows: false, gap: 17pt, split: false) = {
   // move the point p a distance d toward the point q
   let toward(p, q, d) = {
     let (dx, dy) = ((q.at(0) - p.at(0)).pt(), (q.at(1) - p.at(1)).pt())
@@ -737,6 +741,26 @@
   }
   let ps = pts.pos()
   let n = ps.len()
+  // the head of an arrow, its tip at (cx, cy), pointing along (ux, uy)
+  let head(cx, cy, ux, uy, h: 6) = place(top + left, polygon(
+    fill: color,
+    (cx + ux * h * 1pt, cy + uy * h * 1pt),
+    (cx - ux * h * 1pt - uy * h * 1pt, cy - uy * h * 1pt + ux * h * 1pt),
+    (cx - ux * h * 1pt + uy * h * 1pt, cy - uy * h * 1pt - ux * h * 1pt),
+  ))
+  if split {
+    for i in range(n - 1) {
+      let a = toward(ps.at(i), ps.at(i + 1), gap)
+      let b = toward(ps.at(i + 1), ps.at(i), gap)
+      let (dx, dy) = ((b.at(0) - a.at(0)).pt(), (b.at(1) - a.at(1)).pt())
+      let len = calc.sqrt(dx * dx + dy * dy)
+      let (ux, uy) = (dx / len, dy / len)
+      // the line stops at the base of the head, the tip is at b
+      let base = (b.at(0) - ux * 6pt, b.at(1) - uy * 6pt)
+      wire(a, base, stroke: (paint: color, thickness: 2.5pt, dash: "dashed", cap: "round"))
+      head(base.at(0), base.at(1), ux, uy)
+    }
+  } else {
   if n >= 2 {
     ps.at(0) = toward(ps.at(0), ps.at(1), gap)
     ps.at(n - 1) = toward(ps.at(n - 1), ps.at(n - 2), gap)
@@ -758,6 +782,7 @@
         (cx - ux * h * 1pt + uy * h * 1pt, cy - uy * h * 1pt - ux * h * 1pt),
       ))
     }
+  }
   }
 }
 // the middle of a wire

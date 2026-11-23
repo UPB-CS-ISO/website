@@ -95,7 +95,7 @@
       #pkt(..at-a, [Ana #arrow *Bogdan*], ip-ab)
     ]
     #only(3)[
-      #trail(a, s1, b)
+      #trail(a, s1, b, split: true)
       #pkt(..at-b, [Ana #arrow *Bogdan*], ip-ab)
       #ok-mark(b, dx: -26pt)
     ]
@@ -114,13 +114,13 @@
       #pkt(..at-a, [Ana #arrow *Router*], ip-ac, state: "gateway")
     ]
     #only(6)[
-      #trail(a, s1, r)
+      #trail(a, s1, r, split: true)
       #mac-found(240pt, 18pt, [Router], "192.168.2.20", "08:d1:…", color: ok-color)
       #pkt(..at-r, [Router #arrow *Carla*], ip-ac)
     ]
     #only("7-")[
-      #trail(a, s1, r)
-      #trail(r, s2, c)
+      #trail(a, s1, r, split: true)
+      #trail(r, s2, c, split: true)
       #pkt(..at-c, [Router #arrow *Carla*], ip-ac)
       #ok-mark(c)
     ]
