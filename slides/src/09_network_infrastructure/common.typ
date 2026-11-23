@@ -67,15 +67,21 @@
 
 // an inline arrow, for text and tables (arrow characters are missing from
 // the slide fonts)
-#let arrow = box(width: 1.1em, height: 0.6em, baseline: -0.05em, {
-  place(left + horizon, line(length: 0.8em, stroke: 0.09em + black))
-  place(right + horizon, polygon(fill: black, (0em, -0.22em), (0.32em, 0em), (0em, 0.22em)))
-})
-#let arrow-both = box(width: 1.3em, height: 0.6em, baseline: -0.05em, {
-  place(center + horizon, line(length: 0.7em, stroke: 0.09em + black))
-  place(right + horizon, polygon(fill: black, (0em, -0.22em), (0.32em, 0em), (0em, 0.22em)))
-  place(left + horizon, polygon(fill: black, (0.32em, -0.22em), (0em, 0em), (0.32em, 0.22em)))
-})
+// each arrow is ONE filled shape (shaft and heads together), with all its
+// points inside the box: separate lines and heads can be drawn apart or
+// shifted by some PDF viewers
+#let arrow-h = 0.44em // the height of the heads (and of the box)
+#let arrow-shape(x0, x1, left-head: false) = {
+  let (cy, t, h) = (arrow-h / 2, 0.045em, 0.32em)
+  let a = if left-head { x0 + h } else { x0 }
+  let b = x1 - h
+  let pts = if left-head { ((x0, cy), (a, 0em), (a, cy - t)) } else { ((x0, cy - t),) }
+  pts += ((b, cy - t), (b, 0em), (x1, cy), (b, arrow-h), (b, cy + t))
+  pts += if left-head { ((a, cy + t), (a, arrow-h)) } else { ((x0, cy + t),) }
+  polygon(fill: black, ..pts)
+}
+#let arrow = box(width: 1.1em, height: arrow-h, baseline: -0.1em, arrow-shape(0.05em, 1.05em))
+#let arrow-both = box(width: 1.3em, height: arrow-h, baseline: -0.1em, arrow-shape(0.05em, 1.25em, left-head: true))
 
 // an emoji of a given size (the template shrinks emoji to 0.68em of the text)
 #let icon(e, size: 18pt) = box(width: size * 1.2, height: size, align(center + horizon, text(size: size / 0.68, e)))
