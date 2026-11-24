@@ -78,14 +78,13 @@ one that must receive it. Think of a long story sent by post as many letters, ea
 | **network card** | connects a computer to a network, with a cable or with radio waves (Wi-Fi)        |
 | **switch**       | connects the computers of **one** local network (the lab room) with cables        |
 | **router**       | connects **two or more** networks, and forwards the packets from one to the other |
+| a home router    | a switch, a Wi-Fi access point and a router in one box                            |
 
 :::note
 
 The **Internet** is a network of networks, joined by routers.
 
 :::
-
-| a home router    | a switch, a Wi-Fi access point and a router in one box                            |
 
 A **server** is a program that waits for requests (a web server); a **client** is a program that sends them (the
 browser).
