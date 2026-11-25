@@ -54,9 +54,9 @@
     - Wi-Fi
       - frames, access points
     - Network Layer
-      - IP addresses, `ping`, NAT
+      - IP addresses, `ping`
     - Routing
-      - routers, `traceroute`
+      - ARP, gateway, routers, `traceroute`, NAT
     #colbreak()
     - Transport Layer
       - ports, TCP, UDP
@@ -95,8 +95,8 @@
   - Link Layer: network cards, MAC addresses
   - Ethernet: frames, hubs and switches
   - Wi-Fi: frames, access points, network types, the networks around with `nmcli`
-  - Network Layer: IPv4 addresses, masks, `ping`, NAT, IPv6
-  - Routing: routers, `traceroute`
+  - Network Layer: IPv4 addresses, masks, `ping`, frames, IPv6
+  - Routing: ARP, the gateway, routers, `traceroute`, NAT
   - Transport Layer: ports, TCP and UDP
   - DNS: names instead of IP addresses, the tree of DNS servers
   - DHCP: the IP address, mask, gateway and DNS server, received automatically

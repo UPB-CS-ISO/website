@@ -19,134 +19,88 @@
 ]
 
 // ---------------------------------------------------------------------------
-// Router
+// The same network: Ana sends to Bogdan
 // ---------------------------------------------------------------------------
 
-#let two-nets(r-highlight: false, router: true) = {
-  area(5pt, 5pt, 157pt, 175pt, [network `192.168.1.0/24`])
-  area(318pt, 5pt, 157pt, 175pt, [network `192.168.2.0/24`], name-at: top + right)
-  let a = (45pt, 55pt)
-  let b = (45pt, 140pt)
-  let s1 = (130pt, 97pt)
-  let r = (240pt, 97pt)
-  let s2 = (350pt, 97pt)
-  let c = (435pt, 55pt)
-  let d = (435pt, 140pt)
-  for p in (a, b) { wire(p, s1) }
-  for p in (c, d) { wire(p, s2) }
-  if router {
-    wire(s1, r)
-    wire(r, s2)
-  }
-  host(..a, "Ana", addr: [192.168.1.10 \ #text(fill: luma(110))[5c:8f:2a:91:d4:07]], size: 24pt)
-  host(..b, "Bogdan", addr: [192.168.1.11 \ #text(fill: luma(110))[e4:3b:71:0c:9a:52]], size: 24pt)
-  host(..c, "Carla", addr: [192.168.2.20 \ #text(fill: luma(110))[08:d1:6e:b3:47:ac]], size: 24pt)
-  host(..d, "Dan", addr: [192.168.2.21 \ #text(fill: luma(110))[f0:9e:4a:c2:16:3d]], size: 24pt)
-  netdev(..s1, "switch", size: 16pt)
-  netdev(..s2, "switch", size: 16pt)
-  if router {
-    netdev(..r, "router", name: "Router", size: 30pt, highlight: r-highlight)
-    sees-stack(r.at(0), r.at(1) + 36pt, "network")
-    // the two cards of the router, each one in its own network
-    // (the MAC addresses cut short, like in the found boxes: there is no room)
-    label(192pt, 76pt, align(center, text(size: 7pt, font: "DejaVu Sans Mono")[*eth0* \ 192.168.1.1 \ #text(fill: luma(110))[70:b5:…]]))
-    label(288pt, 76pt, align(center, text(size: 7pt, font: "DejaVu Sans Mono")[*eth1* \ 192.168.2.1 \ #text(fill: luma(110))[b8:27:…]]))
-  }
-}
-
-// what a device found out: the MAC address for an IP address
-#let mac-found(x, y, who, ip, mac, color: accent) = pin(x, y, box(
-  fill: white,
-  stroke: 1pt + color,
-  radius: 4pt,
-  inset: (x: 5pt, y: 3pt),
-  text(size: 7.5pt)[🔎 #who: #raw(ip) #arrow #if mac == none { text(fill: bad-color, weight: "bold")[???] } else { raw(mac) }],
-))
-
 #slide[
-  == Router
-  connects two networks
+  == Local Network
+  Ana #arrow Bogdan: the same network, no router needed
 
-  #let (a, b, s1, r, s2, c) = ((45pt, 55pt), (45pt, 140pt), (130pt, 97pt), (240pt, 97pt), (350pt, 97pt), (435pt, 55pt))
-  // where the packet is drawn, next to each device
-  #let (at-a, at-s1, at-b, at-r, at-s2, at-c) = (
-    (108pt, 42pt),
-    (130pt, 124pt),
-    (108pt, 140pt),
-    (240pt, 50pt),
-    (350pt, 124pt),
-    (372pt, 42pt),
-  )
-  #let ip-ab = [Ana #arrow Bogdan]
-  #let ip-ac = [Ana #arrow Carla]
-  #align(center, scale(88%, reflow: true, drawing(height: 185pt)[
-    #only("1-4")[#two-nets(router: false)]
-    #only("5-")[#two-nets(r-highlight: true)]
-    // the gateway of A: none without a router, the router after
-    #only(4)[#tag(55pt, 104pt, [🚪 gateway: *none*], stroke: 1pt + bad-color, size: 7.5pt)]
-    #only("5-")[#tag(55pt, 104pt, [🚪 gateway: `192.168.1.1`], fill: hl-bg, stroke: 1pt + hl, size: 7.5pt)]
+  #let (a, b, s, r) = ((55pt, 42pt), (55pt, 132pt), (135pt, 87pt), (200pt, 87pt))
+  // a speech bubble: who says it, to whom, and what
+  #let bubble(x, y, head, body, color) = pin(x, y, box(
+    fill: white,
+    stroke: 1.2pt + color,
+    radius: 6pt,
+    inset: (x: 6pt, y: 4pt),
+    text(size: 7.5pt)[#text(fill: color, weight: "bold", head) \ #body],
+  ))
+  // the MAC address Ana does not know yet
+  #let missing = box(fill: bad-color.lighten(85%), stroke: 1.2pt + bad-color, radius: 2pt, inset: (x: 3pt, y: 1pt), text(size: 7pt, fill: bad-color, weight: "bold")[??? missing])
 
-    // 1 - 3: to B, in the same network
-    #only(1)[#pkt(..at-a, [Ana #arrow ?], ip-ab, state: "unknown")]
-    #only(2)[
-      // ARP: a question for everyone, the answer only for Ana
-      #tag(238pt, 36pt, [📢 ARP, to *everyone*: \ _who has `192.168.1.11`? tell `192.168.1.10`_], stroke: 1pt + hl, size: 7pt)
-      #tag(238pt, 72pt, [↩️ Bogdan, only to Ana: \ _`192.168.1.11` is at `e4:3b:71:0c:9a:52`_], stroke: 1pt + ok-color, size: 7pt)
-      #pkt(..at-a, [Ana #arrow *Bogdan*], ip-ab)
-    ]
-    #only(3)[
-      #trail(a, s1, b, split: true)
-      #pkt(..at-b, [Ana #arrow *Bogdan*], ip-ab)
-      #ok-mark(b, dx: -26pt)
-    ]
+  #align(center, scale(92%, reflow: true, drawing(height: 180pt)[
+    #area(5pt, 3pt, 225pt, 175pt, [network `192.168.1.0/24`])
+    #for p in (a, b, r) { wire(p, s) }
+    #host(..a, "Ana", addr: [#ana.at(0) \ #text(fill: luma(110), ana.at(1))], size: 24pt)
+    #host(..b, "Bogdan", addr: [#bogdan.at(0) \ #text(fill: luma(110), bogdan.at(1))], size: 24pt)
+    #netdev(..s, "switch", size: 16pt)
+    #netdev(..r, "router", name: "Router", sub: [eth0 `192.168.1.1`], size: 26pt)
 
-    // 4: to C, in another network, without a router
-    #only(4)[
-      #tag(240pt, 40pt, [🗺️ Ana: a route to `192.168.2.0/24`? #text(fill: bad-color, weight: "bold")[none]], stroke: 1pt + bad-color, size: 7.5pt)
-      #pkt(..at-a, [Ana #arrow *???*], ip-ac, state: "missing")
-      #pin(240pt, 97pt, icon("❌", size: 26pt))
-      #tag(240pt, 130pt, text(fill: bad-color)[`Network is unreachable`], stroke: 1pt + bad-color, size: 7.5pt)
-    ]
-
-    // 5 - 7: with a router
+    // 3: Ana asks everyone
     #only(5)[
-      #mac-found(240pt, 22pt, [Ana], "192.168.1.1", "70:b5:…", color: rgb("f08c00"))
-      #pkt(..at-a, [Ana #arrow *Router*], ip-ac, state: "gateway")
+      #trail(a, s, b, split: true)
+      #trail(s, r, split: true)
+      #bubble(150pt, 26pt, [📢 Ana, to everyone:], [who has `192.168.1.11`?], hl)
     ]
+    // 4: only Bogdan answers, only to Ana
     #only(6)[
-      #trail(a, s1, r, split: true)
-      #mac-found(240pt, 18pt, [Router], "192.168.2.20", "08:d1:…", color: ok-color)
-      #pkt(..at-r, [Router #arrow *Carla*], ip-ac)
+      #trail(b, s, a, split: true, color: ok-color)
+      #bubble(160pt, 140pt, [💬 Bogdan, only to Ana:], [that is me, `e4:3b:71:0c:9a:52`], ok-color)
+      #tag(200pt, 58pt, [not me: ignored], stroke: 0.8pt + luma(150), size: 6.5pt)
     ]
+    // 5: the frame, to Bogdan only
     #only("7-")[
-      #trail(a, s1, r, split: true)
-      #trail(r, s2, c, split: true)
-      #pkt(..at-c, [Router #arrow *Carla*], ip-ac)
-      #ok-mark(c)
+      #trail(a, s, b, split: true)
+      #ok-mark(b, dx: 30pt)
     ]
+
+    // what Ana's computer does
+    #let (px, pw) = (240pt, 240pt)
+    #panel(px, 3pt, pw, 66pt, [① is 192.168.1.11 in my network?], net-check(
+      (([Bogdan], bogdan.at(0), "192.168.1.0"), ([Ana (me)], ana.at(0), "192.168.1.0")),
+      [✅ `192.168.1.0` = `192.168.1.0`: *the same network*, send it *directly*],
+      caption: [mask `/24`: the first *3 numbers* are the *network*, the last one the computer],
+      from: 1,
+    ))
+    #uncover("4-")[#panel(px, 74pt, pw, 48pt, [② Ana's ARP table: the MACs she already knows], {
+      only("4-5", align(center, stack(spacing: 4pt,
+        arp-table(([], text(fill: luma(140))[_empty_])),
+        text(size: 7pt)[🔎 `192.168.1.11`: #text(fill: bad-color, weight: "bold")[not found]],
+      )))
+      only("6-", align(center, stack(spacing: 4pt,
+        arp-table((bogdan.at(0), new-val(bogdan.at(1)))),
+        text(size: 7pt)[🔎 `192.168.1.11`: #text(fill: ok-color, weight: "bold")[found]],
+      )))
+    })]
+    #panel(px, 127pt, pw, 51pt, [③ the frame Ana sends], {
+      only("1-6", frame-box(missing, ana.at(1), ip-inner(bogdan.at(0), ana.at(0))))
+      only("7-", frame-box(new-val(bogdan.at(1)), ana.at(1), ip-inner(bogdan.at(0), ana.at(0))))
+    })
   ]))
 
-  // what happens, one card for each step
-  #let bad = (fill: bad-color.lighten(90%), stroke: bad-color)
   #let good = (fill: ok-color.lighten(90%), stroke: ok-color)
-  #place(bottom + left, block(width: 100%, text(size: 10.5pt)[
-    #only(1, fact("📦", [Ana has a packet for Bogdan `192.168.1.11`: *the same network*]))
-    #only(2, fact("🔎", [Ana asks *everyone* for the MAC address of `192.168.1.11` (_ARP_); only Bogdan answers, Ana puts his MAC on the frame]))
-    #only(3, fact("✅", [the switch delivers the frame to Bogdan], c: good))
-    #only(4, fact("❌", [Carla `192.168.2.20` is in *another network* and Ana has *no gateway*: no route, so no frame is sent at all], c: bad))
-    #only(5, fact("🚪", [Ana sends it to her *gateway* `192.168.1.1`, the router: ARP gives her *its MAC address*, the IP is still Carla's]))
-    #only(6, fact("🔁", [the router finds *Carla's MAC address* (ARP) and puts the packet in a *new frame*: the same packet, only the TTL is one less]))
-    #only(7, fact("✅", [Carla gets the packet: the MAC addresses changed, the IP addresses *stayed the same*], c: good))
-    #only("8-", grid(
-      columns: (1fr, 1fr),
-      column-gutter: 8pt,
-      fact("🔌", [a computer with *two or more* network cards, *one in each network*], c: layer-colors.network),
-      fact("📬", [forwards *packets* from one network to another: *layer 3*], c: layer-colors.network),
-    ))
+  #place(bottom + left, block(width: 100%, text(size: 10pt)[
+    #only(1, fact("🧮", [mask `/24`: the *network* is the first 3 numbers; for Bogdan `192.168.1.11` it is `192.168.1.0`]))
+    #only(2, fact("🧮", [Ana does the same with *her own* address `192.168.1.10`: also `192.168.1.0`]))
+    #only(3, fact("✅", [the *same network part*: Bogdan is in Ana's network, the frame goes *directly* to him], c: good))
+    #only(4, fact("📒", [the *ARP table*: the MAC addresses Ana already found (IP #arrow MAC); Bogdan is not there]))
+    #only(5, fact("📢", [*ARP*: Ana asks *everyone* in the network (_broadcast_) for the MAC of `192.168.1.11`]))
+    #only(6, fact("💬", [only Bogdan answers; Ana *writes his MAC* in the ARP table, for the next packets too]))
+    #only(7, fact("✅", [now the frame has Bogdan's MAC: the switch delivers it *only* to him], c: good))
   ]))
 ]
 
-// the neighbor table of Ana (the Router slide), with `ip neigh`
+// the neighbor table of Ana (after the Local Network slide), with `ip neigh`
 #let neigh-lines = (
   "$ ip neigh",
   (("ip", "192.168.1.1"), (none, " dev enp0s31f6 lladdr "), ("mac", "70:b5:e8:2d:91:4c"), (none, " "), ("ok", "REACHABLE")),
@@ -172,10 +126,6 @@
       [`192.168.1.12`: nobody answered, there is no such computer],
       ([`FAILED`], [`ping` shows `Destination Host Unreachable`]),
     )),
-    (4, (), explain(
-      [💡 Carla `192.168.2.20` is *not* in the table: she is in another network],
-      ([why], [for another network Ana needs only the MAC address of the *gateway*]),
-    )),
   )
   #for (i, (n, keys, body)) in steps.enumerate() {
     only(i + 1)[
@@ -186,63 +136,302 @@
 ]
 
 // ---------------------------------------------------------------------------
+// The gateway: the door out of the network
+// ---------------------------------------------------------------------------
+
+#slide[
+  == Gateway
+  the door out of the network
+
+  #let (a, b, s, r, s2, c, cl) = ((50pt, 40pt), (50pt, 125pt), (135pt, 82pt), (262pt, 82pt), (390pt, 82pt), (445pt, 135pt), (262pt, 18pt))
+  #align(center, scale(92%, reflow: true, drawing(height: 178pt)[
+    // the two networks, one next to the other, the router between them
+    #area(5pt, 3pt, 205pt, 172pt, [Ana's network `192.168.1.0/24`])
+    #area(315pt, 3pt, 160pt, 172pt, [`192.168.2.0/24`], name-at: top + right)
+    // the edge of the cloud, toward the router
+    #let cl-edge = (262pt, 37pt)
+    #for (p, q) in ((a, s), (b, s), (s, r), (r, s2), (s2, c), (r, cl-edge)) { wire(p, q) }
+    #host(..a, "Ana", addr: ana.at(0), size: 22pt)
+    #host(..b, "Bogdan", addr: bogdan.at(0), size: 22pt)
+    #host(..c, "Carla", addr: carla.at(0), size: 22pt)
+    #netdev(..s, "switch", size: 14pt)
+    #netdev(..s2, "switch", size: 14pt)
+    #pin(..cl, pic("cloud", size: 40pt))
+    #pin(300pt, 66pt, text(size: 8pt, weight: "bold")[Router])
+    // the layers the router sees: up to the Network layer (IP addresses),
+    // like the hub (Physical) and the switch (Data Link)
+    #sees-stack(r.at(0), r.at(1) + 21pt, "network")
+    #only(1)[#netdev(..r, "router", size: 26pt)]
+    #only("2-")[#netdev(..r, "router", size: 26pt, highlight: true)]
+
+    // 1: directly only inside the network
+    #only(1)[
+      #trail(a, s, b, split: true, color: ok-color, gap: 21pt)
+      #tag(140pt, 128pt, [✅ Bogdan: *directly* \ (ARP finds his MAC)], stroke: 1pt + ok-color, size: 7pt)
+      #draw-arrow((75pt, 36pt), (198pt, 36pt), color: bad-color, thickness: 1.5pt, head: 5pt, dash: "dashed")
+      #pin(210pt, 36pt, icon("❌", size: 12pt))
+      #tag(160pt, 56pt, [Carla is *outside*: \ ARP does not reach her], stroke: 1pt + bad-color, size: 7pt)
+    ]
+    // 2: through the gateway
+    #only("2-")[
+      // to the card of the router in Ana's network (eth0), and from its card
+      // in the other network (eth1): the trails do not pass under the cards
+      #trail(a, s, (210pt, r.at(1)), split: true, gap: 23pt)
+      #trail((315pt, r.at(1)), s2, c, split: true, gap: 23pt)
+      // the tip stops at the edge of the cloud (the gap before the second point)
+      #trail(r, (cl-edge.at(0), cl-edge.at(1) - 11pt), split: true, gap: 16pt)
+      #tag(225pt, 52pt, [🚪 *gateway*], fill: hl-bg, stroke: 1.2pt + hl, size: 8pt)
+    ]
+
+    // the two network cards of the router: a port on the border of each
+    // network, with its address below, like the address of a computer
+    // (drawn last, over the trails)
+    #router-port(210pt, r.at(1), "eth0", eth0.at(0))
+    #router-port(315pt, r.at(1), "eth1", eth1.at(0))
+  ]))
+
+  #place(bottom + left, block(width: 100%, text(size: 10pt)[
+    #only(1, fact("🏠", [Ana sends *directly* only inside her network: ARP asks only the computers there]))
+    #only("2-", fact("🚪", [the *gateway*: a router with a card in Ana's network (`192.168.1.1`); every other network is *through it*]))
+  ]))
+]
+
+// ---------------------------------------------------------------------------
+// The decision for every packet: directly, or through the gateway
+// ---------------------------------------------------------------------------
+
+#slide[
+  == Which Way?
+  directly or through the gateway: the decision for every packet
+
+  // step 1 and 4: the rule; step 2: Bogdan; step 3: Carla
+  #let ex = (none, "bogdan", "carla", none)
+  // where things are
+  #let (pk, dm, yes, no) = ((62pt, 86pt), (205pt, 86pt), (392pt, 34pt), (392pt, 138pt))
+  #let (dw, dh) = (128pt, 74pt) // the diamond
+  #let (cw, ch) = (168pt, 56pt) // the answers
+  #let n = layer-colors.network
+
+  // a rounded card centered on (x, y)
+  #let card(p, w, h, c, body, faded: false) = pin(..p, box(
+    width: w,
+    height: h,
+    radius: 6pt,
+    fill: if faded { luma(250) } else { c.lighten(92%) },
+    stroke: if faded { 0.8pt + luma(215) } else { 1.4pt + c },
+    inset: (x: 7pt, y: 5pt),
+    align(left + horizon, text(size: 8pt, fill: if faded { luma(170) } else { black }, body)),
+  ))
+  // a path: lines through the points, an arrow head at the end
+  #let path(..pts, on: false) = {
+    let ps = pts.pos()
+    let st = if on { 2.2pt + hl } else { 1.2pt + luma(140) }
+    for i in range(ps.len() - 2) { wire(ps.at(i), ps.at(i + 1), stroke: st) }
+    draw-arrow(ps.at(-2), ps.at(-1), color: if on { hl } else { luma(140) }, thickness: if on { 2.2pt } else { 1.2pt }, head: 6pt)
+  }
+
+  #align(center, scale(94%, reflow: true, drawing(height: 176pt)[
+    // the packet
+    #for (i, e) in ex.enumerate() {
+      only(i + 1, card(pk, 104pt, 50pt, accent, align(center)[
+        📦 a packet for \
+        #if e == none [the IP address *X*] else if e == "bogdan" [*Bogdan* \ #mono(bogdan.at(0), size: 7.5pt)] else [*Carla* \ #mono(carla.at(0), size: 7.5pt)]
+      ]))
+    }
+    #path((pk.at(0) + 52pt, pk.at(1)), (dm.at(0) - dw / 2 - 2pt, dm.at(1)))
+
+    // the question: a diamond
+    #place(top + left, polygon(
+      fill: hl-bg,
+      stroke: 1.4pt + hl,
+      (dm.at(0), dm.at(1) - dh / 2),
+      (dm.at(0) + dw / 2, dm.at(1)),
+      (dm.at(0), dm.at(1) + dh / 2),
+      (dm.at(0) - dw / 2, dm.at(1)),
+    ))
+    #for (i, e) in ex.enumerate() {
+      only(i + 1, pin(..dm, align(center, text(size: 8.5pt)[🧮 is *#if e == none [X] else if e == "bogdan" [Bogdan] else [Carla]* \ in my network?])))
+    }
+    // the check of the example, under the diamond
+    #only(2)[#pin(pk.at(0), pk.at(1) + 42pt, text(size: 7.5pt)[his network #mono(text(weight: "bold", "192.168.1"), size: 7.5pt) #text(size: 9pt)[=] mine ✅])]
+    #only(3)[#pin(pk.at(0), pk.at(1) + 42pt, text(size: 7.5pt)[her network #mono(text(weight: "bold", "192.168.2"), size: 7.5pt) #text(size: 9pt)[≠] mine #mono(text(weight: "bold", "192.168.1"), size: 7.5pt)])]
+
+    // the two answers, with elbow arrows from the corners of the diamond
+    #path((dm.at(0), dm.at(1) - dh / 2), (dm.at(0), yes.at(1)), (yes.at(0) - cw / 2 - 2pt, yes.at(1)))
+    #path((dm.at(0), dm.at(1) + dh / 2), (dm.at(0), no.at(1)), (no.at(0) - cw / 2 - 2pt, no.at(1)))
+    #only(2)[#path((dm.at(0), dm.at(1) - dh / 2), (dm.at(0), yes.at(1)), (yes.at(0) - cw / 2 - 2pt, yes.at(1)), on: true)]
+    #only(3)[#path((dm.at(0), dm.at(1) + dh / 2), (dm.at(0), no.at(1)), (no.at(0) - cw / 2 - 2pt, no.at(1)), on: true)]
+    #label(dm.at(0) + 14pt, yes.at(1) + 9pt, text(size: 8.5pt, weight: "bold", fill: ok-color)[yes])
+    #label(dm.at(0) + 12pt, no.at(1) - 9pt, text(size: 8.5pt, weight: "bold", fill: hl)[no])
+
+    #for (i, e) in ex.enumerate() {
+      only(i + 1)[
+        #card(yes, cw, ch, ok-color, faded: e == "carla")[
+          ✅ *directly* to X \
+          #text(size: 7.5pt)[ARP for *X*, the frame goes to *its MAC*] \
+          #if e == "bogdan" { new-val(text(size: 7pt)[MAC to #mono(bogdan.at(1)) (Bogdan)]) }
+        ]
+        #card(no, cw, ch, hl, faded: e == "bogdan")[
+          🚪 *through the gateway* \
+          #text(size: 7.5pt)[ARP for `192.168.1.1`, the frame goes to the *router's MAC*] \
+          #if e == "carla" { new-val(text(size: 7pt)[MAC to #mono(eth0.at(1)) (router)]) }
+        ]
+      ]
+    }
+  ]))
+
+  #place(bottom + left, block(width: 100%, text(size: 10pt)[
+    #only(1, fact("🤔", [before *every* packet, the computer asks one question: is the destination in *my network*?]))
+    #only(2, fact("✅", [Bogdan is in Ana's network: the frame goes *directly* to his MAC], c: (fill: ok-color.lighten(90%), stroke: ok-color)))
+    #only(3, fact("🚪", [Carla is not: the frame goes to the *router's MAC*, the packet inside still says *IP to Carla*], c: (fill: hl-bg, stroke: hl)))
+    #only("4-", grid(
+      columns: (1fr, 1fr),
+      column-gutter: 8pt,
+      fact("🎯", [the *IP address*: the *final destination*, it stays the same the whole way], c: layer-colors.network),
+      fact("👣", [the *MAC address*: only the *next stop* in this network, it changes at every router], c: layer-colors.link),
+    ))
+  ]))
+]
+
+// ---------------------------------------------------------------------------
+// Router: Ana sends to Carla, through a router with three networks
+// ---------------------------------------------------------------------------
+
+#slide[
+  == Routing
+  Ana #arrow Carla: one router, three networks
+
+  #let (a, r, c, d) = ((50pt, 50pt), (232pt, 52pt), (362pt, 25pt), (362pt, 79pt))
+  #let eth2 = ("192.168.3.1", "70:b5:e8:2d:91:54")
+  // a value with the name of its owner, in gray
+  #let who(v, name) = [#mono(v, size: 6.5pt) #text(size: 6.5pt, fill: luma(110), name)]
+  // the frame on one wire: the MAC addresses (link layer) and the IP addresses
+  // (network layer), each with a destination and a source
+  // a dotted arrow: from the sender to the receiver
+  #let dots(w: 26pt, c: luma(80)) = box(width: w, height: 6pt, baseline: 0pt, {
+    place(top + left, dy: 3pt, line(length: w - 6pt, stroke: (paint: c, thickness: 1.2pt, dash: "dotted")))
+    place(top + left, dx: w - 6pt, polygon(fill: c, (0pt, 0pt), (6pt, 3pt), (0pt, 6pt)))
+  })
+  // the frame on one wire, read from left to right: who sends ⋯> who receives,
+  // for the MAC addresses (link layer) and the IP addresses (network layer)
+  #let frame-grid(title, mto, mfrom, ttl) = {
+    let (l, n) = (layer-colors.link, layer-colors.network)
+    stack(spacing: 4pt, text(size: 8pt)[✉️ *the frame on* #title #h(1fr) TTL #new-val(mono(ttl, size: 7.5pt))], grid(
+      columns: (30pt, 1fr, 34pt, 1fr),
+      align: (left + horizon, right + horizon, center + horizon, left + horizon),
+      inset: (x: 4pt, y: 5pt),
+      fill: (x, y) => if y == 0 { l.fill } else { n.fill },
+      stroke: (x, y) => if y == 0 { (bottom: 2pt + white) } else { none },
+      text(size: 7.5pt)[*MAC*], mfrom, dots(), mto,
+      text(size: 7.5pt)[*IP*], who(ana.at(0), [Ana]), dots(), who(carla.at(0), [Carla]),
+    ))
+  }
+
+  #align(center, scale(92%, reflow: true, drawing(height: 184pt)[
+    // the three networks around the router
+    #area(3pt, 3pt, 195pt, 102pt, [Ana's network `192.168.1.0/24`])
+    #area(280pt, 3pt, 197pt, 49pt, [Carla's network `192.168.2.0/24`], name-at: top + right)
+    #area(280pt, 56pt, 197pt, 49pt, [Dan's network `192.168.3.0/24`], name-at: top + right)
+    #for p in (a, c, d) { wire(p, r) }
+    #host(..a, "Ana", addr: ana.at(0), size: 20pt, label-size: 7pt)
+    #host(..c, "Carla", addr: carla.at(0), size: 18pt, label-size: 7pt)
+    #host(..d, "Dan", addr: "192.168.3.30", size: 18pt, label-size: 7pt)
+    #netdev(..r, "router", size: 26pt, highlight: true)
+    #label(r.at(0), r.at(1) + 24pt, text(size: 8pt, weight: "bold")[Router])
+
+    // where the wires cross the borders of the networks: the cards of the router
+    #let wire-y(p, x) = r.at(1) + (p.at(1) - r.at(1)) * ((x - r.at(0)) / (p.at(0) - r.at(0)))
+    #let (p0, p1, p2) = ((198pt, wire-y(a, 198pt)), (280pt, wire-y(c, 280pt)), (280pt, wire-y(d, 280pt)))
+    // the frames travel (orange on their own step, gray after): to eth0, and
+    // from eth1, so they do not pass under the cards
+    #only(1, trail(a, p0, split: true, gap: 18pt))
+    #only("2-", trail(a, p0, split: true, gap: 18pt, color: luma(185)))
+    #only(3, trail(p1, c, split: true, gap: 18pt))
+    #only("4-", trail(p1, c, split: true, gap: 18pt, color: luma(185)))
+    #only("3-")[#ok-mark(c, dx: 26pt)]
+
+    // the three cards of the router, as on the Gateway slide: a port where
+    // its wire crosses the border of its network (the y of the wire there);
+    // eth1, the card that leads to Carla, in orange from step 2
+    #router-port(..p0, "eth0", eth0.at(0), ip-dx: -8pt)
+    #only(1, router-port(..p1, "eth1", eth1.at(0), ip-at: top))
+    #only("2-", router-port(..p1, "eth1", eth1.at(0), ip-at: top, on: true))
+    #router-port(..p2, "eth2", eth2.at(0))
+
+    // below, centered: the frame, or the networks of the router
+    #let (y0, fx, fw) = (116pt, 95pt, 290pt)
+    #only(1)[#at(fx, y0, box(width: fw, frame-grid([Ana's network], new-val(who(eth0.at(1), [router])), who(ana.at(1), [Ana]), "64")))]
+    #only(2)[
+      // the networks of the router: only the one on eth1 matches
+      #at(fx + 20pt, y0, box(width: fw - 40pt, {
+        set text(size: 8pt)
+        table(
+          columns: (auto, 1fr, auto),
+          inset: (x: 7pt, y: 4pt),
+          align: left + horizon,
+          stroke: (x, y) => if y == 0 { (bottom: 0.8pt + luma(150)) } else { (bottom: 0.4pt + luma(215)) },
+          fill: (x, y) => if y == 2 { ok-color.lighten(88%) } else { none },
+          table.header([*card*], [*its network*], [*has* `192.168.2.20`*?*]),
+          mono[eth0], mono[192.168.1.0/24], [❌],
+          mono[*eth1*], mono[*192.168.2.0/24*], [✅ send it out here],
+          mono[eth2], mono[192.168.3.0/24], [❌],
+        )
+      }))
+    ]
+    #only(3)[#at(fx, y0, box(width: fw, frame-grid([Carla's network], new-val(who(carla.at(1), [Carla])), new-val(who(eth1.at(1), [router])), "63")))]
+    // the summary: the two frames, one under the other
+    #only("4-")[
+      #at(2pt, 116pt, box(width: 476pt, {
+        let (l, n) = (layer-colors.link, layer-colors.network)
+        let head(c, t) = table.cell(fill: c, text(size: 7.5pt, weight: "bold", t))
+        set text(size: 8pt)
+        table(
+          columns: (auto, 1fr, 1fr, 1fr, 1fr, auto),
+          inset: (x: 5pt, y: 4pt),
+          align: left + horizon,
+          stroke: 0.5pt + luma(190),
+          head(white, [frame on]), head(l.fill, [MAC to]), head(l.fill, [MAC from]), head(n.fill, [IP to]), head(n.fill, [IP from]), head(white, [TTL]),
+          // the IP addresses are the same in both frames: one cell each
+          mono(size: 7pt)[192.168.1.0/24], [router], [Ana],
+          table.cell(rowspan: 2, align: center + horizon, fill: n.fill.lighten(50%))[*Carla* #text(size: 6.5pt, fill: luma(90))[(the same)]],
+          table.cell(rowspan: 2, align: center + horizon, fill: n.fill.lighten(50%))[*Ana* #text(size: 6.5pt, fill: luma(90))[(the same)]],
+          [64],
+          mono(size: 7pt)[192.168.2.0/24], new-val[Carla], new-val[router], new-val[63],
+        )
+      }))
+    ]
+  ]))
+
+  #let good = (fill: ok-color.lighten(90%), stroke: ok-color)
+  #place(bottom + left, block(width: 100%, text(size: 10pt)[
+    #only(1, fact("1️⃣", [Carla is *not* in Ana's network: Ana sends the frame to her *gateway*, the router]))
+    #only(2, fact("2️⃣", [the router reads *IP to* `192.168.2.20` (TTL one less): which of its networks has it?]))
+    #only(3, fact("3️⃣", [the router puts the *same packet* in a *new frame*, to Carla's MAC (found with ARP)], c: good))
+    #only("4-", fact("💡", [a router: a *new frame* for every network (new MACs), the *same packet* (the same IPs), *TTL* one less], c: layer-colors.network))
+  ]))
+]
+
+// ---------------------------------------------------------------------------
 // The routing table
 // ---------------------------------------------------------------------------
 
-// the routing table of Ana (the Router slide), with `ip route`
+// the routing table of Ana, with `ip route`
 #let route-lines = (
   "$ ip route",
   (("def", "default"), (none, " "), ("via", "via 192.168.1.1"), (none, " dev enp0s31f6 proto dhcp src 192.168.1.10 metric 100")),
   (("net", "192.168.1.0/24"), (none, " dev enp0s31f6 "), ("kernel", "proto kernel"), (none, " scope link src 192.168.1.10 metric 100")),
 )
 
-// which line of the routing table each packet takes: both lines match
-// 192.168.1.11, the longest prefix (/24) wins; 192.168.2.20 matches only default
-#let route-pick = {
-  text(size: 10pt)[💡 for every packet, the kernel picks the *most specific* line: the *longest* prefix wins (`ip r` is the short form)]
-  drawing(width: 480pt, height: 86pt)[
-    #let (y1, y2) = (16pt, 66pt)
-    #let win = 1.6pt
-    // fixed widths, so the arrows meet the boxes
-    #let pkt-at(y, body) = tag(66pt, y, body, fill: hl-bg, stroke: 1pt + hl, size: 8pt, width: 96pt)
-    #let line-at(y, body) = tag(245pt, y, body, fill: white, stroke: 1pt + accent, size: 8pt, width: 140pt)
-    #let dest-at(y, body) = tag(412pt, y, body, fill: ok-color.lighten(90%), stroke: 1pt + ok-color, size: 8pt, width: 124pt)
-    // the packets
-    #pkt-at(y1)[✉️ to `192.168.1.11`]
-    #pkt-at(y2)[✉️ to `192.168.2.20`]
-    // the lines of the routing table
-    #line-at(y1)[`192.168.1.0/24`: *24* bits match]
-    #line-at(y2)[`default` (`0.0.0.0/0`): *0* bits]
-    // where the packet goes
-    #dest-at(y1)[✅ Bogdan, *directly*]
-    #dest-at(y2)[✅ the *gateway* `192.168.1.1`]
-    // 192.168.1.11: both lines match, /24 wins
-    #draw-arrow((118pt, y1), (172pt, y1), thickness: win)
-    #draw-arrow((118pt, y1 + 5pt), (172pt, y2 - 8pt), color: luma(150), dash: "dashed")
-    #label(245pt, 41pt, text(size: 6.5pt, fill: luma(110))[`192.168.1.11` matches `default` too, \ but 0 bits is shorter than 24])
-    // 192.168.2.20: only default matches
-    #draw-arrow((118pt, y2), (172pt, y2), thickness: win)
-    #draw-arrow((318pt, y1), (347pt, y1), thickness: win)
-    #draw-arrow((318pt, y2), (347pt, y2), thickness: win)
-  ]
-}
-
 #slide[
   == Routing Table
   where does each packet go? on Ana's computer
 
-  #term-steps(route-lines, (
-    (3, ("net", "kernel"), explain(
-      [`ip route`: the *routing table*, one line for each network the computer can reach],
-      ([`192.168.1.0/24`], [Ana's own network: sent *directly*, to the MAC address of the destination (ARP)]),
-      ([`proto kernel`], [added by the kernel when the card got its address]),
-    )),
-    (3, ("def", "via"), explain(
-      [the *default route*],
-      ([`default`], [every other address: `0.0.0.0/0`]),
-      ([`via 192.168.1.1`], [sent to the *gateway*, the router, which knows what to do next]),
-    )),
-  ), summary: (("net", "def", "via"), route-pick), size: 0.85em)
+  #parts-terminal(route-lines, hl: ((("def", "via"), ip-peach),), size: 0.85em)
+  #explain(
+    [`ip route`: the *routing table*; the `default` line is the *gateway*],
+    ([`default`], [every network that is *not* Ana's (`0.0.0.0/0`)]),
+    ([`via 192.168.1.1`], [🚪 through the *gateway*, the router: the door out of the network]),
+  )
 ]
 
 // three ways for `ping` to fail, on the laptop `192.168.1.105`, and what each one means
@@ -392,6 +581,61 @@
     ([`* * *`], [a router that does not answer, but still forwards]),
     ([`141.85.228.17`], [the destination, after 4 routers]),
   )), size: 0.85em)
+]
+
+// NAT: the private addresses of a home behind the one public address of the router
+#slide[
+  == NAT
+  many private addresses behind one public address
+
+  // a changed address: orange, with a word, not only a color
+  #let changed(a) = text(fill: hl)[#raw(a) *(changed)*]
+  #drawing(height: 150pt)[
+    // the LAN: the devices on a switch, the router outside it, with one card
+    // in the LAN (private address) and one toward the Internet (public)
+    #let (sw, r) = ((140pt, 75pt), (285pt, 75pt))
+    #area(5pt, 5pt, 225pt, 140pt, [LAN (private)])
+    #wire((50pt, 42pt), sw)
+    #wire((50pt, 108pt), sw)
+    #wire(sw, r)
+    // (it stops at the left edge of the cloud)
+    #wire(r, (387pt, 75pt))
+    #host(50pt, 42pt, "laptop", addr: "192.168.1.105", size: 24pt)
+    #host(50pt, 108pt, "phone", kind: "phone", addr: "192.168.1.107", size: 22pt)
+    #netdev(..sw, "switch", size: 14pt)
+    #netdev(..r, "router", size: 28pt, highlight: true)
+    #pin(r.at(0), r.at(1) + 26pt, text(size: 8pt, weight: "bold")[Router])
+    // its two cards, as on the Gateway slide: eth0 on the border of the LAN,
+    // eth1 on the wire to the Internet
+    #router-port(230pt, r.at(1), "eth0", "192.168.1.1", note: [private])
+    #router-port(340pt, r.at(1), "eth1", "203.0.113.42", note: [public])
+    #pin(420pt, 75pt, pic("cloud", size: 50pt))
+    #only(2)[#frame(145pt, 34pt)[from `192.168.1.105` \ to `141.85.228.17`]]
+    // the packet before the router changed it: the same frame with a dotted
+    // border, next to the new one
+    #let before(x, y, body, color: hl) = tag(x, y, body, fill: hl-bg, stroke: (paint: color, thickness: 1pt, dash: "dotted"), size: 7pt)
+    #only(3)[
+      #before(145pt, 34pt)[from `192.168.1.105` \ to `141.85.228.17`]
+      #frame(330pt, 45pt)[from #changed("203.0.113.42") \ to `141.85.228.17`]
+    ]
+    #only(4)[#frame(330pt, 125pt, color: ok-color)[from `141.85.228.17` \ to `203.0.113.42`]]
+    #only(5)[
+      #before(330pt, 125pt, color: ok-color)[from `141.85.228.17` \ to `203.0.113.42`]
+      #frame(150pt, 40pt, color: ok-color)[from `141.85.228.17` \ to #changed("192.168.1.105")]
+    ]
+    #only(6)[
+      #frame(128pt, 130pt)[from `192.168.1.107` \ to `141.85.228.17`]
+      #frame(330pt, 45pt)[from #changed("203.0.113.42") \ to `141.85.228.17`]
+    ]
+  ]
+
+  #place(bottom + left, block(width: 100%, text(size: 10.5pt)[
+    #only("1-2", fact("📤", [the laptop sends a packet to `141.85.228.17`, from its *private* address `192.168.1.105`]))
+    #only(3, fact("🔁", [the router *replaces* the source with its *public* address `203.0.113.42` and remembers the connection]))
+    #only(4, fact("↩️", [the answer comes back to the *public* address `203.0.113.42`]))
+    #only(5, fact("🔁", [the router puts back `192.168.1.105`: *private addresses are not visible on the Internet*]))
+    #only(6, fact("🔢", [the phone goes out with *the same* public address: the router tells the answers apart by the *port* of each connection (see the Transport Layer)]))
+  ]))
 ]
 
 #slide[
