@@ -826,18 +826,12 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea de sub obi
 
     Pe calculatoarele din laborator totul este gata. Acasă, instalați ce lipsește, apoi construiți imaginea cu
     comenzile de mai jos (copiați-le cu <kbd>Ctrl</kbd>+<kbd>C</kbd> și lipiți-le în terminal cu
-    <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>). Construirea durează câteva minute: între timp, faceți exercițiul 2
-    în alt terminal.
+    <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>):
 
     ```bash
-    mkdir -p ~/lab09
-    cd ~/lab09
-    cat > Containerfile << 'END'
-    FROM docker.io/library/debian:trixie-slim
-    RUN apt-get update && apt-get install -y --no-install-recommends iproute2 iputils-ping bind9-host traceroute \
-            curl ca-certificates python3 isc-dhcp-client dnsmasq-base && rm -rf /var/lib/apt/lists/*
-    END
-    sudo podman build -t lab09 .
+    sudo podman pull ghcr.io/upb-cs-iso/lab09:latest
+    sudo podman tag ghcr.io/upb-cs-iso/lab09:latest lab09
+    sudo podman untag localhost/lab09:latest ghcr.io/upb-cs-iso/lab09:latest
     ```
 
     <details className="reveal">
@@ -852,8 +846,7 @@ singură** idee din laborator: dacă vă blocați, citiți secțiunea de sub obi
 
     2. Fiecare își afișează versiunea (`podman` 5, `tcpdump` 4.99, `traceroute` 2.1); `host` singur afișează
        `Usage: host ...`.
-    3. `localhost/lab09` (`latest`) și `docker.io/library/debian` (`trixie-slim`). Acasă, construirea se termină cu
-       `Successfully tagged localhost/lab09:latest`.
+    3. `localhost/lab09` (`latest`).
 
     </details>
 
@@ -1599,7 +1592,7 @@ există, porniți-le din nou cu comenzile din exercițiile 9, 10 și 11.
 
 29. **Curățenie**: Ștergeți tot ce a creat acest laborator.
 
-    1. ștergeți containerele `pc1`, `web`, `dhcp` și `client`, apoi imaginile `lab09` și `debian` (păstrați-le dacă
+    1. ștergeți containerele `pc1`, `web`, `dhcp` și `client`, apoi imaginea `lab09` (păstreaz-o dacă
        faceți Provocările, care folosesc și ele `lab09`);
     2. ștergeți `~/lab09` și `/tmp/dhcp.pcap`, care aparține utilizatorului `tcpdump`.
 
@@ -1622,12 +1615,9 @@ mkdir -p ~/exam
 cd ~/exam
 sudo podman rm -f -t 0 pc1 web dhcp client lost exam-a exam-b exam-c exam-web exam-dhcp exam-nonet \
     exam-nodns exam-local &> /dev/null
-cat > Containerfile << 'END'
-FROM docker.io/library/debian:trixie-slim
-RUN apt-get update && apt-get install -y --no-install-recommends iproute2 iputils-ping bind9-host traceroute \
-        curl ca-certificates python3 isc-dhcp-client dnsmasq-base && rm -rf /var/lib/apt/lists/*
-END
-sudo podman image exists lab09 || sudo podman build -t lab09 .
+sudo podman image exists lab09 || { sudo podman pull ghcr.io/upb-cs-iso/lab09:latest &&
+    sudo podman tag ghcr.io/upb-cs-iso/lab09:latest lab09 &&
+    sudo podman untag localhost/lab09:latest ghcr.io/upb-cs-iso/lab09:latest; }
 run() { sudo podman run -d --name "$1" --hostname "$1" "${@:2}" > /dev/null; }
 run exam-a --ip 10.88.0.21 lab09 sleep infinity
 run exam-b --ip 10.88.0.22 lab09 sleep infinity

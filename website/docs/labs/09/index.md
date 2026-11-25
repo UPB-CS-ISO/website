@@ -808,20 +808,13 @@ exercise says otherwise.
     2. print the version of `podman`, `tcpdump` and `traceroute`, and check that `host` exists;
     3. list the images of `sudo podman`.
 
-    On the lab computers, everything is ready. At home, install what is missing, then build the image with these
-    commands (copy them with <kbd>Ctrl</kbd>+<kbd>C</kbd>, paste them in the terminal with
-    <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>); the build takes a few minutes: meanwhile, do exercise 2 in another
-    terminal.
+    On the lab computers, the tools are installed; at home, install what is missing. Then download the image (copy the
+    commands with <kbd>Ctrl</kbd>+<kbd>C</kbd>, paste them in the terminal with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>):
 
     ```bash
-    mkdir -p ~/lab09
-    cd ~/lab09
-    cat > Containerfile << 'END'
-    FROM docker.io/library/debian:trixie-slim
-    RUN apt-get update && apt-get install -y --no-install-recommends iproute2 iputils-ping bind9-host traceroute \
-            curl ca-certificates python3 isc-dhcp-client dnsmasq-base && rm -rf /var/lib/apt/lists/*
-    END
-    sudo podman build -t lab09 .
+    sudo podman pull ghcr.io/upb-cs-iso/lab09:latest
+    sudo podman tag ghcr.io/upb-cs-iso/lab09:latest lab09
+    sudo podman untag localhost/lab09:latest ghcr.io/upb-cs-iso/lab09:latest
     ```
 
     <details className="reveal">
@@ -836,8 +829,7 @@ exercise says otherwise.
 
     2. Each one prints its version (`podman` 5, `tcpdump` 4.99, `traceroute` 2.1); `host` alone prints
        `Usage: host ...`.
-    3. `localhost/lab09` (`latest`) and `docker.io/library/debian` (`trixie-slim`). At home, the build ends with
-       `Successfully tagged localhost/lab09:latest`.
+    3. `localhost/lab09` (`latest`).
 
     </details>
 
@@ -1567,7 +1559,7 @@ again with the commands of exercises 9, 10 and 11.
 
 29. **Clean up**: Delete everything that this lab created.
 
-        1. delete the containers `pc1`, `web`, `dhcp` and `client`, then the images `lab09` and `debian` (keep them if you
+    1. delete the containers `pc1`, `web`, `dhcp` and `client`, then the image `lab09` (keep it if you
        will do the Challenges, which use `lab09` too);
     2. delete `~/lab09`, and `/tmp/dhcp.pcap`, which belongs to the user `tcpdump`.
 
@@ -1590,12 +1582,9 @@ mkdir -p ~/exam
 cd ~/exam
 sudo podman rm -f -t 0 pc1 web dhcp client lost exam-a exam-b exam-c exam-web exam-dhcp exam-nonet \
     exam-nodns exam-local &> /dev/null
-cat > Containerfile << 'END'
-FROM docker.io/library/debian:trixie-slim
-RUN apt-get update && apt-get install -y --no-install-recommends iproute2 iputils-ping bind9-host traceroute \
-        curl ca-certificates python3 isc-dhcp-client dnsmasq-base && rm -rf /var/lib/apt/lists/*
-END
-sudo podman image exists lab09 || sudo podman build -t lab09 .
+sudo podman image exists lab09 || { sudo podman pull ghcr.io/upb-cs-iso/lab09:latest &&
+    sudo podman tag ghcr.io/upb-cs-iso/lab09:latest lab09 &&
+    sudo podman untag localhost/lab09:latest ghcr.io/upb-cs-iso/lab09:latest; }
 run() { sudo podman run -d --name "$1" --hostname "$1" "${@:2}" > /dev/null; }
 run exam-a --ip 10.88.0.21 lab09 sleep infinity
 run exam-b --ip 10.88.0.22 lab09 sleep infinity
