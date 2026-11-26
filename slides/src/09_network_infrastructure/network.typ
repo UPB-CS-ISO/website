@@ -409,55 +409,11 @@
       ([`packet loss`], [`0%` is good; a few lost packets: bad Wi-Fi or a busy network]),
       ([`min/avg/max`], [the shortest, the average and the longest round trip, in ms]),
     )),
-  ), summary: (("ip", "seq", "ttl", "time", "loss", "rtt"), explain(
-    [💡 `ping`: an ICMP _echo request_, answered by an _echo reply_],
-    ([`icmp_seq`], [a missing number is a lost packet; `packet loss` counts them]),
-    ([`ttl` `time`], [how many routers on the way, and how long there and back]),
+  ), summary: (("ip", "loss"), explain(
+    [💡 an answer means the whole way works, *there and back*],
+    ([ICMP], [part of the *network layer*: the *kernel* answers, no program and no port are needed]),
+    ([`0% packet loss`], [the computer is on, and the cards, the cables or the Wi-Fi and the routers on the way work]),
   )), size: 0.82em)
-]
-
-// NAT: the private addresses of a home behind the one public address of the router
-#slide[
-  == NAT
-  many private addresses behind one public address
-
-  // a changed address: orange, with a word, not only a color
-  #let changed(a) = text(fill: hl)[#raw(a) *(changed)*]
-  #drawing(height: 150pt)[
-    #area(5pt, 5pt, 250pt, 140pt, [LAN (private)])
-    #wire((50pt, 42pt), (230pt, 75pt))
-    #wire((50pt, 108pt), (230pt, 75pt))
-    #wire((230pt, 75pt), (400pt, 75pt))
-    #host(50pt, 42pt, "laptop", addr: "192.168.1.105", size: 24pt)
-    #host(50pt, 108pt, "phone", kind: "phone", addr: "192.168.1.107", size: 22pt)
-    #netdev(230pt, 75pt, "router", name: "router", sub: "203.0.113.42", size: 28pt, highlight: true)
-    #pin(420pt, 75pt, pic("cloud", size: 50pt))
-    #only(2)[#frame(145pt, 34pt)[from `192.168.1.105` \ to `141.85.228.17`]]
-    // the packet before the router changed it: the same frame with a dotted
-    // border, next to the new one
-    #let before(x, y, body, color: hl) = tag(x, y, body, fill: hl-bg, stroke: (paint: color, thickness: 1pt, dash: "dotted"), size: 7pt)
-    #only(3)[
-      #before(145pt, 34pt)[from `192.168.1.105` \ to `141.85.228.17`]
-      #frame(330pt, 45pt)[from #changed("203.0.113.42") \ to `141.85.228.17`]
-    ]
-    #only(4)[#frame(330pt, 110pt, color: ok-color)[from `141.85.228.17` \ to `203.0.113.42`]]
-    #only(5)[
-      #before(330pt, 110pt, color: ok-color)[from `141.85.228.17` \ to `203.0.113.42`]
-      #frame(150pt, 40pt, color: ok-color)[from `141.85.228.17` \ to #changed("192.168.1.105")]
-    ]
-    #only(6)[
-      #frame(150pt, 118pt)[from `192.168.1.107` \ to `141.85.228.17`]
-      #frame(330pt, 45pt)[from #changed("203.0.113.42") \ to `141.85.228.17`]
-    ]
-  ]
-
-  #place(bottom + left, block(width: 100%, text(size: 10.5pt)[
-    #only("1-2", fact("📤", [the laptop sends a packet to `141.85.228.17`, from its *private* address `192.168.1.105`]))
-    #only(3, fact("🔁", [the router *replaces* the source with its *public* address `203.0.113.42` and remembers the connection]))
-    #only(4, fact("↩️", [the answer comes back to the *public* address `203.0.113.42`]))
-    #only(5, fact("🔁", [the router puts back `192.168.1.105`: *private addresses are not visible on the Internet*]))
-    #only(6, fact("🔢", [the phone goes out with *the same* public address: the router tells the answers apart by the *port* of each connection (see the Transport Layer)]))
-  ]))
 ]
 
 // an IPv6 address in 8 groups of 16 bits (4 hexadecimal digits);
@@ -557,4 +513,112 @@
     ([`ttl`], [called _hop limit_ in IPv6]),
     ([`::1` `%wlp2s0`], [the loopback; the card, for a link local address]),
   )), size: 0.85em)
+]
+
+// ---------------------------------------------------------------------------
+// Sending a packet: down through the layers
+// ---------------------------------------------------------------------------
+
+// the packet goes down: the network layer has no wire of its own, it gives
+// the packet to the link layer, which puts it in a frame, which the card
+// sends as bits
+#slide[
+  == Encapsulation
+  a packet cannot travel alone: it goes in a frame
+
+  #let net = layer-colors.network
+  #let link = layer-colors.link
+  #let phy = layer-colors.physical
+  // the rows: network, data link, physical
+  #let (y1, y2, y3, rh) = (8pt, 72pt, 136pt, 44pt)
+  // the packet, the same size in both rows: it sits in the payload of the frame
+  #let (px, pw, hw) = (214pt, 220pt, 124pt)
+  // the destination and the source of a header, one per line
+  #let to-from(to, from) = grid(
+    columns: (auto, auto),
+    column-gutter: 3pt,
+    row-gutter: 2.5pt,
+    align: left + horizon,
+    [📬 *to*], to,
+    [📤 *from*], from,
+  )
+  #let who(ip, name) = [#mono(ip, size: 6.5pt) #text(size: 6.5pt, fill: luma(90))[#name]]
+  #let ip-header = box(width: hw, height: rh - 8pt, fill: net.fill, stroke: (right: 0.8pt + net.stroke), inset: (x: 4pt), align(left + horizon, text(size: 7pt)[
+    *IP header* #v(-3pt)
+    #to-from(who(bogdan.at(0), [Bogdan]), who(ana.at(0), [Ana]))
+  ]))
+  // the MAC address Ana does not know: a red empty field
+  #let missing = box(width: 70pt, fill: bad-color.lighten(85%), stroke: 1.2pt + bad-color, radius: 2pt, inset: (x: 3pt, y: 1.5pt), outset: (y: 0.5pt), align(center, text(size: 7pt, fill: bad-color, weight: "bold")[??? missing]))
+  #let packet = box(width: pw, height: rh - 8pt, radius: 3pt, fill: net.fill, stroke: 1pt + net.stroke, clip: true, stack(
+    dir: ltr,
+    ip-header,
+    box(width: pw - hw, height: rh - 8pt, fill: white, align(center + horizon, text(size: 7pt)[📄 *data* \ #text(fill: luma(100))[from Transport]])),
+  ))
+  // a layer box on the left, highlighted when it works
+  #let layer-box(y, c, name, num, on) = at(0pt, y, box(
+    width: 82pt,
+    height: rh,
+    radius: 4pt,
+    fill: if on { c.fill } else { luma(248) },
+    stroke: if on { 1.5pt + c.stroke } else { 0.6pt + luma(210) },
+    align(center + horizon, text(size: 8pt, fill: if on { black } else { luma(150) })[*#name* \ layer #num]),
+  ))
+  // an arrow down, between two rows
+  #let down(x, y) = draw-arrow((x, y), (x, y + 18pt), color: hl, thickness: 2pt, head: 6pt)
+
+  #align(center, scale(94%, reflow: true, drawing(height: 182pt)[
+    #layer-box(y1, net, [Network], 3, true)
+    #uncover("2-")[#layer-box(y2, link, [Data Link], 2, true)]
+    #uncover("3-")[#layer-box(y3, phy, [Physical], 1, true)]
+    #only(1)[#layer-box(y2, link, [Data Link], 2, false)]
+    #only("1-2")[#layer-box(y3, phy, [Physical], 1, false)]
+
+    // 1: the packet, at the network layer
+    #at(px, y1 + 4pt, packet)
+    #pin(455pt, y1 + rh / 2, text(size: 8pt, weight: "bold", fill: net.stroke)[packet])
+
+    // 2: no wire up here: down to the link layer
+    #uncover("2-")[
+      #down(41pt, y1 + rh + 1pt)
+      #draw-arrow((px + pw / 2, y1 + rh), (px + pw / 2, y2 + 2pt), color: hl, thickness: 1.5pt, head: 5pt, dash: "dashed")
+    ]
+    // 3: the frame around the packet
+    #uncover("3-")[
+      #at(98pt, y2, box(width: 374pt, height: rh, radius: 5pt, fill: link.fill, stroke: 1pt + link.stroke))
+      #at(102pt, y2 + 4pt, box(width: 110pt, height: rh - 8pt, align(left + horizon, text(size: 7pt)[
+        *Ethernet header* #v(-3pt)
+        #to-from(missing, mono(ana.at(1), size: 6.5pt))
+      ])))
+      #at(px, y2 + 4pt, packet)
+      #at(px + pw + 4pt, y2 + 4pt, box(width: 30pt, height: rh - 8pt, align(center + horizon, text(size: 7pt)[*FCS* \ ✅])))
+      #pin(452pt, y2 - 7pt, text(size: 8pt, weight: "bold", fill: link.stroke)[frame])
+    ]
+    #uncover("2-")[#only(2)[#at(px, y2 + 4pt, box(width: pw, height: rh - 8pt, radius: 3pt, stroke: (paint: net.stroke, dash: "dashed"), align(center + horizon, text(size: 7.5pt, fill: luma(110))[the same packet, given to the card])))]]
+
+    // 3 (with the frame): the card sends it as bits
+    #uncover("3-")[
+      #down(41pt, y2 + rh + 1pt)
+      #draw-arrow((285pt, y2 + rh), (285pt, y3 + 2pt), color: hl, thickness: 1.5pt, head: 5pt, dash: "dashed")
+      #at(98pt, y3 + 6pt, box(width: 374pt, height: rh - 12pt, radius: 4pt, fill: phy.fill, stroke: 1pt + phy.stroke, align(center + horizon, text(size: 8pt)[
+        #mono(size: 7.5pt)[10110010 01001110 00011111 01101001 11010010 …] #h(6pt) 🔌 cable · 📶 radio
+      ])))
+    ]
+
+    // the popup: the destination MAC address is missing
+    #only("3-")[
+      #let (bx, by, bw) = (98pt, 4pt, 112pt)
+      #at(bx + 2.5pt, by + 2.5pt, box(width: bw, height: 50pt, radius: 4pt, fill: luma(0).transparentize(80%)))
+      #at(bx, by, box(width: bw, height: 50pt, radius: 4pt, fill: white, stroke: 1.5pt + bad-color, inset: 5pt, align(left + horizon, text(size: 7.5pt)[
+        ❓ *to which card?* \
+        Ana knows Bogdan's *IP* `192.168.1.11`, but *not his MAC*
+      ])))
+      #draw-arrow((170pt, by + 50pt), (170pt, y2 + 15pt), color: bad-color, thickness: 1.5pt, head: 5pt)
+    ]
+  ]))
+
+  #place(bottom + left, block(width: 100%, text(size: 10pt)[
+    #only(1, fact("📦", [the *network layer* builds the *packet*: the IP header (who sends, who receives) and the data]))
+    #only(2, fact("⬇️", [the network layer has *no wire*: it gives the packet to the layer below, the *network card*]))
+    #only("3-", fact("✉️", [the *link layer* puts the packet in a *frame* (the card only knows *MAC addresses*); the *physical layer* sends it as *bits*]))
+  ]))
 ]

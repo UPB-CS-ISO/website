@@ -176,6 +176,19 @@ def area(x, y, w, h, name, c=NAVY, right=False):
             + _t(x + w - 12 if right else x + 12, y + 20, name, 14, 700, c, a="end" if right else "start", mono=False))
 
 
+def rport(x, y, name, ip, note=None, on=False):
+    """a network card of a router: a dark port on the wire, on the border of its network, its address below
+    (as on the slides: one card in each network); draw it after the trails"""
+    c = HL if on else "#37474f"
+    b = _r(x - 22, y - 11, 44, 22, (c, c), 4, 1) + _t(x, y + 5, name, 13, 800, "#fff")
+    iw = tw(ip, 13, True) + 8
+    b += f'<rect x="{x - iw / 2:.1f}" y="{y + 14}" width="{iw:.1f}" height="18" fill="#fff"/>' + _t(x, y + 28, ip, 13, 600, HL if on else INK, mono=True)
+    if note:
+        nw = tw(note, 12) + 8
+        b += f'<rect x="{x - nw / 2:.1f}" y="{y + 33}" width="{nw:.1f}" height="16" fill="#fff"/>' + _t(x, y + 45, note, 12, 400, MUTED)
+    return b
+
+
 def wire(a, b, c="#8a9aa0", w=3, dash=None):
     return _l(a[0], a[1], b[0], b[1], c, w, dash)
 
@@ -187,6 +200,13 @@ def radio(a, b):
 def trail(pts, color="hl", w=4.5):
     """the path a frame took, a thick colored line over the wires, with an arrow head"""
     return _a(pts, color, w)
+
+
+def run(a, b, d0=28, d1=28, color="hl", w=4.5):
+    """a trail exactly on the wire from a to b, starting d0 after a and ending d1 before b (clear of the icons)"""
+    L = ((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2) ** 0.5
+    ux, uy = (b[0] - a[0]) / L, (b[1] - a[1]) / L
+    return _a([(round(a[0] + ux * d0, 1), round(a[1] + uy * d0, 1)), (round(b[0] - ux * d1, 1), round(b[1] - uy * d1, 1))], color, w)
 
 
 # ---------------------------------------------------------------- field bars: frames, packets, segments
@@ -847,27 +867,29 @@ LAPTOP, PHONE, PUB, SRV = "192.168.1.105", "192.168.1.107", "203.0.113.42", "141
 
 def nat_svg(step):
     b = area(6, 50, 330, 255, "LAN, private addresses")
-    lp, ph, sw, rt, cl, sv = (70, 112), (70, 236), (250, 175), (414, 175), (560, 175), (710, 175)
-    b += wire(lp, sw) + wire(ph, sw) + wire(sw, rt) + wire(rt, (520, 175)) + wire((600, 175), sv)
+    lp, ph, sw, rt, cl, sv = (70, 112), (70, 236), (250, 175), (400, 175), (605, 175), (735, 175)
+    b += wire(lp, sw) + wire(ph, sw) + wire(sw, rt) + wire(rt, (571, 175)) + wire((639, 175), sv)
     b += icon("switch", *sw, 0.8)
     b += node("laptop", *lp, "laptop", LAPTOP, on=step in (0, 2)) + node("phone", *ph, "phone", PHONE, on=step == 3)
-    b += node("router", *rt, "home router", [".1 inside", PUB + " outside"], on=step in (1, 2, 3, 4))
+    b += node("router", *rt, "home router", on=step in (1, 2, 3, 4), below=False)
     b += icon("cloud", *cl) + _t(cl[0], cl[1] + 34, "Internet", 14, 700, MUTED)
     b += node("server", *sv, "upb.ro", SRV)
     T = lambda x, y, a, b_, c=(HLBG, HL), ch=None: tag(x, y, [("from " + a, True, HL if ch == "from" else INK, 700 if ch == "from" else 400), ("to   " + b_, True, HL if ch == "to" else INK, 700 if ch == "to" else 400)], c, 13)
     G = ("#e3f1e4", OKC)
-    up, down = (490, 112), (575, 266)
+    up, down = (540, 100), (625, 266)
     if step == 0:
-        b += trail([(96, 122), (232, 168)]) + T(170, 26, LAPTOP + ":51034", SRV + ":443")
+        b += run(lp, sw) + T(170, 26, LAPTOP + ":51034", SRV + ":443")
     if step == 1:
-        b += trail([(436, 169), (518, 169)]) + T(*up, PUB + ":51034", SRV + ":443", ch="from") + T(170, 26, LAPTOP + ":51034", SRV + ":443", ("#f3f5f6", "#9aa9ae"))
+        b += trail([(510, 175), (566, 175)]) + T(*up, PUB + ":51034", SRV + ":443", ch="from") + T(170, 26, LAPTOP + ":51034", SRV + ":443", ("#f3f5f6", "#9aa9ae"))
     if step == 2:
-        b += trail([(518, 181), (436, 181)], "green") + T(*down, SRV + ":443", PUB + ":51034", G) + trail([(232, 180), (96, 128)], "green") + T(170, 26, SRV + ":443", LAPTOP + ":51034", G, ch="to")
+        b += trail([(566, 175), (510, 175)], "green") + T(*down, SRV + ":443", PUB + ":51034", G) + run(sw, lp, color="green") + T(170, 26, SRV + ":443", LAPTOP + ":51034", G, ch="to")
     if step == 3:
-        b += trail([(96, 228), (232, 182)]) + T(230, 285, PHONE + ":40877", SRV + ":443") + trail([(436, 169), (518, 169)]) + T(*up, PUB + ":40877", SRV + ":443", ch="from")
+        b += run(ph, sw) + T(230, 285, PHONE + ":40877", SRV + ":443") + trail([(510, 175), (566, 175)]) + T(*up, PUB + ":40877", SRV + ":443", ch="from")
     if step == 4:
-        b += trail([(518, 181), (436, 181)], "red") + T(*down, "198.51.100.7:4444", PUB + ":22", ("#fdecea", BADC)) + mark(414, 132, False)
-    return svgfig(770, 312, b, "NAT: the home router replaces the private source address with its public one")
+        b += trail([(566, 175), (510, 175)], "red") + T(*down, "198.51.100.7:4444", PUB + ":22", ("#fdecea", BADC)) + mark(506, 146, False)
+    # its two cards: eth0 in the LAN (private), eth1 toward the Internet (public)
+    b += rport(336, rt[1], "eth0", "192.168.1.1", "private") + rport(472, rt[1], "eth1", PUB, "public")
+    return svgfig(792, 312, b, "NAT: the home router replaces the private source address with its public one")
 
 
 def nat_state(rows, new=None, hit=None):
@@ -981,16 +1003,19 @@ def router_svg(router=True, on=(), trails=(), tags=(), marks=(), gw=None):
     b += node("pc", *P["ana"], "Ana", [ANA[0], short(ANA[1])], on="ana" in on) + node("pc", *P["bog"], "Bogdan", [BOG[0], short(BOG[1])], on="bog" in on)
     b += node("pc", *P["car"], "Carla", [CAR[0], short(CAR[1])], on="car" in on) + node("pc", *P["dan"], "Dan", ["192.168.2.21", "f0:9e:4a:…"], on="dan" in on)
     if router:
-        b += node("router", *P["rt"], "router", ["192.168.1.1 | 192.168.2.1"], on="rt" in on, asize=12.5)
+        b += node("router", *P["rt"], "router", on="rt" in on)
     else:
         b += f'<circle cx="{P["rt"][0]}" cy="{P["rt"][1]}" r="22" fill="none" stroke="#9aa9ae" stroke-width="1.6" stroke-dasharray="5 4"/>' + _t(P["rt"][0], P["rt"][1] + 42, "no router", 14, 700, "#9aa9ae")
     if gw is not None:
         b += tag(150, 18, ["Ana's gateway: " + (gw or "none")], (HLBG, HL) if gw else ("#fdecea", BADC), 13.5)
+    if router:
+        # one card in each network, on its border; the trails stop before them
+        b += rport(302, P["rt"][1], "eth0", RT1[0]) + rport(478, P["rt"][1], "eth1", RT2[0])
     for x in tags:
         b += x
     for x, y, ok in marks:
         b += mark(x, y, ok)
-    return svgfig(780, 306, b, "Two networks joined by a router")
+    return svgfig(780, 306, b, "Two networks joined by a router, with one card in each")
 
 
 def frame_state(rows, neigh, title="The frame Ana sends", note=None):
@@ -1011,11 +1036,11 @@ SAME = [
     ("Ana has a packet for Bogdan `192.168.1.11`. With her mask `/24` Bogdan is in **her network**: she sends the frame **directly** to him, but she needs **his MAC address**.",
      router_svg(on=("ana",), tags=[tag(170, 18, ["packet for 192.168.1.11"], (HLBG, HL), 13.5)]), frame_state(FR("???", ANA[1], BOG[0], ANA[0], "64", ("mto",)), [])),
     ("**ARP**: Ana asks **everyone** (`ff:ff:ff:ff:ff:ff`): *who has 192.168.1.11? tell 192.168.1.10*. Only Bogdan answers, and only to Ana.",
-     router_svg(on=("ana", "bog"), trails=[trail([(84, 112), (190, 150)]), trail([(205, 170), (84, 206)]), trail([(230, 158), (366, 158)])],
+     router_svg(on=("ana", "bog"), trails=[run(RP['ana'], RP['sw1']), run(RP['sw1'], RP['bog']), trail([(230, 158), (266, 158)])],
                 tags=[tag(230, 18, ["ARP, to everyone: who has 192.168.1.11?"], (HLBG, HL), 13.5), tag(390, 260, ["Bogdan, only to Ana:", "192.168.1.11 is at e4:3b:71:0c:9a:52"], ("#e3f1e4", OKC), 13)]),
      frame_state(FR(BOG[1], ANA[1], BOG[0], ANA[0], "64", ("mto",)), [(BOG[0], BOG[1], True)])),
     ("The frame goes to the switch, which delivers it to Bogdan. No router was needed.",
-     router_svg(on=("bog",), trails=[trail([(84, 112), (190, 150)]), trail([(200, 172), (88, 206)])], marks=[(110, 214, True)]), frame_state(FR(BOG[1], ANA[1], BOG[0], ANA[0], "64"), [(BOG[0], BOG[1], False)])),
+     router_svg(on=("bog",), trails=[run(RP['ana'], RP['sw1']), run(RP['sw1'], RP['bog'])], marks=[(110, 214, True)]), frame_state(FR(BOG[1], ANA[1], BOG[0], ANA[0], "64"), [(BOG[0], BOG[1], False)])),
 ]
 NOGW = [
     ("Carla `192.168.2.20` is in **another network**, and Ana has **no gateway**: she has no route there, so no frame is sent at all.",
@@ -1026,9 +1051,9 @@ VIA = [
     ("Carla is in another network: Ana sends the packet to her **gateway**, the router `192.168.1.1`. ARP gives her the **router's MAC**; the IP destination stays Carla's.",
      router_svg(on=("ana", "rt"), gw="192.168.1.1"), frame_state(FR(RT1[1], ANA[1], CAR[0], ANA[0], "64", ("mto",)), [(RT1[0], RT1[1], True)])),
     ("Frame 1 goes to the router: **MAC to the router**, **IP to Carla**.",
-     router_svg(on=("rt",), gw="192.168.1.1", trails=[trail([(84, 112), (190, 150)]), trail([(225, 158), (366, 158)])]), frame_state(FR(RT1[1], ANA[1], CAR[0], ANA[0], "64"), [(RT1[0], RT1[1], False)])),
+     router_svg(on=("rt",), gw="192.168.1.1", trails=[run(RP['ana'], RP['sw1']), trail([(230, 158), (266, 158)])]), frame_state(FR(RT1[1], ANA[1], CAR[0], ANA[0], "64"), [(RT1[0], RT1[1], False)])),
     ("The router reads the IP destination: `192.168.2.0/24` is on its other card. It finds **Carla's MAC** (ARP) and puts the **same packet** in a **new frame**, TTL one less.",
-     router_svg(on=("car",), gw="192.168.1.1", trails=[trail([(84, 112), (190, 150)], "grey", 3), trail([(225, 158), (366, 158)], "grey", 3), trail([(414, 158), (555, 158)]), trail([(590, 150), (696, 112)])], marks=[(670, 100, True)]),
+     router_svg(on=("car",), gw="192.168.1.1", trails=[run(RP['ana'], RP['sw1'], color="grey", w=3), trail([(230, 158), (266, 158)], "grey", 3), trail([(506, 158), (550, 158)]), run(RP['sw2'], RP['car'])], marks=[(670, 100, True)]),
      frame_state(FR(CAR[1], RT2[1], CAR[0], ANA[0], "63", ("mto", "mfrom", "ttl")), [(RT1[0], RT1[1], False)], title="The new frame, from the router",
                  note="The **MAC addresses changed**, the **IP addresses stayed the same**.")),
 ]
@@ -1100,7 +1125,7 @@ def fig_routers():
 
 page = chapter("routing", "Routing", "From one network to another: routers, `ip route`, `traceroute`, NAT", 26)
 page("router", "A router joins two networks", "Router", J(
-    p("A **router** is a computer with **two or more network cards**, one in each network. It forwards **packets** from one network to another: it works on **layer 3**, with IP addresses."),
+    p("A **router** is a computer with **two or more network cards**, one in each network: here `eth0` `192.168.1.1` in Ana's network and `eth1` `192.168.2.1` in Carla's. It forwards **packets** from one network to another: a hub works on layer 1 (bits), a switch on layer 2 (frames, MAC addresses), a router on **layer 3** (packets, IP addresses)."),
     scene("Ana sends a packet", "To Bogdan, in her network; to Carla, in another one.", [("Same network", SAME), ("No gateway", NOGW), ("Through the router", VIA)], layout="stack", cap=266),
     p("Ana's computer decides with its **mask**: same network, send **directly** (ARP for the destination's MAC); another network, send to the **gateway** (ARP for the router's MAC)."),
 ))
@@ -1177,13 +1202,13 @@ def ports_svg(step):
         b += wire((566, 130), (618, 85 + i * 50), "#c3cdd1", 1.5)
     seg = lambda x, y, a, b_, c=(HLBG, HL): tag(x, y, [("to   " + a, True), ("from " + b_, True)], c, 13)
     if step == 1:
-        b += trail([(86, 122), (208, 122)]) + seg(150, 230, SRV + ":443", LAPTOP + ":51034")
+        b += trail([(88, 130), (206, 130)]) + seg(150, 230, SRV + ":443", LAPTOP + ":51034")
     if step == 2:
-        b += trail([(252, 122), (515, 122)]) + seg(380, 230, SRV + ":443", PUB + ":51034") + _t(540, 40, "the IP finds the computer", 14, 700, HL)
+        b += trail([(254, 130), (514, 130)]) + seg(380, 230, SRV + ":443", PUB + ":51034") + _t(540, 40, "the IP finds the computer", 14, 700, HL)
     if step == 3:
-        b += trail([(566, 130), (614, 135)]) + _t(540, 40, "the port finds the program", 14, 700, HL)
+        b += run((566, 130), (618, 135), 0, 0) + _t(540, 40, "the port finds the program", 14, 700, HL)
     if step == 4:
-        b += trail([(515, 140), (252, 140)], "green") + seg(380, 230, PUB + ":51034", SRV + ":443", ("#e3f1e4", OKC)) + trail([(208, 140), (86, 140)], "green")
+        b += trail([(514, 130), (254, 130)], "green") + seg(380, 230, PUB + ":51034", SRV + ":443", ("#e3f1e4", OKC)) + trail([(206, 130), (88, 130)], "green")
     return svgfig(760, 262, b, "The IP address finds the computer, the port finds the program")
 
 
@@ -1288,11 +1313,13 @@ def tcp_step(on, rows=None, legend=None):
 
 
 HDR_UDP = [
+    ("What **UDP** does: carries one message from a program to another, **nothing more**. No connection (no *hello*, the datagram is just sent), no order, no second try: a lost datagram stays lost; in exchange, it is **fast** and **simple**.", udp_step(())),
     ("The **ports**: the destination `53` is the DNS server; the source is where the answer goes. No IP addresses here: they are in the IP packet, around it.", udp_step(("src", "dst"))),
     ("A **length** (header + data: `8 + 33 = 41` bytes) and a **checksum**: a damaged datagram is **dropped**.", udp_step(("len", "sum"))),
     ("The data of the program, sent **as it is**: no connection, no order, no second try. The program decides what to do about a loss: DNS just asks again.", udp_step(("data",))),
 ]
 HDR_TCP = [
+    ("What **TCP** does: a **reliable connection** between two programs. A *hello* first, then the data, a *goodbye* at the end; every byte has a number, so the receiver puts them back **in order**; what is not confirmed in time is **sent again**.", tcp_step(())),
     ("The **ports**, just like UDP: from the browser `51034` to nginx `443`. TCP is UDP plus what makes it reliable.", tcp_step(("src", "dst"))),
     ("**Numbers**: the **Sequence** numbers the bytes, so the receiver puts them **in order**; the **Ack** says *I got everything before this byte*. No Ack in time: the data is **sent again**.", tcp_step(("seq", "ack"))),
     ("**Flags**: what the segment does.", tcp_step(("flags",), legend=[("`SYN`", "hello, start"), ("`ACK`", "got it"), ("`FIN`", "goodbye, end"), ("`RST`", "no: refused or broken")])),
@@ -1318,6 +1345,14 @@ page("ports", "The port finds the program", "Ports", J(
     p("The transport layer has two jobs: **to which program** the data goes (the **port**), and **how** it is delivered (**TCP** or **UDP**, chosen by the program). It runs in the kernel, like IP."),
     scene("Ports", "A request to a web server, and how a program gets its port.", [("Who gets the data", PORTS_STEPS), ("Getting a port", GETPORT_STEPS)]),
 ))
+page("standard", "Standard ports", "Every service has its usual port", J(
+    duo(table(["Port", "Over", "Service"], [("`22`", "TCP", "SSH, remote shell"), ("`25`", "TCP", "SMTP, sending e-mail"), ("`53`", "UDP", "DNS"), ("`67` / `68`", "UDP", "DHCP, server / client"), ("`80`", "TCP", "HTTP, the Web"), ("`443`", "TCP", "HTTPS, the secure Web")]),
+        table(["Port", "Over", "Service"], [("`123`", "UDP", "NTP, the time"), ("`143` / `993`", "TCP", "IMAP, reading e-mail"), ("`445`", "TCP", "SMB, Windows file sharing"), ("`3306`", "TCP", "MySQL / MariaDB"), ("`3389`", "TCP", "RDP, remote desktop"), ("`5432`", "TCP", "PostgreSQL")])),
+    ul("`/etc/services` has the names of the ports: `ss` and `netstat` show `https` instead of `443` without `-n`",
+       "`0` – `1023`: *well known*, only `root` may **listen** on them; `32768` – `60999`: given to clients"),
+    quiz("A program wants to listen on port `8080`, another one on `80`. Which one needs `root`?", ["`8080`", "`80`", "both", "neither"], 1,
+         "Ports below `1024` are reserved: only `root` may listen on them. `8080` is free for any user."),
+))
 page("tcpudp", "TCP and UDP", "Two ways to deliver", J(
     table(["", "📞 TCP", "📮 UDP"], [("like", "a phone call", "a postcard"), ("connection", "yes: first a *hello* (the handshake), then the data", "no: just send"),
         ("lost data", "sent again", "lost"), ("order", "the data arrives in order", "any order"), ("speed", "slower", "faster"),
@@ -1331,14 +1366,6 @@ page("tcpudp", "TCP and UDP", "Two ways to deliver", J(
 ))
 page("headers", "The UDP datagram and the TCP segment", "Transport headers", J(
     scene("The transport headers", "UDP: ports and nothing more. TCP: UDP + numbers and flags.", [("UDP datagram", [(x, pic, None) for x, pic in HDR_UDP]), ("TCP segment", [(x, pic, None) for x, pic in HDR_TCP])], layout="stack"),
-))
-page("standard", "Standard ports", "Every service has its usual port", J(
-    duo(table(["Port", "Over", "Service"], [("`22`", "TCP", "SSH, remote shell"), ("`25`", "TCP", "SMTP, sending e-mail"), ("`53`", "UDP", "DNS"), ("`67` / `68`", "UDP", "DHCP, server / client"), ("`80`", "TCP", "HTTP, the Web"), ("`443`", "TCP", "HTTPS, the secure Web")]),
-        table(["Port", "Over", "Service"], [("`123`", "UDP", "NTP, the time"), ("`143` / `993`", "TCP", "IMAP, reading e-mail"), ("`445`", "TCP", "SMB, Windows file sharing"), ("`3306`", "TCP", "MySQL / MariaDB"), ("`3389`", "TCP", "RDP, remote desktop"), ("`5432`", "TCP", "PostgreSQL")])),
-    ul("`/etc/services` has the names of the ports: `ss` and `netstat` show `https` instead of `443` without `-n`",
-       "`0` – `1023`: *well known*, only `root` may **listen** on them; `32768` – `60999`: given to clients"),
-    quiz("A program wants to listen on port `8080`, another one on `80`. Which one needs `root`?", ["`8080`", "`80`", "both", "neither"], 1,
-         "Ports below `1024` are reserved: only `root` may listen on them. `8080` is free for any user."),
 ))
 page("ss", "`ss`: who waits for data on this computer?", "Ports in Linux", J(
     term_out(SS_OUT, {5: ["127.0.0.53%lo:53"], 7: ["0.0.0.0:22"]}),
@@ -1462,7 +1489,7 @@ def dhcp_svg(step, two=False):
         b += node("router", *r2, "second router", "DHCP server 10.0.0.1", on=step in (1, 4))
     else:
         b += node("pc", *bog, "Bogdan", "192.168.1.11")
-    bc = [trail([(96, 80), (250, 132)]), trail([(250, 150), (96, 200)]), trail([(292, 132), (444, 80)]), trail([(292, 150), (444, 200)])]
+    bc = [run(lp, sw), run(sw, ana), run(sw, rt), run(sw, bog)]
     def msg(x, y, name, mac, ip, body, c=(HLBG, HL)):
         return tag(x, y, [("DHCP " + name, False, c[1], 800), ("MAC " + mac, True), ("IP  " + ip, True), body], c, 12.5)
     G, Rd = ("#e3f1e4", OKC), ("#fdecea", BADC)
@@ -1470,24 +1497,24 @@ def dhcp_svg(step, two=False):
         if step == 0:
             b += "".join(bc) + msg(270, 255, "DISCOVER", "laptop → ff:ff:…", "0.0.0.0 → 255.255.255.255", "is there a DHCP server?") + _t(108, 214, "ignores", 13, 700, MUTED, a="start") + _t(432, 214, "ignores", 13, 700, MUTED, a="end")
         if step == 1:
-            b += trail([(444, 80), (292, 132)], "green") + trail([(250, 132), (96, 80)], "green") + msg(270, 255, "OFFER", "router → laptop", "192.168.1.1 → 192.168.1.105", "192.168.1.105/24, gateway and DNS .1, 24 h", G)
+            b += run(rt, sw, color="green") + run(sw, lp, color="green") + msg(270, 255, "OFFER", "router → laptop", "192.168.1.1 → 192.168.1.105", "192.168.1.105/24, gateway and DNS .1, 24 h", G)
         if step == 2:
             b += "".join(bc[0:1] + bc[1:]) + msg(270, 255, "REQUEST", "laptop → ff:ff:…", "0.0.0.0 → 255.255.255.255", "I take 192.168.1.105 from 192.168.1.1")
         if step == 3:
-            b += trail([(444, 80), (292, 132)], "green") + trail([(250, 132), (96, 80)], "green") + msg(270, 255, "ACK", "router → laptop", "192.168.1.1 → 192.168.1.105", "it is yours for 24 hours", G) + mark(112, 72, True)
+            b += run(rt, sw, color="green") + run(sw, lp, color="green") + msg(270, 255, "ACK", "router → laptop", "192.168.1.1 → 192.168.1.105", "it is yours for 24 hours", G) + mark(112, 72, True)
     else:
         if step == 0:
             b += bc[0] + bc[2] + bc[3] + msg(270, 255, "DISCOVER", "laptop → ff:ff:…", "0.0.0.0 → 255.255.255.255", "is there a DHCP server?")
         if step == 1:
-            b += trail([(444, 200), (292, 150)], "red") + trail([(250, 140), (96, 84)], "red") + msg(270, 255, "OFFER (1st)", "second router → laptop", "10.0.0.1 → 10.0.0.23", "10.0.0.23/24, gateway 10.0.0.1", Rd)
+            b += run(r2, sw, color="red") + run(sw, lp, color="red") + msg(270, 255, "OFFER (1st)", "second router → laptop", "10.0.0.1 → 10.0.0.23", "10.0.0.23/24, gateway 10.0.0.1", Rd)
         if step == 2:
-            b += trail([(444, 80), (292, 132)], "green") + msg(270, 255, "OFFER (2nd)", "router → laptop", "192.168.1.1 → 192.168.1.105", "too late: the laptop took the first one", G)
+            b += run(rt, sw, color="green") + msg(270, 255, "OFFER (2nd)", "router → laptop", "192.168.1.1 → 192.168.1.105", "too late: the laptop took the first one", G)
         if step == 3:
             b += bc[0] + bc[2] + bc[3] + msg(270, 255, "REQUEST", "laptop → ff:ff:…", "0.0.0.0 → 255.255.255.255", "I take 10.0.0.23 from 10.0.0.1")
         if step == 4:
-            b += trail([(444, 200), (292, 150)], "red") + trail([(250, 140), (96, 84)], "red") + msg(270, 255, "ACK", "second router → laptop", "10.0.0.1 → 10.0.0.23", "it is yours", Rd)
+            b += run(r2, sw, color="red") + run(sw, lp, color="red") + msg(270, 255, "ACK", "second router → laptop", "10.0.0.1 → 10.0.0.23", "it is yours", Rd)
         if step == 5:
-            b += _l(300, 168, 330, 184, BADC, 3) + mark(320, 165, False) + tag(260, 268, ["DHCP snooping: only the port", "of the home router may answer"], G, 12.5) + trail([(444, 80), (292, 132)], "green") + trail([(250, 132), (96, 80)], "green")
+            b += _l(300, 168, 330, 184, BADC, 3) + mark(320, 165, False) + tag(260, 268, ["DHCP snooping: only the port", "of the home router may answer"], G, 12.5) + run(rt, sw, color="green") + run(sw, lp, color="green")
     return svgfig(560, 300, b, "DHCP: four messages between the new laptop and the DHCP server")
 
 
@@ -1990,7 +2017,7 @@ table.t.sc-xt td{padding:3px 10px}
 META = dict(
     num="09", key="iso-09-network-v1", short="Network Infrastructure",
     title="Network Infrastructure, step by step · ISO Lecture 09",
-    description="ISO Lecture 09 – Network Infrastructure: layers, MAC addresses, Ethernet, hubs and switches, Wi-Fi and nmcli, IP addresses and masks, ping, NAT, routing and traceroute, ports, TCP and UDP, DNS, DHCP, the home router, tcpdump and troubleshooting, with simulators and a demo laptop.",
+    description="ISO Lecture 09 – Network Infrastructure: layers, MAC addresses, Ethernet, hubs and switches, Wi-Fi and nmcli, IP addresses and masks, ping, routing, traceroute and NAT, ports, TCP and UDP, DNS, DHCP, the home router, tcpdump and troubleshooting, with simulators and a demo laptop.",
     title_html="Network infrastructure, step by step:<br><span>from the card to the Internet.</span>",
     lead="How your data, cut into pieces, travels from the network card, through switches and routers, to a program on another computer, and how Linux shows every step: <code>ip</code>, <code>ping</code>, <code>nmcli</code>, <code>ss</code>, <code>tcpdump</code>.",
     features="frames and packets, step by step · hub, switch, mask, routing and filter simulators · a demo laptop with missions",

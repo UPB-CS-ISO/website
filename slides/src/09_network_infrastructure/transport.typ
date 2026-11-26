@@ -225,6 +225,50 @@
   ]))
 ]
 
+#let port-list(rows) = text(size: 10.5pt, table(
+  columns: (auto, auto, 1fr),
+  inset: (x: 7pt, y: 3.5pt),
+  align: left + horizon,
+  stroke: (x, y) => if y == 0 { none } else { (bottom: 0.5pt + luma(210)) },
+  fill: (x, y) => if y == 0 { accent } else if calc.even(y) { luma(246) } else { white },
+  table.header(..([port], [over], [service]).map(h => text(fill: white, weight: "bold", h))),
+  ..rows.map(((port, proto, name)) => (text(weight: "bold", raw(port)), proto, name)).flatten(),
+))
+
+#slide[
+  == Standard Ports
+  every service has its usual port
+
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 14pt,
+    port-list((
+      ("22", "TCP", [SSH, remote shell]),
+      ("25", "TCP", [SMTP, sending e-mail]),
+      ("53", "UDP", [DNS, names to IP addresses]),
+      ("67 / 68", "UDP", [DHCP, server / client]),
+      ("80", "TCP", [HTTP, the Web]),
+      ("443", "TCP", [HTTPS, the secure Web]),
+    )),
+    port-list((
+      ("123", "UDP", [NTP, the time]),
+      ("143 / 993", "TCP", [IMAP, reading e-mail]),
+      ("445", "TCP", [SMB, Windows file sharing]),
+      ("3306", "TCP", [MySQL / MariaDB]),
+      ("3389", "TCP", [RDP, remote desktop]),
+      ("5432", "TCP", [PostgreSQL]),
+    )),
+  )
+
+  #v(2pt)
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 14pt,
+    uncover("2-", fact("📖", [`/etc/services`: the names of the ports, shown by `ss` and `netstat` without `-n`])),
+    uncover("3-", fact("🔢", [`0`–`1023`: _well known_, only `root` may *listen* on them; `32768`–`60999`: given to clients])),
+  )
+]
+
 // ---------------------------------------------------------------------------
 // How a program gets a port
 // ---------------------------------------------------------------------------
@@ -336,6 +380,12 @@
   the simple one: ports, and nothing more; the example: a DNS question
 
   #let steps = (
+    (none, explain(
+      [🔎 what *UDP* does: carries one message from a program to another, *nothing more*],
+      ([📮 *no connection*], [no _"hello"_: the datagram is just sent]),
+      ([🎲 *no order*], [the datagrams may arrive in any order]),
+      ([💨 *no second try*], [a lost datagram stays lost; in exchange, it is *fast* and *simple*]),
+    )),
     (("data",), explain(
       [🔎 an example: a *DNS question*, sent over *UDP*],
       ([`upb.ro`?], [a program asks the DNS server for the IP address of `upb.ro`]),
@@ -386,7 +436,12 @@
   simplified: only the important fields
 
   #let steps = (
-    (none, none),
+    (none, explain(
+      [🔎 what *TCP* does: a *reliable connection* between two programs (the browser and the web server)],
+      ([📞 *connection*], [first a _"hello"_, then the data, at the end a _"goodbye"_]),
+      ([🔢 *in order*], [every byte has a number: the receiver puts the bytes back in order]),
+      ([🔁 *nothing lost*], [the receiver confirms what it got; what is not confirmed in time is *sent again*]),
+    )),
     (("src", "dst"), explain(
       [the *ports*, just like UDP],
       ([📬 📤], [from the browser `51034`, to the web server `443`]),
@@ -422,55 +477,130 @@
   }
 ]
 
-#let port-list(rows) = text(size: 10.5pt, table(
-  columns: (auto, auto, 1fr),
-  inset: (x: 7pt, y: 3.5pt),
-  align: left + horizon,
-  stroke: (x, y) => if y == 0 { none } else { (bottom: 0.5pt + luma(210)) },
-  fill: (x, y) => if y == 0 { accent } else if calc.even(y) { luma(246) } else { white },
-  table.header(..([port], [over], [service]).map(h => text(fill: white, weight: "bold", h))),
-  ..rows.map(((port, proto, name)) => (text(weight: "bold", raw(port)), proto, name)).flatten(),
-))
+// ---------------------------------------------------------------------------
+// All the layers: each one puts what it gets from above in its own box
+// ---------------------------------------------------------------------------
 
 #slide[
-  == Standard Ports
-  every service has its usual port
+  == All the Layers
+  each layer adds its own header in front
 
-  #grid(
-    columns: (1fr, 1fr),
-    column-gutter: 14pt,
-    port-list((
-      ("22", "TCP", [SSH, remote shell]),
-      ("25", "TCP", [SMTP, sending e-mail]),
-      ("53", "UDP", [DNS, names to IP addresses]),
-      ("67 / 68", "UDP", [DHCP, server / client]),
-      ("80", "TCP", [HTTP, the Web]),
-      ("443", "TCP", [HTTPS, the secure Web]),
-    )),
-    port-list((
-      ("123", "UDP", [NTP, the time]),
-      ("143 / 993", "TCP", [IMAP, reading e-mail]),
-      ("445", "TCP", [SMB, Windows file sharing]),
-      ("3306", "TCP", [MySQL / MariaDB]),
-      ("3389", "TCP", [RDP, remote desktop]),
-      ("5432", "TCP", [PostgreSQL]),
-    )),
-  )
+  #let (app, tr, net, link) = (layer-colors.application, layer-colors.transport, layer-colors.network, layer-colors.link)
+  // the rows, one for each layer
+  #let (rh, gap) = (38pt, 8pt)
+  #let row-y(i) = 1pt + i * (rh + gap)
+  // the columns: every box is right under the same box of the row above
+  #let (xe, xi, xt, xd, xf, xend) = (104pt, 176pt, 270pt, 364pt, 452pt, 478pt)
+  // the boxes of one row, from the outside in: (x1, x2, color, header);
+  // each one is a rounded box, the next one sits inside it, 3pt smaller on
+  // every side but the left, where the header of the outer box is
+  #let nest(i, boxes) = for (k, (x1, x2, c, head)) in boxes.enumerate() {
+    let pad = k * 3pt
+    let next-x = if k + 1 < boxes.len() { boxes.at(k + 1).at(0) } else { x2 }
+    at(x1, row-y(i) + pad, box(width: x2 - x1, height: rh - 2 * pad, radius: 4pt, fill: c.fill, stroke: 0.9pt + c.stroke))
+    at(x1, row-y(i) + pad, box(width: next-x - x1, height: rh - 2 * pad, inset: (x: 5pt), align(left + horizon, text(size: 6.5pt, head))))
+  }
+  // (from #arrow to: the sender, then the receiver)
+  #let data-head = align(center)[📄 `GET /index.html`]
+  #let tcp-head = [*TCP header* \ port `51034` #arrow `443`]
+  #let ip-head = [*IP header* \ `192.168.1.105` \ #arrow `141.85.228.17`]
+  // the Ethernet header: first the MAC address is missing, then ARP finds it
+  #let missing = box(fill: bad-color.lighten(85%), stroke: 1pt + bad-color, radius: 2pt, inset: (x: 2pt, y: 1pt), text(fill: bad-color, weight: "bold")[???])
+  #let eth-missing = [*Ethernet header* \ MAC to #missing]
+  #let eth-head = [*Ethernet header* \ MAC to #new-val[router]]
+  #let data(x2) = (xd, x2, app, data-head)
+  // a layer box on the left, colored once it works
+  #let layer-row(i, c, name, on) = at(0pt, row-y(i), box(
+    width: 88pt,
+    height: rh,
+    radius: 4pt,
+    fill: if on { c.fill } else { luma(248) },
+    stroke: if on { 1.2pt + c.stroke } else { 0.6pt + luma(210) },
+    align(center + horizon, text(size: 8pt, fill: if on { black } else { luma(150) }, weight: "bold", name)),
+  ))
+  // what the layer calls its box, in the empty space left of it
+  #let unit(i, x, body, c) = pin(x - 26pt, row-y(i) + rh / 2, text(size: 7.5pt, weight: "bold", fill: c.stroke, body))
+  // an arrow down, from one row to the next
+  #let down(i, x) = draw-arrow((x, row-y(i) + rh + 1pt), (x, row-y(i + 1) - 1pt), color: hl, thickness: 1.5pt, head: 5pt)
 
-  #v(2pt)
-  #grid(
-    columns: (1fr, 1fr),
-    column-gutter: 14pt,
-    uncover("2-", fact("📖", [`/etc/services`: the names of the ports, shown by `ss` and `netstat` without `-n`])),
-    uncover("3-", fact("🔢", [`0`–`1023`: _well known_, only `root` may *listen* on them; `32768`–`60999`: given to clients])),
-  )
+  #align(center, scale(94%, reflow: true, drawing(height: 178pt)[
+    #for (i, (c, name)) in ((app, [Application]), (tr, [Transport]), (net, [Network]), (link, [Data Link])).enumerate() {
+      only(str(i + 1) + "-", layer-row(i, c, name, true))
+      if i > 0 { only("-" + str(i), layer-row(i, c, name, false)) }
+    }
+
+    // 1: the browser's data, and where it goes: the browser chooses the
+    // destination IP address and port (the socket), not only the data
+    #nest(0, (data(xf),))
+    #let (sx1, sx2) = (190pt, 350pt)
+    #at(sx1, row-y(0) + 5pt, box(width: sx2 - sx1, height: rh - 10pt, radius: 4pt, fill: white, stroke: 1pt + app.stroke, inset: (x: 5pt), align(left + horizon, text(size: 6.5pt)[
+      🔌 *the browser asks:* \
+      connect to `141.85.228.17` port `443`
+    ])))
+    // the browser's choices go down to two layers: the port to the
+    // transport layer, the IP address to the network layer
+    // (drawn at the end, on top of the boxes)
+    #let tell(x, i) = draw-arrow((x, row-y(0) + rh - 5pt), (x, row-y(i) - 0.5pt), color: app.stroke, thickness: 1.2pt, head: 5pt)
+    // 2: the transport layer puts the ports in front: a segment
+    #uncover("2-")[
+      #down(0, (xd + xf) / 2)
+      #nest(1, ((xt, xf, tr, tcp-head), data(xf - 3pt)))
+      #unit(1, xt, [segment], tr)
+    ]
+    // 3: the network layer puts the IP addresses in front: a packet
+    #uncover("3-")[
+      #down(1, (xt + xf) / 2)
+      #nest(2, ((xi, xf, net, ip-head), (xt, xf - 3pt, tr, tcp-head), data(xf - 6pt)))
+      #unit(2, xi, [packet], net)
+    ]
+    // 4: the link layer puts the MAC addresses in front, and the FCS after: a frame
+    #uncover("4-")[
+      #down(2, (xi + xf) / 2)
+      #only(4, nest(3, ((xe, xend, link, eth-missing), (xi, xf, net, ip-head), (xt, xf - 3pt, tr, tcp-head), data(xf - 6pt))))
+      #only("5-", nest(3, ((xe, xend, link, eth-head), (xi, xf, net, ip-head), (xt, xf - 3pt, tr, tcp-head), data(xf - 6pt))))
+      #pin((xf + xend) / 2, row-y(3) + rh / 2, text(size: 6.5pt, weight: "bold")[FCS])
+      #pin(xe + 58pt, row-y(3) - 6pt, text(size: 7.5pt, weight: "bold", fill: link.stroke)[frame])
+    ]
+    // 4 - 5: the popup, over the empty part of the Transport row: which MAC
+    // address? then ARP finds it (the server is in another network: the
+    // MAC address of the gateway)
+    #let popup(c, body) = {
+      at(102pt, row-y(1) - 2pt, box(width: 98pt, height: 44pt, radius: 4pt, fill: luma(0).transparentize(82%)))
+      at(100pt, row-y(1) - 4pt, box(width: 98pt, height: 44pt, radius: 4pt, fill: white, stroke: 1.4pt + c, inset: 5pt, align(left + horizon, text(size: 6.5pt, body))))
+      draw-arrow((124pt, row-y(1) + 40pt), (124pt, row-y(3) + 22pt), color: c, thickness: 1.3pt, head: 5pt)
+    }
+    #uncover("2-")[#tell(325pt, 1)]
+    #uncover("3-")[#tell(215pt, 2)]
+    #only(4, popup(bad-color)[❓ *to which card?* \ the server `141.85.228.17` is in *another network*])
+    #only(5, popup(ok-color)[📢 *ARP*: who has `192.168.1.1`, the *gateway*? \ ↩️ the router: `70:b5:e8:2d:91:4c`])
+    // 6: the idea, as a popup over the drawing
+    #only("6-")[
+      #let (px, py, pw, ph) = (118pt, row-y(1) + 6pt, 250pt, 62pt)
+      #at(px + 3pt, py + 3pt, box(width: pw, height: ph, radius: 6pt, fill: luma(0).transparentize(80%)))
+      #at(px, py, box(width: pw, height: ph, radius: 6pt, fill: white, stroke: 1.6pt + hl, inset: 8pt, align(left + horizon, grid(
+        columns: (auto, 1fr),
+        column-gutter: 7pt,
+        align: horizon,
+        icon("🔁", size: 18pt),
+        text(size: 9pt)[each layer puts what it gets *from above* in its own box; the server opens the boxes in *reverse order*],
+      ))))
+    ]
+  ]))
+
+  #place(bottom + left, block(width: 100%, text(size: 10pt)[
+    #only(1, fact("📄", [the *browser* has *data* (a request for a page) and says *where*: the IP address and the port of the server]))
+    #only(2, fact("🚪", [the *transport layer* adds the *ports*: `443` from the browser, `51034` given by the operating system]))
+    #only(3, fact("🌍", [the *network layer* adds the *IP addresses*: the destination, also from the browser, and the laptop's own]))
+    #only(4, fact("✉️", [the *link layer* adds the *MAC addresses*, but which card is the next stop?], c: (fill: bad-color.lighten(92%), stroke: bad-color)))
+    #only(5, fact("📢", [another network: ARP finds the MAC address of the *gateway*, the router], c: (fill: ok-color.lighten(90%), stroke: ok-color)))
+  ]))
 ]
 
 #slide[
   == Ports in Linux
   who waits for data on this computer?
 
-  #reveal-terminal(before: none, lines: (1, 8), full: false)[```terminal
+  ```terminal
   $ ss -tuln
   Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
   udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*
@@ -479,9 +609,9 @@
   tcp   LISTEN 0      511          0.0.0.0:443        0.0.0.0:*
   tcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*
   tcp   LISTEN 0      511          0.0.0.0:80         0.0.0.0:*
-  ```]
+  ```
 
-  #uncover("2-")[
+  #block[
     #set text(size: 0.92em)
     #explain(
       [`ss` shows the *sockets*: a socket is what a program uses to send and receive on a port],

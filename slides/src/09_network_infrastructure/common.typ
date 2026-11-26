@@ -798,3 +798,117 @@
   stroke: 0.6pt + c.stroke,
   grid(columns: (auto, 1fr), column-gutter: 8pt, align: (center + horizon, left + horizon), icon(e, size: 15pt), body),
 )
+
+// ---------------------------------------------------------------------------
+// What a computer does before sending a packet (the Local Network and
+// Routing slides): panels, the network check, the ARP table, the frame
+// ---------------------------------------------------------------------------
+
+// the addresses of the Local Network and Routing slides: (IP, MAC)
+#let ana = ("192.168.1.10", "5c:8f:2a:91:d4:07")
+#let bogdan = ("192.168.1.11", "e4:3b:71:0c:9a:52")
+#let carla = ("192.168.2.20", "08:d1:6e:b3:47:ac")
+#let eth0 = ("192.168.1.1", "70:b5:e8:2d:91:4c")
+#let eth1 = ("192.168.2.1", "70:b5:e8:2d:91:50")
+
+#let mono(it, size: 7pt) = text(font: "DejaVu Sans Mono", size: size, it)
+// a value that just changed or was just found: orange
+#let new-val(it) = box(fill: hl-bg, stroke: 0.8pt + hl, radius: 2pt, inset: (x: 2pt), outset: (y: 1.5pt), it)
+// a network card of a router: a dark port on the wire, on the border of the
+// network it belongs to, with its IP address below (or above) it, written
+// like the address of a computer. `on: true` draws it in orange (the card
+// used on this step); `ip-dx` moves the address sideways, away from the
+// router; `note` is a small gray word next to the address (e.g. "private").
+// Draw it after the trails, so it stays on top.
+// usage: #router-port(210pt, 82pt, "eth0", "192.168.1.1")
+#let router-port(x, y, name, ip, ip-at: bottom, ip-dx: 0pt, note: none, on: false) = {
+  pin(x, y, box(fill: if on { hl } else { luma(55) }, radius: 2pt, inset: (x: 3pt, y: 2pt), text(
+    size: 7pt,
+    fill: white,
+    weight: "bold",
+    name,
+  )))
+  let dy = if ip-at == bottom { 15pt } else { -15pt }
+  if note != none {
+    pin(x + ip-dx, y + dy + (if ip-at == bottom { 9pt } else { -9pt }), box(fill: white, inset: 1pt, text(size: 6.5pt, fill: luma(90), note)))
+  }
+  pin(x + ip-dx, y + dy, box(fill: white, inset: 1pt, text(size: 7pt, font: "DejaVu Sans Mono", fill: if on { hl } else {
+    black
+  }, ip)))
+}
+// a value that is not known: a red `???`
+#let unknown = text(fill: bad-color, weight: "bold")[???]
+
+// a panel of a device's "thinking", with a title strip; its top left at (x, y)
+#let panel(x, y, w, h, title, body, color: accent) = at(x, y, box(
+  width: w,
+  height: h,
+  stroke: 0.8pt + color,
+  radius: 3pt,
+  clip: true,
+  stack(
+    box(width: 100%, fill: color, inset: (x: 5pt, y: 2.5pt), text(size: 7.5pt, fill: white, weight: "bold", title)),
+    box(width: 100%, inset: (x: 5pt, y: 3pt), text(size: 7.5pt, body)),
+  ),
+))
+
+// the network check, for a mask /24: each address in `rows` (name, address,
+// network) with its network part (the first 3 numbers) colored and the host
+// part grayed, then the network it gives; `caption` explains the mask; then
+// the verdict, green (the same network) or orange (another one)
+// (`from`: show it one line at a time, the first row on step `from`, the
+// verdict after the last row)
+#let net-check(rows, verdict, same: true, caption: none, from: none) = {
+  let on(i, body) = if from == none { body } else { uncover(str(from + i) + "-", body) }
+  let n = layer-colors.network
+  // the address, split in the network part and the host part
+  let split(ip) = {
+    let parts = ip.split(".")
+    box(fill: n.fill, stroke: 0.6pt + n.stroke, radius: 2pt, inset: (x: 2pt), outset: (y: 1.5pt), mono(text(weight: "bold", parts.slice(0, 3).join("."))))
+    mono(text(fill: luma(150), "." + parts.at(3)))
+  }
+  if caption != none {
+    text(size: 7pt, fill: luma(80), caption)
+    v(-1pt)
+  }
+  grid(
+    columns: (auto, auto, auto, auto),
+    column-gutter: 5pt,
+    row-gutter: 4.5pt,
+    align: left + horizon,
+    ..rows
+      .enumerate()
+      .map(((i, (who, ip, net))) => (
+        text(size: 7pt, who),
+        split(ip),
+        text(size: 7pt, fill: luma(90))[#arrow network],
+        mono(text(weight: "bold", net)),
+      ).map(x => on(i, x)))
+      .flatten(),
+  )
+  v(2pt)
+  let c = if same { ok-color } else { hl }
+  on(rows.len(), box(width: 100%, fill: c.lighten(90%), stroke: 0.6pt + c, radius: 2pt, inset: (x: 4pt, y: 2pt), text(size: 7.5pt, verdict)))
+}
+
+// an ARP table: rows of (IP, MAC); a MAC can be `unknown` or `new-val(..)`
+#let arp-table(..rows) = table(
+  columns: (auto, auto),
+  inset: (x: 4pt, y: 2pt),
+  stroke: (x, y) => if y == 0 { (bottom: 0.8pt + luma(150)) } else { (bottom: 0.4pt + luma(215)) },
+  table.header(text(size: 7pt, weight: "bold")[IP address], text(size: 7pt, weight: "bold")[MAC address]),
+  ..rows.pos().map(((ip, mac)) => (mono(ip), mono(mac))).flatten(),
+)
+
+// a frame (layer 2, the link color) with what it carries inside (an IP
+// packet, layer 3, or an ARP message); `to` and `from` are the MAC addresses
+#let frame-box(to, from, inner, arp: false) = {
+  let l = layer-colors.link
+  let n = layer-colors.network
+  box(width: 100%, fill: l.fill, stroke: 0.8pt + l.stroke, radius: 3pt, inset: 3pt, stack(
+    spacing: 3pt,
+    text(size: 7pt)[✉️ *frame* #h(1fr) MAC to #mono(to, size: 6.5pt) #h(1fr) from #mono(from, size: 6.5pt)],
+    box(width: 100%, fill: if arp { white } else { n.fill }, stroke: 0.6pt + if arp { luma(170) } else { n.stroke }, radius: 2pt, inset: (x: 3pt, y: 2.5pt), text(size: 7pt, inner)),
+  ))
+}
+#let ip-inner(to, from, ttl: "64") = [*IP* #h(1fr) to #mono(to, size: 6.5pt) #h(1fr) from #mono(from, size: 6.5pt) #h(1fr) TTL #mono(ttl, size: 6.5pt)]
