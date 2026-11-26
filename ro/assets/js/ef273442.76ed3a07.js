@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkcourses=self.webpackChunkcourses||[]).push([["153"],{4083(e){e.exports=JSON.parse('{"metadata":{"permalink":"/ro/blog","page":1,"postsPerPage":10,"totalPages":1,"totalCount":0,"blogDescription":"Blog","blogTitle":"Blog"}}')}}]);
