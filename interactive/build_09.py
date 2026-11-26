@@ -202,6 +202,13 @@ def trail(pts, color="hl", w=4.5):
     return _a(pts, color, w)
 
 
+def run(a, b, d0=28, d1=28, color="hl", w=4.5):
+    """a trail exactly on the wire from a to b, starting d0 after a and ending d1 before b (clear of the icons)"""
+    L = ((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2) ** 0.5
+    ux, uy = (b[0] - a[0]) / L, (b[1] - a[1]) / L
+    return _a([(round(a[0] + ux * d0, 1), round(a[1] + uy * d0, 1)), (round(b[0] - ux * d1, 1), round(b[1] - uy * d1, 1))], color, w)
+
+
 # ---------------------------------------------------------------- field bars: frames, packets, segments
 def fields_svg(fields, on=(), groups=(), width=760, inner=None, note=None):
     """fields: (key, name, size, width weight, example); on: the keys in focus; groups: (first key, last key, label)"""
@@ -871,15 +878,15 @@ def nat_svg(step):
     G = ("#e3f1e4", OKC)
     up, down = (540, 100), (625, 266)
     if step == 0:
-        b += trail([(96, 122), (232, 168)]) + T(170, 26, LAPTOP + ":51034", SRV + ":443")
+        b += run(lp, sw) + T(170, 26, LAPTOP + ":51034", SRV + ":443")
     if step == 1:
-        b += trail([(510, 169), (566, 169)]) + T(*up, PUB + ":51034", SRV + ":443", ch="from") + T(170, 26, LAPTOP + ":51034", SRV + ":443", ("#f3f5f6", "#9aa9ae"))
+        b += trail([(510, 175), (566, 175)]) + T(*up, PUB + ":51034", SRV + ":443", ch="from") + T(170, 26, LAPTOP + ":51034", SRV + ":443", ("#f3f5f6", "#9aa9ae"))
     if step == 2:
-        b += trail([(566, 181), (512, 181)], "green") + T(*down, SRV + ":443", PUB + ":51034", G) + trail([(232, 180), (96, 128)], "green") + T(170, 26, SRV + ":443", LAPTOP + ":51034", G, ch="to")
+        b += trail([(566, 175), (510, 175)], "green") + T(*down, SRV + ":443", PUB + ":51034", G) + run(sw, lp, color="green") + T(170, 26, SRV + ":443", LAPTOP + ":51034", G, ch="to")
     if step == 3:
-        b += trail([(96, 228), (232, 182)]) + T(230, 285, PHONE + ":40877", SRV + ":443") + trail([(510, 169), (566, 169)]) + T(*up, PUB + ":40877", SRV + ":443", ch="from")
+        b += run(ph, sw) + T(230, 285, PHONE + ":40877", SRV + ":443") + trail([(510, 175), (566, 175)]) + T(*up, PUB + ":40877", SRV + ":443", ch="from")
     if step == 4:
-        b += trail([(566, 181), (512, 181)], "red") + T(*down, "198.51.100.7:4444", PUB + ":22", ("#fdecea", BADC)) + mark(506, 146, False)
+        b += trail([(566, 175), (510, 175)], "red") + T(*down, "198.51.100.7:4444", PUB + ":22", ("#fdecea", BADC)) + mark(506, 146, False)
     # its two cards: eth0 in the LAN (private), eth1 toward the Internet (public)
     b += rport(336, rt[1], "eth0", "192.168.1.1", "private") + rport(472, rt[1], "eth1", PUB, "public")
     return svgfig(792, 312, b, "NAT: the home router replaces the private source address with its public one")
@@ -1029,11 +1036,11 @@ SAME = [
     ("Ana has a packet for Bogdan `192.168.1.11`. With her mask `/24` Bogdan is in **her network**: she sends the frame **directly** to him, but she needs **his MAC address**.",
      router_svg(on=("ana",), tags=[tag(170, 18, ["packet for 192.168.1.11"], (HLBG, HL), 13.5)]), frame_state(FR("???", ANA[1], BOG[0], ANA[0], "64", ("mto",)), [])),
     ("**ARP**: Ana asks **everyone** (`ff:ff:ff:ff:ff:ff`): *who has 192.168.1.11? tell 192.168.1.10*. Only Bogdan answers, and only to Ana.",
-     router_svg(on=("ana", "bog"), trails=[trail([(84, 112), (190, 150)]), trail([(205, 170), (84, 206)]), trail([(230, 158), (266, 158)])],
+     router_svg(on=("ana", "bog"), trails=[run(RP['ana'], RP['sw1']), run(RP['sw1'], RP['bog']), trail([(230, 158), (266, 158)])],
                 tags=[tag(230, 18, ["ARP, to everyone: who has 192.168.1.11?"], (HLBG, HL), 13.5), tag(390, 260, ["Bogdan, only to Ana:", "192.168.1.11 is at e4:3b:71:0c:9a:52"], ("#e3f1e4", OKC), 13)]),
      frame_state(FR(BOG[1], ANA[1], BOG[0], ANA[0], "64", ("mto",)), [(BOG[0], BOG[1], True)])),
     ("The frame goes to the switch, which delivers it to Bogdan. No router was needed.",
-     router_svg(on=("bog",), trails=[trail([(84, 112), (190, 150)]), trail([(200, 172), (88, 206)])], marks=[(110, 214, True)]), frame_state(FR(BOG[1], ANA[1], BOG[0], ANA[0], "64"), [(BOG[0], BOG[1], False)])),
+     router_svg(on=("bog",), trails=[run(RP['ana'], RP['sw1']), run(RP['sw1'], RP['bog'])], marks=[(110, 214, True)]), frame_state(FR(BOG[1], ANA[1], BOG[0], ANA[0], "64"), [(BOG[0], BOG[1], False)])),
 ]
 NOGW = [
     ("Carla `192.168.2.20` is in **another network**, and Ana has **no gateway**: she has no route there, so no frame is sent at all.",
@@ -1044,9 +1051,9 @@ VIA = [
     ("Carla is in another network: Ana sends the packet to her **gateway**, the router `192.168.1.1`. ARP gives her the **router's MAC**; the IP destination stays Carla's.",
      router_svg(on=("ana", "rt"), gw="192.168.1.1"), frame_state(FR(RT1[1], ANA[1], CAR[0], ANA[0], "64", ("mto",)), [(RT1[0], RT1[1], True)])),
     ("Frame 1 goes to the router: **MAC to the router**, **IP to Carla**.",
-     router_svg(on=("rt",), gw="192.168.1.1", trails=[trail([(84, 112), (190, 150)]), trail([(225, 158), (266, 158)])]), frame_state(FR(RT1[1], ANA[1], CAR[0], ANA[0], "64"), [(RT1[0], RT1[1], False)])),
+     router_svg(on=("rt",), gw="192.168.1.1", trails=[run(RP['ana'], RP['sw1']), trail([(230, 158), (266, 158)])]), frame_state(FR(RT1[1], ANA[1], CAR[0], ANA[0], "64"), [(RT1[0], RT1[1], False)])),
     ("The router reads the IP destination: `192.168.2.0/24` is on its other card. It finds **Carla's MAC** (ARP) and puts the **same packet** in a **new frame**, TTL one less.",
-     router_svg(on=("car",), gw="192.168.1.1", trails=[trail([(84, 112), (190, 150)], "grey", 3), trail([(225, 158), (266, 158)], "grey", 3), trail([(506, 158), (553, 158)]), trail([(590, 150), (696, 112)])], marks=[(670, 100, True)]),
+     router_svg(on=("car",), gw="192.168.1.1", trails=[run(RP['ana'], RP['sw1'], color="grey", w=3), trail([(230, 158), (266, 158)], "grey", 3), trail([(506, 158), (550, 158)]), run(RP['sw2'], RP['car'])], marks=[(670, 100, True)]),
      frame_state(FR(CAR[1], RT2[1], CAR[0], ANA[0], "63", ("mto", "mfrom", "ttl")), [(RT1[0], RT1[1], False)], title="The new frame, from the router",
                  note="The **MAC addresses changed**, the **IP addresses stayed the same**.")),
 ]
@@ -1195,13 +1202,13 @@ def ports_svg(step):
         b += wire((566, 130), (618, 85 + i * 50), "#c3cdd1", 1.5)
     seg = lambda x, y, a, b_, c=(HLBG, HL): tag(x, y, [("to   " + a, True), ("from " + b_, True)], c, 13)
     if step == 1:
-        b += trail([(86, 122), (208, 122)]) + seg(150, 230, SRV + ":443", LAPTOP + ":51034")
+        b += trail([(88, 130), (206, 130)]) + seg(150, 230, SRV + ":443", LAPTOP + ":51034")
     if step == 2:
-        b += trail([(252, 122), (515, 122)]) + seg(380, 230, SRV + ":443", PUB + ":51034") + _t(540, 40, "the IP finds the computer", 14, 700, HL)
+        b += trail([(254, 130), (514, 130)]) + seg(380, 230, SRV + ":443", PUB + ":51034") + _t(540, 40, "the IP finds the computer", 14, 700, HL)
     if step == 3:
-        b += trail([(566, 130), (614, 135)]) + _t(540, 40, "the port finds the program", 14, 700, HL)
+        b += run((566, 130), (618, 135), 0, 0) + _t(540, 40, "the port finds the program", 14, 700, HL)
     if step == 4:
-        b += trail([(515, 140), (252, 140)], "green") + seg(380, 230, PUB + ":51034", SRV + ":443", ("#e3f1e4", OKC)) + trail([(208, 140), (86, 140)], "green")
+        b += trail([(514, 130), (254, 130)], "green") + seg(380, 230, PUB + ":51034", SRV + ":443", ("#e3f1e4", OKC)) + trail([(206, 130), (88, 130)], "green")
     return svgfig(760, 262, b, "The IP address finds the computer, the port finds the program")
 
 
@@ -1482,7 +1489,7 @@ def dhcp_svg(step, two=False):
         b += node("router", *r2, "second router", "DHCP server 10.0.0.1", on=step in (1, 4))
     else:
         b += node("pc", *bog, "Bogdan", "192.168.1.11")
-    bc = [trail([(96, 80), (250, 132)]), trail([(250, 150), (96, 200)]), trail([(292, 132), (444, 80)]), trail([(292, 150), (444, 200)])]
+    bc = [run(lp, sw), run(sw, ana), run(sw, rt), run(sw, bog)]
     def msg(x, y, name, mac, ip, body, c=(HLBG, HL)):
         return tag(x, y, [("DHCP " + name, False, c[1], 800), ("MAC " + mac, True), ("IP  " + ip, True), body], c, 12.5)
     G, Rd = ("#e3f1e4", OKC), ("#fdecea", BADC)
@@ -1490,24 +1497,24 @@ def dhcp_svg(step, two=False):
         if step == 0:
             b += "".join(bc) + msg(270, 255, "DISCOVER", "laptop → ff:ff:…", "0.0.0.0 → 255.255.255.255", "is there a DHCP server?") + _t(108, 214, "ignores", 13, 700, MUTED, a="start") + _t(432, 214, "ignores", 13, 700, MUTED, a="end")
         if step == 1:
-            b += trail([(444, 80), (292, 132)], "green") + trail([(250, 132), (96, 80)], "green") + msg(270, 255, "OFFER", "router → laptop", "192.168.1.1 → 192.168.1.105", "192.168.1.105/24, gateway and DNS .1, 24 h", G)
+            b += run(rt, sw, color="green") + run(sw, lp, color="green") + msg(270, 255, "OFFER", "router → laptop", "192.168.1.1 → 192.168.1.105", "192.168.1.105/24, gateway and DNS .1, 24 h", G)
         if step == 2:
             b += "".join(bc[0:1] + bc[1:]) + msg(270, 255, "REQUEST", "laptop → ff:ff:…", "0.0.0.0 → 255.255.255.255", "I take 192.168.1.105 from 192.168.1.1")
         if step == 3:
-            b += trail([(444, 80), (292, 132)], "green") + trail([(250, 132), (96, 80)], "green") + msg(270, 255, "ACK", "router → laptop", "192.168.1.1 → 192.168.1.105", "it is yours for 24 hours", G) + mark(112, 72, True)
+            b += run(rt, sw, color="green") + run(sw, lp, color="green") + msg(270, 255, "ACK", "router → laptop", "192.168.1.1 → 192.168.1.105", "it is yours for 24 hours", G) + mark(112, 72, True)
     else:
         if step == 0:
             b += bc[0] + bc[2] + bc[3] + msg(270, 255, "DISCOVER", "laptop → ff:ff:…", "0.0.0.0 → 255.255.255.255", "is there a DHCP server?")
         if step == 1:
-            b += trail([(444, 200), (292, 150)], "red") + trail([(250, 140), (96, 84)], "red") + msg(270, 255, "OFFER (1st)", "second router → laptop", "10.0.0.1 → 10.0.0.23", "10.0.0.23/24, gateway 10.0.0.1", Rd)
+            b += run(r2, sw, color="red") + run(sw, lp, color="red") + msg(270, 255, "OFFER (1st)", "second router → laptop", "10.0.0.1 → 10.0.0.23", "10.0.0.23/24, gateway 10.0.0.1", Rd)
         if step == 2:
-            b += trail([(444, 80), (292, 132)], "green") + msg(270, 255, "OFFER (2nd)", "router → laptop", "192.168.1.1 → 192.168.1.105", "too late: the laptop took the first one", G)
+            b += run(rt, sw, color="green") + msg(270, 255, "OFFER (2nd)", "router → laptop", "192.168.1.1 → 192.168.1.105", "too late: the laptop took the first one", G)
         if step == 3:
             b += bc[0] + bc[2] + bc[3] + msg(270, 255, "REQUEST", "laptop → ff:ff:…", "0.0.0.0 → 255.255.255.255", "I take 10.0.0.23 from 10.0.0.1")
         if step == 4:
-            b += trail([(444, 200), (292, 150)], "red") + trail([(250, 140), (96, 84)], "red") + msg(270, 255, "ACK", "second router → laptop", "10.0.0.1 → 10.0.0.23", "it is yours", Rd)
+            b += run(r2, sw, color="red") + run(sw, lp, color="red") + msg(270, 255, "ACK", "second router → laptop", "10.0.0.1 → 10.0.0.23", "it is yours", Rd)
         if step == 5:
-            b += _l(300, 168, 330, 184, BADC, 3) + mark(320, 165, False) + tag(260, 268, ["DHCP snooping: only the port", "of the home router may answer"], G, 12.5) + trail([(444, 80), (292, 132)], "green") + trail([(250, 132), (96, 80)], "green")
+            b += _l(300, 168, 330, 184, BADC, 3) + mark(320, 165, False) + tag(260, 268, ["DHCP snooping: only the port", "of the home router may answer"], G, 12.5) + run(rt, sw, color="green") + run(sw, lp, color="green")
     return svgfig(560, 300, b, "DHCP: four messages between the new laptop and the DHCP server")
 
 
